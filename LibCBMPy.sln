@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2020
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "LibCBMPy", "LibCBMPy.pyproj", "{F31FE227-D138-4850-A19D-8612F73A2D14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F31FE227-D138-4850-A19D-8612F73A2D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F31FE227-D138-4850-A19D-8612F73A2D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4234E487-36B7-483B-AB9E-EC2A4DC4EC8F}
+	EndGlobalSection
+EndGlobal
