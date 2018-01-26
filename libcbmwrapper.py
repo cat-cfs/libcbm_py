@@ -61,11 +61,11 @@ class LibCBM_MerchVolumeCurve(ctypes.Structure):
                 (*classifierValueIds))
         setattr(self, "nClassifierValueIds", len(classifierValueIds))
         setattr(self, "SoftwoodComponent", 
-                (POINTER(LibCBM_MerchVolumeComponent) * len(softwoodComponent))
+                (POINTER(LibCBM_MerchVolumeComponent) * 1)
                 (*softwoodComponent))
         setattr(self, "HardwoodComponent", 
-                (POINTER(LibCBM_MerchVolumeComponent) * len(softwoodComponent))
-                (*softwoodComponent))
+                (POINTER(LibCBM_MerchVolumeComponent) * 1)
+                (*hardwoodComponent))
 
 class LibCBM_CoordinateMatrix(ctypes.Structure):
     _fields_ = [("memsize", ctypes.c_size_t),
@@ -168,16 +168,48 @@ class LibCBMWrapper(object):
             if err.Error != 0:
                 raise RuntimeError(err.getErrorMessage())
 
+    def InitializeMerchVolumeComponent(self):
+        pass
+
     def Initialize(self, dbpath, random_seed, classifiers, classifierValues, merchVolumeCurves):
+
+
+
+        _classifiers = [LibCBM_Classifier(x["id"], x["name"])
+                       for x in classifiers]
+
+        _classifierValues = [
+            LibCBM_ClassifierValue(
+                x["id"],
+                x["classifier_id"],
+                x["name"],
+                x["description"])
+            for x in classifiers
+        ]
+
+        _merchVolumeCurves = [
+            LibCBM_MerchVolumeCurve(
+                x["classifier_value_ids"],
+                LibCBM_MerchVolumeComponent(
+                    x["sw_component"]["species_id"],
+                    x["sw_component"]["ages"],
+                    x["sw_component"]["volumes"]),
+                LibCBM_MerchVolumeComponent(
+                    x["hw_component"]["species_id"],
+                    x["hw_component"]["ages"],
+                    x["hw_component"]["volumes"])
+                )
+           for x in merchVolumeCurves
+         ]
 
         err = LibCBM_Error();
         self._dll.LibCBM_Initialize(
             ctypes.byref(err), #error struct
             dbpath, #path to cbm defaults database
             1, #random seed
-            classifiers, len(classifiers),
-            classifierValues, len(classifierValues),
-
+            _classifiers, len(_classifiers),
+            _classifierValues, len(_classifierValues),
+            _merchVolumeCurves, len(_merchVolumeCurves)
             )
 
 
