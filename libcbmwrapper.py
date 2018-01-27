@@ -23,7 +23,7 @@ class LibCBM_Classifier(ctypes.Structure):
     
     def __init__(self, id, name):
         setattr(self,"id",id)
-        setattr(self,"name", ctypes.create_string_buffer(name))
+        setattr(self,"name", ctypes.c_char_p(name))
 
 class LibCBM_ClassifierValue(ctypes.Structure):
     _fields_ = [("id", ctypes.c_size_t),
@@ -34,14 +34,14 @@ class LibCBM_ClassifierValue(ctypes.Structure):
     def __init__(self, id, classifier_id, name, description):
         setattr(self,"id",id)
         setattr(self,"classifier_id", classifier_id)
-        setattr(self,"name", ctypes.create_string_buffer(name))
-        setattr(self,"description", ctypes.create_string_buffer(description))
+        setattr(self,"name", ctypes.c_char_p(name))
+        setattr(self,"description", ctypes.c_char_p(description))
 
 class LibCBM_MerchVolumeComponent(ctypes.Structure):
     _fields_ = [("species_id", ctypes.c_int),
                 ("num_values", ctypes.c_size_t),
-                ("age", POINTER(ctypes.c_int)),
-                ("volume", POINTER(ctypes.c_double))]
+                ("age", ctypes.POINTER(ctypes.c_int)),
+                ("volume", ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self, species_id, ages, volumes):
         setattr(self, "species_id", species_id)
@@ -50,29 +50,25 @@ class LibCBM_MerchVolumeComponent(ctypes.Structure):
         setattr(self, "volume", (ctypes.c_double * len(volumes))(*volumes))
 
 class LibCBM_MerchVolumeCurve(ctypes.Structure):
-    _fields_ = [("classifierValueIds", POINTER(ctypes.c_size_t)),
-                ("nClassifierValueIds", c_size_t),
-                ("SoftwoodComponent", POINTER(LibCBM_MerchVolumeComponent)),
-                ("HardwoodComponent", POINTER(LibCBM_MerchVolumeComponent))]
+    _fields_ = [("classifierValueIds", ctypes.POINTER(ctypes.c_size_t)),
+                ("nClassifierValueIds", ctypes.c_size_t),
+                ("SoftwoodComponent", ctypes.POINTER(LibCBM_MerchVolumeComponent)),
+                ("HardwoodComponent", ctypes.POINTER(LibCBM_MerchVolumeComponent))]
 
     def __init__(self, classifierValueIds, softwoodComponent, hardwoodComponent):
         setattr(self, "classifierValueIds", 
                 (ctypes.c_size_t * len(classifierValueIds))
                 (*classifierValueIds))
         setattr(self, "nClassifierValueIds", len(classifierValueIds))
-        setattr(self, "SoftwoodComponent", 
-                (POINTER(LibCBM_MerchVolumeComponent) * 1)
-                (*softwoodComponent))
-        setattr(self, "HardwoodComponent", 
-                (POINTER(LibCBM_MerchVolumeComponent) * 1)
-                (*hardwoodComponent))
+        setattr(self, "SoftwoodComponent", ctypes.pointer(softwoodComponent))
+        setattr(self, "HardwoodComponent", ctypes.pointer(hardwoodComponent))
 
 class LibCBM_CoordinateMatrix(ctypes.Structure):
     _fields_ = [("memsize", ctypes.c_size_t),
                 ("count", ctypes.c_size_t),
-                ("rows", POINTER(ctypes.c_size_t)),
-                ("cols", POINTER(ctypes.c_size_t)),
-                ("values", POINTER(ctypes.c_double))]
+                ("rows", ctypes.POINTER(ctypes.c_size_t)),
+                ("cols", ctypes.POINTER(ctypes.c_size_t)),
+                ("values", ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self, size):
         setattr(self, "memsize", size)
@@ -86,7 +82,7 @@ class LibCBMWrapper(object):
         self.handle = False
         self._dll = ctypes.CDLL(dllpath)
 
-        self._dll.LibCBM_Free(
+        self._dll.LibCBM_Free.argtypes = (
             ctypes.POINTER(LibCBM_Error),
             ctypes.c_void_p)
 
@@ -171,7 +167,9 @@ class LibCBMWrapper(object):
     def InitializeMerchVolumeComponent(self):
         pass
 
-    def Initialize(self, dbpath, random_seed, classifiers, classifierValues, merchVolumeCurves):
+    def Initialize(self, dbpath, random_seed,
+                   classifiers, classifierValues,
+                   merchVolumeCurves):
 
 
 
@@ -184,7 +182,7 @@ class LibCBMWrapper(object):
                 x["classifier_id"],
                 x["name"],
                 x["description"])
-            for x in classifiers
+            for x in classifierValues
         ]
 
         _merchVolumeCurves = [
@@ -202,28 +200,19 @@ class LibCBMWrapper(object):
            for x in merchVolumeCurves
          ]
 
+
+        _classifiers_p = (LibCBM_Classifier*len(_classifiers))(*_classifiers)
+        _classifierValue_p = (LibCBM_ClassifierValue*len(_classifierValues))(*_classifierValues)
+        _merchVolumeCurves_p = (LibCBM_MerchVolumeCurve*len(_merchVolumeCurves))(*_merchVolumeCurves)
+
         err = LibCBM_Error();
-        self._dll.LibCBM_Initialize(
+        self.handle = self._dll.LibCBM_Initialize(
             ctypes.byref(err), #error struct
             dbpath, #path to cbm defaults database
             1, #random seed
-            _classifiers, len(_classifiers),
-            _classifierValues, len(_classifierValues),
-            _merchVolumeCurves, len(_merchVolumeCurves)
+            _classifiers_p, len(_classifiers),
+            _classifierValue_p, len(_classifierValues),
+            _merchVolumeCurves_p, len(_merchVolumeCurves)
             )
 
-
-
-        #.argtypes = (
-        #    ctypes.POINTER(LibCBM_Error), # error struct
-        #    ctypes.c_size_t, # poolcount
-        #    ctypes.POINTER(ctypes.c_char_p), # poolnames
-        #    ctypes.c_char_p, # dbpath
-        #    ctypes.c_size_t, # random seed
-        #    ctypes.POINTER(LibCBM_Classifier), # classifiers
-        #    ctypes.c_size_t, # number of classifiers
-        #    ctypes.POINTER(LibCBM_ClassifierValue), # classifier values
-        #    ctypes.c_size_t, # number of classifier values
-        #    ctypes.POINTER(LibCBM_MerchVolumeCurve), # merch volume curves
-        #    ctypes.c_size_t #number of merch vol curves
-        #)
+       
