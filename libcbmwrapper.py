@@ -77,10 +77,29 @@ class LibCBM_CoordinateMatrix(ctypes.Structure):
         setattr(self, "cols", (ctypes.c_size_t * size))(*[0]*size)
         setattr(self, "values", (ctypes.c_double * size))(*[0]*size)
 
+class LibCBM_FluxIndicator(ctypes.Structure):
+    _fields_ = [
+        ("includedProcesses", ctypes.POINTER(ctypes.c_size_t)),#included processes
+        ("nIncludedProcesses", ctypes.c_size_t),#number of included processes
+        ("eligibleSources", ctypes.POINTER(ctypes.c_size_t)),#included source pools
+        ("nEligibleSources", ctypes.c_size_t),#number of included source pools
+        ("eligibleSinks", ctypes.POINTER(ctypes.c_size_t)),#included sink pools
+        ("nEligibleSinks", ctypes.c_size_t),#number of included sink pools
+        ]
+
+    def __init__(self, processes, sourcePools, sinkPools):
+        setattr(self, "includedProcesses", (ctypes.c_size_t * len(processes)(processes)))
+        setattr(self, "nIncludedProcesses", len(processes))
+        setattr(self, "eligibleSources", (ctypes.c_size_t * len(sourcePools)(sourcePools)))
+        setattr(self, "nEligibleSources", len(sourcePools))
+        setattr(self, "eligibleSinks", (ctypes.c_size_t * len(sinkPools)(sinkPools)))
+        setattr(self, "nEligibleSinks", len(sinkPools))
+
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
         self.handle = False
         self._dll = ctypes.CDLL(dllpath)
+        self.err = LibCBM_Error();
 
         self._dll.LibCBM_Free.argtypes = (
             ctypes.POINTER(LibCBM_Error),
@@ -115,44 +134,23 @@ class LibCBMWrapper(object):
             ctypes.c_bool #use caching
         )
 
-        self._dll.LibCBM_MerchVolumeGrowth.argtypes = (
+        self._dll.LibCBM_Step.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.POINTER(ctypes.c_double), #pool result
+            ctypes.POINTER(ctypes.c_double), #pools t0
+            ctypes.POINTER(ctypes.c_double), #pools t1
             ctypes.POINTER(ctypes.c_size_t), #classifier set
             ctypes.c_size_t, #n classifiers
             ctypes.c_int, #age
-            ctypes.c_int, #spatial unit id
+            ctypes.c_int, #spatial_unit_id
             ctypes.c_int, #last disturbance type
             ctypes.c_int, #time since last disturbance
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #growth
-            ctypes.POINTER(LibCBM_CoordinateMatrix) #decline
-        )
-
-        self._dll.LibCBM_Turnover.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_int, #spatial unit id
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #biomassTurnover
-            ctypes.POINTER(LibCBM_CoordinateMatrix) #snagTurnover
-        )
-
-        self._dll.LibCBM_Decay.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_double, #mean_annual_temp
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #domDecay
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #slowDecay
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #slowMixing
-        )
-
-        self._dll.LibCBM_Disturbance.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_int, #spatial unit id
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #biomassTurnover
-            ctypes.POINTER(LibCBM_CoordinateMatrix) #snagTurnover
-        )
+            ctypes.c_double, #mean annual temp
+            ctypes.c_bool, # use default temp
+            ctypes.c_int, #disturbance type id
+            ctypes.POINTER(LibCBM_CoordinateMatrix), #pool flows
+            ctypes.POINTER(ctypes.c_double) #flux indicator values
+            )
 
     def __enter__(self):
         return self
@@ -169,9 +167,7 @@ class LibCBMWrapper(object):
 
     def Initialize(self, dbpath, random_seed,
                    classifiers, classifierValues,
-                   merchVolumeCurves):
-
-
+                   merchVolumeCurves, fluxIndicators):
 
         _classifiers = [LibCBM_Classifier(x["id"], x["name"])
                        for x in classifiers]
@@ -200,14 +196,17 @@ class LibCBMWrapper(object):
            for x in merchVolumeCurves
          ]
 
+        _fluxIndicators = [
+            LibCBM_FluxIndicator(x["Processes"], x["SourcePools"], x["SinkPools"])
+
+        ]
 
         _classifiers_p = (LibCBM_Classifier*len(_classifiers))(*_classifiers)
         _classifierValue_p = (LibCBM_ClassifierValue*len(_classifierValues))(*_classifierValues)
         _merchVolumeCurves_p = (LibCBM_MerchVolumeCurve*len(_merchVolumeCurves))(*_merchVolumeCurves)
 
-        err = LibCBM_Error();
         self.handle = self._dll.LibCBM_Initialize(
-            ctypes.byref(err), #error struct
+            ctypes.byref(self.err), #error struct
             dbpath, #path to cbm defaults database
             1, #random seed
             _classifiers_p, len(_classifiers),
@@ -215,4 +214,16 @@ class LibCBMWrapper(object):
             _merchVolumeCurves_p, len(_merchVolumeCurves)
             )
 
-       
+    def Spinup(self, ):
+        if not self.handle:
+            raise AssertionError("dll not initialized")
+
+        pools = [0 for x in range(27)]
+        pools_p = (ctypes.c_double * len(pools))(*pools)
+
+        self._dll.LibCBM_Spinup(
+            ctypes.byref(self.err), #error struct
+            self.handle,
+            pools_p,
+
+            )

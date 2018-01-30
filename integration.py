@@ -11,7 +11,7 @@ w.Initialize(
         {"id": 2, "name": "b"},
         {"id": 3, "name": "c"}
     ],
-    classifierValues=[
+    classifierValues = [
         {"id": 1, "classifier_id": 1, "name": "a1", "description": "a1"},
         {"id": 2, "classifier_id": 1, "name": "a2", "description": "a2"},
         {"id": 3, "classifier_id": 1, "name": "a3", "description": "a3"},
@@ -22,7 +22,7 @@ w.Initialize(
         {"id": 8, "classifier_id": 3, "name": "c2", "description": "c2"},
         {"id": 9, "classifier_id": 3, "name": "c3", "description": "c3"},
     ],
-    merchVolumeCurves=[
+    merchVolumeCurves = [
         {"classifier_value_ids": [1,4,7],
          "sw_component": {
              "species_id": 14,
@@ -36,6 +36,7 @@ w.Initialize(
           },
          }]
     )
+
 
 
 
