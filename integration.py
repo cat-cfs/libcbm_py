@@ -34,8 +34,33 @@ w.Initialize(
              "ages": [10,20,30,40],
              "volumes": [10,20,30,40]
           },
-         }]
+         }],
+    fluxIndicators=[
+        {
+        "Processes": [],
+        "SourcePools":[],
+        "SinkPools":[]
+        }
+    ]
+
     )
+
+pools = w.Spinup(classifierSet=[1,4,7], spatial_unit_id = 1, age = 100,
+    delay = 1, historical_disturbance_type_id= 2,
+    last_pass_disturbance_type_id = 2)
+
+
+result = w.Step(
+    pools=pools,
+    classifierSet=[1,4,7],
+    age=100,
+    spatial_unit_id=1,
+    lastDisturbanceType=2,
+    timeSinceLastDisturbance=0,
+    disturbance_type_id=0,
+    mean_annual_temp=None,
+    get_flows=True)
+
 
 
 

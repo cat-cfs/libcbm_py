@@ -73,9 +73,9 @@ class LibCBM_CoordinateMatrix(ctypes.Structure):
     def __init__(self, size):
         setattr(self, "memsize", size)
         setattr(self, "count", 0)
-        setattr(self, "rows", (ctypes.c_size_t * size))(*[0]*size)
-        setattr(self, "cols", (ctypes.c_size_t * size))(*[0]*size)
-        setattr(self, "values", (ctypes.c_double * size))(*[0]*size)
+        setattr(self, "rows", (ctypes.c_size_t * size)(*([0]*size)))
+        setattr(self, "cols", (ctypes.c_size_t * size)(*([0]*size)))
+        setattr(self, "values", (ctypes.c_double * size)(*([0.0]*size)))
 
 class LibCBM_FluxIndicator(ctypes.Structure):
     _fields_ = [
@@ -88,15 +88,18 @@ class LibCBM_FluxIndicator(ctypes.Structure):
         ]
 
     def __init__(self, processes, sourcePools, sinkPools):
-        setattr(self, "includedProcesses", (ctypes.c_size_t * len(processes)(processes)))
+        setattr(self, "includedProcesses", (ctypes.c_size_t * len(processes))(*processes))
         setattr(self, "nIncludedProcesses", len(processes))
-        setattr(self, "eligibleSources", (ctypes.c_size_t * len(sourcePools)(sourcePools)))
+        setattr(self, "eligibleSources", (ctypes.c_size_t * len(sourcePools))(*sourcePools))
         setattr(self, "nEligibleSources", len(sourcePools))
-        setattr(self, "eligibleSinks", (ctypes.c_size_t * len(sinkPools)(sinkPools)))
+        setattr(self, "eligibleSinks", (ctypes.c_size_t * len(sinkPools))(*sinkPools))
         setattr(self, "nEligibleSinks", len(sinkPools))
 
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
+        self.NFluxIndicators = 0
+        self.PoolCount = 27
+        self.NProcesses = 9
         self.handle = False
         self._dll = ctypes.CDLL(dllpath)
         self.err = LibCBM_Error();
@@ -198,12 +201,14 @@ class LibCBMWrapper(object):
 
         _fluxIndicators = [
             LibCBM_FluxIndicator(x["Processes"], x["SourcePools"], x["SinkPools"])
-
+            for x in fluxIndicators
         ]
+        self.NFluxIndicators = len(fluxIndicators)
 
         _classifiers_p = (LibCBM_Classifier*len(_classifiers))(*_classifiers)
         _classifierValue_p = (LibCBM_ClassifierValue*len(_classifierValues))(*_classifierValues)
         _merchVolumeCurves_p = (LibCBM_MerchVolumeCurve*len(_merchVolumeCurves))(*_merchVolumeCurves)
+        _fluxIndicators_p = (LibCBM_FluxIndicator*len(_fluxIndicators))(*_fluxIndicators)
 
         self.handle = self._dll.LibCBM_Initialize(
             ctypes.byref(self.err), #error struct
@@ -211,19 +216,89 @@ class LibCBMWrapper(object):
             1, #random seed
             _classifiers_p, len(_classifiers),
             _classifierValue_p, len(_classifierValues),
-            _merchVolumeCurves_p, len(_merchVolumeCurves)
+            _merchVolumeCurves_p, len(_merchVolumeCurves),
+            _fluxIndicators_p, len(_fluxIndicators)
             )
 
-    def Spinup(self, ):
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
+
+    def Spinup(self, classifierSet, spatial_unit_id, age, delay,
+               historical_disturbance_type_id, last_pass_disturbance_type_id,
+               use_cache=True, random_return_interval =False,
+               mean_annual_temp=None):
+
         if not self.handle:
             raise AssertionError("dll not initialized")
 
-        pools = [0 for x in range(27)]
-        pools_p = (ctypes.c_double * len(pools))(*pools)
+        pools = np.ndarray((self.PoolCount,))
+        pools_p = pools.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
+        classifiers_p = (ctypes.c_size_t * len(classifierSet))(*classifierSet)
 
         self._dll.LibCBM_Spinup(
             ctypes.byref(self.err), #error struct
             self.handle,
             pools_p,
-
+            classifiers_p,
+            len(classifierSet),
+            spatial_unit_id,
+            age,
+            delay,
+            0.0 if mean_annual_temp is None else mean_annual_temp,
+            mean_annual_temp is None,
+            historical_disturbance_type_id,
+            last_pass_disturbance_type_id,
+            random_return_interval,
+            use_cache
             )
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
+
+        return pools
+
+    def Step(self, pools, classifierSet, age, spatial_unit_id,
+             lastDisturbanceType, timeSinceLastDisturbance,
+             disturbance_type_id=0, mean_annual_temp=None,
+             get_flows=False):
+
+        pools_p = pools.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        pools_t1 = np.ndarray((self.PoolCount,))
+        pools_t1_p = pools_t1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
+        classifiers_p = (ctypes.c_size_t * len(classifierSet))(*classifierSet)
+
+        flows_p = None
+        if get_flows:
+            flows_p = (LibCBM_CoordinateMatrix * self.NProcesses) \
+                (*[LibCBM_CoordinateMatrix(128) for x in xrange(self.NProcesses)])
+        else:
+            flows_p = ctypes.cast(ctypes.c_void_p(0), ctypes.POINTER(LibCBM_CoordinateMatrix))
+
+        fluxIndicators = np.ndarray((self.NFluxIndicators,))
+        fluxIndicators_p = fluxIndicators.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
+        self._dll.LibCBM_Step(
+            ctypes.byref(self.err), #error struct
+            self.handle,
+            pools_p,
+            pools_t1_p,
+            classifiers_p,
+            len(classifierSet),
+            age,
+            spatial_unit_id,
+            lastDisturbanceType,
+            timeSinceLastDisturbance,
+            0.0 if mean_annual_temp is None else mean_annual_temp,
+            mean_annual_temp is None,
+            disturbance_type_id,
+            flows_p,
+            fluxIndicators_p)
+
+        return {
+            "Pools": pools_t1,
+            "FluxIndicators": fluxIndicators,
+            "Flows": flows_p
+            }
+
