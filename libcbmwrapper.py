@@ -151,8 +151,8 @@ class LibCBMWrapper(object):
             ctypes.c_double, #mean annual temp
             ctypes.c_bool, # use default temp
             ctypes.c_int, #disturbance type id
-            ctypes.POINTER(LibCBM_CoordinateMatrix), #pool flows
-            ctypes.POINTER(ctypes.c_double) #flux indicator values
+            ctypes.POINTER(ctypes.c_double), #flux indicator values
+            ctypes.POINTER(LibCBM_CoordinateMatrix), #raw pool flows
             )
 
     def __enter__(self):
@@ -165,7 +165,7 @@ class LibCBMWrapper(object):
             if err.Error != 0:
                 raise RuntimeError(err.getErrorMessage())
 
-    def InitializeMerchVolumeComponent(self):
+    def InitializePools(self):
         pass
 
     def Initialize(self, dbpath, random_seed,
@@ -261,7 +261,7 @@ class LibCBMWrapper(object):
     def Step(self, pools, classifierSet, age, spatial_unit_id,
              lastDisturbanceType, timeSinceLastDisturbance,
              disturbance_type_id=0, mean_annual_temp=None,
-             get_flows=False):
+             get_raw_flux=False):
 
         pools_p = pools.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         pools_t1 = np.ndarray((self.PoolCount,))
@@ -269,12 +269,12 @@ class LibCBMWrapper(object):
 
         classifiers_p = (ctypes.c_size_t * len(classifierSet))(*classifierSet)
 
-        flows_p = None
-        if get_flows:
-            flows_p = (LibCBM_CoordinateMatrix * self.NProcesses) \
+        raw_flux_p = None
+        if get_raw_flux:
+            raw_flux_p = (LibCBM_CoordinateMatrix * self.NProcesses) \
                 (*[LibCBM_CoordinateMatrix(128) for x in xrange(self.NProcesses)])
         else:
-            flows_p = ctypes.cast(ctypes.c_void_p(0), ctypes.POINTER(LibCBM_CoordinateMatrix))
+            raw_flux_p = ctypes.cast(ctypes.c_void_p(0), ctypes.POINTER(LibCBM_CoordinateMatrix))
 
         fluxIndicators = np.ndarray((self.NFluxIndicators,))
         fluxIndicators_p = fluxIndicators.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
@@ -293,12 +293,12 @@ class LibCBMWrapper(object):
             0.0 if mean_annual_temp is None else mean_annual_temp,
             mean_annual_temp is None,
             disturbance_type_id,
-            flows_p,
-            fluxIndicators_p)
+            fluxIndicators_p,
+            raw_flux_p)
 
         return {
             "Pools": pools_t1,
             "FluxIndicators": fluxIndicators,
-            "Flows": flows_p
+            "Flows": raw_flux_p
             }
 

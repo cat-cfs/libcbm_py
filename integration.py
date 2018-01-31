@@ -45,10 +45,12 @@ w.Initialize(
 
     )
 
-pools = w.Spinup(classifierSet=[1,4,7], spatial_unit_id = 1, age = 100,
-    delay = 1, historical_disturbance_type_id= 2,
-    last_pass_disturbance_type_id = 2)
-
+pools = w.Spinup(classifierSet=[1,4,7], 
+                 spatial_unit_id = 1,
+                 age = 100,
+                 delay = 1,
+                 historical_disturbance_type_id= 2,
+                 last_pass_disturbance_type_id = 2)
 
 result = w.Step(
     pools=pools,
