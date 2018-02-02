@@ -1,5 +1,32 @@
-import ctypes, logging, numpy as np
+import ctypes, logging, sqlite3, numpy as np
 from numpy.ctypeslib import ndpointer
+
+class LibCBM_Process:
+    LibCBM_Disturbance_Process = 0
+    LibCBM_Growth1_Process = 1
+    LibCBM_SnagTurnover_Process = 2
+    LibCBM_BioTurnover_Process = 3
+    LibCBM_Decline_Process = 4
+    LibCBM_Growth2_Process = 5
+    LibCBM_DomDecay_Process = 6
+    LibCBM_SlowDecay_Process = 7
+    LibCBM_SlowMixing_Process = 8
+
+    @staticmethod
+    def getProcessId(processName):
+        if processName == "LibCBM_Disturbance_Process": return 0
+        elif processName == "LibCBM_Growth1_Process": return 1
+        elif processName == "LibCBM_SnagTurnover_Process": return 2
+        elif processName == "LibCBM_BioTurnover_Process": return 3
+        elif processName == "LibCBM_Decline_Process": return 4
+        elif processName == "LibCBM_Growth2_Process": return 5
+        elif processName == "LibCBM_DomDecay_Process": return 6
+        elif processName == "LibCBM_SlowDecay_Process": return 7
+        elif processName == "LibCBM_SlowMixing_Process": return 8
+        else:
+            raise ValueError(
+                "specified name is not a LibCBM_Process: '{}'"
+                .format(processName))
 
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
@@ -77,24 +104,6 @@ class LibCBM_CoordinateMatrix(ctypes.Structure):
         setattr(self, "cols", (ctypes.c_size_t * size)(*([0]*size)))
         setattr(self, "values", (ctypes.c_double * size)(*([0.0]*size)))
 
-class LibCBM_FluxIndicator(ctypes.Structure):
-    _fields_ = [
-        ("includedProcesses", ctypes.POINTER(ctypes.c_size_t)),#included processes
-        ("nIncludedProcesses", ctypes.c_size_t),#number of included processes
-        ("eligibleSources", ctypes.POINTER(ctypes.c_size_t)),#included source pools
-        ("nEligibleSources", ctypes.c_size_t),#number of included source pools
-        ("eligibleSinks", ctypes.POINTER(ctypes.c_size_t)),#included sink pools
-        ("nEligibleSinks", ctypes.c_size_t),#number of included sink pools
-        ]
-
-    def __init__(self, processes, sourcePools, sinkPools):
-        setattr(self, "includedProcesses", (ctypes.c_size_t * len(processes))(*processes))
-        setattr(self, "nIncludedProcesses", len(processes))
-        setattr(self, "eligibleSources", (ctypes.c_size_t * len(sourcePools))(*sourcePools))
-        setattr(self, "nEligibleSources", len(sourcePools))
-        setattr(self, "eligibleSinks", (ctypes.c_size_t * len(sinkPools))(*sinkPools))
-        setattr(self, "nEligibleSinks", len(sinkPools))
-
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
         self.NFluxIndicators = 0
@@ -161,16 +170,13 @@ class LibCBMWrapper(object):
     def __exit__(self, exc_type, exc_value, traceback):
         if self.handle:
             err = LibCBM_Error()
-            self.sawtoothDLL.LibCBM_Free(ctypes.byref(err), self.handle)
+            self._dll.LibCBM_Free(ctypes.byref(err), self.handle)
             if err.Error != 0:
                 raise RuntimeError(err.getErrorMessage())
 
-    def InitializePools(self):
-        pass
-
     def Initialize(self, dbpath, random_seed,
                    classifiers, classifierValues,
-                   merchVolumeCurves, fluxIndicators):
+                   merchVolumeCurves):
 
         _classifiers = [LibCBM_Classifier(x["id"], x["name"])
                        for x in classifiers]
@@ -199,16 +205,9 @@ class LibCBMWrapper(object):
            for x in merchVolumeCurves
          ]
 
-        _fluxIndicators = [
-            LibCBM_FluxIndicator(x["Processes"], x["SourcePools"], x["SinkPools"])
-            for x in fluxIndicators
-        ]
-        self.NFluxIndicators = len(fluxIndicators)
-
         _classifiers_p = (LibCBM_Classifier*len(_classifiers))(*_classifiers)
         _classifierValue_p = (LibCBM_ClassifierValue*len(_classifierValues))(*_classifierValues)
         _merchVolumeCurves_p = (LibCBM_MerchVolumeCurve*len(_merchVolumeCurves))(*_merchVolumeCurves)
-        _fluxIndicators_p = (LibCBM_FluxIndicator*len(_fluxIndicators))(*_fluxIndicators)
 
         self.handle = self._dll.LibCBM_Initialize(
             ctypes.byref(self.err), #error struct
@@ -216,8 +215,7 @@ class LibCBMWrapper(object):
             1, #random seed
             _classifiers_p, len(_classifiers),
             _classifierValue_p, len(_classifierValues),
-            _merchVolumeCurves_p, len(_merchVolumeCurves),
-            _fluxIndicators_p, len(_fluxIndicators)
+            _merchVolumeCurves_p, len(_merchVolumeCurves)
             )
 
         if self.err.Error != 0:

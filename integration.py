@@ -34,15 +34,7 @@ w.Initialize(
              "ages": [10,20,30,40],
              "volumes": [10,20,30,40]
           },
-         }],
-    fluxIndicators=[
-        {
-        "Processes": [],
-        "SourcePools":[],
-        "SinkPools":[]
-        }
-    ]
-
+         }]
     )
 
 pools = w.Spinup(classifierSet=[1,4,7], 
