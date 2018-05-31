@@ -1,6 +1,22 @@
 import ctypes, logging, sqlite3, numpy as np
 from numpy.ctypeslib import ndpointer
 
+class LibCBM_SpinupState:
+    HistoricalRotation = 0,
+    HistoricalDisturbance = 1,
+    LastPassDisturbance = 2,
+    GrowToFinalAge = 3,
+    Delay = 4,
+    Done = 5
+    @staticmethod
+    def getName(x):
+        if x == 0: return "HistoricalRotation" 
+        elif x == 1: return "HistoricalDisturbance"
+        elif x == 2: return "LastPassDisturbance"
+        elif x == 3: return "GrowToFinalAge"
+        elif x == 4: return "Delay"
+        elif x == 5: return "Done"
+        else: raise ValueError("invalid Spinup state code")
 
 def isNumpyArray(value):
     if isinstance(value, np.ndarray):
@@ -154,6 +170,22 @@ class LibCBMWrapper(object):
             ctypes.c_size_t #number of merch vol curves
         )
 
+        self._dll.LibCBM_AdvanceSpinupState.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t, #n stands
+            ctypes.POINTER(ctypes.c_int), #return interval (length n)
+            ctypes.POINTER(ctypes.c_int), #minRotations (length n)
+            ctypes.POINTER(ctypes.c_int), #maxRotations (length n)
+            ctypes.POINTER(ctypes.c_int), #final age (length n)
+            ctypes.POINTER(ctypes.c_int), #delay (length n)
+            ctypes.POINTER(ctypes.c_double), #slowpools (length n)
+            ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
+            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
+            )
+
         self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
@@ -164,7 +196,34 @@ class LibCBMWrapper(object):
             ctypes.POINTER(ctypes.c_int), #stand ages (length n)
             ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
             ctypes.POINTER(ctypes.c_int), # last disturbance type (length n)
-            ctypes.POINTER(ctypes.c_int) # time since last disturbance
+            ctypes.POINTER(ctypes.c_int), # time since last disturbance
+            ctypes.POINTER(ctypes.c_double) #growth multiplier
+            )
+
+        self._dll.LibCBM_GetTurnoverOps.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids (returned value))
+            ctypes.c_size_t, #n stands
+            ctypes.POINTER(ctypes.c_int)) #spatial unit id (length n)
+
+        self._dll.LibCBM_GetDecayOps.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.ARRAY(ctypes.c_size_t,3), #op_ids (returned value))
+            ctypes.c_size_t, #n stands
+            ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
+            ctypes.POINTER(ctypes.c_double), #mean annual temp
+            ctypes.c_bool #use mean annual temp 
+            )
+
+        self._dll.LibCBM_GetDisturbanceOps.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.ARRAY(ctypes.c_size_t,1), #op_ids (returned value))
+            ctypes.c_size_t, #n stands
+            ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
+            ctypes.POINTER(ctypes.c_int) #disturbacne type id
             )
 
         #self._dll.LibCBM_Spinup.argtypes = (
@@ -259,9 +318,35 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
+    def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
+                           finalAge, delay, slowPools, state, rotation, step,
+                           lastRotationSlowC):
+       if not self.handle:
+           raise AssertionError("dll not initialized")
+       n = returnInterval.shape[0]
+
+       self._dll.LibCBM_AdvanceSpinupState(
+            ctypes.byref(self.err),
+            self.handle,
+            n,
+            returnInterval.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            minRotations.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            maxRotations.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            finalAge.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            delay.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+            slowPools.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            state,
+            rotation,
+            step,
+            lastRotationSlowC)
+        
+
+       if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
     def GetMerchVolumeGrowthAndDeclineOps(self,
         classifiers, pools, ages, spatial_units, last_dist_type,
-        time_since_last_dist):
+        time_since_last_dist, growth_multipliers):
 
        if not self.handle:
            raise AssertionError("dll not initialized")
@@ -278,14 +363,81 @@ class LibCBMWrapper(object):
            ages.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
            spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
            last_dist_type.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           time_since_last_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
-           )
-
-       return opIds
+           time_since_last_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+           growth_multipliers.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
+       return {
+           opIds[0]: "Growth",
+           opIds[1]: "OvermatureDecline"
+           }
+
+    def GetTurnoverOps(self, spatial_units):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        n = spatial_units.shape[0]
+        opIds = (ctypes.c_size_t * (2))(*[0,0])
+
+        self._dll.LibCBM_GetTurnoverOps(
+           ctypes.byref(self.err),
+           self.handle,
+           opIds,
+           n,
+           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)))
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+        return {
+           opIds[0]: "BiomassTurnover",
+           opIds[1]: "SnagTurnover"
+           }
+
+    def GetDecayOps(self, spatial_units, mean_annual_temp=None):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+        n = spatial_units.shape[0]
+        opIds = (ctypes.c_size_t * (3))(*[0,0,0])
+        self._dll.LibCBM_GetDecayOps(
+           ctypes.byref(self.err),
+           self.handle,
+           opIds,
+           n,
+           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+           None if mean_annual_temp is None else #null pointer if no mean annual temp specified
+                mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+           False if mean_annual_temp is None else True)
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+        return {
+           opIds[0]: "DomDecay",
+           opIds[1]: "SlowDecay",
+           opIds[2]: "SlowMixing",
+           }
+
+    def GetDisturbanceOps(self, spatial_units, disturbance_types):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+        n = spatial_units.shape[0]
+        opIds = (ctypes.c_size_t * (1))(*[0])
+
+        self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
+           self.handle,
+           opIds,
+           n,
+           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+           disturbance_types.ctypes.data_as(ctypes.POINTER(ctypes.c_int)))
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+        return {
+           opIds[0]: "Disturbance"
+           }
     #def Spinup(self, classifierSet, spatial_unit_id, age, delay,
     #           historical_disturbance_type_id, last_pass_disturbance_type_id,
     #           use_cache=True, random_return_interval =False,

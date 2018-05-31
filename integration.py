@@ -42,26 +42,36 @@ classifiers = np.array([[1,4,7],[1,4,7]],dtype=np.int32)
 ages = np.array([0,0], dtype=np.int32)
 spus = np.array([3,3], dtype=np.int32)
 last_dist = np.array([0,0], dtype=np.int32)
-w.GetMerchVolumeGrowthAndDeclineOps(
-    classifiers, pools, ages, spus, last_dist, last_dist)
+dist = np.array([1,1], dtype=np.int32)
+growth_mult = np.array([1.0,1.0], dtype=np.double)
 
-#pools = w.Spinup(classifierSet=[1,4,7], 
-#                 spatial_unit_id = 1,
-#                 age = 100,
-#                 delay = 1,
-#                 historical_disturbance_type_id= 2,
-#                 last_pass_disturbance_type_id = 2)
+returnInterval = np.array([125,125], dtype=np.int32)
+minRotations = np.array([10,10], dtype = np.int32)
+maxRotations = np.array([30,30], dtype = np.int32)
+finalAge = np.array([300,100], dtype = np.int32)
+delay = np.array([0,1], dtype = np.int32)
+slowPools= np.array([0,0], dtype = np.double)
+state= np.array([0,0], dtype = np.uint32)
+rotation= np.array([0,0], dtype = np.int32)
+step= np.array([0,0], dtype = np.int32)
+lastRotationSlowC= np.array([0.0,0.0], dtype = np.double)
 
-#result = w.Step(
-#    pools=pools,
-#    classifierSet=[1,4,7],
-#    age=100,
-#    spatial_unit_id=1,
-#    lastDisturbanceType=2,
-#    timeSinceLastDisturbance=0,
-#    disturbance_type_id=0,
-#    mean_annual_temp=None,
-#    get_flows=True)
+for i in range(1250):
+    print(i)
+    w.AdvanceSpinupState(returnInterval, minRotations, maxRotations,
+                            finalAge, delay, slowPools, state, rotation, step,
+                            lastRotationSlowC)
+
+    print(step)
+    op1 = w.GetMerchVolumeGrowthAndDeclineOps(
+        classifiers, pools, ages, spus, last_dist, last_dist, growth_mult)
+    op2 = w.GetTurnoverOps(spus)
+    op3 = w.GetDecayOps(spus)
+    op4 = w.GetDisturbanceOps(spus, dist)
+
+
+
+
 
 
 
