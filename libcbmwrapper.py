@@ -18,33 +18,18 @@ class LibCBM_SpinupState:
         elif x == 5: return "Done"
         else: raise ValueError("invalid Spinup state code")
 
-def isNumpyArray(value):
-    if isinstance(value, np.ndarray):
-        return True
-    return False
-
 class LibCBM_Matrix(ctypes.Structure):
 
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
                 ('values', ctypes.POINTER(ctypes.c_double))]
 
-    def _init_(self, nrows, ncols):
-        self.rows = nrows
-        self.cols = ncols
-        init = [0.0 for x in range(0,nrows*ncols)]
-        self.values = (ctypes.c_double * (nrows * ncols))(*init)
-
-    def _init_np(self, np_matrix):
-        self.rows = np_matrix.shape[0]
-        self.cols = np_matrix.shape[1]
-        self.values = np_matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-
     def __init__(self, matrix):
-        if isNumpyArray(matrix):
-            self._init_np(matrix)
-        else:
-            self._init_(matrix[0], matrix[1])
+        self.rows = matrix.shape[0]
+        self.cols = matrix.shape[1]
+        if not matrix.flags["C_CONTIGUOUS"] or not matrix.dtype == np.double:
+            raise ValueError("matrix must be c contiguous and of type np.double")
+        self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
 
 class LibCBM_Matrix_Int(ctypes.Structure):
 
@@ -52,36 +37,12 @@ class LibCBM_Matrix_Int(ctypes.Structure):
                 ('cols', ctypes.c_ssize_t),
                 ('values', ctypes.POINTER(ctypes.c_int))]
 
-    def _init_(self, nrows, ncols):
-        """
-        use this method for matrices that may be modified by the Dll.
-        The initial value of all data is 0, and the total size is ncols*nrows
-        @param nrows the number of rows in the matrix
-        @param ncols the number of columns in the matrix
-        """
-        self.rows = nrows
-        self.cols = ncols
-        init = [0 for x in range(0,nrows*ncols)]
-        self.values = (ctypes.c_int * (nrows * ncols))(*init)
-
-    def _init_np(self, np_matrix):
-        """
-        use this method for matrices that are immutable input data for the
-        Sawtooth Dll.
-        @param np_matrix a numpy matrix with shape order 2 and integer data 
-        type
-        """
-        self.rows = np_matrix.shape[0]
-        self.cols = np_matrix.shape[1]
-        if np_matrix.dtype != np.integer:
-            raise ValueError("specified value {0} is not an integer".format(np_matrix.dtype))
-        self.values = np_matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
-
     def __init__(self, matrix):
-        if isNumpyArray(matrix):
-            self._init_np(matrix)
-        else:
-            self._init_(matrix[0], matrix[1])
+        self.rows = matrix.shape[0]
+        self.cols = matrix.shape[1]
+        if not matrix.flags["C_CONTIGUOUS"] or not matrix.dtype == np.int32:
+            raise ValueError("matrix must be c contiguous and of type np.int32")
+        self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
@@ -174,16 +135,24 @@ class LibCBMWrapper(object):
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
             ctypes.c_size_t, #n stands
-            ctypes.POINTER(ctypes.c_int), #return interval (length n)
-            ctypes.POINTER(ctypes.c_int), #minRotations (length n)
-            ctypes.POINTER(ctypes.c_int), #maxRotations (length n)
-            ctypes.POINTER(ctypes.c_int), #final age (length n)
-            ctypes.POINTER(ctypes.c_int), #delay (length n)
-            ctypes.POINTER(ctypes.c_double), #slowpools (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #return interval (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #minRotations (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #maxRotations (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #final age (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
+            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #slowpools (length n)
             ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
+            )
+
+        self._dll.LibCBM_ComputePools.argtypes = (
+                ctypes.POINTER(LibCBM_Error), # error struct
+                ctypes.c_void_p, #handle
+                ctypes.POINTER(ctypes.c_size_t), #op ids
+                ctypes.c_size_t, #number of op ids
+                LibCBM_Matrix #pools
             )
 
         self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps.argtypes = (
@@ -193,11 +162,11 @@ class LibCBMWrapper(object):
             ctypes.c_size_t, #n stands
             LibCBM_Matrix_Int, #classifiers
             LibCBM_Matrix, #pools
-            ctypes.POINTER(ctypes.c_int), #stand ages (length n)
-            ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
-            ctypes.POINTER(ctypes.c_int), # last disturbance type (length n)
-            ctypes.POINTER(ctypes.c_int), # time since last disturbance
-            ctypes.POINTER(ctypes.c_double) #growth multiplier
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #stand ages (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last disturbance type (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time since last disturbance
+            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") #growth multiplier
             )
 
         self._dll.LibCBM_GetTurnoverOps.argtypes = (
@@ -205,15 +174,15 @@ class LibCBMWrapper(object):
             ctypes.c_void_p, #handle
             ctypes.ARRAY(ctypes.c_size_t,2), #op_ids (returned value))
             ctypes.c_size_t, #n stands
-            ctypes.POINTER(ctypes.c_int)) #spatial unit id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")) #spatial unit id (length n)
 
         self._dll.LibCBM_GetDecayOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
             ctypes.ARRAY(ctypes.c_size_t,3), #op_ids (returned value))
             ctypes.c_size_t, #n stands
-            ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
-            ctypes.POINTER(ctypes.c_double), #mean annual temp
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
+            ctypes.POINTER(ctypes.c_double), #mean annual temp, not using ndpointer becuase we are allowing null
             ctypes.c_bool #use mean annual temp 
             )
 
@@ -222,44 +191,10 @@ class LibCBMWrapper(object):
             ctypes.c_void_p, #handle
             ctypes.ARRAY(ctypes.c_size_t,1), #op_ids (returned value))
             ctypes.c_size_t, #n stands
-            ctypes.POINTER(ctypes.c_int), #spatial unit id (length n)
-            ctypes.POINTER(ctypes.c_int) #disturbacne type id
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #disturbance type id
             )
 
-        #self._dll.LibCBM_Spinup.argtypes = (
-        #    ctypes.POINTER(LibCBM_Error), # error struct
-        #    ctypes.c_void_p, #handle
-        #    ctypes.POINTER(ctypes.c_double), #pool result
-        #    ctypes.POINTER(ctypes.c_size_t), #classifier set
-        #    ctypes.c_size_t, #n classifiers
-        #    ctypes.c_int, # spatial unit id
-        #    ctypes.c_int, #age
-        #    ctypes.c_int, #delay
-        #    ctypes.c_double, #mean annual temp
-        #    ctypes.c_bool, #use default temp
-        #    ctypes.c_int, #historical disturbance type
-        #    ctypes.c_int, #last pass disturbance type
-        #    ctypes.c_bool, #use random return interval (uncertainty analysis)
-        #    ctypes.c_bool #use caching
-        #)
-
-        #self._dll.LibCBM_Step.argtypes = (
-        #    ctypes.POINTER(LibCBM_Error), # error struct
-        #    ctypes.c_void_p, #handle
-        #    ctypes.POINTER(ctypes.c_double), #pools t0
-        #    ctypes.POINTER(ctypes.c_double), #pools t1
-        #    ctypes.POINTER(ctypes.c_size_t), #classifier set
-        #    ctypes.c_size_t, #n classifiers
-        #    ctypes.c_int, #age
-        #    ctypes.c_int, #spatial_unit_id
-        #    ctypes.c_int, #last disturbance type
-        #    ctypes.c_int, #time since last disturbance
-        #    ctypes.c_double, #mean annual temp
-        #    ctypes.c_bool, # use default temp
-        #    ctypes.c_int, #disturbance type id
-        #    ctypes.POINTER(ctypes.c_double), #flux indicator values
-        #    ctypes.POINTER(LibCBM_CoordinateMatrix), #raw pool flows
-        #    )
 
     def __enter__(self):
         return self
@@ -329,17 +264,36 @@ class LibCBMWrapper(object):
             ctypes.byref(self.err),
             self.handle,
             n,
-            returnInterval.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-            minRotations.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-            maxRotations.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-            finalAge.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-            delay.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-            slowPools.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            returnInterval,
+            minRotations,
+            maxRotations,
+            finalAge,
+            delay,
+            slowPools,
             state,
             rotation,
             step,
             lastRotationSlowC)
         
+
+       if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+    def ComputePools(self, ops, pools):
+
+       if not self.handle:
+           raise AssertionError("dll not initialized")
+
+       n_ops = len(ops)
+       poolMat = LibCBM_Matrix(pools)
+       ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
+       
+       self._dll.LibCBM_ComputePools(
+            ctypes.byref(self.err),
+            self.handle,
+            ops_p,
+            n_ops,
+            poolMat)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -360,11 +314,11 @@ class LibCBMWrapper(object):
            opIds,
            n,
            classifiersMat, poolMat,
-           ages.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           last_dist_type.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           time_since_last_dist.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           growth_multipliers.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+           ages,
+           spatial_units,
+           last_dist_type,
+           time_since_last_dist,
+           growth_multipliers)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -386,7 +340,7 @@ class LibCBMWrapper(object):
            self.handle,
            opIds,
            n,
-           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)))
+           spatial_units)
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -406,7 +360,7 @@ class LibCBMWrapper(object):
            self.handle,
            opIds,
            n,
-           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
+           spatial_units,
            None if mean_annual_temp is None else #null pointer if no mean annual temp specified
                 mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
            False if mean_annual_temp is None else True)
@@ -425,95 +379,16 @@ class LibCBMWrapper(object):
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[0])
-
+        
         self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
            self.handle,
            opIds,
            n,
-           spatial_units.ctypes.data_as(ctypes.POINTER(ctypes.c_int)),
-           disturbance_types.ctypes.data_as(ctypes.POINTER(ctypes.c_int)))
+           spatial_units,
+           disturbance_types)
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
         return {
            opIds[0]: "Disturbance"
            }
-    #def Spinup(self, classifierSet, spatial_unit_id, age, delay,
-    #           historical_disturbance_type_id, last_pass_disturbance_type_id,
-    #           use_cache=True, random_return_interval =False,
-    #           mean_annual_temp=None):
-
-    #    if not self.handle:
-    #        raise AssertionError("dll not initialized")
-
-    #    pools = np.ndarray((self.PoolCount,))
-    #    pools_p = pools.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-
-    #    classifiers_p = (ctypes.c_size_t * len(classifierSet))(*classifierSet)
-
-    #    self._dll.LibCBM_Spinup(
-    #        ctypes.byref(self.err), #error struct
-    #        self.handle,
-    #        pools_p,
-    #        classifiers_p,
-    #        len(classifierSet),
-    #        spatial_unit_id,
-    #        age,
-    #        delay,
-    #        0.0 if mean_annual_temp is None else mean_annual_temp,
-    #        mean_annual_temp is None,
-    #        historical_disturbance_type_id,
-    #        last_pass_disturbance_type_id,
-    #        random_return_interval,
-    #        use_cache
-    #        )
-
-    #    if self.err.Error != 0:
-    #        raise RuntimeError(self.err.getErrorMessage())
-
-    #    return pools
-
-    #def Step(self, pools, classifierSet, age, spatial_unit_id,
-    #         lastDisturbanceType, timeSinceLastDisturbance,
-    #         disturbance_type_id=0, mean_annual_temp=None,
-    #         get_raw_flux=False):
-
-    #    pools_p = pools.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-    #    pools_t1 = np.ndarray((self.PoolCount,))
-    #    pools_t1_p = pools_t1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-
-    #    classifiers_p = (ctypes.c_size_t * len(classifierSet))(*classifierSet)
-
-    #    raw_flux_p = None
-    #    if get_raw_flux:
-    #        raw_flux_p = (LibCBM_CoordinateMatrix * self.NProcesses) \
-    #            (*[LibCBM_CoordinateMatrix(128) for x in xrange(self.NProcesses)])
-    #    else:
-    #        raw_flux_p = ctypes.cast(ctypes.c_void_p(0), ctypes.POINTER(LibCBM_CoordinateMatrix))
-
-    #    fluxIndicators = np.ndarray((self.NFluxIndicators,))
-    #    fluxIndicators_p = fluxIndicators.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
-
-    #    self._dll.LibCBM_Step(
-    #        ctypes.byref(self.err), #error struct
-    #        self.handle,
-    #        pools_p,
-    #        pools_t1_p,
-    #        classifiers_p,
-    #        len(classifierSet),
-    #        age,
-    #        spatial_unit_id,
-    #        lastDisturbanceType,
-    #        timeSinceLastDisturbance,
-    #        0.0 if mean_annual_temp is None else mean_annual_temp,
-    #        mean_annual_temp is None,
-    #        disturbance_type_id,
-    #        fluxIndicators_p,
-    #        raw_flux_p)
-
-    #    return {
-    #        "Pools": pools_t1,
-    #        "FluxIndicators": fluxIndicators,
-    #        "Flows": raw_flux_p
-    #        }
-

@@ -38,6 +38,7 @@ w.Initialize(
          }]
     )
 pools = np.zeros((2,27), dtype=np.double)
+pools[:,0] = 1.0
 classifiers = np.array([[1,4,7],[1,4,7]],dtype=np.int32)
 ages = np.array([0,0], dtype=np.int32)
 spus = np.array([3,3], dtype=np.int32)
@@ -56,21 +57,25 @@ rotation= np.array([0,0], dtype = np.int32)
 step= np.array([0,0], dtype = np.int32)
 lastRotationSlowC= np.array([0.0,0.0], dtype = np.double)
 
-for i in range(1250):
-    print(i)
-    w.AdvanceSpinupState(returnInterval, minRotations, maxRotations,
-                            finalAge, delay, slowPools, state, rotation, step,
-                            lastRotationSlowC)
+for i in range(100):
+    #print(i)
+    #w.AdvanceSpinupState(returnInterval, minRotations, maxRotations,
+    #                        finalAge, delay, slowPools, state, rotation, step,
+    #                        lastRotationSlowC)
 
-    print(step)
+    #print(step)
     op1 = w.GetMerchVolumeGrowthAndDeclineOps(
         classifiers, pools, ages, spus, last_dist, last_dist, growth_mult)
-    op2 = w.GetTurnoverOps(spus)
-    op3 = w.GetDecayOps(spus)
-    op4 = w.GetDisturbanceOps(spus, dist)
+
+    #op2 = w.GetTurnoverOps(spus)
+    #op3 = w.GetDecayOps(spus)
+    #op4 = w.GetDisturbanceOps(spus, dist)
+    w.ComputePools([1], pools)
+    ages = ages + 1
+    print(pools[1,1:6])
 
 
-
+input()
 
 
 
