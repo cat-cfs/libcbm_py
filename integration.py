@@ -57,7 +57,8 @@ rotation= np.array([0,0], dtype = np.int32)
 step= np.array([0,0], dtype = np.int32)
 lastRotationSlowC= np.array([0.0,0.0], dtype = np.double)
 
-for i in range(100):
+saved_pools = None
+for i in range(300):
     #print(i)
     #w.AdvanceSpinupState(returnInterval, minRotations, maxRotations,
     #                        finalAge, delay, slowPools, state, rotation, step,
@@ -70,12 +71,14 @@ for i in range(100):
     #op2 = w.GetTurnoverOps(spus)
     #op3 = w.GetDecayOps(spus)
     #op4 = w.GetDisturbanceOps(spus, dist)
-    w.ComputePools([1], pools)
+    w.ComputePools([op1[0]["id"]], pools)
     ages = ages + 1
-    print(pools[1,1:6])
+    if saved_pools is None:
+        saved_pools = np.matrix(pools[1,0:12])
+    else:
+        saved_pools = np.vstack((saved_pools, np.matrix(pools[1,0:12])))
 
-
-input()
+np.savetxt("out.csv", saved_pools, delimiter=",")
 
 
 

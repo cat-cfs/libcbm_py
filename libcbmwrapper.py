@@ -323,10 +323,10 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-       return {
-           opIds[0]: "Growth",
-           opIds[1]: "OvermatureDecline"
-           }
+       return [
+           {"id": opIds[0], "name": "Growth"},
+           {"id": opIds[1], "name": "OvermatureDecline"}
+           ]
 
     def GetTurnoverOps(self, spatial_units):
         if not self.handle:
