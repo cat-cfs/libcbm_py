@@ -44,6 +44,14 @@ class LibCBM_Matrix_Int(ctypes.Structure):
             raise ValueError("matrix must be c contiguous and of type np.int32")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
+class LibCBM_Table(ctypes.Structure):
+    _fields_ = [("table_name", ctypes.c_size_t),
+                ("column_names", ctypes.c_char_p),
+                ("values", LibCBM_Matrix)]
+
+    def __init__(self, table_name, col_names, matrix):
+        pass
+
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
                 ("Message", ctypes.ARRAY(ctypes.c_byte, 1000))]
@@ -108,27 +116,30 @@ class LibCBM_MerchVolumeCurve(ctypes.Structure):
 
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
-        self.NFluxIndicators = 0
-        self.PoolCount = 27
-        self.NProcesses = 9
         self.handle = False
         self._dll = ctypes.CDLL(dllpath)
         self.err = LibCBM_Error();
 
         self._dll.LibCBM_Free.argtypes = (
-            ctypes.POINTER(LibCBM_Error),
-            ctypes.c_void_p)
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p # handle pointer
+        )
 
         self._dll.LibCBM_Initialize.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_char_p, # dbpath
-            ctypes.c_size_t, # random seed
+            ctypes.POINTER(ctypes.POINTER(ctypes.c_char)),# poolNames
+            ctypes.c_size_t, # nPools
             ctypes.POINTER(LibCBM_Classifier), # classifiers
             ctypes.c_size_t, # number of classifiers
             ctypes.POINTER(LibCBM_ClassifierValue), # classifier values
             ctypes.c_size_t, # number of classifier values
+        )
+
+        self._dll.LibCBM_InitializeMerchVolumeModule.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_char_p, # dbpath
             ctypes.POINTER(LibCBM_MerchVolumeCurve), # merch volume curves
-            ctypes.c_size_t #number of merch vol curves
+            ctypes.c_size_t # number of merch vol curves
         )
 
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
@@ -145,7 +156,7 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
-            )
+        )
 
         self._dll.LibCBM_ComputePools.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
@@ -194,7 +205,6 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #disturbance type id
             )
-
 
     def __enter__(self):
         return self
