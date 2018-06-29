@@ -68,52 +68,6 @@ class LibCBM_Error(ctypes.Structure):
         msg = ctypes.cast(getattr(self, "Message"), ctypes.c_char_p).value
         return msg
 
-class LibCBM_Classifier(ctypes.Structure):
-    _fields_ = [("id", ctypes.c_size_t),
-                ("name", ctypes.c_char_p)]
-    
-    def __init__(self, id, name):
-        setattr(self,"id",id)
-        setattr(self,"name", ctypes.c_char_p(name))
-
-class LibCBM_ClassifierValue(ctypes.Structure):
-    _fields_ = [("id", ctypes.c_size_t),
-                ("classifier_id", ctypes.c_size_t),
-                ("name", ctypes.c_char_p),
-                ("description", ctypes.c_char_p)]
-
-    def __init__(self, id, classifier_id, name, description):
-        setattr(self,"id",id)
-        setattr(self,"classifier_id", classifier_id)
-        setattr(self,"name", ctypes.c_char_p(name))
-        setattr(self,"description", ctypes.c_char_p(description))
-
-class LibCBM_MerchVolumeComponent(ctypes.Structure):
-    _fields_ = [("species_id", ctypes.c_int),
-                ("num_values", ctypes.c_size_t),
-                ("age", ctypes.POINTER(ctypes.c_int)),
-                ("volume", ctypes.POINTER(ctypes.c_double))]
-
-    def __init__(self, species_id, ages, volumes):
-        setattr(self, "species_id", species_id)
-        setattr(self, "num_values", len(ages))
-        setattr(self, "age", (ctypes.c_int * len(ages))(*ages))
-        setattr(self, "volume", (ctypes.c_double * len(volumes))(*volumes))
-
-class LibCBM_MerchVolumeCurve(ctypes.Structure):
-    _fields_ = [("classifierValueIds", ctypes.POINTER(ctypes.c_size_t)),
-                ("nClassifierValueIds", ctypes.c_size_t),
-                ("SoftwoodComponent", ctypes.POINTER(LibCBM_MerchVolumeComponent)),
-                ("HardwoodComponent", ctypes.POINTER(LibCBM_MerchVolumeComponent))]
-
-    def __init__(self, classifierValueIds, softwoodComponent, hardwoodComponent):
-        setattr(self, "classifierValueIds", 
-                (ctypes.c_size_t * len(classifierValueIds))
-                (*classifierValueIds))
-        setattr(self, "nClassifierValueIds", len(classifierValueIds))
-        setattr(self, "SoftwoodComponent", ctypes.pointer(softwoodComponent))
-        setattr(self, "HardwoodComponent", ctypes.pointer(hardwoodComponent))
-
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
         self.handle = False
@@ -127,19 +81,7 @@ class LibCBMWrapper(object):
 
         self._dll.LibCBM_Initialize.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_char)),# poolNames
-            ctypes.c_size_t, # nPools
-            ctypes.POINTER(LibCBM_Classifier), # classifiers
-            ctypes.c_size_t, # number of classifiers
-            ctypes.POINTER(LibCBM_ClassifierValue), # classifier values
-            ctypes.c_size_t, # number of classifier values
-        )
-
-        self._dll.LibCBM_InitializeMerchVolumeModule.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_char_p, # dbpath
-            ctypes.POINTER(LibCBM_MerchVolumeCurve), # merch volume curves
-            ctypes.c_size_t # number of merch vol curves
+            ctypes.POINTER(ctypes.POINTER(ctypes.c_char))# config json string
         )
 
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
@@ -216,9 +158,7 @@ class LibCBMWrapper(object):
             if err.Error != 0:
                 raise RuntimeError(err.getErrorMessage())
 
-    def Initialize(self, dbpath, random_seed,
-                   classifiers, classifierValues,
-                   merchVolumeCurves):
+    def Initialize(self, config):
 
         _classifiers = [LibCBM_Classifier(x["id"], x["name"])
                        for x in classifiers]
