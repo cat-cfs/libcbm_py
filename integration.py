@@ -1,42 +1,79 @@
-import os
-from libcbmwrapper import LibCBMWrapper
+import os, json
 import numpy as np
+from cbm_defaults import load_cbm_parameters
+
+from libcbmwrapper import LibCBMWrapper
 
 os.chdir(r"C:\dev\LibCBM\LibCBM\x64\Debug")
 w = LibCBMWrapper(dllpath=r"C:\dev\LibCBM\LibCBM\x64\Debug\LibCBM.dll")
-w.Initialize(
-    dbpath = b"C:\dev\LibCBM\LibCBM\LibCBM\cbm_defaults.db",
-    random_seed = 1,
-    classifiers = [
-        {"id": 1, "name": b"a"},
-        {"id": 2, "name": b"b"},
-        {"id": 3, "name": b"c"}
+
+dbpath = r"C:\dev\LibCBM\cbm_defaults.db"
+
+configuration = {
+    "pools": [
+        "Input",
+        "SoftwoodMerch",
+        "SoftwoodFoliage",
+        "SoftwoodOther",
+        "SoftwoodCoarseRoots",
+        "SoftwoodFineRoots",
+        "HardwoodMerch",
+        "HardwoodFoliage",
+        "HardwoodOther",
+        "HardwoodCoarseRoots",
+        "HardwoodFineRoots",
+        "AboveGroundVeryFastSoil",
+        "BelowGroundVeryFastSoil",
+        "AboveGroundFastSoil",
+        "BelowGroundFastSoil",
+        "MediumSoil",
+        "AboveGroundSlowSoil",
+        "BelowGroundSlowSoil",
+        "SoftwoodStemSnag",
+        "SoftwoodBranchSnag",
+        "HardwoodStemSnag",
+        "HardwoodBranchSnag",
+        "CO2",
+        "CH4",
+        "CO",
+        "Products",
+        ],
+    "classifiers": [
+        {"id": 1, "name": "a"},
+        {"id": 2, "name": "b"},
+        {"id": 3, "name": "c"}
+        ],
+    "classifier_values": [
+        {"id": 1, "classifier_id": 1, "value": "a1", "description": "a1"},
+        {"id": 2, "classifier_id": 1, "value": "a2", "description": "a2"},
+        {"id": 3, "classifier_id": 1, "value": "a3", "description": "a3"},
+        {"id": 4, "classifier_id": 2, "value": "b1", "description": "b1"},
+        {"id": 5, "classifier_id": 2, "value": "b2", "description": "b2"},
+        {"id": 6, "classifier_id": 2, "value": "b3", "description": "b3"},
+        {"id": 7, "classifier_id": 3, "value": "c1", "description": "c1"},
+        {"id": 8, "classifier_id": 3, "value": "c2", "description": "c2"},
+        {"id": 9, "classifier_id": 3, "value": "c3", "description": "c3"},
     ],
-    classifierValues = [
-        {"id": 1, "classifier_id": 1, "name": b"a1", "description": b"a1"},
-        {"id": 2, "classifier_id": 1, "name": b"a2", "description": b"a2"},
-        {"id": 3, "classifier_id": 1, "name": b"a3", "description": b"a3"},
-        {"id": 4, "classifier_id": 2, "name": b"b1", "description": b"b1"},
-        {"id": 5, "classifier_id": 2, "name": b"b2", "description": b"b2"},
-        {"id": 6, "classifier_id": 2, "name": b"b3", "description": b"b3"},
-        {"id": 7, "classifier_id": 3, "name": b"c1", "description": b"c1"},
-        {"id": 8, "classifier_id": 3, "name": b"c2", "description": b"c2"},
-        {"id": 9, "classifier_id": 3, "name": b"c3", "description": b"c3"},
-    ],
-    merchVolumeCurves = [
-        {"classifier_value_ids": [1,4,7],
-         "sw_component": {
-             "species_id": 14,
-             "ages": [10,20,30,40],
-             "volumes": [10,20,30,40]
-          },
-         "hw_component": {
-             "species_id": 14,
-             "ages": [10,20,30,40],
-             "volumes": [10,20,30,40]
-          },
-         }]
-    )
+    "merch_volume_to_biomass": {
+        "db_path": dbpath,
+        "merch_volume_curves": [
+            {
+                "classifier_set": { 
+                    "type": "name",
+                    "values": ["a1","b1", "?"]
+                },
+                "softwood_component": {
+                    "species_id": 10,
+                    "age_volume_pairs":[[0,0.00],[5,0.01],[20,20],[50,100]]
+                }
+            }
+        ]
+    }
+}
+configuration["cbm_defaults"] = load_cbm_parameters(dbpath)
+
+configString = json.dumps(configuration)#, ensure_ascii=True)
+w.Initialize(configString)
 pools = np.zeros((2,27), dtype=np.double)
 pools[:,0] = 1.0
 classifiers = np.array([[1,4,7],[1,4,7]],dtype=np.int32)

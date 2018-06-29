@@ -81,7 +81,7 @@ class LibCBMWrapper(object):
 
         self._dll.LibCBM_Initialize.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.POINTER(ctypes.POINTER(ctypes.c_char))# config json string
+            ctypes.c_char_p # config json string
         )
 
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
@@ -160,44 +160,11 @@ class LibCBMWrapper(object):
 
     def Initialize(self, config):
 
-        _classifiers = [LibCBM_Classifier(x["id"], x["name"])
-                       for x in classifiers]
-
-        _classifierValues = [
-            LibCBM_ClassifierValue(
-                x["id"],
-                x["classifier_id"],
-                x["name"],
-                x["description"])
-            for x in classifierValues
-        ]
-
-        _merchVolumeCurves = [
-            LibCBM_MerchVolumeCurve(
-                x["classifier_value_ids"],
-                LibCBM_MerchVolumeComponent(
-                    x["sw_component"]["species_id"],
-                    x["sw_component"]["ages"],
-                    x["sw_component"]["volumes"]),
-                LibCBM_MerchVolumeComponent(
-                    x["hw_component"]["species_id"],
-                    x["hw_component"]["ages"],
-                    x["hw_component"]["volumes"])
-                )
-           for x in merchVolumeCurves
-         ]
-
-        _classifiers_p = (LibCBM_Classifier*len(_classifiers))(*_classifiers)
-        _classifierValue_p = (LibCBM_ClassifierValue*len(_classifierValues))(*_classifierValues)
-        _merchVolumeCurves_p = (LibCBM_MerchVolumeCurve*len(_merchVolumeCurves))(*_merchVolumeCurves)
+        p_config = ctypes.c_char_p(config.encode("UTF-8"));
 
         self.handle = self._dll.LibCBM_Initialize(
             ctypes.byref(self.err), #error struct
-            dbpath, #path to cbm defaults database
-            1, #random seed
-            _classifiers_p, len(_classifiers),
-            _classifierValue_p, len(_classifierValues),
-            _merchVolumeCurves_p, len(_merchVolumeCurves)
+            p_config
             )
 
         if self.err.Error != 0:
