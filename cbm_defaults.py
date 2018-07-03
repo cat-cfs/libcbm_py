@@ -1,5 +1,6 @@
 #loads cbm defaults into configuration dictionary format
 import sqlite3
+
 queries = {
     "decay_parameters" : """
         select
@@ -116,3 +117,10 @@ def load_cbm_parameters(sqlitePath):
 
     return result
 
+def load_cbm_pools(sqlitePath):
+    result = []
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute("select name from pool order by id"):
+            result.append(row[0])
+        return result
