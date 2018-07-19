@@ -84,6 +84,18 @@ class LibCBMWrapper(object):
             ctypes.c_char_p # config json string
         )
 
+        self._dll.LibCBM_Allocate_Op.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t #n ops
+        )
+
+        self._dll.LibCBM_Free_Op.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, # handle
+            ctypes.c_size_t # op id
+        )
+
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
@@ -224,7 +236,11 @@ class LibCBMWrapper(object):
        n = pools.shape[0]
        poolMat = LibCBM_Matrix(pools)
        classifiersMat = LibCBM_Matrix_Int(classifiers)
-       opIds = (ctypes.c_size_t * (2))(*[0,0])
+       _opIds = [
+           self._dll.LibCBM_Allocate_Op(ctypes.byref(self.err), self.handle, n),
+           self._dll.LibCBM_Allocate_Op(ctypes.byref(self.err), self.handle, n)
+        ]
+       opIds = (ctypes.c_size_t * (2))(*_opIds)
        self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps(
            ctypes.byref(self.err),
            self.handle,
@@ -309,3 +325,4 @@ class LibCBMWrapper(object):
         return {
            opIds[0]: "Disturbance"
            }
+
