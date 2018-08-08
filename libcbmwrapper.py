@@ -44,13 +44,14 @@ class LibCBM_Matrix_Int(ctypes.Structure):
             raise ValueError("matrix must be c contiguous and of type np.int32")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
-class LibCBM_Table(ctypes.Structure):
-    _fields_ = [("table_name", ctypes.c_size_t),
-                ("column_names", ctypes.c_char_p),
-                ("values", LibCBM_Matrix)]
+class LibCBM_DisturbanceEvent(ctypes.Structure):
+    _fields_ = [('index', ctypes.c_ssize_t),
+                ('disturbance_type_id', ctypes.c_int),
+                ('regeneration_delay', ctypes.c_int),
+                ('reset_age', ctypes.c_int),
+                ('transition_classifiers', ctypes.POINTER(ctypes.c_ssize_t)),
+                ('n_transition_classifiers', ctypes.c_ssize_t)]
 
-    def __init__(self, table_name, col_names, matrix):
-        pass
 
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
@@ -95,6 +96,31 @@ class LibCBMWrapper(object):
             ctypes.c_void_p, # handle
             ctypes.c_size_t # op id
         )
+        
+        self._dll.LibCBM_ComputePools.argtypes = (
+                ctypes.POINTER(LibCBM_Error), # error struct
+                ctypes.c_void_p, #handle
+                ctypes.POINTER(ctypes.c_size_t), #op ids
+                ctypes.c_size_t, #number of op ids
+                LibCBM_Matrix #pools
+            )
+
+        #self._dll.LibCBM_ComputeFlux.argtypes = (
+
+        self._dll.LibCBM_AdvanceStandState.argtypes = (
+                ctypes.POINTER(LibCBM_Error), # error struct
+                ctypes.c_void_p, #handle
+                ctypes.POINTER(LibCBM_DisturbanceEvent), #events
+                ctypes.c_size_t, #n_events
+                ctypes.c_size_t, #n stands
+                LibCBM_Matrix_Int, #classifiers
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last_disturbance_type (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_last_disturbance (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_land_class_change (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # growth_enabled (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # land_class (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
+            )
 
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
@@ -112,18 +138,12 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
         )
 
-        self._dll.LibCBM_ComputePools.argtypes = (
-                ctypes.POINTER(LibCBM_Error), # error struct
-                ctypes.c_void_p, #handle
-                ctypes.POINTER(ctypes.c_size_t), #op ids
-                ctypes.c_size_t, #number of op ids
-                LibCBM_Matrix #pools
-            )
+
 
         self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids (returned value)
+            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids 
             ctypes.c_size_t, #n stands
             LibCBM_Matrix_Int, #classifiers
             LibCBM_Matrix, #pools
@@ -137,27 +157,27 @@ class LibCBMWrapper(object):
         self._dll.LibCBM_GetTurnoverOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids (returned value))
+            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")) #spatial unit id (length n)
 
         self._dll.LibCBM_GetDecayOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,3), #op_ids (returned value))
+            ctypes.ARRAY(ctypes.c_size_t,3), #op_ids
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
-            ctypes.POINTER(ctypes.c_double), #mean annual temp, not using ndpointer becuase we are allowing null
-            ctypes.c_bool #use mean annual temp 
+            ctypes.POINTER(ctypes.c_double) #mean annual temp, not using ndpointer becuase we are allowing null
             )
 
         self._dll.LibCBM_GetDisturbanceOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,1), #op_ids (returned value))
+            ctypes.ARRAY(ctypes.c_size_t,1), #op_id
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #disturbance type id
+            ctypes.POINTER(LibCBM_DisturbanceEvent), #disturbance events
+            ctypes.c_size_t #n_events
             )
 
     def __enter__(self):
@@ -182,6 +202,30 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
+    def AllocateOp(self, n):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        op_id = self._dll.LibCBM_Allocate_Op(
+            ctypes.byref(self.err),
+            self.handle, n)
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+        return op_id
+
+    def FreeOp(self, op_id):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        self._dll.LibCBM_Free_Op(
+            ctypes.byref(self.err),
+            self.handle, op_id)
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
                            lastRotationSlowC):
@@ -203,7 +247,6 @@ class LibCBMWrapper(object):
             rotation,
             step,
             lastRotationSlowC)
-        
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -227,7 +270,7 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-    def GetMerchVolumeGrowthAndDeclineOps(self,
+    def GetMerchVolumeGrowthAndDeclineOps(self, growth_op, overmature_decline_op,
         classifiers, pools, ages, spatial_units, last_dist_type,
         time_since_last_dist, growth_multipliers):
 
@@ -236,11 +279,7 @@ class LibCBMWrapper(object):
        n = pools.shape[0]
        poolMat = LibCBM_Matrix(pools)
        classifiersMat = LibCBM_Matrix_Int(classifiers)
-       _opIds = [
-           self._dll.LibCBM_Allocate_Op(ctypes.byref(self.err), self.handle, n),
-           self._dll.LibCBM_Allocate_Op(ctypes.byref(self.err), self.handle, n)
-        ]
-       opIds = (ctypes.c_size_t * (2))(*_opIds)
+       opIds = (ctypes.c_size_t * (2))(*[growth_op,overmature_decline_op])
        self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps(
            ctypes.byref(self.err),
            self.handle,
@@ -256,12 +295,8 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-       return [
-           {"id": opIds[0], "name": "Growth"},
-           {"id": opIds[1], "name": "OvermatureDecline"}
-           ]
-
-    def GetTurnoverOps(self, spatial_units):
+    def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
+                       spatial_units):
         if not self.handle:
            raise AssertionError("dll not initialized")
 
@@ -278,16 +313,15 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-        return {
-           opIds[0]: "BiomassTurnover",
-           opIds[1]: "SnagTurnover"
-           }
-
-    def GetDecayOps(self, spatial_units, mean_annual_temp=None):
+    def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
+                   spatial_units, mean_annual_temp=None):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
-        opIds = (ctypes.c_size_t * (3))(*[0,0,0])
+        opIds = (ctypes.c_size_t * (3))(*[
+            dom_decay_op,
+            slow_decay_op,
+            slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(
            ctypes.byref(self.err),
            self.handle,
@@ -295,23 +329,16 @@ class LibCBMWrapper(object):
            n,
            spatial_units,
            None if mean_annual_temp is None else #null pointer if no mean annual temp specified
-                mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-           False if mean_annual_temp is None else True)
+                mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-        return {
-           opIds[0]: "DomDecay",
-           opIds[1]: "SlowDecay",
-           opIds[2]: "SlowMixing",
-           }
-
-    def GetDisturbanceOps(self, spatial_units, disturbance_types):
+    def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_types):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
-        opIds = (ctypes.c_size_t * (1))(*[0])
+        opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
         
         self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
            self.handle,
@@ -322,7 +349,5 @@ class LibCBMWrapper(object):
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
-        return {
-           opIds[0]: "Disturbance"
-           }
+
 
