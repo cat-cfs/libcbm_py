@@ -18,19 +18,8 @@ queries = {
     "slow_mixing_rate": "select rate from slow_mixing_rate;",
 
     "mean_annual_temp": """
-        select spatial_unit.id as spatial_unit_id, climate.mean_annual_temperature
-        from spatial_unit inner join climate on
-        spatial_unit.climate_time_series_id = climate.climate_time_series_id;
-    """,
-
-    "spinup_parameters": """
-        select spatial_unit.id as spatial_unit_id,
-        spinup_parameter.max_rotations,
-        spinup_parameter.min_rotations,
-        spinup_parameter.return_interval
-        from spatial_unit
-        inner join spinup_parameter on
-        spatial_unit.spinup_parameter_id = spinup_parameter.id;
+        select spatial_unit.id as spatial_unit_id, spatial_unit.mean_annual_temperature
+        from spatial_unit;
     """,
 
     "turnover_parameters": """
@@ -64,14 +53,14 @@ queries = {
 
     "growth_multipliers": """
         select
-        disturbance_type_growth_multiplier_series.disturbance_type_id,
+        growth_multiplier_series.disturbance_type_id,
         growth_multiplier_value.forest_type_id,
         growth_multiplier_value.time_step,
         growth_multiplier_value.value
-        from disturbance_type_growth_multiplier_series
+        from growth_multiplier_series
         inner join growth_multiplier_value on
         growth_multiplier_value.growth_multiplier_series_id =
-        disturbance_type_growth_multiplier_series.growth_multiplier_series_id
+        growth_multiplier_series.id
     """,
 
     "land_classes": """
@@ -83,21 +72,22 @@ queries = {
     "land_class_transitions": """
         select disturbance_type.id as disturbance_type_id,
         disturbance_type.transition_land_class_id
-        from disturbance_type;
+        from disturbance_type
+        where disturbance_type.transition_land_class_id is not null
     """,
 
     "spatial_units": "select spatial_unit.id as spatial_unit_id, spatial_unit.eco_boundary_id from spatial_unit;",
 
-    "random_return_interval_parameters": """
+    "random_return_interval": """
         select eco_boundary.id as eco_boundary_id,
-        random_return_interval_parameter.a_Nu,
-        random_return_interval_parameter.b_Nu,
-        random_return_interval_parameter.a_Lambda,
-        random_return_interval_parameter.b_Lambda
+        random_return_interval.a_Nu,
+        random_return_interval.b_Nu,
+        random_return_interval.a_Lambda,
+        random_return_interval.b_Lambda
         from eco_boundary inner join
-        random_return_interval_parameter on
-        eco_boundary.random_return_interval_parameter_id =
-        random_return_interval_parameter.id;
+        random_return_interval on
+        eco_boundary.random_return_interval_id =
+        random_return_interval.id;
     """
 }
 
@@ -121,6 +111,6 @@ def load_cbm_pools(sqlitePath):
     result = []
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
-        for row in cursor.execute("select name from pool order by id"):
+        for row in cursor.execute("select code from pool order by id"):
             result.append(row[0])
         return result
