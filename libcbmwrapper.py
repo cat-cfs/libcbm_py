@@ -51,6 +51,20 @@ class LibCBM_DisturbanceEvent(ctypes.Structure):
                 ('reset_age', ctypes.c_int),
                 ('transition_classifiers', ctypes.POINTER(ctypes.c_ssize_t)),
                 ('n_transition_classifiers', ctypes.c_ssize_t)]
+    
+    def __init__(self, index, disturbance_type_id, regeneration_delay=0, reset_age=0, transition_classifiers=None):
+        self.index = index
+        self.disturbance_type_id = disturbance_type_id
+        self.regeneration_delay = regeneration_delay
+        self.reset_age = reset_age
+        if not transition_classifiers is None:
+            self.n_transition_classifiers = len(transition_classifiers)
+            self.transition_classifiers = ctypes.cast(
+                (ctypes.c_size_t* self.n_transition_classifiers)(*transition_classifiers),
+                ctypes.POINTER(ctypes.c_ssize_t))
+        else:
+            self.n_transition_classifiers = 0
+            self.transition_classifiers = None
 
 
 class LibCBM_Error(ctypes.Structure):
@@ -334,18 +348,29 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-    def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_types):
+    def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_events):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
         
+        c_dist_events = [
+            LibCBM_DisturbanceEvent(
+                x["index"],
+                x["disturbance_type_id"],
+                x["regeneration_delay"],
+                x["reset_age"],
+                x["transition_classifiers"]) for x in disturbance_events]
+
+        c_dist_events_p = (LibCBM_DisturbanceEvent * len(c_dist_events))(*c_dist_events)
+
         self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
            self.handle,
            opIds,
            n,
            spatial_units,
-           disturbance_types)
+           c_dist_events_p,
+           len(c_dist_events))
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
