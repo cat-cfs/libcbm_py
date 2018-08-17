@@ -88,7 +88,23 @@ queries = {
         random_return_interval on
         eco_boundary.random_return_interval_id =
         random_return_interval.id;
+    """,
+
+    "flux_indicator_process": """
+        select flux_indicator.id as flux_indicator_id, flux_process.id as flux_process_id from flux_indicator
+        inner join flux_process on flux_process.id = flux_indicator.flux_process_id
+    """,
+
+    "flux_indicator_source": """
+        select flux_indicator.id, flux_indicator_source.pool_id from flux_indicator
+        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id
+    """,
+
+    "flux_indicator_sink": """
+        select flux_indicator.id, flux_indicator_sink.pool_id from flux_indicator
+        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id
     """
+
 }
 
 def load_cbm_parameters(sqlitePath):
