@@ -127,6 +127,39 @@ def load_cbm_pools(sqlitePath):
     result = []
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
-        for row in cursor.execute("select code from pool order by id"):
-            result.append(row[0])
+        index = 0
+        for row in cursor.execute("select code, id from pool order by id"):
+            result.append({"name": row[0], "id": row[1], "index": index})
+            index += 1
         return result
+
+def load_flux_indicators(sqlitePath):
+    result = []
+    flux_indicator_source_sql = """
+        select flux_indicator_source.pool_id from flux_indicator
+        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id 
+        where flux_indicator.id = ?"""
+    flux_indicator_sink_sql = """
+        select flux_indicator_sink.pool_id from flux_indicator
+        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id 
+        where flux_indicator.id = ?"""
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        index = 0;
+        flux_indicator_rows = list(cursor.execute("select id, flux_process_id from flux_indicator"))
+        for row in flux_indicator_rows:
+            flux_indicator = {
+                "id": row[0],
+                "index": index,
+                "process_id": row[1],
+                "source_pools": [],
+                "sink_pools": []
+            }
+            for source_pool_row in cursor.execute(flux_indicator_source_sql, (row[0],)):
+                flux_indicator["source_pools"].append(int(source_pool_row[0]))
+            for sink_pool_row in cursor.execute(flux_indicator_sink_sql, (row[0],)):
+                flux_indicator["sink_pools"].append(int(sink_pool_row[0]))
+            result.append(flux_indicator)
+            index += 1
+        return result
+
