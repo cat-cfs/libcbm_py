@@ -125,8 +125,8 @@ class LibCBMWrapper(object):
                 ctypes.POINTER(ctypes.c_size_t), #op ids
                 ctypes.POINTER(ctypes.c_size_t), #op process ids
                 ctypes.c_size_t, #number of ops
-                LibCBM_Matrix, #pools
-                LibCBM_Matrix #pools
+                LibCBM_Matrix, # pools (nstands by npools)
+                LibCBM_Matrix # flux (nstands by nfluxIndicators)
             )
 
         self._dll.LibCBM_AdvanceStandState.argtypes = (
@@ -246,6 +246,51 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
+    def ComputePools(self, ops, pools):
+
+       if not self.handle:
+           raise AssertionError("dll not initialized")
+
+       n_ops = len(ops)
+       poolMat = LibCBM_Matrix(pools)
+       ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
+       
+       self._dll.LibCBM_ComputePools(
+            ctypes.byref(self.err),
+            self.handle,
+            ops_p,
+            n_ops,
+            poolMat)
+
+       if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+    def ComputeFlux(self, ops, op_processes, pools, flux):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        n_ops = len(ops)
+        if len(op_processes) != n_ops:
+            raise ValueError("ops and op_processes must be of equal length")
+        poolMat = LibCBM_Matrix(pools)
+        fluxMat = LibCBM_Matrix(flux)
+
+        ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
+        op_process_p = ctypes.cast((ctypes.c_size_t*n_ops)(*op_processes), ctypes.POINTER(ctypes.c_size_t))
+
+        self._dll.LibCBM_ComputeFlux(
+            ctypes.byref(self.err),
+            self.handle,
+            ops_p,
+            op_process_p,
+            n_ops,
+            poolMat,
+            fluxMat)
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
+
+
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
                            lastRotationSlowC):
@@ -271,24 +316,7 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-    def ComputePools(self, ops, pools):
 
-       if not self.handle:
-           raise AssertionError("dll not initialized")
-
-       n_ops = len(ops)
-       poolMat = LibCBM_Matrix(pools)
-       ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
-       
-       self._dll.LibCBM_ComputePools(
-            ctypes.byref(self.err),
-            self.handle,
-            ops_p,
-            n_ops,
-            poolMat)
-
-       if self.err.Error != 0:
-           raise RuntimeError(self.err.getErrorMessage())
 
     def GetMerchVolumeGrowthAndDeclineOps(self, growth_op, overmature_decline_op,
         classifiers, pools, ages, spatial_units, last_dist_type,
