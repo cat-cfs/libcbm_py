@@ -119,7 +119,15 @@ class LibCBMWrapper(object):
                 LibCBM_Matrix #pools
             )
 
-        #self._dll.LibCBM_ComputeFlux.argtypes = (
+        self._dll.LibCBM_ComputeFlux.argtypes = (
+                ctypes.POINTER(LibCBM_Error), # error struct
+                ctypes.c_void_p, #handle
+                ctypes.POINTER(ctypes.c_size_t), #op ids
+                ctypes.POINTER(ctypes.c_size_t), #op process ids
+                ctypes.c_size_t, #number of ops
+                LibCBM_Matrix, #pools
+                LibCBM_Matrix #pools
+            )
 
         self._dll.LibCBM_AdvanceStandState.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
@@ -151,8 +159,6 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
         )
-
-
 
         self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
