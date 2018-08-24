@@ -290,6 +290,39 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
+    def AdvanceStandState(self, disturbance_events, classifiers,
+                          last_disturbance_type, time_since_last_disturbance,
+                          time_since_land_class_change, growth_enabled,
+                          land_class, age):
+       if not self.handle:
+           raise AssertionError("dll not initialized")
+       n = returnInterval.shape[0]
+
+       c_dist_events = [
+            LibCBM_DisturbanceEvent(
+                x["index"],
+                x["disturbance_type_id"],
+                x["regeneration_delay"],
+                x["reset_age"],
+                x["transition_classifiers"]) for x in disturbance_events]
+
+       c_dist_events_p = (LibCBM_DisturbanceEvent * len(c_dist_events))(*c_dist_events)
+       
+       self._dll.LibCBM_AdvanceSpinupState(
+            ctypes.byref(self.err),
+            self.handle,
+            c_dist_events_p,
+            len(c_dist_events),
+            classifiers.shape[0],
+            last_disturbance_type,
+            time_since_last_disturbance,
+            time_since_last_disturbance,
+            growth_enabled,
+            land_class,
+            age)
+
+       if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
 
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
