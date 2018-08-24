@@ -296,8 +296,8 @@ class LibCBMWrapper(object):
                           land_class, age):
        if not self.handle:
            raise AssertionError("dll not initialized")
-       n = returnInterval.shape[0]
-
+       n = classifiers.shape[0]
+       classifiersMat = LibCBM_Matrix_Int(classifiers)
        c_dist_events = [
             LibCBM_DisturbanceEvent(
                 x["index"],
@@ -308,15 +308,16 @@ class LibCBMWrapper(object):
 
        c_dist_events_p = (LibCBM_DisturbanceEvent * len(c_dist_events))(*c_dist_events)
        
-       self._dll.LibCBM_AdvanceSpinupState(
+       self._dll.LibCBM_AdvanceStandState(
             ctypes.byref(self.err),
             self.handle,
             c_dist_events_p,
             len(c_dist_events),
             classifiers.shape[0],
+            classifiersMat,
             last_disturbance_type,
             time_since_last_disturbance,
-            time_since_last_disturbance,
+            time_since_land_class_change,
             growth_enabled,
             land_class,
             age)
@@ -382,7 +383,7 @@ class LibCBMWrapper(object):
            raise AssertionError("dll not initialized")
 
         n = spatial_units.shape[0]
-        opIds = (ctypes.c_size_t * (2))(*[0,0])
+        opIds = (ctypes.c_size_t * (2))(*[biomass_turnover_op,snag_turnover_op])
 
         self._dll.LibCBM_GetTurnoverOps(
            ctypes.byref(self.err),
