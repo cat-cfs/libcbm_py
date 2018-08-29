@@ -160,10 +160,10 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
         )
 
-        self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps.argtypes = (
+        self._dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,2), #op_ids 
+            ctypes.ARRAY(ctypes.c_size_t,1), #op_ids 
             ctypes.c_size_t, #n stands
             LibCBM_Matrix_Int, #classifiers
             LibCBM_Matrix, #pools
@@ -352,7 +352,7 @@ class LibCBMWrapper(object):
 
 
 
-    def GetMerchVolumeGrowthAndDeclineOps(self, growth_op, overmature_decline_op,
+    def GetMerchVolumeGrowthOps(self, growth_op, 
         classifiers, pools, ages, spatial_units, last_dist_type,
         time_since_last_dist, growth_multipliers):
 
@@ -361,8 +361,8 @@ class LibCBMWrapper(object):
        n = pools.shape[0]
        poolMat = LibCBM_Matrix(pools)
        classifiersMat = LibCBM_Matrix_Int(classifiers)
-       opIds = (ctypes.c_size_t * (2))(*[growth_op,overmature_decline_op])
-       self._dll.LibCBM_GetMerchVolumeGrowthAndDeclineOps(
+       opIds = (ctypes.c_size_t * (1))(*[growth_op])
+       self._dll.LibCBM_GetMerchVolumeGrowthOps(
            ctypes.byref(self.err),
            self.handle,
            opIds,
