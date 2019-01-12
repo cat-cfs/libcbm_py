@@ -332,7 +332,7 @@ class LibCBMWrapper(object):
            raise AssertionError("dll not initialized")
        n = returnInterval.shape[0]
 
-       self._dll.LibCBM_AdvanceSpinupState(
+       n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err),
             self.handle,
             n,
@@ -350,6 +350,7 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
+       return n_finished
 
 
     def GetMerchVolumeGrowthOps(self, growth_op, 
