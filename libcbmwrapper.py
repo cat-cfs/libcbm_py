@@ -44,29 +44,6 @@ class LibCBM_Matrix_Int(ctypes.Structure):
             raise ValueError("matrix must be c contiguous and of type np.int32")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
 
-class LibCBM_DisturbanceEvent(ctypes.Structure):
-    _fields_ = [('index', ctypes.c_ssize_t),
-                ('disturbance_type_id', ctypes.c_int),
-                ('regeneration_delay', ctypes.c_int),
-                ('reset_age', ctypes.c_int),
-                ('transition_classifiers', ctypes.POINTER(ctypes.c_ssize_t)),
-                ('n_transition_classifiers', ctypes.c_ssize_t)]
-    
-    def __init__(self, index, disturbance_type_id, regeneration_delay=0, reset_age=0, transition_classifiers=None):
-        self.index = index
-        self.disturbance_type_id = disturbance_type_id
-        self.regeneration_delay = regeneration_delay
-        self.reset_age = reset_age
-        if not transition_classifiers is None:
-            self.n_transition_classifiers = len(transition_classifiers)
-            self.transition_classifiers = ctypes.cast(
-                (ctypes.c_size_t* self.n_transition_classifiers)(*transition_classifiers),
-                ctypes.POINTER(ctypes.c_ssize_t))
-        else:
-            self.n_transition_classifiers = 0
-            self.transition_classifiers = None
-
-
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
                 ("Message", ctypes.ARRAY(ctypes.c_byte, 1000))]
@@ -132,10 +109,10 @@ class LibCBMWrapper(object):
         self._dll.LibCBM_AdvanceStandState.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
                 ctypes.c_void_p, #handle
-                ctypes.POINTER(LibCBM_DisturbanceEvent), #events
-                ctypes.c_size_t, #n_events
                 ctypes.c_size_t, #n stands
                 LibCBM_Matrix_Int, #classifiers
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # disturbance_types (length n)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # transition_rule_ids (length n)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last_disturbance_type (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_last_disturbance (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_land_class_change (length n) (return value)
@@ -196,8 +173,7 @@ class LibCBMWrapper(object):
             ctypes.ARRAY(ctypes.c_size_t,1), #op_id
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
-            ctypes.POINTER(LibCBM_DisturbanceEvent), #disturbance events
-            ctypes.c_size_t #n_events
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type ids (length n)
             )
 
     def __enter__(self):
@@ -290,7 +266,7 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def AdvanceStandState(self, disturbance_events, classifiers,
+    def AdvanceStandState(self, classifiers, disturbance_types, transition_rule_ids,
                           last_disturbance_type, time_since_last_disturbance,
                           time_since_land_class_change, growth_enabled,
                           land_class, age):
@@ -298,23 +274,14 @@ class LibCBMWrapper(object):
            raise AssertionError("dll not initialized")
        n = classifiers.shape[0]
        classifiersMat = LibCBM_Matrix_Int(classifiers)
-       c_dist_events = [
-            LibCBM_DisturbanceEvent(
-                x["index"],
-                x["disturbance_type_id"],
-                x["regeneration_delay"],
-                x["reset_age"],
-                x["transition_classifiers"]) for x in disturbance_events]
 
-       c_dist_events_p = (LibCBM_DisturbanceEvent * len(c_dist_events))(*c_dist_events)
-       
        self._dll.LibCBM_AdvanceStandState(
             ctypes.byref(self.err),
             self.handle,
-            c_dist_events_p,
-            len(c_dist_events),
-            classifiers.shape[0],
+            n,
             classifiersMat,
+            disturbance_types,
+            transition_rule_ids,
             last_disturbance_type,
             time_since_last_disturbance,
             time_since_land_class_change,
@@ -417,29 +384,18 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-    def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_events):
+    def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_type_ids):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
-        
-        c_dist_events = [
-            LibCBM_DisturbanceEvent(
-                x["index"],
-                x["disturbance_type_id"],
-                x["regeneration_delay"],
-                x["reset_age"],
-                x["transition_classifiers"]) for x in disturbance_events]
-
-        c_dist_events_p = (LibCBM_DisturbanceEvent * len(c_dist_events))(*c_dist_events)
 
         self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
            self.handle,
            opIds,
            n,
            spatial_units,
-           c_dist_events_p,
-           len(c_dist_events))
+           disturbance_type_ids)
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
