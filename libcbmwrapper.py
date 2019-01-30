@@ -225,7 +225,13 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #finalAge (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #historic_disturbance_id (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #lastpass_disturbance_id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #lastpass_disturbance_id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_disturbance_type (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #growth_enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #land_class (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")  #age (length n) (return value)
             )
 
     def __enter__(self):
@@ -345,8 +351,29 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
-    def InitializeLandState(self, ):
-        pass
+    def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
+        last_disturbance_type, time_since_last_disturbance,
+        time_since_land_class_change, growth_enabled, land_class, age):
+
+        if not self.handle:
+            raise AssertionError("dll not initialized")
+        n = last_pass_disturbance.shape[0]
+        self._dll.LibCBM_InitializeLandState(
+            ctypes.byref(self.err),
+            self.handle,
+            n,
+            last_pass_disturbance,
+            delay,
+            initial_age,
+            last_disturbance_type,
+            time_since_last_disturbance,
+            time_since_land_class_change,
+            growth_enabled,
+            land_class,
+            age)
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
@@ -456,4 +483,77 @@ class LibCBMWrapper(object):
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
+    def Step(self, config, pools, flux, classifiers, spatial_unit,
+        mean_annual_temp, disturbance_types, transition_rule_ids,
+        last_disturbance_type, time_since_last_disturbance,
+        time_since_land_class_change, growth_enabled, land_class,
+        regeneration_delay, age):
 
+        p_config = ctypes.c_char_p(config.encode("UTF-8"))
+
+        n = classifiers.shape[0]
+        poolsMat = LibCBM_Matrix(pools)
+        fluxMat = LibCBM_Matrix(flux)
+        classifiersMat= LibCBM_Matrix_Int(classifiers)
+
+         #null pointer if no mean annual temp specified
+        mean_annual_temp_p = None if mean_annual_temp is None \
+            else mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        self._dll.LibCBM_Step(
+            ctypes.byref(self.err),
+            p_config,
+            n,
+            poolsMat,
+            fluxMat,
+            classifiersMat,
+            spatial_unit,
+            mean_annual_temp_p,
+            disturbance_types, transition_rule_ids,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, land_class,
+            regeneration_delay, age)
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
+
+    def Spinup(self, config, pools, classifiers, spatial_unit,
+        mean_annual_temp, returnInterval, minRotations,
+        maxRotations, finalAge, delay, historic_disturbance_id,
+        lastpass_disturbance_id, last_disturbance_type,
+        time_since_last_disturbance, time_since_land_class_change,
+        growth_enabled, land_class, age):
+
+        p_config = ctypes.c_char_p(config.encode("UTF-8"))
+
+        n = classifiers.shape[0]
+        poolsMat = LibCBM_Matrix(pools)
+        classifiersMat= LibCBM_Matrix_Int(classifiers)
+
+         #null pointer if no mean annual temp specified
+        mean_annual_temp_p = None if mean_annual_temp is None \
+            else mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
+        self._dll.LibCBM_Spinup(
+            ctypes.byref(self.err),
+            p_config,
+            n,
+            poolsMat,
+            classifiersMat,
+            spatial_unit,
+            mean_annual_temp_p,
+            returnInterval,
+            minRotations,
+            maxRotations,
+            finalAge,
+            delay,
+            historic_disturbance_id,
+            lastpass_disturbance_id,
+            last_disturbance_type,
+            time_since_last_disturbance,
+            time_since_land_class_change,
+            growth_enabled,
+            land_class,
+            age)
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
