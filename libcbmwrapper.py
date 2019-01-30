@@ -121,6 +121,21 @@ class LibCBMWrapper(object):
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
             )
 
+        self._dll.LibCBM_InitializeLandState.argtypes = (
+            types.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t, #n stands
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_pass_disturbance (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #initial_age (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_disturbance_type (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #growth_enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #land_class (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")  #age (length n) (return value)
+        )
+
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
@@ -176,6 +191,43 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type ids (length n)
             )
 
+        self._dll.LibCBM_Step.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_char_p, # config json string
+            ctypes.c_size_t, #n stands
+            LibCBM_Matrix, #pools
+            LibCBM_Matrix, #flux
+            LibCBM_Matrix_Int, #classifiers
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit (length n)
+            ctypes.POINTER(ctypes.c_double), #mean annual temp, not using ndpointer becuase we are allowing null
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance_types (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #transition_rule_ids (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_disturbance_type (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #growth_enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #land_class (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #regeneration_delay (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #age (length n) (return value)
+            )
+
+        self._dll.LibCBM_Spinup.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_char_p, # config json string
+            ctypes.c_size_t, #n stands
+            LibCBM_Matrix, #pools
+            LibCBM_Matrix_Int, #classifiers
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit (length n)
+            ctypes.POINTER(ctypes.c_double), #mean annual temp, not using ndpointer becuase we are allowing null
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #returnInterval (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #minRotations (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #maxRotations (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #finalAge (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #historic_disturbance_id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #lastpass_disturbance_id (length n)
+            )
+
     def __enter__(self):
         return self
 
@@ -197,6 +249,7 @@ class LibCBMWrapper(object):
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
+
 
     def AllocateOp(self, n):
         if not self.handle:
@@ -291,6 +344,9 @@ class LibCBMWrapper(object):
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
+
+    def InitializeLandState(self, ):
+        pass
 
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
