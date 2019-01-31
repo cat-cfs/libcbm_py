@@ -5,8 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{f31fe227-d138-4850-a19d-8612f73a2d14}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>layerclassifiers.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -31,7 +30,13 @@
     <Compile Include="cbm_defaults.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="layerclassifiers.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="libcbmwrapper.py" />
+    <Compile Include="sityield.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

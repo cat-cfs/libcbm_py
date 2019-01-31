@@ -122,7 +122,7 @@ class LibCBMWrapper(object):
             )
 
         self._dll.LibCBM_InitializeLandState.argtypes = (
-            types.POINTER(LibCBM_Error), # error struct
+            ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_pass_disturbance (length n)
