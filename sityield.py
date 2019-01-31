@@ -79,11 +79,14 @@ def read_sit_yield(path, cbm_defaults_path, num_classifiers, age_class_size,
                                               num_yields,
                                               species_ref)
 
-            result.append({
-                "classifier_set": {},
-                "softwood_component":softwood,
-                "hardwood_component":hardwood,
-                })
+            growth_curve = {"classifier_set": {"type": "name", "values": list(cset)}}
+            if softwood:
+                growth_curve["softwood_component"] = softwood
+            if hardwood:
+                growth_curve["hardwood_component"] = hardwood
+            if not softwood and not hardwood:
+                raise ValueError("curve has neither hardwood or softwood")
+            result.append(growth_curve)
 
         return result
 
