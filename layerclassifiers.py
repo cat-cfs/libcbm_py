@@ -5,6 +5,11 @@ def loadjson(path):
         data = json.load(f)
     return data
 
+def xref(data, xref):
+    for raster_code, classifier_value_id in xref.items():
+        data[data==raster_code] = classifier_value_id
+    return data
+
 def create_layer_classifiers(layer_json_paths):
     result = {} 
     result["classifiers"]=[]

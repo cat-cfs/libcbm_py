@@ -34,9 +34,15 @@ def get_grouped_components(filtered_group, age_class_size, num_yields, species_r
     return {"species_id":species_ref[leadingSpecies]["species_id"],
             "age_volume_pairs": list(zip(ages,volumes)) }
 
-def read_sit_yield(path, cbm_defaults_path, num_classifiers, age_class_size,
+def read_sit_yield(path, cbm_defaults_path, classifier_data, age_class_size,
                 locale_code="en-CA", header=True, delimiter=',' ):
     num_yields = None
+    num_classifiers = len(classifier_data)
+    unique_classifier_values = []
+    for c in sorted(classifier_data["classifiers"], key=lambda x: x["id"]):
+        values = [x for x in classifier_data["classifier_values"] if x["classifier_id"]==c["id"]]
+        unique_classifier_values.append(set([x["value"] for x in values]))
+
     species_ref = load_species_reference(cbm_defaults_path, locale_code)
     with open(path) as csvfile:
         reader = csv.reader(csvfile, delimiter = delimiter)
@@ -49,6 +55,15 @@ def read_sit_yield(path, cbm_defaults_path, num_classifiers, age_class_size,
                 "species": row[num_classifiers],
                 "volumes": [float(x) for x in row[num_classifiers+1:]]
             }
+            filtered = False
+            for i, c in enumerate(parsed_row["classifiers"]):
+                #handle cases where the yields have a superset of classifier values
+                #by filtering out any rows that have extra classifier values
+                if not c in unique_classifier_values[i] and c!="?": 
+                    filtered = True
+                    break
+            if filtered:
+                continue
             if num_yields  is None:
                 num_yields = len(parsed_row["volumes"])
             elif num_yields != len(parsed_row["volumes"]):
