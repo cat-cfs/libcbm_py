@@ -37,7 +37,7 @@ def get_grouped_components(filtered_group, age_class_size, num_yields, species_r
 def read_sit_yield(path, cbm_defaults_path, classifier_data, age_class_size,
                 locale_code="en-CA", header=True, delimiter=',' ):
     num_yields = None
-    num_classifiers = len(classifier_data)
+    num_classifiers = len(classifier_data["classifiers"])
     unique_classifier_values = []
     for c in sorted(classifier_data["classifiers"], key=lambda x: x["id"]):
         values = [x for x in classifier_data["classifier_values"] if x["classifier_id"]==c["id"]]

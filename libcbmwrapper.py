@@ -60,6 +60,9 @@ class LibCBM_Error(ctypes.Structure):
         msg = ctypes.cast(getattr(self, "Message"), ctypes.c_char_p).value
         return msg
 
+def getNullableNdarray(a, type=ctypes.c_double):
+    None if a is None else np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
+
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
         self.handle = False
@@ -161,9 +164,9 @@ class LibCBMWrapper(object):
             LibCBM_Matrix, #pools
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #stand ages (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last disturbance type (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time since last disturbance
-            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") #growth multiplier
+            ctypes.POINTER(ctypes.c_int), # (nullable) last disturbance type (length n)
+            ctypes.POINTER(ctypes.c_int), # (nullable) time since last disturbance (length n)
+            ctypes.POINTER(ctypes.c_double) # (nullable) growth multiplier (length n)
             )
 
         self._dll.LibCBM_GetTurnoverOps.argtypes = (
@@ -421,9 +424,9 @@ class LibCBMWrapper(object):
            classifiersMat, poolMat,
            ages,
            spatial_units,
-           last_dist_type,
-           time_since_last_dist,
-           growth_multipliers)
+           getNullableNdarray(last_dist_type, type = ctypes.c_int),
+           getNullableNdarray(time_since_last_dist, type = ctypes.c_int),
+           getNullableNdarray(growth_multipliers, type=ctypes.c_int))
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -461,8 +464,7 @@ class LibCBMWrapper(object):
            opIds,
            n,
            spatial_units,
-           None if mean_annual_temp is None else #null pointer if no mean annual temp specified
-                mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+           getNullableNdarray( mean_annual_temp))
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -496,9 +498,6 @@ class LibCBMWrapper(object):
         fluxMat = LibCBM_Matrix(flux)
         classifiersMat= LibCBM_Matrix_Int(classifiers)
 
-         #null pointer if no mean annual temp specified
-        mean_annual_temp_p = None if mean_annual_temp is None \
-            else mean_annual_temp.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         self._dll.LibCBM_Step(
             ctypes.byref(self.err),
             p_config,
@@ -507,7 +506,7 @@ class LibCBMWrapper(object):
             fluxMat,
             classifiersMat,
             spatial_unit,
-            mean_annual_temp_p,
+            getNullableNdarray( mean_annual_temp),
             disturbance_types, transition_rule_ids,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, land_class,
