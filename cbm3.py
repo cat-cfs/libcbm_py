@@ -1,13 +1,11 @@
 from libcbmwrapper import LibCBM_SpinupState
 import cbm_defaults
 import numpy as np
-import json
-import logging
+import json, os,logging
 class CBM3:
     def __init__(self, dll, dbpath):
         self.dll = dll
         self.dbpath = dbpath
-        self.pools = cbm_defaults.load_cbm_pools(self.dbpath)
 
         self.opNames = [
             "growth",
@@ -37,15 +35,15 @@ class CBM3:
         initialize config sets up the json configuration object passed to the underlying dll
         returns config as string, and optionally saves to specified path
         '''
-        configuration = {}
-        configuration["cbm_defaults"] = cbm_defaults.load_cbm_parameters(self.dbpath)
-        configuration["pools"] = self.pools 
-        configuration["flux_indicators"] = cbm_defaults.load_flux_indicators(self.dbpath)
-        configuration["merch_volume_to_biomass"] = merch_volume_to_biomass
-        configuration["classifiers"] = classifiers["classifiers"]
-        configuration["classifier_values"] = classifiers["classifier_values"]
-        configuration["transitions"] = transitions
-        configString = json.dumps(configuration, indent=4)#, ensure_ascii=True)
+        self.configuration = {}
+        self.configuration["cbm_defaults"] = cbm_defaults.load_cbm_parameters(self.dbpath)
+        self.configuration["pools"] = cbm_defaults.load_cbm_pools(self.dbpath)
+        self.configuration["flux_indicators"] = cbm_defaults.load_flux_indicators(self.dbpath)
+        self.configuration["merch_volume_to_biomass"] = merch_volume_to_biomass
+        self.configuration["classifiers"] = classifiers["classifiers"]
+        self.configuration["classifier_values"] = classifiers["classifier_values"]
+        self.configuration["transitions"] = transitions
+        configString = json.dumps(self.configuration, indent=4)#, ensure_ascii=True)
         if save_path:
             with open(save_path, 'w') as configfile:
                 configfile.write(configString)
@@ -58,6 +56,7 @@ class CBM3:
         '''
         with open(path, 'r') as configfile:
             configString = configfile.read()
+            self.configuration = json.loads(configString)
         return configString
 
     def promoteScalar(self, value, size, dtype):
@@ -72,11 +71,12 @@ class CBM3:
 
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
-              return_interval, min_rotations, max_rotations, delay):
+              return_interval, min_rotations, max_rotations, delay,
+              debug_output_path = None):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
         slow_pools_indices = [
-            x["index"] for x in self.pools 
+            x["index"] for x in self.configuration["pools"] 
             if x["name"] in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]]
         #allocate working variables
         age = np.zeros(nstands, dtype=np.int32)
@@ -115,6 +115,18 @@ class CBM3:
             "disturbance"
             ]
 
+        if debug_output_path:
+            with open(debug_output_path, 'w') as debug_file:
+                debug_file.write(
+                    ",".join(
+                    ["id", 
+                     ",".join([x["name"] for x in self.configuration["classifiers"]]),
+                     ",".join([x["name"] for x in self.configuration["pools"]]),
+                     "inventory_age", "spatial_unit", "historic_disturbance_type",
+                     "last_pass_disturbance_type", "return_interval", "min_rotations",
+                     "max_rotations", "delay", "age", "slowPools", "spinup_state",
+                     "rotation", "step", "lastRotationSlowC", "disturbance_types"]) + os.linesep)
+
         while (True):
             logging.info("AdvanceSpinupState")
             n_finished = self.dll.AdvanceSpinupState(return_interval, min_rotations, max_rotations, inventory_age, delay, 
@@ -149,6 +161,17 @@ class CBM3:
 
             #update the slow pools which are fed back into the spinup state
             slowPools = pools[:,slow_pools_indices[0]] + pools[:,slow_pools_indices[1]]
+
+            if debug_output_path:
+                with open(debug_output_path, 'ab') as debug_file:
+                    iteration_data = np.column_stack((
+                        np.arange(1, classifiers.shape[0]+1),
+                        classifiers, pools, inventory_age, spatial_unit,
+                        historic_disturbance_type, last_pass_disturbance_type,
+                        return_interval, min_rotations, max_rotations, delay,
+                        age, slowPools, spinup_state, rotation, step,
+                        lastRotationSlowC, disturbance_types))
+                    np.savetxt(debug_file, iteration_data, delimiter=",")
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
