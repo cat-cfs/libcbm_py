@@ -1,11 +1,9 @@
 from libcbmwrapper import LibCBM_SpinupState
-import cbm_defaults
 import numpy as np
 import json, os,logging
 class CBM3:
-    def __init__(self, dll, dbpath):
+    def __init__(self, dll):
         self.dll = dll
-        self.dbpath = dbpath
 
         self.opNames = [
             "growth",
@@ -30,15 +28,17 @@ class CBM3:
     def initialize(self, config):
         self.dll.Initialize(config)
 
-    def initialize_config(self, merch_volume_to_biomass, classifiers, transitions, save_path=None):
+    def initialize_config(self, cbm_defaults, pools, flux_indicators,
+                         merch_volume_to_biomass, classifiers, transitions,
+                         save_path=None):
         '''
         initialize config sets up the json configuration object passed to the underlying dll
         returns config as string, and optionally saves to specified path
         '''
         self.configuration = {}
-        self.configuration["cbm_defaults"] = cbm_defaults.load_cbm_parameters(self.dbpath)
-        self.configuration["pools"] = cbm_defaults.load_cbm_pools(self.dbpath)
-        self.configuration["flux_indicators"] = cbm_defaults.load_flux_indicators(self.dbpath)
+        self.configuration["cbm_defaults"] = cbm_defaults
+        self.configuration["pools"] = pools
+        self.configuration["flux_indicators"] = flux_indicators
         self.configuration["merch_volume_to_biomass"] = merch_volume_to_biomass
         self.configuration["classifiers"] = classifiers["classifiers"]
         self.configuration["classifier_values"] = classifiers["classifier_values"]
@@ -64,6 +64,8 @@ class CBM3:
         if the specified value is scalar promote it to a numpy array filled with the scalar value
         otherwise return the value
         '''
+        if value is None:
+           return None
         if isinstance(value, np.ndarray):
             return value
         else:
@@ -71,8 +73,8 @@ class CBM3:
 
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
-              return_interval, min_rotations, max_rotations, delay,
-              debug_output_path = None):
+               return_interval, min_rotations, max_rotations, delay,
+               mean_annual_temp, debug_output_path = None):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
         slow_pools_indices = [
@@ -94,15 +96,17 @@ class CBM3:
         min_rotations = self.promoteScalar(min_rotations, nstands, dtype=np.int32)
         max_rotations = self.promoteScalar(max_rotations, nstands, dtype=np.int32)
         delay = self.promoteScalar(delay, nstands, dtype=np.int32)
-
+        mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.float)
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
         logging.info("GetTurnoverOps")
-        self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"], spatial_unit)
+        self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"],
+                                spatial_unit)
 
         logging.info("GetDecayOps")
-        self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"], spatial_unit)
+        self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"],
+            ops["slow_mixing"], spatial_unit, mean_annual_temp)
 
         opSchedule = [
             "growth",
@@ -125,12 +129,15 @@ class CBM3:
                      "inventory_age", "spatial_unit", "historic_disturbance_type",
                      "last_pass_disturbance_type", "return_interval", "min_rotations",
                      "max_rotations", "delay", "age", "slowPools", "spinup_state",
-                     "rotation", "step", "lastRotationSlowC", "disturbance_types"]) + os.linesep)
+                     "rotation", "step", "lastRotationSlowC", "disturbance_types"])
+                   + "\n")
 
         while (True):
             logging.info("AdvanceSpinupState")
-            n_finished = self.dll.AdvanceSpinupState(return_interval, min_rotations, max_rotations, inventory_age, delay, 
-                                    slowPools, spinup_state, rotation, step, lastRotationSlowC)
+            n_finished = self.dll.AdvanceSpinupState(
+                return_interval, min_rotations, max_rotations, inventory_age,
+                delay, slowPools, spinup_state, rotation, step,
+                lastRotationSlowC)
             if n_finished == nstands:
                 break
             logging.info("GetMerchVolumeGrowthOps")
@@ -175,3 +182,66 @@ class CBM3:
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
+
+    def init(self, last_pass_disturbance_type, delay, inventory_age,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, land_class, age):
+
+        self.dll.InitializeLandState(last_pass_disturbance_type, delay,
+            inventory_age, last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, land_class, age)
+
+    def step(self, pools, flux, classifiers, age, disturbance_types,
+            spatial_unit, mean_annual_temp, transition_rule_ids,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, land_class,
+            regeneration_delay, growth_multipliers):
+
+        pools[:,0] = 1.0
+        nstands = pools.shape[0]
+
+        spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
+        mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.int32)
+
+        logging.info("AllocateOp")
+        ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
+
+        opSchedule = [
+            "disturbance"
+            "growth",
+            "biomass_turnover",
+            "snag_turnover",
+            "growth",
+            "dom_decay",
+            "slow_decay",
+            "slow_mixing"
+            ]
+
+        logging.info("AdvanceStandState")
+        self.dll.AdvanceStandState(classifiers, disturbance_types,
+            transition_rule_ids, last_disturbance_type,
+            time_since_last_disturbance, time_since_land_class_change,
+            growth_enabled, land_class, regeneration_delay, age)
+
+        growth_mult = np.where(growth_enabled == 0, 0.0, growth_multipliers)
+
+        logging.info("GetDisturbanceOps")
+        self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
+                                  disturbance_types)
+
+        logging.info("GetMerchVolumeGrowthOps")
+        self.dll.GetMerchVolumeGrowthOps(ops["growth"],
+            classifiers, pools, age, spatial_unit, last_disturbance_type,
+            time_since_last_disturbance, growth_mult)
+        
+        logging.info("GetTurnoverOps")
+        self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"],
+            spatial_unit)
+
+        logging.info("GetDecayOps")
+        self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"],
+            ops["slow_mixing"], spatial_unit, mean_annual_temp)
+
+        logging.info("Compute flux")
+        self.dll.ComputeFlux([ops[x] for x in opSchedule], 
+            [self.opProcesses[x] for x in opSchedule], pools, flux)
