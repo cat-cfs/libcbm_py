@@ -74,7 +74,7 @@ class CBM3:
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
                return_interval, min_rotations, max_rotations, delay,
-               mean_annual_temp, debug_output_path = None):
+               mean_annual_temp=None, debug_output_path = None):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
         slow_pools_indices = [
@@ -195,19 +195,21 @@ class CBM3:
             spatial_unit, mean_annual_temp, transition_rule_ids,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, land_class,
-            regeneration_delay, growth_multipliers):
+            growth_multipliers):
 
         pools[:,0] = 1.0
         nstands = pools.shape[0]
 
         spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
         mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.int32)
+        disturbance_types = self.promoteScalar(disturbance_types, nstands, dtype=np.int32)
+        transition_rule_ids = self.promoteScalar(transition_rule_ids, nstands, dtype=np.int32)
 
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
         opSchedule = [
-            "disturbance"
+            "disturbance",
             "growth",
             "biomass_turnover",
             "snag_turnover",
@@ -221,7 +223,7 @@ class CBM3:
         self.dll.AdvanceStandState(classifiers, disturbance_types,
             transition_rule_ids, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
-            growth_enabled, land_class, regeneration_delay, age)
+            growth_enabled, land_class, age)
 
         growth_mult = np.where(growth_enabled == 0, 0.0, growth_multipliers)
 
@@ -245,3 +247,6 @@ class CBM3:
         logging.info("Compute flux")
         self.dll.ComputeFlux([ops[x] for x in opSchedule], 
             [self.opProcesses[x] for x in opSchedule], pools, flux)
+
+        for x in self.opNames:
+            self.dll.FreeOp(ops[x])
