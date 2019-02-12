@@ -40,6 +40,9 @@
     <Compile Include="sityield.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="text_inventory.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>
