@@ -1,11 +1,9 @@
-import csv
+#parses text formatted (csv) inventory into numpy arrays
+import csv, os
+import tempfile
 import numpy as np
 
-def load(path, classifiers, classifier_values):
-    n_classifiers = len(classifiers)
-    classifiers_data_header = [x["name"] for x in classifiers]
-    data_header = ["index", "age","spatial_unit","historic_disturbance_type","last_pass_disturbance_type","delay"]
-
+def create_classifier_lookup_table(classifiers, classifier_values):
     classifier_id_lookups = {}
     for c in classifiers:
         classifier_id = c["id"]
@@ -17,28 +15,37 @@ def load(path, classifiers, classifier_values):
 
         classifier_id_lookups[c["name"]] = classifier_id_lookup
 
+    return classifier_id_lookups
 
-    classifiers_array = []
+def load(path, classifiers, classifier_values, disturbance_type_ids, spatial_unit_ids):
+    n_classifiers = len(classifiers)
 
-    with open(path) as csvfile:
+
+    classifier_id_lookups = create_classifier_lookup_table(classifiers, classifier_values)
+    with open(path) as csvfile, tempfile.NamedTemporaryFile('w', delete=False) as temp:
         reader = csv.DictReader(csvfile)
-        for x in reader:
-            id_list = []
-            for c in classifiers:
-                cv_id = classifier_id_lookups[c["name"]][x[c["name"]]]
-                id_list.append(cv_id)
-            classifiers_array.append(id_list)
-
-
-    usecols = [0] #index col
-    usecols.extend(range(n_classifiers+1,n_classifiers+len(data_header)))
-    inventory = np.genfromtxt(
-        path,
-        delimiter=',',
-        usecols=tuple(usecols),
-        skip_header=True,
-        dtype=np.int32)
-
+        writer = csv.writer(temp)
+        for row in reader:
+            index = int(row["index"])
+            classifier_value_ids = []
+            for classifier in classifiers:
+                classifier_name = classifier["name"]
+                classifier_id_lookup = classifier_id_lookups[classifier_name]
+                classifier_value_ids.append(classifier_id_lookup[row[classifier_name]])
+            age = row["age"]
+            admin_boundary= row["admin_boundary"]
+            eco_boundary=row["eco_boundary"]
+            spatial_unit_id = spatial_unit_ids[(admin_boundary, eco_boundary)]
+            historic_disturbance_type_id = disturbance_type_ids[row["historic_disturbance_type"]]
+            last_pass_disturbance_type_id = disturbance_type_ids[row["last_pass_disturbance_type"]]
+            delay = int(row["delay"])
+            outrow = [index]
+            outrow.extend(classifier_value_ids)
+            outrow.extend([age, spatial_unit_id, historic_disturbance_type_id, last_pass_disturbance_type_id,delay ])
+            writer.writerow(outrow)
+        
+    inventory = np.genfromtxt(temp.name,dtype=np.int32, delimiter=',')
+    os.remove(temp.name)
 
     if len(inventory.shape)==1:
         inventory = inventory.reshape((1,inventory.shape[0]))
@@ -46,10 +53,13 @@ def load(path, classifiers, classifier_values):
     nstands = inventory.shape[0]
     result = {
         "nstands": inventory.shape[0],
-        "classifiers": np.array(classifiers_array, dtype=np.int32)
+        "index": inventory[:,0],
+        "classifiers": inventory[:,1:(1+n_classifiers)],
+        "age": inventory[:,n_classifiers+1],
+        "spatial_unit": inventory[:,n_classifiers+2],
+        "historic_disturbance_type": inventory[:,n_classifiers+3],
+        "last_pass_disturbance_type": inventory[:,n_classifiers+4],
+        "delay": inventory[:,n_classifiers+5],
     }
-    
-    for h in data_header:
-        result[h] = inventory[:,data_header.index(h)]
 
     return result
