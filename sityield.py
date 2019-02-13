@@ -1,20 +1,7 @@
 #parses SIT_yield-like formatted files
 
-import csv, sqlite3
-
-def load_species_reference(path, locale_code="en-CA"):
-    query = """
-        select species_tr.name, species.id, species.forest_type_id
-        from species 
-        inner join species_tr on species_tr.species_id = species.id
-        inner join locale on species_tr.locale_id = locale.id
-        where locale.code = ?"""
-    result = {}
-    with sqlite3.connect(path) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result[row[0]] = {"species_id": int(row[1]), "forest_type_id": int(row[2])}
-    return result
+import csv
+import cbm_defaults
 
 
 def get_grouped_components(filtered_group, age_class_size, num_yields, species_ref):
@@ -43,7 +30,7 @@ def read_sit_yield(path, cbm_defaults_path, classifier_data, age_class_size,
         values = [x for x in classifier_data["classifier_values"] if x["classifier_id"]==c["id"]]
         unique_classifier_values.append(set([x["value"] for x in values]))
 
-    species_ref = load_species_reference(cbm_defaults_path, locale_code)
+    species_ref = cbm_defaults.load_species_reference(cbm_defaults_path, locale_code)
     with open(path) as csvfile:
         reader = csv.reader(csvfile, delimiter = delimiter)
         if header:
