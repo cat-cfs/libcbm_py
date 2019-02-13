@@ -123,6 +123,54 @@ def load_cbm_parameters(sqlitePath):
 
     return result
 
+def load_species_reference(path, locale_code="en-CA"):
+    query = """
+        select species_tr.name, species.id, species.forest_type_id
+        from species 
+        inner join species_tr on species_tr.species_id = species.id
+        inner join locale on species_tr.locale_id = locale.id
+        where locale.code = ?"""
+    result = {}
+    with sqlite3.connect(path) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,)):
+            result[row[0]] = {"species_id": int(row[1]), "forest_type_id": int(row[2])}
+    return result
+
+def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
+    query = """
+        select spatial_unit.id, admin_boundary_tr.name as admin_boundary_name, eco_boundary_tr.name as eco_boundary_name from spatial_unit
+        inner join eco_boundary on eco_boundary.id = spatial_unit.eco_boundary_id
+        inner join admin_boundary on admin_boundary.id = spatial_unit.admin_boundary_id
+        inner join eco_boundary_tr on eco_boundary_tr.eco_boundary_id = eco_boundary.id
+        inner join admin_boundary_tr on admin_boundary_tr.admin_boundary_id = admin_boundary.id
+        inner join locale on admin_boundary_tr.locale_id = locale.id
+        where admin_boundary_tr.locale_id = eco_boundary_tr.locale_id and locale.code = ?
+        order by spatial_unit.id
+        """
+    result = {}
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,)):
+            result[(row[1],row[2])] = row[0]
+    return result
+
+def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
+    query = """
+        select  disturbance_type.id, disturbance_type_tr.name
+        from disturbance_type 
+        inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
+        inner join locale on disturbance_type_tr.locale_id = locale.id
+        where locale.code = ?
+        """
+    result = {}
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,)):
+            result[row[1]] = row[0]
+    return result
+
+
 def load_cbm_pools(sqlitePath):
     result = []
     with sqlite3.connect(sqlitePath) as conn:
