@@ -40,6 +40,9 @@
     <Compile Include="sityield.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="text_events.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="text_inventory.py">
       <SubType>Code</SubType>
     </Compile>
