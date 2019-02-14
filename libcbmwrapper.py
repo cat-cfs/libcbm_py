@@ -121,6 +121,7 @@ class LibCBMWrapper(object):
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_land_class_change (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # growth_enabled (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # land_class (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # regeneration_delay (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
             )
 
@@ -289,7 +290,7 @@ class LibCBMWrapper(object):
     def AdvanceStandState(self, classifiers, disturbance_types, transition_rule_ids,
                           last_disturbance_type, time_since_last_disturbance,
                           time_since_land_class_change, growth_enabled,
-                          land_class, age):
+                          land_class, regeneration_delay, age):
        if not self.handle:
            raise AssertionError("dll not initialized")
        n = classifiers.shape[0]
@@ -307,6 +308,7 @@ class LibCBMWrapper(object):
             time_since_land_class_change,
             growth_enabled,
             land_class,
+            regeneration_delay,
             age)
 
        if self.err.Error != 0:

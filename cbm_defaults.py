@@ -107,6 +107,7 @@ queries = {
 
 }
 
+
 def load_cbm_parameters(sqlitePath):
     result = {}
     with sqlite3.connect(sqlitePath) as conn:
@@ -123,6 +124,7 @@ def load_cbm_parameters(sqlitePath):
 
     return result
 
+
 def load_species_reference(path, locale_code="en-CA"):
     query = """
         select species_tr.name, species.id, species.forest_type_id
@@ -136,6 +138,7 @@ def load_species_reference(path, locale_code="en-CA"):
         for row in cursor.execute(query, (locale_code,)):
             result[row[0]] = {"species_id": int(row[1]), "forest_type_id": int(row[2])}
     return result
+
 
 def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
     query = """
@@ -155,6 +158,7 @@ def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
             result[(row[1],row[2])] = row[0]
     return result
 
+
 def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
     query = """
         select  disturbance_type.id, disturbance_type_tr.name
@@ -171,6 +175,16 @@ def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
     return result
 
 
+def get_flux_indicator_names_by_id(sqlitePath):
+    query = """select flux_indicator.id, flux_indicator.name from flux_indicator
+        """
+    result = {}
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query):
+            result[row[0]] = row[1]
+    return result
+
 def load_cbm_pools(sqlitePath):
     result = []
     with sqlite3.connect(sqlitePath) as conn:
@@ -180,6 +194,7 @@ def load_cbm_pools(sqlitePath):
             result.append({"name": row[0], "id": row[1], "index": index})
             index += 1
         return result
+
 
 def load_flux_indicators(sqlitePath):
     result = []
