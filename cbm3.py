@@ -278,5 +278,5 @@ class CBM3:
                     "age", "spatial_unit", "disturbance_types", "transition_rule_ids",
                     "last_disturbance_type", "time_since_last_disturbance", 
                     "time_since_land_class_change", "growth_enabled", "land_class",
-                    "regeneration_delay", "growth_mult"])
+                    "regeneration_delay", "growth_multiplier"])
                 + "\n")

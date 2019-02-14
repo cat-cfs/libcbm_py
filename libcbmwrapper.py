@@ -61,7 +61,11 @@ class LibCBM_Error(ctypes.Structure):
         return msg
 
 def getNullableNdarray(a, type=ctypes.c_double):
-    None if a is None else np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
+    if a is None:
+        return None
+    else:
+        result = np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
+        return result
 
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
@@ -386,7 +390,7 @@ class LibCBMWrapper(object):
            spatial_units,
            getNullableNdarray(last_dist_type, type = ctypes.c_int),
            getNullableNdarray(time_since_last_dist, type = ctypes.c_int),
-           getNullableNdarray(growth_multipliers, type=ctypes.c_int))
+           getNullableNdarray(growth_multipliers, type=ctypes.c_double))
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
