@@ -261,7 +261,7 @@ class CBM3:
             with open(debug_output_path, 'ab') as debug_file:
                 iteration_data = np.column_stack((
                     np.arange(0, classifiers.shape[0]),
-                    np.ones(classifiers.shape[0]), dtype=np.int32)*step
+                    np.ones(classifiers.shape[0], dtype=np.int32)*step,
                     classifiers, pools, flux, age, spatial_unit,
                     disturbance_types, transition_rule_ids, last_disturbance_type,
                     time_since_last_disturbance, time_since_land_class_change,
