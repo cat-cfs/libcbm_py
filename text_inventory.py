@@ -53,13 +53,13 @@ def load(path, classifiers, classifier_values, disturbance_type_ids, spatial_uni
     nstands = inventory.shape[0]
     result = {
         "nstands": inventory.shape[0],
-        "index": inventory[:,0],
-        "classifiers": inventory[:,1:(1+n_classifiers)],
-        "age": inventory[:,n_classifiers+1],
-        "spatial_unit": inventory[:,n_classifiers+2],
-        "historic_disturbance_type": inventory[:,n_classifiers+3],
-        "last_pass_disturbance_type": inventory[:,n_classifiers+4],
-        "delay": inventory[:,n_classifiers+5],
+        "index": np.ascontiguousarray(inventory[:,0]),
+        "classifiers": np.ascontiguousarray(inventory[:,1:(1+n_classifiers)]),
+        "age": np.ascontiguousarray(inventory[:,n_classifiers+1]),
+        "spatial_unit": np.ascontiguousarray(inventory[:,n_classifiers+2]),
+        "historic_disturbance_type": np.ascontiguousarray(inventory[:,n_classifiers+3]),
+        "last_pass_disturbance_type": np.ascontiguousarray(inventory[:,n_classifiers+4]),
+        "delay": np.ascontiguousarray(inventory[:,n_classifiers+5])
     }
 
     return result
