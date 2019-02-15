@@ -123,7 +123,7 @@ class CBM3:
             with open(debug_output_path, 'w') as debug_file:
                 debug_file.write(
                     ",".join(
-                    ["index", 
+                    ["index", "iteration",
                      ",".join([x["name"] for x in self.configuration["classifiers"]]),
                      ",".join([x["name"] for x in self.configuration["pools"]]),
                      "inventory_age", "spatial_unit", "historic_disturbance_type",
@@ -131,7 +131,7 @@ class CBM3:
                      "max_rotations", "delay", "age", "slowPools", "spinup_state",
                      "rotation", "step", "lastRotationSlowC", "disturbance_types"])
                    + "\n")
-
+        iteration = 0
         while (True):
             logging.info("AdvanceSpinupState")
             n_finished = self.dll.AdvanceSpinupState(
@@ -172,13 +172,15 @@ class CBM3:
             if debug_output_path:
                 with open(debug_output_path, 'ab') as debug_file:
                     iteration_data = np.column_stack((
-                        np.arange(0, classifiers.shape[0]),
+                        np.arange(0, classifiers.shape[0]), 
+                        np.ones(classifiers.shape[0],dtype=np.int32) * iteration,
                         classifiers, pools, inventory_age, spatial_unit,
                         historic_disturbance_type, last_pass_disturbance_type,
                         return_interval, min_rotations, max_rotations, delay,
                         age, slowPools, spinup_state, rotation, step,
                         lastRotationSlowC, disturbance_types))
                     np.savetxt(debug_file, iteration_data, delimiter=",")
+            iteration += 1
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
@@ -193,7 +195,7 @@ class CBM3:
 
 
 
-    def step(self, pools, flux, classifiers, age, disturbance_types,
+    def step(self, step, pools, flux, classifiers, age, disturbance_types,
             spatial_unit, mean_annual_temp, transition_rule_ids,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, land_class,
@@ -254,10 +256,12 @@ class CBM3:
         age[regeneration_delay<=0]+=1
         regeneration_delay[regeneration_delay>0]-=1
 
+
         if debug_output_path:
             with open(debug_output_path, 'ab') as debug_file:
                 iteration_data = np.column_stack((
                     np.arange(0, classifiers.shape[0]),
+                    np.ones(classifiers.shape[0]), dtype=np.int32)*step
                     classifiers, pools, flux, age, spatial_unit,
                     disturbance_types, transition_rule_ids, last_disturbance_type,
                     time_since_last_disturbance, time_since_land_class_change,
@@ -271,7 +275,7 @@ class CBM3:
         with open(path, 'w') as debug_file:
             debug_file.write(
                 ",".join(
-                ["index", 
+                ["index", "step",
                     ",".join([x["name"] for x in self.configuration["classifiers"]]),
                     ",".join([x["name"] for x in self.configuration["pools"]]),
                     ",".join([flux_indicators_names_by_id[x["id"]] for x in self.configuration["flux_indicators"]]),
