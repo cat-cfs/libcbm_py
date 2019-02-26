@@ -271,7 +271,13 @@ class CBM3:
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
 
-    def create_step_debug_file(self, path, flux_indicators_names_by_id):
+    def create_step_debug_file(self, path, flux_indicators_names_by_id,
+           pools, flux, classifiers, age, disturbance_types,
+           spatial_unit, mean_annual_temp, transition_rule_ids,
+           last_disturbance_type, time_since_last_disturbance,
+           time_since_land_class_change, growth_enabled, land_class,
+           growth_multipliers, regeneration_delay):
+
         with open(path, 'w') as debug_file:
             debug_file.write(
                 ",".join(
@@ -284,3 +290,12 @@ class CBM3:
                     "time_since_land_class_change", "growth_enabled", "land_class",
                     "regeneration_delay", "growth_multiplier"])
                 + "\n")
+            #creates the 0th timestep row for each stand
+            iteration_data = np.column_stack((
+                np.arange(0, classifiers.shape[0]),
+                np.zeros(classifiers.shape[0], dtype=np.int32),
+                classifiers, pools, flux, age, spatial_unit,
+                disturbance_types, transition_rule_ids, last_disturbance_type,
+                time_since_last_disturbance, time_since_land_class_change,
+                growth_enabled, land_class, regeneration_delay, growth_multipliers))
+            np.savetxt(debug_file, iteration_data, delimiter=",")
