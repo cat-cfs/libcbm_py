@@ -36,6 +36,9 @@
     <Compile Include="layerclassifiers.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="libcbmconfig.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="libcbmwrapper.py" />
     <Compile Include="sityield.py">
       <SubType>Code</SubType>

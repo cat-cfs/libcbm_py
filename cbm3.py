@@ -28,28 +28,6 @@ class CBM3:
     def initialize(self, config):
         self.dll.Initialize(config)
 
-    def initialize_config(self, cbm_defaults, pools, flux_indicators,
-                         merch_volume_to_biomass, classifiers, transitions,
-                         save_path=None):
-        '''
-        initialize config sets up the json configuration object passed to the underlying dll
-        returns config as string, and optionally saves to specified path
-        '''
-        self.configuration = {}
-        self.configuration["cbm_defaults"] = cbm_defaults
-        self.configuration["pools"] = pools
-        self.configuration["flux_indicators"] = flux_indicators
-        self.configuration["merch_volume_to_biomass"] = merch_volume_to_biomass
-        self.configuration["classifiers"] = classifiers["classifiers"]
-        self.configuration["classifier_values"] = classifiers["classifier_values"]
-        self.configuration["transitions"] = transitions
-        configString = json.dumps(self.configuration, indent=4)#, ensure_ascii=True)
-        if save_path:
-            with open(save_path, 'w') as configfile:
-                configfile.write(configString)
-        return configString
-
-
     def load_config(self, path):
         '''
         loads configuration json from an exisiting file
