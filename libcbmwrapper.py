@@ -89,12 +89,6 @@ class LibCBMWrapper(object):
             ctypes.c_size_t #n ops
         )
 
-        self._dll.LibCBM_Free_Op.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, # handle
-            ctypes.c_size_t # op id
-        )
-        
         self._dll.LibCBM_ComputePools.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
                 ctypes.c_void_p, #handle
@@ -255,7 +249,7 @@ class LibCBMWrapper(object):
        n_ops = len(ops)
        poolMat = LibCBM_Matrix(pools)
        ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
-       
+
        self._dll.LibCBM_ComputePools(
             ctypes.byref(self.err),
             self.handle,
