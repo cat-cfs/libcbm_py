@@ -28,15 +28,6 @@ class CBM3:
     def initialize(self, config):
         self.dll.Initialize(config)
 
-    def load_config(self, path):
-        '''
-        loads configuration json from an exisiting file
-        '''
-        with open(path, 'r') as configfile:
-            configString = configfile.read()
-            self.configuration = json.loads(configString)
-        return configString
-
     def promoteScalar(self, value, size, dtype):
         '''
         if the specified value is scalar promote it to a numpy array filled with the scalar value

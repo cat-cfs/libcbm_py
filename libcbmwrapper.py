@@ -230,16 +230,6 @@ class LibCBMWrapper(object):
 
         return op_id
 
-    def FreeOp(self, op_id):
-        if not self.handle:
-           raise AssertionError("dll not initialized")
-
-        self._dll.LibCBM_Free_Op(
-            ctypes.byref(self.err),
-            self.handle, op_id)
-
-        if self.err.Error != 0:
-           raise RuntimeError(self.err.getErrorMessage())
 
     def ComputePools(self, ops, pools):
 
