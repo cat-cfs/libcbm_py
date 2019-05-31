@@ -119,6 +119,12 @@ class LibCBMWrapper(object):
                 LibCBM_Matrix # flux (nstands by nfluxIndicators)
             )
 
+        self._dll.LibCBM_Initialize_CBM.argtypes = (
+                ctypes.POINTER(LibCBM_Error), # error struct
+                ctypes.c_void_p, #handle
+                ctypes.c_char_p  # config json string
+            )
+
         self._dll.LibCBM_AdvanceStandState.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
                 ctypes.c_void_p, #handle
@@ -262,6 +268,7 @@ class LibCBMWrapper(object):
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
+
     def ComputeFlux(self, ops, op_processes, pools, flux):
         if not self.handle:
            raise AssertionError("dll not initialized")
@@ -286,6 +293,23 @@ class LibCBMWrapper(object):
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
+
+
+    def InitializeCBM(self, config):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        p_config = ctypes.c_char_p(config.encode("UTF-8"));
+
+        self.handle = self._dll.LibCBM_Initialize(
+            ctypes.byref(self.err), #error struct
+            self.handle,
+            p_config
+            )
+
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
+
 
     def AdvanceStandState(self, classifiers, disturbance_types, transition_rule_ids,
                           last_disturbance_type, time_since_last_disturbance,
