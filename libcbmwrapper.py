@@ -122,7 +122,7 @@ class LibCBMWrapper(object):
         self._dll.LibCBM_Initialize_CBM.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
                 ctypes.c_void_p, #handle
-                ctypes.c_char_p  # config json string
+                ctypes.c_char_p # config json string
             )
 
         self._dll.LibCBM_AdvanceStandState.argtypes = (
@@ -301,7 +301,7 @@ class LibCBMWrapper(object):
 
         p_config = ctypes.c_char_p(config.encode("UTF-8"));
 
-        self.handle = self._dll.LibCBM_Initialize(
+        self.handle = self._dll.LibCBM_Initialize_CBM(
             ctypes.byref(self.err), #error struct
             self.handle,
             p_config

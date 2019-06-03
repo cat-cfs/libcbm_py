@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{f31fe227-d138-4850-a19d-8612f73a2d14}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>layerclassifiers.py</StartupFile>
+    <StartupFile>growth_curve_testing.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -30,9 +30,13 @@
     <Compile Include="cbm3.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="cbmconfig.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="cbm_defaults.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="growth_curve_testing.py" />
     <Compile Include="layerclassifiers.py">
       <SubType>Code</SubType>
     </Compile>
