@@ -301,7 +301,7 @@ class LibCBMWrapper(object):
 
         p_config = ctypes.c_char_p(config.encode("UTF-8"));
 
-        self.handle = self._dll.LibCBM_Initialize_CBM(
+        self._dll.LibCBM_Initialize_CBM(
             ctypes.byref(self.err), #error struct
             self.handle,
             p_config

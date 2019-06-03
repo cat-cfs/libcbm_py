@@ -158,9 +158,10 @@ def run_libCBM(dbpath, cases, nsteps):
     dll = LibCBMWrapper(dllpath)
     os.chdir(cwd)
     
+    pooldef = cbm_defaults.load_cbm_pools(dbpath)
     dll.Initialize(libcbmconfig.to_string(
         {
-            "pools": cbm_defaults.load_cbm_pools(dbpath),
+            "pools": pooldef,
             "flux_indicators": cbm_defaults.load_flux_indicators(dbpath)
         }))
     
@@ -220,7 +221,7 @@ def run_libCBM(dbpath, cases, nsteps):
         [spatial_unit_reference[(c["admin_boundary"],c["eco_boundary"])]
             for c in cases],dtype=np.int32)
 
-    pools = np.zeros((nstands,len(config["pools"])))
+    pools = np.zeros((nstands,len(pooldef)))
     pools[:,0] = 1.0
 
     op = dll.AllocateOp(nstands)
@@ -241,7 +242,7 @@ def run_libCBM(dbpath, cases, nsteps):
         #we need to apply the operation 2 times in order to match it
         dll.ComputePools([op, op], pools)
 
-        iteration_result = pd.DataFrame({x["name"]: pools[:,x["index"]] for x in config["pools"]})
+        iteration_result = pd.DataFrame({x["name"]: pools[:,x["index"]] for x in pooldef})
         iteration_result.insert(0, "age", age+1)
         iteration_result.reset_index(level=0, inplace=True)
         result = result.append(iteration_result)
