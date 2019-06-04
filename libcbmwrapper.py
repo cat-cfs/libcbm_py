@@ -101,6 +101,16 @@ class LibCBMWrapper(object):
             ctypes.c_size_t #n ops
         )
 
+        self._dll.LibCBM_SetOp.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t, #op_id
+            ctypes.POINTER(LibCBM_Matrix),#matrices
+            ctypes.c_size_t, #n_matrices
+            ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"), #matrix_index
+            ctypes.c_size_t #n_matrix_index
+        )
+
         self._dll.LibCBM_ComputePools.argtypes = (
                 ctypes.POINTER(LibCBM_Error), # error struct
                 ctypes.c_void_p, #handle
@@ -248,6 +258,31 @@ class LibCBMWrapper(object):
 
         return op_id
 
+    def SetOp(self, op_id, matrices, matrix_index):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+        matrices_array = (LibCBM_Matrix * len(matrices))()
+        for i,x in enumerate(matrices):
+            matrices_array[i] = LibCBM_Matrix(x)
+        matrices_p =  ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
+        self._dll.LibCBM_SetOp(
+            ctypes.byref(self.err),
+            self.handle,
+            op_id,
+            matrices_p,
+            len(matrices),
+            matrix_index,
+            matrix_index.shape[0]
+            )
+
+        #    ctypes.POINTER(LibCBM_Error), # error struct
+        #    ctypes.c_void_p, #handle
+        #    ctypes.c_size_t, #op_id
+        #    ctypes.POINTER(LibCBM_Matrix),#matrices
+        #    ctypes.c_size_t, #n_matrices
+        #    ctypes.POINTER(ctypes.size_t), #matrix_index
+        #    ctypes.c_size_t #n_matrix_index
+        #)
 
     def ComputePools(self, ops, pools):
 
