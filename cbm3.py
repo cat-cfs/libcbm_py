@@ -42,7 +42,7 @@ class CBM3:
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
                return_interval, min_rotations, max_rotations, delay,
-               mean_annual_temp=None, debug_output_path = None):
+               mean_annual_temp=None):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
         slow_pools_indices = [
@@ -61,7 +61,7 @@ class CBM3:
         spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
         historic_disturbance_type = self.promoteScalar(historic_disturbance_type, nstands, dtype=np.int32)
         last_pass_disturbance_type = self.promoteScalar(last_pass_disturbance_type, nstands, dtype=np.int32)
-        return_interval = self.promoteScalar(return_interval, nstands, dtype=np.int32)
+        return_interval = self.promotseScalar(return_interval, nstands, dtype=np.int32)
         min_rotations = self.promoteScalar(min_rotations, nstands, dtype=np.int32)
         max_rotations = self.promoteScalar(max_rotations, nstands, dtype=np.int32)
         delay = self.promoteScalar(delay, nstands, dtype=np.int32)
