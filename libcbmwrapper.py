@@ -412,7 +412,7 @@ class LibCBMWrapper(object):
 
     def GetMerchVolumeGrowthOps(self, growth_op, 
         classifiers, pools, ages, spatial_units, last_dist_type,
-        time_since_last_dist, growth_multipliers):
+        time_since_last_dist, growth_multipliers, growth_enabled):
 
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -425,7 +425,8 @@ class LibCBMWrapper(object):
             spatial_units,
             getNullableNdarray(last_dist_type, type = ctypes.c_int),
             getNullableNdarray(time_since_last_dist, type = ctypes.c_int),
-            getNullableNdarray(growth_multipliers, type=ctypes.c_double))
+            getNullableNdarray(growth_multipliers, type=ctypes.c_double),
+            getNullableNdarray(growth_enabled, type = ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
