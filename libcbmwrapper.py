@@ -151,6 +151,14 @@ class LibCBMWrapper(object):
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
             )
 
+        self._dll.LibCBM_EndStep.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t, #n stands
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),#age
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #regeneration_delay
+            )
+
         self._dll.LibCBM_InitializeLandState.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
@@ -182,10 +190,23 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
         )
 
+        self._dll.LibCBM_EndSpinupStep.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t, #n stands
+            ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n)
+            LibCBM_Matrix, # pools
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # historical disturbance type (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last pass disturbance type (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type  (length n)(return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #age (length n)(return value)
+            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") #sum of slow pools (length n) (return value)
+            )
+
         self._dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t,1), #op_ids 
+            ctypes.ARRAY(ctypes.c_size_t, 1), #op_ids 
             ctypes.c_size_t, #n stands
             LibCBM_Matrix_Int, #classifiers
             LibCBM_Matrix, #pools
@@ -193,7 +214,8 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
             ctypes.POINTER(ctypes.c_int), # (nullable) last disturbance type (length n)
             ctypes.POINTER(ctypes.c_int), # (nullable) time since last disturbance (length n)
-            ctypes.POINTER(ctypes.c_double) # (nullable) growth multiplier (length n)
+            ctypes.POINTER(ctypes.c_double), # (nullable) growth multiplier (length n)
+            ctypes.POINTER(ctypes.c_int) # (nullable) growth enabled (length n)
             )
 
         self._dll.LibCBM_GetTurnoverOps.argtypes = (
@@ -274,15 +296,6 @@ class LibCBMWrapper(object):
             matrix_index,
             matrix_index.shape[0]
             )
-
-        #    ctypes.POINTER(LibCBM_Error), # error struct
-        #    ctypes.c_void_p, #handle
-        #    ctypes.c_size_t, #op_id
-        #    ctypes.POINTER(LibCBM_Matrix),#matrices
-        #    ctypes.c_size_t, #n_matrices
-        #    ctypes.POINTER(ctypes.size_t), #matrix_index
-        #    ctypes.c_size_t #n_matrix_index
-        #)
 
     def ComputePools(self, ops, pools):
 
