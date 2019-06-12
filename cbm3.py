@@ -45,9 +45,7 @@ class CBM3:
                mean_annual_temp=None):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
-        slow_pools_indices = [
-            x["index"] for x in self.configuration["pools"] 
-            if x["name"] in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]]
+
         #allocate working variables
         age = np.zeros(nstands, dtype=np.int32)
         slowPools = np.zeros(nstands, dtype=np.float)
@@ -88,7 +86,6 @@ class CBM3:
             "disturbance"
             ]
 
-        iteration = 0
         while (True):
             logging.info("AdvanceSpinupState")
             n_finished = self.dll.AdvanceSpinupState(
@@ -101,32 +98,16 @@ class CBM3:
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
                 classifiers, pools, age, spatial_unit, None, None, None)
 
-            #update state variables according to spinup state
-            growing = ((spinup_state == LibCBM_SpinupState.HistoricalRotation) | 
-                              (spinup_state == LibCBM_SpinupState.GrowToFinalAge))
-            age[growing] = age[growing] + 1
-            age[np.logical_not(growing)] = 0
-
-            #set the historic/last pass disturbances
-            historic_disturbance = (spinup_state == LibCBM_SpinupState.HistoricalDisturbance)
-            disturbance_types[historic_disturbance] = historic_disturbance_type[historic_disturbance]
-
-            last_disturbance = (spinup_state == LibCBM_SpinupState.LastPassDisturbance)
-            disturbance_types[last_disturbance] = last_pass_disturbance_type[last_disturbance]
-            
-            #set the disturbance type for everything else as none
-            disturbance_types[np.logical_not(np.logical_or(last_disturbance, historic_disturbance))] = -1
-
             logging.info("GetDisturbanceOps")
-            self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit, disturbance_types)
+            self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
+                                       disturbance_types)
 
             logging.info("ComputePools")
             self.dll.ComputePools([ops[x] for x in opSchedule], pools)
 
-            #update the slow pools which are fed back into the spinup state
-            slowPools = pools[:,slow_pools_indices[0]] + pools[:,slow_pools_indices[1]]
-
-            iteration += 1
+            self.dll.EndSpinupStep(spinup_state, pools,
+                historic_disturbance_type, last_pass_disturbance,
+                disturbance_types, age, slowPools)
 
 
     def init(self, last_pass_disturbance_type, delay, inventory_age,
@@ -173,8 +154,6 @@ class CBM3:
             time_since_last_disturbance, time_since_land_class_change,
             growth_enabled, land_class, regeneration_delay, age)
 
-        growth_mult = np.where(growth_enabled == 0, 0.0, growth_multipliers)
-
         logging.info("GetDisturbanceOps")
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
                                   disturbance_types)
@@ -182,7 +161,7 @@ class CBM3:
         logging.info("GetMerchVolumeGrowthOps")
         self.dll.GetMerchVolumeGrowthOps(ops["growth"],
             classifiers, pools, age, spatial_unit, last_disturbance_type,
-            time_since_last_disturbance, growth_mult)
+            time_since_last_disturbance, growth_multipliers, growth_enabled)
         
         logging.info("GetTurnoverOps")
         self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"],
@@ -196,9 +175,6 @@ class CBM3:
         self.dll.ComputeFlux([ops[x] for x in opSchedule], 
             [self.opProcesses[x] for x in opSchedule], pools, flux)
 
-        age[regeneration_delay<=0]+=1
-        regeneration_delay[regeneration_delay>0]-=1
-
-
+        self.dll.EndStep(age, regeneration_delay)
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
