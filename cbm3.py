@@ -97,8 +97,7 @@ class CBM3:
                 return_interval, min_rotations, max_rotations, inventory_age,
                 delay, slowPools, spinup_state, rotation, step,
                 lastRotationSlowC)
-            if n_finished == nstands:
-                break
+
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
                 classifiers, pools, age, spatial_unit, None, None, None, None)
@@ -109,7 +108,8 @@ class CBM3:
 
             logging.info("ComputePools")
             self.dll.ComputePools([ops[x] for x in opSchedule], pools)
-
+            if n_finished == nstands:
+                break
             self.dll.EndSpinupStep(spinup_state, pools,
                 historic_disturbance_type, last_pass_disturbance_type,
                 disturbance_types, age, slowPools)
