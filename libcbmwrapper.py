@@ -287,15 +287,8 @@ class LibCBMWrapper(object):
         for i,x in enumerate(matrices):
             matrices_array[i] = LibCBM_Matrix(x)
         matrices_p =  ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
-        self._dll.LibCBM_SetOp(
-            ctypes.byref(self.err),
-            self.handle,
-            op_id,
-            matrices_p,
-            len(matrices),
-            matrix_index,
-            matrix_index.shape[0]
-            )
+        self._dll.LibCBM_SetOp(ctypes.byref(self.err), self.handle, op_id,
+            matrices_p, len(matrices), matrix_index, matrix_index.shape[0])
 
     def ComputePools(self, ops, pools):
 
@@ -306,12 +299,8 @@ class LibCBMWrapper(object):
        poolMat = LibCBM_Matrix(pools)
        ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
-       self._dll.LibCBM_ComputePools(
-            ctypes.byref(self.err),
-            self.handle,
-            ops_p,
-            n_ops,
-            poolMat)
+       self._dll.LibCBM_ComputePools(ctypes.byref(self.err), self.handle, ops_p,
+            n_ops, poolMat)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -330,14 +319,8 @@ class LibCBMWrapper(object):
         ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
         op_process_p = ctypes.cast((ctypes.c_size_t*n_ops)(*op_processes), ctypes.POINTER(ctypes.c_size_t))
 
-        self._dll.LibCBM_ComputeFlux(
-            ctypes.byref(self.err),
-            self.handle,
-            ops_p,
-            op_process_p,
-            n_ops,
-            poolMat,
-            fluxMat)
+        self._dll.LibCBM_ComputeFlux(ctypes.byref(self.err), self.handle,
+            ops_p, op_process_p, n_ops, poolMat, fluxMat)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -349,11 +332,8 @@ class LibCBMWrapper(object):
 
         p_config = ctypes.c_char_p(config.encode("UTF-8"));
 
-        self._dll.LibCBM_Initialize_CBM(
-            ctypes.byref(self.err), #error struct
-            self.handle,
-            p_config
-            )
+        self._dll.LibCBM_Initialize_CBM(ctypes.byref(self.err), self.handle,
+                                        p_config)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -369,22 +349,22 @@ class LibCBMWrapper(object):
        classifiersMat = LibCBM_Matrix_Int(classifiers)
 
        self._dll.LibCBM_AdvanceStandState(
-            ctypes.byref(self.err),
-            self.handle,
-            n,
-            classifiersMat,
-            disturbance_types,
-            transition_rule_ids,
-            last_disturbance_type,
-            time_since_last_disturbance,
-            time_since_land_class_change,
-            growth_enabled,
-            land_class,
-            regeneration_delay,
-            age)
+            ctypes.byref(self.err), self.handle, n, classifiersMat,
+            disturbance_types, transition_rule_ids, last_disturbance_type,
+            time_since_last_disturbance, time_since_land_class_change,
+            growth_enabled, land_class, regeneration_delay, age)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
+
+
+    def EndStep(self, age, regeneration_delay):
+        if not self.handle:
+            raise AssertionError("dll not initialized")
+        n = age.shape[0]
+        self._dll.LibCBM_EndStep(ctypes.byref(self.err), self.handle, n, age,
+            regeneration_delay)
+
 
     def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
         last_disturbance_type, time_since_last_disturbance,
@@ -393,22 +373,14 @@ class LibCBMWrapper(object):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = last_pass_disturbance.shape[0]
-        self._dll.LibCBM_InitializeLandState(
-            ctypes.byref(self.err),
-            self.handle,
-            n,
-            last_pass_disturbance,
-            delay,
-            initial_age,
-            last_disturbance_type,
-            time_since_last_disturbance,
-            time_since_land_class_change,
-            growth_enabled,
-            land_class,
-            age)
+        self._dll.LibCBM_InitializeLandState(ctypes.byref(self.err),
+            self.handle, n, last_pass_disturbance, delay, initial_age,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, land_class, age)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
+
 
     def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
@@ -418,19 +390,9 @@ class LibCBMWrapper(object):
        n = returnInterval.shape[0]
 
        n_finished = self._dll.LibCBM_AdvanceSpinupState(
-            ctypes.byref(self.err),
-            self.handle,
-            n,
-            returnInterval,
-            minRotations,
-            maxRotations,
-            finalAge,
-            delay,
-            slowPools,
-            state,
-            rotation,
-            step,
-            lastRotationSlowC)
+            ctypes.byref(self.err), self.handle, n, returnInterval,
+            minRotations, maxRotations, finalAge, delay, slowPools,
+            state, rotation, step, lastRotationSlowC)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -438,30 +400,35 @@ class LibCBMWrapper(object):
        return n_finished
 
 
+    def EndSpinupStep(self, state, pools, historical_disturbance,
+            last_pass_disturbance, disturbance_types, age, slowPools):
+        if not self.handle:
+            raise AssertionError("dll not initialized")
+        n = age.shape[0]
+        self._dll.LibCBM_EndSpinupStep(ctypes.byref(self.err), self.handle, n,
+            state, pools, historical_disturbance, last_pass_disturbance,
+            disturbance_types, age, slowPools)
+
+
     def GetMerchVolumeGrowthOps(self, growth_op, 
         classifiers, pools, ages, spatial_units, last_dist_type,
         time_since_last_dist, growth_multipliers):
 
-       if not self.handle:
-           raise AssertionError("dll not initialized")
-       n = pools.shape[0]
-       poolMat = LibCBM_Matrix(pools)
-       classifiersMat = LibCBM_Matrix_Int(classifiers)
-       opIds = (ctypes.c_size_t * (1))(*[growth_op])
-       self._dll.LibCBM_GetMerchVolumeGrowthOps(
-           ctypes.byref(self.err),
-           self.handle,
-           opIds,
-           n,
-           classifiersMat, poolMat,
-           ages,
-           spatial_units,
-           getNullableNdarray(last_dist_type, type = ctypes.c_int),
-           getNullableNdarray(time_since_last_dist, type = ctypes.c_int),
-           getNullableNdarray(growth_multipliers, type=ctypes.c_double))
+        if not self.handle:
+            raise AssertionError("dll not initialized")
+        n = pools.shape[0]
+        poolMat = LibCBM_Matrix(pools)
+        classifiersMat = LibCBM_Matrix_Int(classifiers)
+        opIds = (ctypes.c_size_t * (1))(*[growth_op])
+        self._dll.LibCBM_GetMerchVolumeGrowthOps(ctypes.byref(self.err),
+            self.handle, opIds, n, classifiersMat, poolMat, ages,
+            spatial_units,
+            getNullableNdarray(last_dist_type, type = ctypes.c_int),
+            getNullableNdarray(time_since_last_dist, type = ctypes.c_int),
+            getNullableNdarray(growth_multipliers, type=ctypes.c_double))
 
-       if self.err.Error != 0:
-           raise RuntimeError(self.err.getErrorMessage())
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
                        spatial_units):
@@ -471,12 +438,8 @@ class LibCBMWrapper(object):
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (2))(*[biomass_turnover_op,snag_turnover_op])
 
-        self._dll.LibCBM_GetTurnoverOps(
-           ctypes.byref(self.err),
-           self.handle,
-           opIds,
-           n,
-           spatial_units)
+        self._dll.LibCBM_GetTurnoverOps(ctypes.byref(self.err), self.handle,
+           opIds, n, spatial_units)
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -486,20 +449,13 @@ class LibCBMWrapper(object):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
-        opIds = (ctypes.c_size_t * (3))(*[
-            dom_decay_op,
-            slow_decay_op,
-            slow_mixing_op])
-        self._dll.LibCBM_GetDecayOps(
-           ctypes.byref(self.err),
-           self.handle,
-           opIds,
-           n,
-           spatial_units,
-           getNullableNdarray( mean_annual_temp))
-
+        opIds = (ctypes.c_size_t * (3))(
+            *[dom_decay_op, slow_decay_op, slow_mixing_op])
+        self._dll.LibCBM_GetDecayOps(ctypes.byref(self.err), self.handle,
+            opIds, n, spatial_units, getNullableNdarray( mean_annual_temp))
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
+
 
     def GetDisturbanceOps(self, disturbance_op, spatial_units, disturbance_type_ids):
         if not self.handle:
@@ -507,12 +463,8 @@ class LibCBMWrapper(object):
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
 
-        self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err),
-           self.handle,
-           opIds,
-           n,
-           spatial_units,
-           disturbance_type_ids)
+        self._dll.LibCBM_GetDisturbanceOps(ctypes.byref(self.err), self.handle,
+            opIds, n, spatial_units, disturbance_type_ids)
 
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
