@@ -75,7 +75,7 @@ class CBM3:
 
         logging.info("GetDecayOps")
         self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"],
-            ops["slow_mixing"], spatial_unit, mean_annual_temp)
+            ops["slow_mixing"], spatial_unit, True, mean_annual_temp)
 
         opSchedule = [
             "growth",
@@ -94,7 +94,7 @@ class CBM3:
         while (True):
             logging.info("AdvanceSpinupState")
             n_finished = self.dll.AdvanceSpinupState(
-                return_interval, min_rotations, max_rotations, inventory_age,
+                spatial_unit, return_interval, min_rotations, max_rotations, inventory_age,
                 delay, slowPools, spinup_state, rotation, step,
                 lastRotationSlowC)
 

@@ -461,7 +461,7 @@ class LibCBMWrapper(object):
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(ctypes.byref(self.err), self.handle,
-            opIds, n, getNullableNdarray(spatial_units),
+            opIds, n, getNullableNdarray(spatial_units, ctypes.c_int),
             historic_mean_annual_temp, getNullableNdarray( mean_annual_temp))
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
