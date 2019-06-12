@@ -178,9 +178,10 @@ class LibCBMWrapper(object):
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
             ctypes.c_size_t, #n stands
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #return interval (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #minRotations (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #maxRotations (length n)
+            ctypes.POINTER(ctypes.c_int), #spatial unit id not using ndpointer becuase we are allowing null(length n)
+            ctypes.POINTER(ctypes.c_int), #return interval not using ndpointer becuase we are allowing null(length n)
+            ctypes.POINTER(ctypes.c_int), #minRotations not using ndpointer becuase we are allowing null(length n)
+            ctypes.POINTER(ctypes.c_int), #maxRotations not using ndpointer becuase we are allowing null(length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #final age (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #slowpools (length n)
@@ -230,7 +231,8 @@ class LibCBMWrapper(object):
             ctypes.c_void_p, #handle
             ctypes.ARRAY(ctypes.c_size_t,3), #op_ids
             ctypes.c_size_t, #n stands
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
+            ctypes.POINTER(ctypes.c_int), #spatial unit id  not using ndpointer becuase we are allowing null (length n)
+            ctypes.c_bool, #use historic mean annual temp
             ctypes.POINTER(ctypes.c_double) #mean annual temp, not using ndpointer becuase we are allowing null
             )
 
@@ -382,7 +384,7 @@ class LibCBMWrapper(object):
             raise RuntimeError(self.err.getErrorMessage())
 
 
-    def AdvanceSpinupState(self, returnInterval, minRotations, maxRotations,
+    def AdvanceSpinupState(self, spatial_units, returnInterval, minRotations, maxRotations,
                            finalAge, delay, slowPools, state, rotation, step,
                            lastRotationSlowC):
        if not self.handle:
@@ -390,8 +392,12 @@ class LibCBMWrapper(object):
        n = returnInterval.shape[0]
 
        n_finished = self._dll.LibCBM_AdvanceSpinupState(
-            ctypes.byref(self.err), self.handle, n, returnInterval,
-            minRotations, maxRotations, finalAge, delay, slowPools,
+            ctypes.byref(self.err), self.handle, n,
+            getNullableNdarray(spatial_units, type = ctypes.c_int),
+            getNullableNdarray(returnInterval, type = ctypes.c_int),
+            getNullableNdarray(minRotations, type = ctypes.c_int),
+            getNullableNdarray(maxRotations, type = ctypes.c_int),
+            finalAge, delay, slowPools,
             state, rotation, step, lastRotationSlowC)
 
        if self.err.Error != 0:
@@ -447,14 +453,16 @@ class LibCBMWrapper(object):
            raise RuntimeError(self.err.getErrorMessage())
 
     def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
-                   spatial_units, mean_annual_temp=None):
+                    spatial_units, historic_mean_annual_temp = False,
+                    mean_annual_temp=None):
         if not self.handle:
            raise AssertionError("dll not initialized")
         n = spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(ctypes.byref(self.err), self.handle,
-            opIds, n, spatial_units, getNullableNdarray( mean_annual_temp))
+            opIds, n, getNullableNdarray(spatial_units),
+            historic_mean_annual_temp, getNullableNdarray( mean_annual_temp))
         if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
