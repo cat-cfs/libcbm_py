@@ -1,5 +1,6 @@
 from libcbmwrapper import LibCBM_SpinupState
 import numpy as np
+import pandas as pd
 import json, os,logging
 class CBM3:
     def __init__(self, dll):
@@ -42,7 +43,7 @@ class CBM3:
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
                return_interval, min_rotations, max_rotations, delay,
-               mean_annual_temp=None):
+               mean_annual_temp=None, debug=False):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
 
@@ -59,11 +60,12 @@ class CBM3:
         spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
         historic_disturbance_type = self.promoteScalar(historic_disturbance_type, nstands, dtype=np.int32)
         last_pass_disturbance_type = self.promoteScalar(last_pass_disturbance_type, nstands, dtype=np.int32)
-        return_interval = self.promotseScalar(return_interval, nstands, dtype=np.int32)
+        return_interval = self.promoteScalar(return_interval, nstands, dtype=np.int32)
         min_rotations = self.promoteScalar(min_rotations, nstands, dtype=np.int32)
         max_rotations = self.promoteScalar(max_rotations, nstands, dtype=np.int32)
         delay = self.promoteScalar(delay, nstands, dtype=np.int32)
         mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.float)
+
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
@@ -85,7 +87,10 @@ class CBM3:
             "slow_mixing",
             "disturbance"
             ]
-
+        debug_output = None
+        if(debug):
+            debug_output = pd.DataFrame()
+        iteration = 0
         while (True):
             logging.info("AdvanceSpinupState")
             n_finished = self.dll.AdvanceSpinupState(
@@ -96,7 +101,7 @@ class CBM3:
                 break
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
-                classifiers, pools, age, spatial_unit, None, None, None)
+                classifiers, pools, age, spatial_unit, None, None, None, None)
 
             logging.info("GetDisturbanceOps")
             self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
@@ -106,9 +111,22 @@ class CBM3:
             self.dll.ComputePools([ops[x] for x in opSchedule], pools)
 
             self.dll.EndSpinupStep(spinup_state, pools,
-                historic_disturbance_type, last_pass_disturbance,
+                historic_disturbance_type, last_pass_disturbance_type,
                 disturbance_types, age, slowPools)
-
+            if(debug):
+                debug_output = debug_output.append(pd.DataFrame(data={
+                    "index": list(range(nstands)),
+                    "iteration": iteration,
+                    "age": age,
+                    "slow_pools": slowPools,
+                    "spinup_state": spinup_state,
+                    "rotation": rotation,
+                    "last_rotation_c": lastRotationSlowC,
+                    "step": step,
+                    "disturbance_type": disturbance_types
+                    }))
+            iteration = iteration + 1
+        return debug_output
 
     def init(self, last_pass_disturbance_type, delay, inventory_age,
             last_disturbance_type, time_since_last_disturbance,
@@ -172,7 +190,7 @@ class CBM3:
             ops["slow_mixing"], spatial_unit, mean_annual_temp)
 
         logging.info("Compute flux")
-        self.dll.ComputeFlux([ops[x] for x in opSchedule], 
+        self.dll.ComputeFlux([ops[x] for x in opSchedule],
             [self.opProcesses[x] for x in opSchedule], pools, flux)
 
         self.dll.EndStep(age, regeneration_delay)

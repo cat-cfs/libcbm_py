@@ -405,8 +405,9 @@ class LibCBMWrapper(object):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = age.shape[0]
+        poolMat = LibCBM_Matrix(pools)
         self._dll.LibCBM_EndSpinupStep(ctypes.byref(self.err), self.handle, n,
-            state, pools, historical_disturbance, last_pass_disturbance,
+            state, poolMat, historical_disturbance, last_pass_disturbance,
             disturbance_types, age, slowPools)
 
 
