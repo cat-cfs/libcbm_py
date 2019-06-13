@@ -185,7 +185,10 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #final age (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #slowpools (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # historical disturbance type (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last pass disturbance type (length n)
             ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type  (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
@@ -197,9 +200,6 @@ class LibCBMWrapper(object):
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n)
             LibCBM_Matrix, # pools
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # historical disturbance type (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last pass disturbance type (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type  (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #age (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") #sum of slow pools (length n) (return value)
             )
@@ -384,12 +384,14 @@ class LibCBMWrapper(object):
             raise RuntimeError(self.err.getErrorMessage())
 
 
-    def AdvanceSpinupState(self, spatial_units, returnInterval, minRotations, maxRotations,
-                           finalAge, delay, slowPools, state, rotation, step,
+    def AdvanceSpinupState(self, spatial_units, returnInterval, minRotations,
+                           maxRotations, finalAge, delay, slowPools,
+                           historical_disturbance, last_pass_disturbance,
+                           state, disturbance_types, rotation, step,
                            lastRotationSlowC):
        if not self.handle:
            raise AssertionError("dll not initialized")
-       n = returnInterval.shape[0]
+       n = spatial_units.shape[0]
 
        n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err), self.handle, n,
@@ -397,8 +399,9 @@ class LibCBMWrapper(object):
             getNullableNdarray(returnInterval, type = ctypes.c_int),
             getNullableNdarray(minRotations, type = ctypes.c_int),
             getNullableNdarray(maxRotations, type = ctypes.c_int),
-            finalAge, delay, slowPools,
-            state, rotation, step, lastRotationSlowC)
+            finalAge, delay, slowPools,historical_disturbance,
+            last_pass_disturbance, state, disturbance_types, rotation, step,
+            lastRotationSlowC)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -406,15 +409,13 @@ class LibCBMWrapper(object):
        return n_finished
 
 
-    def EndSpinupStep(self, state, pools, historical_disturbance,
-            last_pass_disturbance, disturbance_types, age, slowPools):
+    def EndSpinupStep(self, state, pools, age, slowPools):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = age.shape[0]
         poolMat = LibCBM_Matrix(pools)
         self._dll.LibCBM_EndSpinupStep(ctypes.byref(self.err), self.handle, n,
-            state, poolMat, historical_disturbance, last_pass_disturbance,
-            disturbance_types, age, slowPools)
+            state, poolMat, age, slowPools)
 
 
     def GetMerchVolumeGrowthOps(self, growth_op, 

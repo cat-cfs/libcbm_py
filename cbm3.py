@@ -42,7 +42,7 @@ class CBM3:
 
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
-               return_interval, min_rotations, max_rotations, delay,
+               delay, return_interval=None, min_rotations=None, max_rotations=None,
                mean_annual_temp=None, debug=False):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
@@ -93,10 +93,13 @@ class CBM3:
         iteration = 0
         while (True):
             logging.info("AdvanceSpinupState")
+            #historic_disturbance_type, last_pass_disturbance_type,
+            #    disturbance_types
             n_finished = self.dll.AdvanceSpinupState(
-                spatial_unit, return_interval, min_rotations, max_rotations, inventory_age,
-                delay, slowPools, spinup_state, rotation, step,
-                lastRotationSlowC)
+                spatial_unit, return_interval, min_rotations, max_rotations,
+                inventory_age, delay, slowPools, historic_disturbance_type,
+                last_pass_disturbance_type, spinup_state, disturbance_types,
+                rotation, step, lastRotationSlowC)
 
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
@@ -111,8 +114,7 @@ class CBM3:
             if n_finished == nstands:
                 break
             self.dll.EndSpinupStep(spinup_state, pools,
-                historic_disturbance_type, last_pass_disturbance_type,
-                disturbance_types, age, slowPools)
+                age, slowPools)
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
                     "index": list(range(nstands)),
