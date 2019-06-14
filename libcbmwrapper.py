@@ -116,7 +116,8 @@ class LibCBMWrapper(object):
                 ctypes.c_void_p, #handle
                 ctypes.POINTER(ctypes.c_size_t), #op ids
                 ctypes.c_size_t, #number of op ids
-                LibCBM_Matrix #pools
+                LibCBM_Matrix, #pools
+                ctypes.POINTER(ctypes.c_int) #enabled
             )
 
         self._dll.LibCBM_ComputeFlux.argtypes = (
@@ -126,7 +127,8 @@ class LibCBMWrapper(object):
                 ctypes.POINTER(ctypes.c_size_t), #op process ids
                 ctypes.c_size_t, #number of ops
                 LibCBM_Matrix, # pools (nstands by npools)
-                LibCBM_Matrix # flux (nstands by nfluxIndicators)
+                LibCBM_Matrix, # flux (nstands by nfluxIndicators)
+                ctypes.POINTER(ctypes.c_int) #enabled
             )
 
         self._dll.LibCBM_Initialize_CBM.argtypes = (
@@ -146,6 +148,7 @@ class LibCBMWrapper(object):
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_last_disturbance (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_land_class_change (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # growth_enabled (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # enabled (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # land_class (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # regeneration_delay (length n) (return value)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
@@ -170,6 +173,7 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #growth_enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #enabled (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #land_class (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")  #age (length n) (return value)
         )
@@ -192,6 +196,7 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #simulation step (length n)(return value)
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #enabled
         )
 
         self._dll.LibCBM_EndSpinupStep.argtypes = (
@@ -292,7 +297,7 @@ class LibCBMWrapper(object):
         self._dll.LibCBM_SetOp(ctypes.byref(self.err), self.handle, op_id,
             matrices_p, len(matrices), matrix_index, matrix_index.shape[0])
 
-    def ComputePools(self, ops, pools):
+    def ComputePools(self, ops, pools, enabled=None):
 
        if not self.handle:
            raise AssertionError("dll not initialized")
@@ -302,13 +307,13 @@ class LibCBMWrapper(object):
        ops_p = ctypes.cast((ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
        self._dll.LibCBM_ComputePools(ctypes.byref(self.err), self.handle, ops_p,
-            n_ops, poolMat)
+            n_ops, poolMat, getNullableNdarray(enabled, type = ctypes.c_int))
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
 
 
-    def ComputeFlux(self, ops, op_processes, pools, flux):
+    def ComputeFlux(self, ops, op_processes, pools, flux, enabled=None):
         if not self.handle:
            raise AssertionError("dll not initialized")
 
@@ -322,7 +327,8 @@ class LibCBMWrapper(object):
         op_process_p = ctypes.cast((ctypes.c_size_t*n_ops)(*op_processes), ctypes.POINTER(ctypes.c_size_t))
 
         self._dll.LibCBM_ComputeFlux(ctypes.byref(self.err), self.handle,
-            ops_p, op_process_p, n_ops, poolMat, fluxMat)
+            ops_p, op_process_p, n_ops, poolMat, fluxMat,
+            getNullableNdarray(enabled, type = ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -343,7 +349,7 @@ class LibCBMWrapper(object):
 
     def AdvanceStandState(self, classifiers, disturbance_types, transition_rule_ids,
                           last_disturbance_type, time_since_last_disturbance,
-                          time_since_land_class_change, growth_enabled,
+                          time_since_land_class_change, growth_enabled, enabled,
                           land_class, regeneration_delay, age):
        if not self.handle:
            raise AssertionError("dll not initialized")
@@ -354,7 +360,7 @@ class LibCBMWrapper(object):
             ctypes.byref(self.err), self.handle, n, classifiersMat,
             disturbance_types, transition_rule_ids, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
-            growth_enabled, land_class, regeneration_delay, age)
+            growth_enabled, enabled, land_class, regeneration_delay, age)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
@@ -370,7 +376,7 @@ class LibCBMWrapper(object):
 
     def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
         last_disturbance_type, time_since_last_disturbance,
-        time_since_land_class_change, growth_enabled, land_class, age):
+        time_since_land_class_change, growth_enabled, enabled, land_class, age):
 
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -378,7 +384,7 @@ class LibCBMWrapper(object):
         self._dll.LibCBM_InitializeLandState(ctypes.byref(self.err),
             self.handle, n, last_pass_disturbance, delay, initial_age,
             last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, land_class, age)
+            time_since_land_class_change, growth_enabled, enabled, land_class, age)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -388,7 +394,7 @@ class LibCBMWrapper(object):
                            maxRotations, finalAge, delay, slowPools,
                            historical_disturbance, last_pass_disturbance,
                            state, disturbance_types, rotation, step,
-                           lastRotationSlowC):
+                           lastRotationSlowC, enabled):
        if not self.handle:
            raise AssertionError("dll not initialized")
        n = spatial_units.shape[0]
@@ -401,7 +407,7 @@ class LibCBMWrapper(object):
             getNullableNdarray(maxRotations, type = ctypes.c_int),
             finalAge, delay, slowPools,historical_disturbance,
             last_pass_disturbance, state, disturbance_types, rotation, step,
-            lastRotationSlowC)
+            lastRotationSlowC, enabled)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())

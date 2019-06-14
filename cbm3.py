@@ -55,6 +55,7 @@ class CBM3:
         step = np.zeros(nstands, dtype=np.int32)
         lastRotationSlowC = np.zeros(nstands, dtype=np.float)
         disturbance_types = np.zeros(nstands, dtype=np.int32)
+        enabled = np.ones(nstands, dtype=np.int32)
 
         inventory_age = self.promoteScalar(inventory_age, nstands, dtype=np.int32)
         spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
@@ -99,8 +100,9 @@ class CBM3:
                 spatial_unit, return_interval, min_rotations, max_rotations,
                 inventory_age, delay, slowPools, historic_disturbance_type,
                 last_pass_disturbance_type, spinup_state, disturbance_types,
-                rotation, step, lastRotationSlowC)
-
+                rotation, step, lastRotationSlowC, enabled)
+            if n_finished == nstands:
+                break
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
                 classifiers, pools, age, spatial_unit, None, None, None, None)
@@ -110,9 +112,8 @@ class CBM3:
                                        disturbance_types)
 
             logging.info("ComputePools")
-            self.dll.ComputePools([ops[x] for x in opSchedule], pools)
-            if n_finished == nstands:
-                break
+            self.dll.ComputePools([ops[x] for x in opSchedule], pools, enabled)
+
             self.dll.EndSpinupStep(spinup_state, pools,
                 age, slowPools)
             if(debug):
