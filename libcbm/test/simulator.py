@@ -1,13 +1,9 @@
-def run_libCBM(dbpath, cases, nsteps, spinup_debug = False):
-    
-    dllpath = r'C:\dev\LibCBM\LibCBM\x64\Debug\LibCBM.dll'
+from libcbm.configuration import cbm_defaults
 
-    dlldir = os.path.dirname(dllpath)
-    cwd = os.getcwd()
-    os.chdir(dlldir)
+def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
+
     dll = LibCBMWrapper(dllpath)
-    os.chdir(cwd)
-    
+
     pooldef = cbm_defaults.load_cbm_pools(dbpath)
     dll.Initialize(libcbmconfig.to_string(
         {
@@ -18,7 +14,7 @@ def run_libCBM(dbpath, cases, nsteps, spinup_debug = False):
     #create a single classifier/classifier value for the single growth curve
     classifiers_config = cbmconfig.classifier_config([
         cbmconfig.classifier("growth_curve", [
-            cbmconfig.classifier_value(get_classifier_name(c["id"])) 
+            cbmconfig.classifier_value(get_classifier_name(c["id"]))
             for c in cases
         ])
     ])
@@ -83,4 +79,7 @@ def run_libCBM(dbpath, cases, nsteps, spinup_debug = False):
     iteration_result.reset_index(level=0, inplace=True)
     pool_result = pool_result.append(iteration_result)
     
-    return {"pools": pool_result, "spinup_debug": spinup_debug}
+    return {
+        "pools": pool_result,
+        "spinup_debug": spinup_debug
+    }

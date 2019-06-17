@@ -1,4 +1,4 @@
-import ctypes, logging, sqlite3, numpy as np
+import ctypes, logging, sqlite3, os, numpy as np
 from numpy.ctypeslib import ndpointer
 
 class LibCBM_SpinupState:
@@ -82,7 +82,13 @@ def getNullableNdarray(a, type=ctypes.c_double):
 class LibCBMWrapper(object):
     def __init__(self, dllpath):
         self.handle = False
+        #necessary because supporting libraries are in the same dir as the main one
+        #this needs to be fixed (will likely switch to static library)
+        dlldir = os.path.dirname(dllpath)
+        cwd = os.getcwd()
+        os.chdir(os.path.dirname(dllpath))
         self._dll = ctypes.CDLL(dllpath)
+        os.chdir(cwd)
         self.err = LibCBM_Error();
 
         self._dll.LibCBM_Free.argtypes = (

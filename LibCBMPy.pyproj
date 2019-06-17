@@ -28,31 +28,52 @@
     <InterpreterReference Include="Global|PythonCore|3.7" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="cbm3.py">
+    <Compile Include="libcbm\model\cbm3.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbmconfig.py">
+    <Compile Include="libcbm\configuration\cbmconfig.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="cbm_defaults.py">
+    <Compile Include="libcbm\configuration\cbm_defaults.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="layerclassifiers.py">
+    <Compile Include="libcbm\configuration\layerclassifiers.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="libcbmconfig.py">
+    <Compile Include="libcbm\configuration\libcbmconfig.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="libcbmwrapper.py" />
-    <Compile Include="sityield.py">
+    <Compile Include="libcbm\configuration\__init__.py" />
+    <Compile Include="libcbm\model\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="text_events.py">
+    <Compile Include="libcbm\test\casegeneration.py" />
+    <Compile Include="libcbm\test\cbm3support\cbm3_python_helper.py" />
+    <Compile Include="libcbm\test\cbm3support\cbm3_simulator.py" />
+    <Compile Include="libcbm\test\cbm3support\__init__.py" />
+    <Compile Include="libcbm\test\resultscomparison.py" />
+    <Compile Include="libcbm\test\simulator.py" />
+    <Compile Include="libcbm\test\__init__.py" />
+    <Compile Include="libcbm\wrapper\libcbmwrapper.py" />
+    <Compile Include="libcbm\configuration\sityield.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="text_inventory.py">
+    <Compile Include="libcbm\configuration\text_events.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="libcbm\configuration\text_inventory.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="libcbm\wrapper\__init__.py" />
+    <Compile Include="libcbm\__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="libcbm\" />
+    <Folder Include="libcbm\configuration\" />
+    <Folder Include="libcbm\model\" />
+    <Folder Include="libcbm\test\cbm3support\" />
+    <Folder Include="libcbm\wrapper\" />
+    <Folder Include="libcbm\test\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

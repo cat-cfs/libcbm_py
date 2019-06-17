@@ -1,7 +1,7 @@
 #parses SIT_yield-like formatted files
 
 import csv
-import cbm_defaults
+import libcbm.configuration.cbm_defaults as cbm_defaults
 
 
 def get_grouped_components(filtered_group, age_class_size, num_yields, species_ref):

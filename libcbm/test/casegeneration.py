@@ -1,6 +1,6 @@
 import math
-
-
+import numpy as np
+import libcbm.configuration.cbm_defaults as cbm_defaults
 def get_classifier_name(id):
     return str(id)
 
@@ -13,28 +13,14 @@ def get_random_sigmoid_func():
         return L/(1+math.exp(-k*(x-x_0)))
     return sigmoid
 
-
-#return y for a single value of x: nx
-def get_impulse_func():
-    y = np.random.rand(1)[0] * 500
-    nx = np.random.randint(low=1,high=size)
-    def impulse(x):
-        if x==nx:
-            return y
-        else:
-            return 0
-    return impulse
-
-
 #return a step of value y for the range minx to maxX
 def get_step_func():
     y = np.random.rand(1)[0] * 500
-    minX = np.random.randint(low=1,high=size)
-    maxX = size + 1 #np.random.randint(low=minX,high=size)
+    minX = np.random.randint(low=1, high=200)
     def step(x):
         if x == 0:
             return 0
-        if x>=minX and x<=maxX:
+        if x>=minX:
             return y
         else:
             return 0
@@ -55,11 +41,19 @@ def get_expCurve_func():
     return expCurve
 
 
-def create_scenario(id, admin_boundary, eco_boundary, components, events):
+def create_scenario(id, age, area, delay, unfccc_land_class, admin_boundary,
+                    eco_boundary, historic_disturbance, last_pass_disturbance,
+                    components, events):
     return {
         "id":id,
+        "age": age,
+        "area": area,
+        "delay": delay,
+        "unfccc_land_class": unfccc_land_class,
         "admin_boundary": admin_boundary,
         "eco_boundary": eco_boundary,
+        "historic_disturbance": historic_disturbance,
+        "last_pass_disturbance": last_pass_disturbance,
         "components": components,
         "events": events
     }
@@ -73,8 +67,9 @@ def choose_random_yield_func(func_factories=[
     return np.random.choice(func_factories,1)[0]()
 
 
-def generate_scenarios(random_seed, num_cases, dbpath, ndigits,
-    max_disturbances, growth_generator, age_interval, max_age):
+def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
+    max_disturbances, max_components, growth_generator, n_growth_digits,
+    age_interval, max_age):
 
     np.random.seed(random_seed)
 
@@ -91,7 +86,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, ndigits,
 
     cases = []
     for i in range(num_cases):
-        num_components = np.random.randint(1,5)
+        num_components = np.random.randint(1,max_components) if max_components > 1 else 1
         random_species = np.random.choice(list(species), num_components)
         spu = random_spus[i].split(',')
         components = []
@@ -99,13 +94,15 @@ def generate_scenarios(random_seed, num_cases, dbpath, ndigits,
             growth_func = choose_random_yield_func()
             components.append({
                 "species": random_species[c],
-                "age_volume_pairs": [growth_func(x) for x in range(0,max_age,age_interval)]
+                "age_volume_pairs": [(x, round(growth_func(x),n_growth_digits))
+                                     for x in range(0,max_age,age_interval)]
             })
 
+        disturbance_events = []
         if max_disturbances>0:
             num_disturbances = np.random.randint(0,max_disturbances)
             random_dist_types = np.random.choice(list(disturbance_types), num_disturbances)
-            disturbance_events = []
+
             min_timestep = 0
             for d in range(num_disturbances):
 
@@ -116,8 +113,14 @@ def generate_scenarios(random_seed, num_cases, dbpath, ndigits,
 
         cases.append(create_scenario(
             id = i+1,
+            age = 0,
+            area = 1.0,
+            delay = 0,
+            unfccc_land_class = 0,
             admin_boundary = spu[0],
             eco_boundary = spu[1],
+            historic_disturbance="Wildfire",
+            last_pass_disturbance="Wildfire",
             components = components,
             events = disturbance_events))
     return cases
