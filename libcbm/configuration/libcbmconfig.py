@@ -1,6 +1,5 @@
 import json
-import cbm_defaults
-import sityield
+import libcbm. cbm_defaults
 
 def load_json(path):
     with open(path) as f:

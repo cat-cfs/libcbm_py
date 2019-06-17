@@ -1,4 +1,3 @@
-from libcbmwrapper import LibCBM_SpinupState
 import numpy as np
 import pandas as pd
 import json, os,logging
