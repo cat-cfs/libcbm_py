@@ -79,7 +79,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     growth_enabled = np.zeros(nstands, dtype=np.int32)
 
     age = np.zeros(nstands, dtype=np.int32)
-    growth_multipliers = np.zeros(nstands, dtype=np.float)
+    growth_multipliers = np.ones(nstands, dtype=np.float)
     regeneration_delay = np.zeros(nstands, dtype=np.int32)
     disturbance_types = np.zeros(nstands, dtype=np.int32)
     transition_rules = np.zeros(nstands, dtype=np.int32)
@@ -115,7 +115,6 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         historic_disturbance_type=historic_disturbance_type,
         last_pass_disturbance_type=last_pass_disturbance_type,
         delay=delay,
-        enabled=enabled,
         mean_annual_temp=None,
         debug=spinup_debug)
 
