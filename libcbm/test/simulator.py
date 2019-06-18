@@ -63,6 +63,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     historic_disturbance_type = np.array([disturbance_types[c["historic_disturbance"]] for c in cases], dtype=np.int32)
     last_pass_disturbance_type = np.array([disturbance_types[c["last_pass_disturbance"]] for c in cases], dtype=np.int32)
     delay = np.array([c["delay"] for c in cases], dtype=np.int32)
+    land_class = np.ones(nstands, dtype=np.int32)
 
     classifiers = np.zeros((nstands,1),dtype=np.int32)
     classifiers[:,0]=[classifiers_config["classifier_index"][0] \
@@ -76,11 +77,12 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     time_since_last_disturbance = np.zeros(nstands, dtype=np.int32)
     time_since_land_class_change = np.zeros(nstands, dtype=np.int32)
     growth_enabled = np.zeros(nstands, dtype=np.int32)
-    land_class = np.zeros(nstands, dtype=np.int32)
+
     age = np.zeros(nstands, dtype=np.int32)
     growth_multipliers = np.zeros(nstands, dtype=np.float)
     regeneration_delay = np.zeros(nstands, dtype=np.int32)
     disturbance_types = np.zeros(nstands, dtype=np.int32)
+    transition_rules = np.zeros(nstands, dtype=np.int32)
     afforestation_pre_type_id = np.zeros(nstands, dtype=np.int32)
     pools = np.zeros((nstands,len(pooldef)))
     flux = np.zeros((nstands, len(flux_ind)))
@@ -123,6 +125,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         inventory_age=inventory_age,
         spatial_unit=spatial_units,
         afforestation_pre_type_id=afforestation_pre_type_id,
+        pools=pools,
         last_disturbance_type=last_disturbance_type,
         time_since_last_disturbance=time_since_last_disturbance,
         time_since_land_class_change=time_since_land_class_change,
@@ -140,7 +143,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     for t in range(1, nsteps+1):
 
         disturbance_types = disturbance_types * 0
-        for k,v in disturbance.items():
+        for k,v in disturbances.items():
             if t in v:
                 disturbance_types[k] = v[t]
 
@@ -152,11 +155,12 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             disturbance_types = disturbance_types,
             spatial_unit=spatial_units,
             mean_annual_temp=None,
-            transition_rule_ids=None,
+            transition_rule_ids=transition_rules,
             last_disturbance_type=last_disturbance_type,
             time_since_last_disturbance=time_since_last_disturbance,
             time_since_land_class_change=time_since_last_disturbance,
             growth_enabled=growth_enabled,
+            enabled=enabled,
             land_class=land_class,
             growth_multipliers=growth_multipliers,
             regeneration_delay=regeneration_delay)

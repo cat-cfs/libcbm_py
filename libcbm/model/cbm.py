@@ -136,12 +136,12 @@ class CBM:
         return debug_output
 
     def init(self, last_pass_disturbance_type, delay, inventory_age,
-             spatial_unit, afforestation_pre_type_id, last_disturbance_type,
+             spatial_unit, afforestation_pre_type_id, pools, last_disturbance_type,
              time_since_last_disturbance, time_since_land_class_change,
              growth_enabled, enabled, land_class, age):
 
         self.dll.InitializeLandState(last_pass_disturbance_type, delay,
-            inventory_age, spatial_unit, afforestation_pre_type_id,
+            inventory_age, spatial_unit, afforestation_pre_type_id, pools,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, enabled, land_class,
             age)
@@ -150,7 +150,7 @@ class CBM:
     def step(self, pools, flux, classifiers, age, disturbance_types,
             spatial_unit, mean_annual_temp, transition_rule_ids,
             last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, land_class,
+            time_since_land_class_change, growth_enabled, enabled, land_class,
             growth_multipliers, regeneration_delay):
 
         pools[:,0] = 1.0
@@ -180,7 +180,7 @@ class CBM:
         self.dll.AdvanceStandState(classifiers, disturbance_types,
             transition_rule_ids, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
-            growth_enabled, land_class, regeneration_delay, age)
+            growth_enabled, enabled, land_class, regeneration_delay, age)
 
         logging.info("GetDisturbanceOps")
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
@@ -201,7 +201,7 @@ class CBM:
 
         logging.info("Compute flux")
         self.dll.ComputeFlux([ops[x] for x in opSchedule],
-            [self.opProcesses[x] for x in opSchedule], pools, flux)
+            [self.opProcesses[x] for x in opSchedule], pools, flux, enabled)
 
         self.dll.EndStep(age, regeneration_delay)
         for x in self.opNames:
