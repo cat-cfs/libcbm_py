@@ -81,6 +81,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     growth_multipliers = np.zeros(nstands, dtype=np.float)
     regeneration_delay = np.zeros(nstands, dtype=np.int32)
     disturbance_types = np.zeros(nstands, dtype=np.int32)
+    afforestation_pre_type_id = np.zeros(nstands, dtype=np.int32)
     pools = np.zeros((nstands,len(pooldef)))
     flux = np.zeros((nstands, len(flux_ind)))
     enabled = np.ones(nstands, dtype=np.int32)
@@ -108,9 +109,11 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         classifiers=classifiers,
         inventory_age=inventory_age,
         spatial_unit=spatial_units,
+        afforestation_pre_type_id=afforestation_pre_type_id,
         historic_disturbance_type=historic_disturbance_type,
         last_pass_disturbance_type=last_pass_disturbance_type,
         delay=delay,
+        enabled=enabled,
         mean_annual_temp=None,
         debug=spinup_debug)
 
@@ -118,6 +121,8 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         last_pass_disturbance_type=last_pass_disturbance_type,
         delay=delay,
         inventory_age=inventory_age,
+        spatial_unit=spatial_units,
+        afforestation_pre_type_id=afforestation_pre_type_id,
         last_disturbance_type=last_disturbance_type,
         time_since_last_disturbance=time_since_last_disturbance,
         time_since_land_class_change=time_since_land_class_change,

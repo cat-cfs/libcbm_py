@@ -40,10 +40,11 @@ class CBM:
             return np.ones(size, dtype=dtype) * value
 
 
-    def spinup(self, pools, classifiers, inventory_age, spatial_unit,
+    def spinup(self, pools, classifiers, inventory_age,
+               spatial_unit, afforestation_pre_type_id,
                historic_disturbance_type, last_pass_disturbance_type,
-               delay, enabled, return_interval=None, min_rotations=None, max_rotations=None,
-               mean_annual_temp=None, debug=False):
+               delay, enabled, return_interval=None, min_rotations=None,
+               max_rotations=None, mean_annual_temp=None, debug=False):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
 
@@ -91,6 +92,9 @@ class CBM:
         if(debug):
             debug_output = pd.DataFrame()
         iteration = 0
+
+        
+
         while (True):
             logging.info("AdvanceSpinupState")
             #historic_disturbance_type, last_pass_disturbance_type,
@@ -98,8 +102,9 @@ class CBM:
             n_finished = self.dll.AdvanceSpinupState(
                 spatial_unit, return_interval, min_rotations, max_rotations,
                 inventory_age, delay, slowPools, historic_disturbance_type,
-                last_pass_disturbance_type, spinup_state, disturbance_types,
-                rotation, step, lastRotationSlowC, enabled)
+                last_pass_disturbance_type, afforestation_pre_type_id,
+                spinup_state, disturbance_types, rotation, step,
+                lastRotationSlowC, enabled)
             if n_finished == nstands:
                 break
             logging.info("GetMerchVolumeGrowthOps")
@@ -131,12 +136,15 @@ class CBM:
         return debug_output
 
     def init(self, last_pass_disturbance_type, delay, inventory_age,
-            last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled, land_class, age):
+             spatial_unit, afforestation_pre_type_id, last_disturbance_type,
+             time_since_last_disturbance, time_since_land_class_change,
+             growth_enabled, enabled, land_class, age):
 
         self.dll.InitializeLandState(last_pass_disturbance_type, delay,
-            inventory_age, last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled, land_class, age)
+            inventory_age, spatial_unit, afforestation_pre_type_id,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, enabled, land_class,
+            age)
 
 
     def step(self, pools, flux, classifiers, age, disturbance_types,

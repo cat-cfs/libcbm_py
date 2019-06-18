@@ -175,6 +175,9 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_pass_disturbance (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #initial_age (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #afforestation pre type id (length n)
+            LibCBM_Matrix, # pools
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_disturbance_type (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
@@ -197,6 +200,7 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #slowpools (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # historical disturbance type (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last pass disturbance type (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #afforestation pre type id (length n)
             ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n) (return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance type  (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #Rotation num (length n)(return value)
@@ -381,14 +385,16 @@ class LibCBMWrapper(object):
 
 
     def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
-        last_disturbance_type, time_since_last_disturbance,
-        time_since_land_class_change, growth_enabled, enabled, land_class, age):
+        spatial_units, afforestation_pre_type_id, pools, last_disturbance_type,
+        time_since_last_disturbance, time_since_land_class_change,
+        growth_enabled, enabled, land_class, age):
 
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = last_pass_disturbance.shape[0]
         self._dll.LibCBM_InitializeLandState(ctypes.byref(self.err),
             self.handle, n, last_pass_disturbance, delay, initial_age,
+            spatial_units, afforestation_pre_type_id, pools,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, enabled, land_class, age)
 
@@ -399,8 +405,8 @@ class LibCBMWrapper(object):
     def AdvanceSpinupState(self, spatial_units, returnInterval, minRotations,
                            maxRotations, finalAge, delay, slowPools,
                            historical_disturbance, last_pass_disturbance,
-                           state, disturbance_types, rotation, step,
-                           lastRotationSlowC, enabled):
+                           afforestation_pre_type_id, state, disturbance_types,
+                           rotation, step, lastRotationSlowC, enabled):
        if not self.handle:
            raise AssertionError("dll not initialized")
        n = spatial_units.shape[0]
@@ -412,8 +418,8 @@ class LibCBMWrapper(object):
             getNullableNdarray(minRotations, type = ctypes.c_int),
             getNullableNdarray(maxRotations, type = ctypes.c_int),
             finalAge, delay, slowPools,historical_disturbance,
-            last_pass_disturbance, state, disturbance_types, rotation, step,
-            lastRotationSlowC, enabled)
+            last_pass_disturbance, afforestation_pre_type_id, state,
+            disturbance_types, rotation, step, lastRotationSlowC, enabled)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
