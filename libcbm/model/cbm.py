@@ -42,7 +42,7 @@ class CBM:
 
     def spinup(self, pools, classifiers, inventory_age, spatial_unit,
                historic_disturbance_type, last_pass_disturbance_type,
-               delay, return_interval=None, min_rotations=None, max_rotations=None,
+               delay, enabled, return_interval=None, min_rotations=None, max_rotations=None,
                mean_annual_temp=None, debug=False):
         pools[:,0] = 1.0
         nstands = pools.shape[0]
@@ -55,7 +55,6 @@ class CBM:
         step = np.zeros(nstands, dtype=np.int32)
         lastRotationSlowC = np.zeros(nstands, dtype=np.float)
         disturbance_types = np.zeros(nstands, dtype=np.int32)
-        enabled = np.ones(nstands, dtype=np.int32)
 
         inventory_age = self.promoteScalar(inventory_age, nstands, dtype=np.int32)
         spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)

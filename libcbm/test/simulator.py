@@ -83,6 +83,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     disturbance_types = np.zeros(nstands, dtype=np.int32)
     pools = np.zeros((nstands,len(pooldef)))
     flux = np.zeros((nstands, len(flux_ind)))
+    enabled = np.ones(nstands, dtype=np.int32)
 
     disturbances = {}
     for i_c, c in enumerate(cases):
@@ -121,6 +122,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         time_since_last_disturbance=time_since_last_disturbance,
         time_since_land_class_change=time_since_land_class_change,
         growth_enabled=growth_enabled,
+        enabled=enabled,
         land_class=land_class,
         age=age)
 
