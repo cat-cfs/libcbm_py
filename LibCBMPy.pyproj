@@ -28,7 +28,7 @@
     <InterpreterReference Include="Global|PythonCore|3.7" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="libcbm\model\cbm3.py">
+    <Compile Include="libcbm\model\cbm.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="libcbm\configuration\cbmconfig.py">

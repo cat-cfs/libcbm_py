@@ -1,24 +1,30 @@
+import numpy as np
+import pandas as pd
 from libcbm.configuration import cbm_defaults
-
+from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
+from libcbm.model.cbm import CBM
+from libcbm.configuration import libcbmconfig
+from libcbm.configuration import cbmconfig
+from libcbm.test import casegeneration
 def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     dll = LibCBMWrapper(dllpath)
 
     pooldef = cbm_defaults.load_cbm_pools(dbpath)
+    flux_ind = cbm_defaults.load_flux_indicators(dbpath)
     dll.Initialize(libcbmconfig.to_string(
         {
             "pools": pooldef,
-            "flux_indicators": cbm_defaults.load_flux_indicators(dbpath)
+            "flux_indicators": flux_ind
         }))
     
     #create a single classifier/classifier value for the single growth curve
     classifiers_config = cbmconfig.classifier_config([
         cbmconfig.classifier("growth_curve", [
-            cbmconfig.classifier_value(get_classifier_name(c["id"]))
+            cbmconfig.classifier_value(casegeneration.get_classifier_name(c["id"]))
             for c in cases
         ])
     ])
-
 
     transitions_config = []
     species_reference = cbm_defaults.load_species_reference(dbpath, "en-CA")
@@ -26,7 +32,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
     curves = []
     for c in cases:
-        classifier_set = [get_classifier_name(c["id"])]
+        classifier_set = [casegeneration.get_classifier_name(c["id"])]
         merch_volumes = []
         for component in c["components"]:
             merch_volumes.append({
@@ -51,34 +57,103 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     }))
 
     nstands = len(cases)
-    age = np.zeros(nstands,dtype=np.int32)
+
+    inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)
+
+    historic_disturbance_type = np.array([disturbance_types[c["historic_disturbance"]] for c in cases], dtype=np.int32)
+    last_pass_disturbance_type = np.array([disturbance_types[c["last_pass_disturbance"]] for c in cases], dtype=np.int32)
+    delay = np.array([c["delay"] for c in cases], dtype=np.int32)
+
     classifiers = np.zeros((nstands,1),dtype=np.int32)
-    classifiers[:,0]=[classifiers_config["classifier_index"][0][get_classifier_name(c["id"])] for c in cases]
-         
+    classifiers[:,0]=[classifiers_config["classifier_index"][0] \
+        [casegeneration.get_classifier_name(c["id"])] for c in cases]
+
     spatial_units = np.array(
         [spatial_unit_reference[(c["admin_boundary"],c["eco_boundary"])]
             for c in cases],dtype=np.int32)
+
+    last_disturbance_type = np.zeros(nstands, dtype=np.int32)
+    time_since_last_disturbance = np.zeros(nstands, dtype=np.int32)
+    time_since_land_class_change = np.zeros(nstands, dtype=np.int32)
+    growth_enabled = np.zeros(nstands, dtype=np.int32)
+    land_class = np.zeros(nstands, dtype=np.int32)
+    age = np.zeros(nstands, dtype=np.int32)
+    growth_multipliers = np.zeros(nstands, dtype=np.float)
+    regeneration_delay = np.zeros(nstands, dtype=np.int32)
+    disturbance_types = np.zeros(nstands, dtype=np.int32)
     pools = np.zeros((nstands,len(pooldef)))
-    cbm3 = CBM3(dll)
+    flux = np.zeros((nstands, len(flux_ind)))
+
+    disturbances = {}
+    for i_c, c in enumerate(cases):
+        for e in c["events"]:
+            time_step = e["time_step"]
+            dist_type_id = disturbance_types[e["disturbance_type"]]
+            if i_c in disturbances:
+                if time_step in disturbances[i_c]:
+                    raise ValueError("more than one event found for index {0}, timestep {1}"
+                                     .format(i_c, time_step))
+                else:
+                    disturbances[i_c][time_step] = dist_type_id
+            else:
+                disturbances[i_c] = {time_step: dist_type_id}
+
+
+    cbm3 = CBM(dll)
     pool_result = pd.DataFrame()
-    
+
     spinup_debug = cbm3.spinup(
         pools=pools,
         classifiers=classifiers,
-        inventory_age=c["age"],
+        inventory_age=inventory_age,
         spatial_unit=spatial_units,
-        historic_disturbance_type=disturbance_types[c["historic_disturbance"]],
-        last_pass_disturbance_type=disturbance_types[c["last_pass_disturbance"]],
-        delay=c["delay"],
+        historic_disturbance_type=historic_disturbance_type,
+        last_pass_disturbance_type=last_pass_disturbance_type,
+        delay=delay,
         mean_annual_temp=None,
         debug=spinup_debug)
-    
+
+    cbm3.init(
+        last_pass_disturbance_type=last_pass_disturbance_type,
+        delay=delay,
+        inventory_age=inventory_age,
+        last_disturbance_type=last_disturbance_type,
+        time_since_last_disturbance=time_since_last_disturbance,
+        time_since_land_class_change=time_since_land_class_change,
+        growth_enabled=growth_enabled,
+        land_class=land_class,
+        age=age)
+
     iteration_result = pd.DataFrame({x["name"]: pools[:,x["index"]] for x in pooldef})
     iteration_result.insert(0, "timestep", 0) 
-    iteration_result.insert(0, "age", 0) #fix this, ages will be a random vector soon
+    iteration_result.insert(0, "age", age) 
     iteration_result.reset_index(level=0, inplace=True)
     pool_result = pool_result.append(iteration_result)
-    
+
+    for t in range(1, nsteps+1):
+
+        disturbance_types = disturbance_types * 0
+        for k,v in disturbance.items():
+            if t in v:
+                disturbance_types[k] = v[t]
+
+        cbm3.step(
+            pools=pools,
+            flux=flux,
+            classifiers=classifiers,
+            age=age,
+            disturbance_types = disturbance_types,
+            spatial_unit=spatial_units,
+            mean_annual_temp=None,
+            transition_rule_ids=None,
+            last_disturbance_type=last_disturbance_type,
+            time_since_last_disturbance=time_since_last_disturbance,
+            time_since_land_class_change=time_since_last_disturbance,
+            growth_enabled=growth_enabled,
+            land_class=land_class,
+            growth_multipliers=growth_multipliers,
+            regeneration_delay=regeneration_delay)
+
     return {
         "pools": pool_result,
         "spinup_debug": spinup_debug

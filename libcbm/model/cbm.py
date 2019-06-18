@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import json, os,logging
-class CBM3:
+
+class CBM:
     def __init__(self, dll):
         self.dll = dll
 
@@ -132,14 +133,14 @@ class CBM3:
 
     def init(self, last_pass_disturbance_type, delay, inventory_age,
             last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, land_class, age):
+            time_since_land_class_change, growth_enabled, enabled, land_class, age):
 
         self.dll.InitializeLandState(last_pass_disturbance_type, delay,
             inventory_age, last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, land_class, age)
+            time_since_land_class_change, growth_enabled, enabled, land_class, age)
 
 
-    def step(self, step, pools, flux, classifiers, age, disturbance_types,
+    def step(self, pools, flux, classifiers, age, disturbance_types,
             spatial_unit, mean_annual_temp, transition_rule_ids,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, land_class,
