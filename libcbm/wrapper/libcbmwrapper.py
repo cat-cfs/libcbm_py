@@ -107,6 +107,12 @@ class LibCBMWrapper(object):
             ctypes.c_size_t #n ops
         )
 
+        self._dll.LibCBM_Free_Op.argtypes = (
+            ctypes.POINTER(LibCBM_Error), # error struct
+            ctypes.c_void_p, #handle
+            ctypes.c_size_t #op id
+        )
+
         self._dll.LibCBM_SetOp.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
@@ -296,6 +302,20 @@ class LibCBMWrapper(object):
            raise RuntimeError(self.err.getErrorMessage())
 
         return op_id
+
+
+    def FreeOp(self, op_id):
+        if not self.handle:
+           raise AssertionError("dll not initialized")
+
+        self._dll.LibCBM_Free_Op(
+            ctypes.byref(self.err),
+            self.handle, op_id)
+
+        if self.err.Error != 0:
+           raise RuntimeError(self.err.getErrorMessage())
+
+
 
     def SetOp(self, op_id, matrices, matrix_index):
         if not self.handle:
