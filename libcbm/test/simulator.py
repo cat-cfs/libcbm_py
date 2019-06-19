@@ -25,7 +25,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             "pools": pooldef,
             "flux_indicators": flux_ind
         }))
-    
+
     #create a single classifier/classifier value for the single growth curve
     classifiers_config = cbmconfig.classifier_config([
         cbmconfig.classifier("growth_curve", [
@@ -37,7 +37,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     transitions_config = []
     species_reference = cbm_defaults.load_species_reference(dbpath, "en-CA")
     spatial_unit_reference = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(dbpath, "en-CA")
-    disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
+    disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
     curves = []
     for c in cases:
         classifier_set = [casegeneration.get_classifier_name(c["id"])]
@@ -68,8 +68,8 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)
 
-    historic_disturbance_type = np.array([disturbance_types[c["historic_disturbance"]] for c in cases], dtype=np.int32)
-    last_pass_disturbance_type = np.array([disturbance_types[c["last_pass_disturbance"]] for c in cases], dtype=np.int32)
+    historic_disturbance_type = np.array([disturbance_types_reference[c["historic_disturbance"]] for c in cases], dtype=np.int32)
+    last_pass_disturbance_type = np.array([disturbance_types_reference[c["last_pass_disturbance"]] for c in cases], dtype=np.int32)
     delay = np.array([c["delay"] for c in cases], dtype=np.int32)
     land_class = np.ones(nstands, dtype=np.int32)
 
@@ -100,7 +100,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     for i_c, c in enumerate(cases):
         for e in c["events"]:
             time_step = e["time_step"]
-            dist_type_id = disturbance_types[e["disturbance_type"]]
+            dist_type_id = disturbance_types_reference[e["disturbance_type"]]
             if i_c in disturbances:
                 if time_step in disturbances[i_c]:
                     raise ValueError("more than one event found for index {0}, timestep {1}"
