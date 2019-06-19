@@ -91,4 +91,11 @@ def run_cbm3(aidb_path, project_path, toolbox_path, cbm_exe_path,
         cbm_exe_path=cbm_exe_path,
         results_database_path = cbm3_results_db_path)
     return cbm3_results_db_path
-    
+
+def get_cbm3_results(cbm3_results_db_path):
+    cbm3_pool_result = cbm3_results.load_pool_indicators(cbm3_results_db_path, classifier_set_grouping=True)
+    cbm3_flux_result = cbm3_results.load_stock_changes(cbm3_results_db_path, classifier_set_grouping=True)
+    return {
+        "pools": cbm3_pool_result,
+        "flux": cbm3_flux_result
+        }

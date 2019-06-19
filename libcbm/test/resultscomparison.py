@@ -1,6 +1,6 @@
-def join_pools():
+def join_pools(libCBM_pools, cbm3_pools ):
     
-    libCBM_pools = libCBM_pool_result[['identifier','timestep', 'SoftwoodMerch', 'SoftwoodFoliage', 
+    libCBM_pools = libCBM_pools[['identifier','timestep', 'SoftwoodMerch', 'SoftwoodFoliage', 
                    'SoftwoodOther', 'SoftwoodCoarseRoots', 'SoftwoodFineRoots',
                    'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther',
                    'HardwoodCoarseRoots', 'HardwoodFineRoots', 'AboveGroundVeryFastSoil',
@@ -8,7 +8,7 @@ def join_pools():
                    'AboveGroundSlowSoil', 'BelowGroundSlowSoil', 'SoftwoodStemSnag', 'SoftwoodBranchSnag',
                    'HardwoodStemSnag', 'HardwoodBranchSnag']]
 
-    cbm3_pools = cbm3_pool_result[['identifier','TimeStep', 'Softwood Merchantable', 'Softwood Foliage',
+    cbm3_pools = cbm3_pools[['identifier','TimeStep', 'Softwood Merchantable', 'Softwood Foliage',
                  'Softwood Other', 'Softwood Coarse Roots', 'Softwood Fine Roots',
                  'Hardwood Merchantable', 'Hardwood Foliage', 'Hardwood Other',
                  'Hardwood Coarse Roots', 'Hardwood Fine Roots', 'Aboveground Very Fast DOM',

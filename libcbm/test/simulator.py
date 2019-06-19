@@ -6,6 +6,14 @@ from libcbm.model.cbm import CBM
 from libcbm.configuration import libcbmconfig
 from libcbm.configuration import cbmconfig
 from libcbm.test import casegeneration
+
+def append_pools_data(df, nstands, timestep, pools, pooldef):
+    data = {"timestep": timestep, "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)]}
+    data.update({x["name"]: pools[:,x["index"]] for x in pooldef})
+    cols=["timestep","identifier"] + [x["name"] for x in pooldef]
+    df = df.append(pd.DataFrame(data=data, columns=cols))
+    return df
+
 def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     dll = LibCBMWrapper(dllpath)
@@ -133,11 +141,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         land_class=land_class,
         age=age)
 
-    iteration_result = pd.DataFrame({x["name"]: pools[:,x["index"]] for x in pooldef})
-    iteration_result.insert(0, "timestep", 0) 
-    iteration_result.insert(0, "age", age) 
-    iteration_result.reset_index(level=0, inplace=True)
-    pool_result = pool_result.append(iteration_result)
+    pool_result = append_pools_data(pool_result, nstands, 0, pools, pooldef)
 
     for t in range(1, nsteps+1):
 
@@ -163,6 +167,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             land_class=land_class,
             growth_multipliers=growth_multipliers,
             regeneration_delay=regeneration_delay)
+        pool_result = append_pools_data(pool_result, nstands, t, pools, pooldef)
 
     return {
         "pools": pool_result,
