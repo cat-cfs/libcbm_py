@@ -7,7 +7,7 @@ from libcbm.test import casegeneration
 import os
 def get_project_path(toolbox_path, name):
     #creates a default path for a cbm project databases in the toolbox installation dir
-    return os.path.join(toolbox_path, "Projects", "{}.mdb".format(name))
+    return os.path.join(toolbox_path, "Projects", name, "{}.mdb".format(name))
 
 
 def get_results_path(project_path):

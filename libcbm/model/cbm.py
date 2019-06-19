@@ -8,8 +8,8 @@ class CBM:
 
         self.opNames = [
             "growth",
-            "biomass_turnover",
             "snag_turnover",
+            "biomass_turnover",
             "dom_decay",
             "slow_decay",
             "slow_mixing",
@@ -18,8 +18,8 @@ class CBM:
 
         self.opProcesses = {
             "growth": 1,
-            "biomass_turnover": 1,
             "snag_turnover": 1,
+            "biomass_turnover": 1,
             "dom_decay": 2,
             "slow_decay": 2,
             "slow_mixing": 2,
@@ -72,7 +72,7 @@ class CBM:
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
         logging.info("GetTurnoverOps")
-        self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"],
+        self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
                                 spatial_unit)
 
         logging.info("GetDecayOps")
@@ -81,8 +81,8 @@ class CBM:
 
         opSchedule = [
             "growth",
-            "biomass_turnover",
             "snag_turnover",
+            "biomass_turnover",
             "growth",
             "dom_decay",
             "slow_decay",
@@ -171,8 +171,8 @@ class CBM:
         opSchedule = [
             "disturbance",
             "growth",
-            "biomass_turnover",
             "snag_turnover",
+            "biomass_turnover",
             "growth",
             "dom_decay",
             "slow_decay",
@@ -195,7 +195,7 @@ class CBM:
             time_since_last_disturbance, growth_multipliers, growth_enabled)
         
         logging.info("GetTurnoverOps")
-        self.dll.GetTurnoverOps(ops["biomass_turnover"], ops["snag_turnover"],
+        self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
             spatial_unit)
 
         logging.info("GetDecayOps")
