@@ -51,7 +51,7 @@
     <Compile Include="libcbm\test\cbm3support\cbm3_python_helper.py" />
     <Compile Include="libcbm\test\cbm3support\cbm3_simulator.py" />
     <Compile Include="libcbm\test\cbm3support\__init__.py" />
-    <Compile Include="libcbm\test\resultscomparison.py" />
+    <Compile Include="libcbm\test\poolcomparison.py" />
     <Compile Include="libcbm\test\simulator.py" />
     <Compile Include="libcbm\test\__init__.py" />
     <Compile Include="libcbm\wrapper\libcbmwrapper.py" />
