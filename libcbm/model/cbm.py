@@ -180,8 +180,8 @@ class CBM:
             ]
 
         logging.info("AdvanceStandState")
-        self.dll.AdvanceStandState(classifiers, disturbance_types,
-            transition_rule_ids, last_disturbance_type,
+        self.dll.AdvanceStandState(classifiers, spatial_unit,
+            disturbance_types, transition_rule_ids, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
             growth_enabled, enabled, land_class, regeneration_delay, age)
 

@@ -154,6 +154,7 @@ class LibCBMWrapper(object):
                 ctypes.c_void_p, #handle
                 ctypes.c_size_t, #n stands
                 LibCBM_Matrix_Int, #classifiers
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # spatial_units (length n)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # disturbance_types (length n)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # transition_rule_ids (length n)
                 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last_disturbance_type (length n) (return value)
@@ -377,8 +378,9 @@ class LibCBMWrapper(object):
             raise RuntimeError(self.err.getErrorMessage())
 
 
-    def AdvanceStandState(self, classifiers, disturbance_types, transition_rule_ids,
-                          last_disturbance_type, time_since_last_disturbance,
+    def AdvanceStandState(self, classifiers, spatial_units, disturbance_types,
+                          transition_rule_ids, last_disturbance_type,
+                          time_since_last_disturbance,
                           time_since_land_class_change, growth_enabled, enabled,
                           land_class, regeneration_delay, age):
        if not self.handle:
@@ -388,9 +390,10 @@ class LibCBMWrapper(object):
 
        self._dll.LibCBM_AdvanceStandState(
             ctypes.byref(self.err), self.handle, n, classifiersMat,
-            disturbance_types, transition_rule_ids, last_disturbance_type,
-            time_since_last_disturbance, time_since_land_class_change,
-            growth_enabled, enabled, land_class, regeneration_delay, age)
+            spatial_units, disturbance_types, transition_rule_ids,
+            last_disturbance_type, time_since_last_disturbance,
+            time_since_land_class_change, growth_enabled, enabled,
+            land_class, regeneration_delay, age)
 
        if self.err.Error != 0:
            raise RuntimeError(self.err.getErrorMessage())
