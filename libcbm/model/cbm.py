@@ -168,8 +168,7 @@ class CBM:
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
-        opSchedule = [
-            #"disturbance",
+        annual_process_opSchedule = [
             "growth",
             "snag_turnover",
             "biomass_turnover",
@@ -189,8 +188,12 @@ class CBM:
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
                                   disturbance_types)
         logging.info("Compute flux")
-        self.dll.ComputeFlux([ops[x] for x in ["disturbance"]],
-            [self.opProcesses[x] for x in ["disturbance"]], pools, flux, enabled)
+        self.dll.ComputeFlux([ops["disturbance"]],
+            [self.opProcesses["disturbance"]], pools, flux,
+            enabled=None)
+        #enabled = none on line above is due to a possible bug in CBM3:
+        #stands can be disturbed despite having other C-dynamics processes disabled
+        #(which happens in peatland, cropland, and other non forest landclasses)
 
         logging.info("GetMerchVolumeGrowthOps")
         self.dll.GetMerchVolumeGrowthOps(ops["growth"],
@@ -206,8 +209,9 @@ class CBM:
             ops["slow_mixing"], spatial_unit, mean_annual_temp)
 
         logging.info("Compute flux")
-        self.dll.ComputeFlux([ops[x] for x in opSchedule],
-            [self.opProcesses[x] for x in opSchedule], pools, flux, enabled)
+        self.dll.ComputeFlux([ops[x] for x in annual_process_opSchedule],
+            [self.opProcesses[x] for x in annual_process_opSchedule],
+            pools, flux, enabled)
 
         self.dll.EndStep(age, regeneration_delay)
         for x in self.opNames:
