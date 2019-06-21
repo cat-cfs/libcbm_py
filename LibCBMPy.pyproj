@@ -5,15 +5,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{f31fe227-d138-4850-a19d-8612f73a2d14}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>libcbm\run_test_case.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|PythonCore|3.7</InterpreterId>
-    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -45,6 +44,9 @@
     </Compile>
     <Compile Include="libcbm\configuration\__init__.py" />
     <Compile Include="libcbm\model\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="libcbm\run_test_case.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="libcbm\test\casegeneration.py" />

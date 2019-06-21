@@ -169,7 +169,7 @@ class CBM:
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
         opSchedule = [
-            "disturbance",
+            #"disturbance",
             "growth",
             "snag_turnover",
             "biomass_turnover",
@@ -188,6 +188,9 @@ class CBM:
         logging.info("GetDisturbanceOps")
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
                                   disturbance_types)
+        logging.info("Compute flux")
+        self.dll.ComputeFlux([ops[x] for x in ["disturbance"]],
+            [self.opProcesses[x] for x in ["disturbance"]], pools, flux, enabled)
 
         logging.info("GetMerchVolumeGrowthOps")
         self.dll.GetMerchVolumeGrowthOps(ops["growth"],
