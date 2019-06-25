@@ -47,11 +47,16 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, nsteps, cbm_
     sit_config.set_admin_eco_mapping("admin","eco")
     sit_config.set_species_classifier("species")
     for c in cases:
+        species = None
+        if not c["afforestation_pre_type"] is None:
+            species = c["afforestation_pre_type"]
+        else:
+            species = "Spruce" #"Spruce" does not actually matter here, since ultimately species composition is decided in yields
         cset = [
             c["admin_boundary"],
             c["eco_boundary"],
             casegeneration.get_classifier_name(c["id"]),
-            "Spruce"] #"Spruce" does not acutally matter here, since ultimately species composition is decided in yields
+            species]
         sit_config.add_inventory(classifier_set=cset, area=c["area"],
             age=c["age"], unfccc_land_class=c["unfccc_land_class"],
             delay=c["delay"], historic_disturbance=c["historic_disturbance"],

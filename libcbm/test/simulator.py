@@ -73,10 +73,14 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)
 
-    historic_disturbance_type = np.array([disturbance_types_reference[c["historic_disturbance"]] for c in cases], dtype=np.int32)
-    last_pass_disturbance_type = np.array([disturbance_types_reference[c["last_pass_disturbance"]] for c in cases], dtype=np.int32)
+    historic_disturbance_type = np.array(
+        [disturbance_types_reference[c["historic_disturbance"]]
+            for c in cases], dtype=np.int32)
+    last_pass_disturbance_type = np.array(
+        [disturbance_types_reference[c["last_pass_disturbance"]]
+            for c in cases], dtype=np.int32)
+
     delay = np.array([c["delay"] for c in cases], dtype=np.int32)
-    land_class = np.ones(nstands, dtype=np.int32)
 
     classifiers = np.zeros((nstands,1),dtype=np.int32)
     classifiers[:,0]=[classifiers_config["classifier_index"][0] \
@@ -87,11 +91,11 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             for c in cases],dtype=np.int32)
 
     afforestation_pre_type_id = np.array(
-        [
-        afforestation_pre_types[c["afforestation_pre_type"]] 
+        [afforestation_pre_types[c["afforestation_pre_type"]] 
          for c in cases if not c["afforestation_pre_type"] is None else 0 ],
         dtype=np.int32)
 
+    land_class = np.ones(nstands, dtype=np.int32)
     last_disturbance_type = np.zeros(nstands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(nstands, dtype=np.int32)
     time_since_land_class_change = np.zeros(nstands, dtype=np.int32)
