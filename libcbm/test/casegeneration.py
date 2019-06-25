@@ -125,7 +125,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
         age = 0
         delay = 0
         afforestation_pre_type = 0
-        last_pass_disturbance = None
+        last_pass_disturbance = "Wildfire"
         historic_disturbance = "Wildfire"
         unfccc_land_class = "UNFCCC_FL_R_FL"
         if creation_disturbance in ["Wildfire", "Clearcut harvesting with salvage"]:
@@ -137,8 +137,6 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
             unfccc_land_class = land_class_by_dist_type[last_pass_disturbance]["land_class_code"]
         if creation_disturbance == "Afforestation":
             #since there are constant pools, spinup, and therefore historic/last pass disturbance types do not apply
-            last_pass_disturbance = None 
-            historic_disturbance = None
             unfccc_land_class = "UNFCCC_CL_R_CL"
             if len(disturbance_events) > 0:
                 # Since we are trying to model the afforestation case,
@@ -152,7 +150,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
                 })
 
         cases.append(create_scenario(
-            id = i+1,
+            id = i + 1,
             age = age,
             area = 1.0,
             delay = delay,
@@ -161,7 +159,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
             admin_boundary = spu[0],
             eco_boundary = spu[1],
             historic_disturbance = historic_disturbance,
-            last_pass_disturbance = last_pass,
+            last_pass_disturbance = last_pass_disturbance,
             components = components,
             events = disturbance_events))
     return cases

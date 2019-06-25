@@ -223,7 +223,7 @@ def get_land_class_reference(sqlitePath, locale_code="en-CA"):
     result = []
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,locale_code)):
+        for row in cursor.execute(query, (locale_code,)):
             result.append({
             "land_class_id": row[0],
             "land_class_code": row[1],

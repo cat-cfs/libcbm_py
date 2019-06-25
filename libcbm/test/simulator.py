@@ -40,7 +40,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
 
     land_class_ref = cbm_defaults.get_land_class_reference(dbpath, "en-CA")
-    land_classes_by_code = {x["code"]: x for x in land_class_ref}
+    land_classes_by_code = {x["land_class_code"]: x for x in land_class_ref}
     
     curves = []
     for c in cases:
