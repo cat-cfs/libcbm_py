@@ -64,7 +64,7 @@ queries = {
     """,
 
     "land_classes": """
-        select land_class.id, land_class.is_forest, land_class.is_simulated
+        select land_class.id, land_class.is_forest, land_class.is_simulated,
         land_class.transitional_period, land_class.transition_id
         from land_class;
     """,
@@ -182,6 +182,54 @@ def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
             result[(row[1],row[2])] = row[0]
     return result
 
+def get_land_class_disturbance_reference(sqlitePath, locale_code="en-CA"):
+    query = """
+        select 
+        disturbance_type.id as disturbance_type_id,
+        disturbance_type_tr.name as disturbance_type_name,
+        land_class.id as land_class_id,
+        land_class.code as land_class_code,
+        land_class_tr.description as land_class_description
+        from disturbance_type 
+        inner join land_class on disturbance_type.transition_land_class_id = land_class.id
+        inner join land_class_tr on land_class_tr.land_class_id = land_class.id
+        inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
+        inner join locale dt_loc on disturbance_type_tr.locale_id = dt_loc.id
+        inner join locale lc_loc on land_class_tr.locale_id = lc_loc.id
+        where dt_loc.code = ? and lc_loc.code = ?
+    """
+    result = []
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,locale_code)):
+            result.append({
+            "disturbance_type_id": row[0],
+            "disturbance_type_name": row[1],
+            "land_class_id": row[2],
+            "land_class_code": row[3],
+            "land_class_description": row[4]
+            })
+    return result
+
+def get_land_class_reference(sqlitePath, locale_code="en-CA"):
+    query = """
+        select 
+        land_class.id as land_class_id, land_class.code, land_class_tr.description
+        from land_class 
+        inner join land_class_tr on land_class_tr.land_class_id = land_class.id
+        inner join locale on land_class_tr.locale_id = locale.id
+        where locale.code = ?
+    """
+    result = []
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,locale_code)):
+            result.append({
+            "land_class_id": row[0],
+            "land_class_code": row[1],
+            "land_class_description": row[2]
+            })
+    return result
 
 def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
     query = """
@@ -189,6 +237,21 @@ def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
         from disturbance_type 
         inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
         inner join locale on disturbance_type_tr.locale_id = locale.id
+        where locale.code = ?
+        """
+    result = {}
+    with sqlite3.connect(sqlitePath) as conn:
+        cursor = conn.cursor()
+        for row in cursor.execute(query, (locale_code,)):
+            result[row[1]] = row[0]
+    return result
+
+def get_afforestation_types_by_name(sqlitePath, locale_code="en-CA"):
+    query = """
+        select afforestation_pre_type.id, afforestation_pre_type_tr.name 
+        from afforestation_pre_type inner join afforestation_pre_type_tr 
+        on afforestation_pre_type_tr.afforestation_pre_type_id = afforestation_pre_type.id
+        inner join locale on afforestation_pre_type_tr.locale_id = locale.id
         where locale.code = ?
         """
     result = {}
@@ -208,6 +271,7 @@ def get_flux_indicator_names_by_id(sqlitePath):
         for row in cursor.execute(query):
             result[row[0]] = row[1]
     return result
+
 
 def load_cbm_pools(sqlitePath):
     result = []
