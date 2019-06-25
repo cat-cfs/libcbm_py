@@ -124,7 +124,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
 
         age = 0
         delay = 0
-        afforestation_pre_type = 0
+        afforestation_pre_type = None
         last_pass_disturbance = "Wildfire"
         historic_disturbance = "Wildfire"
         unfccc_land_class = "UNFCCC_FL_R_FL"
@@ -138,6 +138,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
         if creation_disturbance == "Afforestation":
             #since there are constant pools, spinup, and therefore historic/last pass disturbance types do not apply
             unfccc_land_class = "UNFCCC_CL_R_CL"
+            afforestation_pre_type = np.random.choice(list(afforestation_pre_types), 1)[0]
             if len(disturbance_events) > 0:
                 # Since we are trying to model the afforestation case,
                 # override the randomly selected first disturbance with

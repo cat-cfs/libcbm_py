@@ -38,10 +38,11 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     species_reference = cbm_defaults.load_species_reference(dbpath, "en-CA")
     spatial_unit_reference = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(dbpath, "en-CA")
     disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
-
+    afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
     land_class_ref = cbm_defaults.get_land_class_reference(dbpath, "en-CA")
     land_classes_by_code = {x["land_class_code"]: x for x in land_class_ref}
     
+    afforestation_pre_type_ref = 
     curves = []
     for c in cases:
         classifier_set = [casegeneration.get_classifier_name(c["id"])]
@@ -86,7 +87,9 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             for c in cases],dtype=np.int32)
 
     afforestation_pre_type_id = np.array(
-        [c["afforestation_pre_type"] for c in cases],
+        [
+        afforestation_pre_types[c["afforestation_pre_type"]] 
+         for c in cases if not c["afforestation_pre_type"] is None else 0 ],
         dtype=np.int32)
 
     last_disturbance_type = np.zeros(nstands, dtype=np.int32)
