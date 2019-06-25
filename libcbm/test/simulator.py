@@ -38,6 +38,10 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     species_reference = cbm_defaults.load_species_reference(dbpath, "en-CA")
     spatial_unit_reference = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(dbpath, "en-CA")
     disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
+
+    land_class_ref = cbm_defaults.get_land_class_reference(dbpath, "en-CA")
+    land_classes_by_code = {x["code"]: x for x in land_class_ref}
+    
     curves = []
     for c in cases:
         classifier_set = [casegeneration.get_classifier_name(c["id"])]
@@ -81,6 +85,10 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         [spatial_unit_reference[(c["admin_boundary"],c["eco_boundary"])]
             for c in cases],dtype=np.int32)
 
+    afforestation_pre_type_id = np.array(
+        [c["afforestation_pre_type"] for c in cases],
+        dtype=np.int32)
+
     last_disturbance_type = np.zeros(nstands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(nstands, dtype=np.int32)
     time_since_land_class_change = np.zeros(nstands, dtype=np.int32)
@@ -91,7 +99,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     regeneration_delay = np.zeros(nstands, dtype=np.int32)
     disturbance_types = np.zeros(nstands, dtype=np.int32)
     transition_rules = np.zeros(nstands, dtype=np.int32)
-    afforestation_pre_type_id = np.zeros(nstands, dtype=np.int32)
+
     pools = np.zeros((nstands,len(pooldef)))
     flux = np.zeros((nstands, len(flux_ind)))
     enabled = np.ones(nstands, dtype=np.int32)
