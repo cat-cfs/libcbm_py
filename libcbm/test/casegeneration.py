@@ -120,7 +120,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
             "Wildfire",
             "Clearcut harvesting with salvage",
             "Deforestation",
-            "Afforestation"])[0]
+            "Afforestation"], 1)[0]
 
         age = 0
         delay = 0

@@ -5,6 +5,17 @@ from cbm3_python.cbm3data import sit_helper
 from cbm3_python.cbm3data import cbm3_results
 from libcbm.test import casegeneration
 import os
+
+def get_unfccc_land_class_id_ref():
+    return { "UNFCCC_FL_R_FL": 0, "UNFCCC_CL_R_CL": 1, "UNFCCC_GL_R_GL": 2,
+    "UNFCCC_WL_R_WL": 3, "UNFCCC_SL_R_SL": 4, "UNFCCC_OL_R_OL": 5,
+    "UNFCCC_CL_R_FL": 6, "UNFCCC_GL_R_FL": 7, "UNFCCC_WL_R_FL": 8,
+    "UNFCCC_SL_R_FL": 9, "UNFCCC_OL_R_FL": 10, "UNFCCC_FL_R_CL": 11,
+    "UNFCCC_FL_R_GL": 12, "UNFCCC_FL_R_WL": 13, "UNFCCC_FL_R_SL": 14,
+    "UNFCCC_FL_R_OL": 15, "UNFCCC_UFL": 16, "UNFCCC_UFL_R_CL": 17,
+    "UNFCCC_UFL_R_GL": 18, "UNFCCC_UFL_R_WL": 19, "UNFCCC_UFL_R_SL": 20,
+    "UNFCCC_UFL_R_OL": 21, "UNFCCC_UFL_R_FL": 22, "PEATLAND": 13 }
+
 def get_project_path(toolbox_path, name):
     #creates a default path for a cbm project databases in the toolbox installation dir
     return os.path.join(toolbox_path, "Projects", name, "{}.mdb".format(name))
@@ -58,7 +69,7 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, nsteps, cbm_
             casegeneration.get_classifier_name(c["id"]),
             species]
         sit_config.add_inventory(classifier_set=cset, area=c["area"],
-            age=c["age"], unfccc_land_class=c["unfccc_land_class"],
+            age=c["age"], unfccc_land_class=get_unfccc_land_class_id_ref()[c["unfccc_land_class"]],
             delay=c["delay"], historic_disturbance=c["historic_disturbance"],
             last_pass_disturbance=c["last_pass_disturbance"])
         for component in c["components"]:
