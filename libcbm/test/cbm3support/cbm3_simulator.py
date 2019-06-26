@@ -59,15 +59,30 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, nsteps, cbm_
     sit_config.set_species_classifier("species")
     for c in cases:
         species = None
+        is_afforestation = False
         if not c["afforestation_pre_type"] is None:
             species = c["afforestation_pre_type"]
+            is_afforestation = True
         else:
             species = "Spruce" #"Spruce" does not actually matter here, since ultimately species composition is decided in yields
+            
         cset = [
             c["admin_boundary"],
             c["eco_boundary"],
             casegeneration.get_classifier_name(c["id"]),
             species]
+            
+        if is_afforestation:
+            # in cbm3, afforestation requires a transition rule.
+            # this requires that the first event is afforestation.
+            # This should be defined that way in specified cases, but check just in case
+            if len(c["events"]) < 1 or c["events"][0]["disturbance_type"] != "Afforestation":
+                raise ValueError("specified afforestation configuration not supported")
+            sit_config.add_transition_rule(
+                classifier_set_source=cset,
+                classifier_set_target=cset,
+                disturbance_type="Afforestation", percent=100)
+
         sit_config.add_inventory(classifier_set=cset, area=c["area"],
             age=c["age"], unfccc_land_class=get_unfccc_land_class_id_ref()[c["unfccc_land_class"]],
             delay=c["delay"], historic_disturbance=c["historic_disturbance"],
