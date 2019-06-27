@@ -101,6 +101,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     afforestation_pre_type_id = np.array(afforestation_pre_type_ids, dtype=np.int32)
 
     land_class = np.ones(nstands, dtype=np.int32)
+    land_class[afforestation_pre_type_id>0] = land_classes_by_code["UNFCCC_CL_R_CL"]["land_class_id"]
     last_disturbance_type = np.zeros(nstands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(nstands, dtype=np.int32)
     time_since_land_class_change = np.zeros(nstands, dtype=np.int32)
@@ -128,7 +129,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
                 else:
                     disturbances[i_c][time_step] = dist_type_id
             else:
-                disturbances[i_c] = {time_step: dist_type_id}
+                disturbances[i_c] = { time_step: dist_type_id }
 
 
     cbm3 = CBM(dll)
@@ -162,7 +163,20 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         age=age)
 
     pool_result = append_pools_data(pool_result, nstands, 0, pools, pooldef)
-
+    state_variable_result = pd.DataFrame(data = {
+        "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)],
+        "timestep": 0,
+        "age": age,
+        "land_class": land_class,
+        "last_disturbance_type": last_disturbance_type,
+        "time_since_last_disturbance": time_since_last_disturbance,
+        "time_since_land_class_change": time_since_land_class_change,
+        "growth_enabled": growth_enabled,
+        "growth_multipliers": growth_multipliers,
+        "regeneration_delay": regeneration_delay,
+        "disturbance_types": disturbance_types,
+        "enabled": enabled
+        })
     for t in range(1, nsteps+1):
 
         disturbance_types = disturbance_types * 0
@@ -189,7 +203,23 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             regeneration_delay=regeneration_delay)
         pool_result = append_pools_data(pool_result, nstands, t, pools, pooldef)
 
+        state_variable_result = state_variable_result.append(pd.DataFrame(data = {
+            "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)],
+            "timestep": t,
+            "age": age,
+            "land_class": land_class,
+            "last_disturbance_type": last_disturbance_type,
+            "time_since_last_disturbance": time_since_last_disturbance,
+            "time_since_land_class_change": time_since_land_class_change,
+            "growth_enabled": growth_enabled,
+            "growth_multipliers": growth_multipliers,
+            "regeneration_delay": regeneration_delay,
+            "disturbance_types": disturbance_types,
+            "enabled": enabled
+            }))
+
     return {
         "pools": pool_result,
+        "state_variable_result": state_variable_result,
         "spinup_debug": spinup_debug
     }
