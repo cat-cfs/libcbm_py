@@ -56,6 +56,7 @@ class CBM:
         step = np.zeros(nstands, dtype=np.int32)
         lastRotationSlowC = np.zeros(nstands, dtype=np.float)
         disturbance_types = np.zeros(nstands, dtype=np.int32)
+        growth_enabled = np.ones(nstands, dtype=np.int32)
         enabled = np.ones(nstands, dtype=np.int32)
 
         inventory_age = self.promoteScalar(inventory_age, nstands, dtype=np.int32)
@@ -110,7 +111,8 @@ class CBM:
                 break
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
-                classifiers, pools, age, spatial_unit, None, None, None, None)
+                classifiers, pools, age, spatial_unit, None, None, None,
+                growth_enabled)
 
             logging.info("GetDisturbanceOps")
             self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
