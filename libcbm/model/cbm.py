@@ -213,6 +213,6 @@ class CBM:
             [self.opProcesses[x] for x in annual_process_opSchedule],
             pools, flux, enabled)
 
-        self.dll.EndStep(age, regeneration_delay)
+        self.dll.EndStep(age, regeneration_delay, growth_enabled)
         for x in self.opNames:
             self.dll.FreeOp(ops[x])

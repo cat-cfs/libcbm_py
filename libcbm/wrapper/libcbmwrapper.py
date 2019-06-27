@@ -172,7 +172,8 @@ class LibCBMWrapper(object):
             ctypes.c_void_p, #handle
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),#age
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #regeneration_delay
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),#regeneration_delay
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #enabled
             )
 
         self._dll.LibCBM_InitializeLandState.argtypes = (
@@ -399,12 +400,12 @@ class LibCBMWrapper(object):
            raise RuntimeError(self.err.getErrorMessage())
 
 
-    def EndStep(self, age, regeneration_delay):
+    def EndStep(self, age, regeneration_delay, enabled):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = age.shape[0]
         self._dll.LibCBM_EndStep(ctypes.byref(self.err), self.handle, n, age,
-            regeneration_delay)
+            regeneration_delay, enabled)
 
 
     def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
