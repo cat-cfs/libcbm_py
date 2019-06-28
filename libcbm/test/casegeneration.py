@@ -146,7 +146,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
                 disturbance_events[0]["disturbance_type"] = "Afforestation"
             else:
                 disturbance_events.append({
-                    "disturbance_type": random_dist_types[d],
+                    "disturbance_type": "Afforestation",
                     "time_step": np.random.randint(1, n_steps)
                 })
 
