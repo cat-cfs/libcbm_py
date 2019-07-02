@@ -14,12 +14,22 @@ def append_pools_data(df, nstands, timestep, pools, pooldef):
     df = df.append(pd.DataFrame(data=data, columns=cols))
     return df
 
+def append_flux_data(df, nstands, timestep, flux, flux_indicator_names):
+    data = {"timestep": timestep, "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)]}
+    data.update({x["name"]: flux[:,x["id"]-1] for x in flux_indicator_names})
+    cols=["timestep","identifier"] + [x["name"] for x in flux_indicator_names]
+    df = df.append(pd.DataFrame(data=data, columns=cols))
+    return df
+
+
 def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     dll = LibCBMWrapper(dllpath)
 
     pooldef = cbm_defaults.load_cbm_pools(dbpath)
     flux_ind = cbm_defaults.load_flux_indicators(dbpath)
+    flux_indicator_names = cbm_defaults.get_flux_indicator_names(dbpath)
+    
     dll.Initialize(libcbmconfig.to_string(
         {
             "pools": pooldef,
@@ -41,8 +51,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
     afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
     land_class_ref = cbm_defaults.get_land_class_reference(dbpath, "en-CA")
     land_classes_by_code = {x["land_class_code"]: x for x in land_class_ref}
-    
-    
+
     curves = []
     for c in cases:
         classifier_set = [casegeneration.get_classifier_name(c["id"])]
@@ -134,7 +143,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     cbm3 = CBM(dll)
     pool_result = pd.DataFrame()
-
+    flux_result = pd.DataFrame()
     spinup_debug = cbm3.spinup(
         pools=pools,
         classifiers=classifiers,
@@ -202,7 +211,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             growth_multipliers=growth_multipliers,
             regeneration_delay=regeneration_delay)
         pool_result = append_pools_data(pool_result, nstands, t, pools, pooldef)
-
+        flux_result = append_flux_data(flux_result, nstands, t, flux, flux_indicator_names)
         state_variable_result = state_variable_result.append(pd.DataFrame(data = {
             "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)],
             "timestep": t,
@@ -220,6 +229,7 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
 
     return {
         "pools": pool_result,
+        "flux": flux_result,
         "state_variable_result": state_variable_result,
         "spinup_debug": spinup_debug
     }
