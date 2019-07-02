@@ -262,14 +262,14 @@ def get_afforestation_types_by_name(sqlitePath, locale_code="en-CA"):
     return result
 
 
-def get_flux_indicator_names_by_id(sqlitePath):
+def get_flux_indicator_names(sqlitePath):
     query = """select flux_indicator.id, flux_indicator.name from flux_indicator
         """
-    result = {}
+    result = []
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query):
-            result[row[0]] = row[1]
+            result.append({"id": row[0], "name": row[1]})
     return result
 
 
