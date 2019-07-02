@@ -226,8 +226,10 @@ class LibCBMWrapper(object):
             ctypes.c_size_t, #n stands
             ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"), #spinup state code (length n)
             LibCBM_Matrix, # pools
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #disturbance_type (length n)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #age (length n)(return value)
-            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") #sum of slow pools (length n) (return value)
+            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #sum of slow pools (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #growth enabled (length n) (return value)
             )
 
         self._dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
@@ -456,13 +458,14 @@ class LibCBMWrapper(object):
        return n_finished
 
 
-    def EndSpinupStep(self, state, pools, age, slowPools):
+    def EndSpinupStep(self, state, pools, disturbance_types, age, slowPools,
+        growth_enabled):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = age.shape[0]
         poolMat = LibCBM_Matrix(pools)
         self._dll.LibCBM_EndSpinupStep(ctypes.byref(self.err), self.handle, n,
-            state, poolMat, age, slowPools)
+            state, poolMat, disturbance_types, age, slowPools, growth_enabled)
 
 
     def GetMerchVolumeGrowthOps(self, growth_op, 

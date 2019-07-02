@@ -121,8 +121,8 @@ class CBM:
             logging.info("ComputePools")
             self.dll.ComputePools([ops[x] for x in opSchedule], pools, enabled)
 
-            self.dll.EndSpinupStep(spinup_state, pools,
-                age, slowPools)
+            self.dll.EndSpinupStep(spinup_state, pools, disturbance_types,
+                age, slowPools, growth_enabled)
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
                     "index": list(range(nstands)),
