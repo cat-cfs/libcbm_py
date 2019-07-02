@@ -100,12 +100,14 @@ class LibCBMWrapper(object):
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_char_p # config json string
         )
+        self._dll.LibCBM_Initialize.restype = ctypes.c_void_p
 
         self._dll.LibCBM_Allocate_Op.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
             ctypes.c_size_t #n ops
         )
+        self._dll.LibCBM_Allocate_Op.restype = ctypes.c_size_t
 
         self._dll.LibCBM_Free_Op.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
@@ -216,6 +218,7 @@ class LibCBMWrapper(object):
             ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), #last rotation slow (length n)(return value)
             ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #enabled
         )
+
 
         self._dll.LibCBM_EndSpinupStep.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
