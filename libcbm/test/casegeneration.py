@@ -86,7 +86,7 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
     disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
     afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
     land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(dbpath, "en-CA")
-    land_class_by_dist_type = {x["disturbance_type_name"] : x for x in land_class_dist_ref }
+    land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
 
     cases = []
     for i in range(num_cases):
