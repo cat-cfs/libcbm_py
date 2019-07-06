@@ -84,6 +84,11 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
     random_spus = np.random.choice([",".join(x) for x in spatial_units.keys()], num_cases)
 
     disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
+    
+    #the following disturbance type ids dont have full coverage for all spatial units, so if they are included
+    #it is possible a random draw can produce an invalid combination of dist type/spu
+    disturbance_types = {k:v for k,v in disturbance_types.items() if v not in [12,13,14,15,16,17,18,19,20,21] }
+
     afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
     land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(dbpath, "en-CA")
     land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
