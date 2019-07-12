@@ -4,6 +4,7 @@ import json, os,logging
 
 class CBM:
     def __init__(self, dll):
+
         self.dll = dll
 
         self.opNames = [
@@ -27,11 +28,23 @@ class CBM:
         }
 
 
-    def promoteScalar(self, value, size, dtype):
-        '''
-        if the specified value is scalar promote it to a numpy array filled with the scalar value
-        otherwise return the value
-        '''
+    def promote_scalar(self, value, size, dtype):
+        """If the specified value is scalar promote it to a numpy array filled 
+        with the scalar value, and otherwise return the value.  This is purely 
+        a helper function to allow scalar parameters for certain vector
+        functions
+        
+        Arguments:
+            value {ndarray} or {number} or {None} -- 
+            size {int} -- the length of the resulting vector if promotion
+            occurs
+            dtype {object} -- object used to define the type of the resulting
+            vector if promotion occurs
+        
+        Returns:
+            ndarray or None -- returns either the original value, a promoted 
+            scalar or None depending on the specified values
+        """
         if value is None:
            return None
         if isinstance(value, np.ndarray):
@@ -45,32 +58,103 @@ class CBM:
                historic_disturbance_type, last_pass_disturbance_type,
                delay, return_interval=None, min_rotations=None,
                max_rotations=None, mean_annual_temp=None, debug=False):
+        """Run the CBM-CFS3 spinup function on an array of stands, 
+        initializing the specified carbon pools.  Each parameter has a first
+        dimension of n_stands, with the exception of debug which is a bool.
+        
+        setting debug to true will return for each stand the time series of
+        selected state variables used in the spinup procedure. has a 
+        significant negative impact on both CPU and memory performance.
+
+        The only parameter modified by this function is "pools".  
+
+        All parameters other than pools and classifiers are subject to
+        promotion meaning if a scalar value is provided, that value will be
+        repeated in a vector of length n_stands
+        
+        Arguments:
+            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools) this 
+            parameter is modified by this function
+            classifiers {ndarray} -- an int matrix of shape 
+                (n_stands, n_classifiers) which are associated with growth
+                curves
+            inventory_age {ndarray} or {int} -- int or int vector of length
+                n_stands. Each value represents the age of a stand at the
+                outset of CBM simulation.
+            spatial_unit {ndarray} or {int} -- int or int vector of length
+                n_stands. Each value represent a key to CBM-CFS3 model
+                parameters
+            afforestation_pre_type_id {ndarray} or {int} -- int or int vector
+                of length n_stands. Each > zero value represents a key to a 
+                non-forest pre type, meaning the stand has pre-defined
+                dead-organic-matter pools and will not be simulated by the
+                spinup function. Zero or negative values represent a null
+                pre-type and spinup will run.
+            historic_disturbance_type {ndarray} or {int} -- int or int vector
+                of length n_stands.  The disturbance type id used for each
+                historical disturbance rotation in the spinup procedure. 
+            last_pass_disturbance_type {ndarray} or {int} -- int or int vector
+                of length n_stands.  The disturbance type id used for the final
+                disturbance in the spinup procedure.
+            delay {ndarray} or {int} -- int or int vector of length n_stands.
+                For stands deforested by the last pass disturbance type, this
+                value indicates the number of years prior to the outset of 
+                CBM simulation that pass since the deforestation event in the
+                spinup routine.
+        
+        Keyword Arguments:
+            return_interval {ndarray} or {int} -- int or int vector
+                of length n_stands. If specified, it defines the number of
+                years in each historical disturbance rotation.
+                (default: {None})
+            min_rotations {ndarray} or {int} -- int or int vector 
+                of length n_stands. If specified, it defines the minimum number
+                of historical rotations to perform. If unspecified a default 
+                value passed to the dll configuration will be used.
+                (default: {None})
+            max_rotations {ndarray} or {int} -- int or int vector 
+                of length n_stands. If specified, it defines the maximum number
+                of historical rotations to perform. If unspecified a default 
+                value passed to the dll configuration will be used.
+                (default: {None})
+            mean_annual_temp  {ndarray} or {float64} -- float64 or float64 
+                vector of length n_stands.  If specified defines the mean
+                annual temperature used in the spinup procedure.  If
+                unspecified a default value passed to the dll configuration
+                will be used. (default: {None})
+            debug {bool} -- if true this function will return a pandas 
+                dataframe of selected spinup state variables. 
+                (default: {False})
+        Returns:
+            pandas.DataFrame or None -- returns a debug dataframe if parameter
+                debug is set to true, and None otherwise.
+        """
         pools[:,0] = 1.0
-        nstands = pools.shape[0]
+        n_stands = pools.shape[0]
 
         #allocate working variables
-        age = np.zeros(nstands, dtype=np.int32)
-        slowPools = np.zeros(nstands, dtype=np.float)
-        spinup_state = np.zeros(nstands, dtype=np.uint32)
-        rotation = np.zeros(nstands, dtype=np.int32)
-        step = np.zeros(nstands, dtype=np.int32)
-        lastRotationSlowC = np.zeros(nstands, dtype=np.float)
-        disturbance_types = np.zeros(nstands, dtype=np.int32)
-        growth_enabled = np.ones(nstands, dtype=np.int32)
-        enabled = np.ones(nstands, dtype=np.int32)
+        age = np.zeros(n_stands, dtype=np.int32)
+        slowPools = np.zeros(n_stands, dtype=np.float)
+        spinup_state = np.zeros(n_stands, dtype=np.uint32)
+        rotation = np.zeros(n_stands, dtype=np.int32)
+        step = np.zeros(n_stands, dtype=np.int32)
+        lastRotationSlowC = np.zeros(n_stands, dtype=np.float)
+        disturbance_types = np.zeros(n_stands, dtype=np.int32)
+        growth_enabled = np.ones(n_stands, dtype=np.int32)
+        enabled = np.ones(n_stands, dtype=np.int32)
 
-        inventory_age = self.promoteScalar(inventory_age, nstands, dtype=np.int32)
-        spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
-        historic_disturbance_type = self.promoteScalar(historic_disturbance_type, nstands, dtype=np.int32)
-        last_pass_disturbance_type = self.promoteScalar(last_pass_disturbance_type, nstands, dtype=np.int32)
-        return_interval = self.promoteScalar(return_interval, nstands, dtype=np.int32)
-        min_rotations = self.promoteScalar(min_rotations, nstands, dtype=np.int32)
-        max_rotations = self.promoteScalar(max_rotations, nstands, dtype=np.int32)
-        delay = self.promoteScalar(delay, nstands, dtype=np.int32)
-        mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.float)
+        inventory_age = self.promote_scalar(inventory_age, n_stands, dtype=np.int32)
+        spatial_unit = self.promote_scalar(spatial_unit, n_stands, dtype=np.int32)
+        historic_disturbance_type = self.promote_scalar(historic_disturbance_type, n_stands, dtype=np.int32)
+        last_pass_disturbance_type = self.promote_scalar(last_pass_disturbance_type, n_stands, dtype=np.int32)
+        return_interval = self.promote_scalar(return_interval, n_stands, dtype=np.int32)
+        min_rotations = self.promote_scalar(min_rotations, n_stands, dtype=np.int32)
+        max_rotations = self.promote_scalar(max_rotations, n_stands, dtype=np.int32)
+        delay = self.promote_scalar(delay, n_stands, dtype=np.int32)
+        mean_annual_temp = self.promote_scalar(mean_annual_temp, n_stands, dtype=np.float)
 
         logging.info("AllocateOp")
-        ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
+        ops = { x: self.dll.AllocateOp(n_stands) for x in self.opNames }
 
         logging.info("GetTurnoverOps")
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
@@ -99,15 +183,14 @@ class CBM:
 
         while (True):
             logging.info("AdvanceSpinupState")
-            #historic_disturbance_type, last_pass_disturbance_type,
-            #    disturbance_types
+
             n_finished = self.dll.AdvanceSpinupState(
                 spatial_unit, return_interval, min_rotations, max_rotations,
                 inventory_age, delay, slowPools, historic_disturbance_type,
                 last_pass_disturbance_type, afforestation_pre_type_id,
                 spinup_state, disturbance_types, rotation, step,
                 lastRotationSlowC, enabled)
-            if n_finished == nstands:
+            if n_finished == n_stands:
                 break
             logging.info("GetMerchVolumeGrowthOps")
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
@@ -125,7 +208,7 @@ class CBM:
                 age, slowPools, growth_enabled)
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
-                    "index": list(range(nstands)),
+                    "index": list(range(n_stands)),
                     "iteration": iteration,
                     "age": age,
                     "slow_pools": slowPools,
@@ -162,10 +245,10 @@ class CBM:
         flux *= 0.0
         nstands = pools.shape[0]
 
-        spatial_unit = self.promoteScalar(spatial_unit, nstands, dtype=np.int32)
-        mean_annual_temp = self.promoteScalar(mean_annual_temp, nstands, dtype=np.int32)
-        disturbance_types = self.promoteScalar(disturbance_types, nstands, dtype=np.int32)
-        transition_rule_ids = self.promoteScalar(transition_rule_ids, nstands, dtype=np.int32)
+        spatial_unit = self.promote_scalar(spatial_unit, nstands, dtype=np.int32)
+        mean_annual_temp = self.promote_scalar(mean_annual_temp, nstands, dtype=np.int32)
+        disturbance_types = self.promote_scalar(disturbance_types, nstands, dtype=np.int32)
+        transition_rule_ids = self.promote_scalar(transition_rule_ids, nstands, dtype=np.int32)
 
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }

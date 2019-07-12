@@ -2,6 +2,14 @@ import ctypes, logging, sqlite3, os, numpy as np
 from numpy.ctypeslib import ndpointer
 
 class LibCBM_SpinupState:
+    """Wrapper for low level enum of the same name defined in LibCBM C/C++ code
+    
+    Raises:
+        ValueError: An integer value which is not a defined SpinupState
+    
+    Returns:
+        [type] -- [description]
+    """
     HistoricalRotation = 0,
     HistoricalDisturbance = 1,
     LastPassDisturbance = 2,
@@ -9,17 +17,30 @@ class LibCBM_SpinupState:
     Delay = 4,
     Done = 5
     @staticmethod
-    def getName(x):
+    def get_name(x):
+        """gets the name of the enum field associated with the specified
+        integer
+        
+        Arguments:
+            x {int} -- an integer matching the value of one of the enum fields
+        
+        Raises:
+            ValueError: raised when the specified value is not a defined enum field 
+        
+        Returns:
+            str -- the name of the enum field associated with the specified integer
+        """
         if x == 0: return "HistoricalRotation" 
         elif x == 1: return "HistoricalDisturbance"
         elif x == 2: return "LastPassDisturbance"
         elif x == 3: return "GrowToFinalAge"
         elif x == 4: return "Delay"
         elif x == 5: return "Done"
-        else: raise ValueError("invalid Spinup state code")
+        else: raise ValueError("invalid spinup state code")
 
 class LibCBM_Matrix(ctypes.Structure):
-
+    """Wrapper for low level C/C++ LibCBM structure of the same name
+    """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
                 ('values', ctypes.POINTER(ctypes.c_double))]
@@ -73,23 +94,44 @@ class LibCBM_Error(ctypes.Structure):
         return msg
 
 def getNullableNdarray(a, type=ctypes.c_double):
+    """helper method for wrapper parameters that can be specified either as
+    null pointers or pointers to numpy memory
+    
+    Arguments:
+        a {array_like} or {None} -- array to convert to pointer, if None is 
+        specified None is returned.
+    
+    Keyword Arguments:
+        type {object} -- type supported by ctypes.POINTER (default: {ctypes.c_double})
+    
+    Returns:
+        [type] -- [description]
+    """
     if a is None:
         return None
     else:
         result = np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
         return result
 
-class LibCBMWrapper(object):
+class LibCBMWrapper():
     def __init__(self, dllpath):
+        """Initializes the underlying LibCBM library, storing the allocated handle in this instance.
+        
+        Arguments:
+            dllpath {str} -- path to the compiled LibCBM dll on Windows, or compiled LibCBM .so file for Linux
+        
+        Returns:
+            None
+        """
         self.handle = False
         #necessary because supporting libraries are in the same dir as the main one
         #this needs to be fixed (will likely switch to static library)
-        dlldir = os.path.dirname(dllpath)
+
         cwd = os.getcwd()
         os.chdir(os.path.dirname(dllpath))
         self._dll = ctypes.CDLL(dllpath)
         os.chdir(cwd)
-        self.err = LibCBM_Error();
+        self.err = LibCBM_Error()
 
         self._dll.LibCBM_Free.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
@@ -286,7 +328,7 @@ class LibCBMWrapper(object):
 
     def Initialize(self, config):
 
-        p_config = ctypes.c_char_p(config.encode("UTF-8"));
+        p_config = ctypes.c_char_p(config.encode("UTF-8"))
 
         self.handle = self._dll.LibCBM_Initialize(
             ctypes.byref(self.err), #error struct
@@ -375,7 +417,7 @@ class LibCBMWrapper(object):
         if not self.handle:
            raise AssertionError("dll not initialized")
 
-        p_config = ctypes.c_char_p(config.encode("UTF-8"));
+        p_config = ctypes.c_char_p(config.encode("UTF-8"))
 
         self._dll.LibCBM_Initialize_CBM(ctypes.byref(self.err), self.handle,
                                         p_config)
