@@ -70,7 +70,7 @@ def choose_random_yield_func(func_factories=[
 
 def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
     max_disturbances, max_components, growth_generator, n_growth_digits,
-    age_interval, growth_curve_len):
+    age_interval, growth_curve_len, growth_only=False):
 
     np.random.seed(random_seed)
 
@@ -84,9 +84,16 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
     random_spus = np.random.choice([",".join(x) for x in spatial_units.keys()], num_cases)
 
     disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
+    
+    #the following disturbance type ids don't have full coverage for all spatial units, so if they are included
+    #it is possible a random draw can produce an invalid combination of dist type/spu
+    disturbance_types = {k:v for k,v in disturbance_types.items() if v not in [12,13,14,15,16,17,18,19,20,21] }
+    #the 4 spruce beetle types have a strange unicode issue in the name 
+    disturbance_types = {k:v for k,v in disturbance_types.items() if not "Spruce beetle" in k }
+
     afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
     land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(dbpath, "en-CA")
-    land_class_by_dist_type = {x["disturbance_type_name"] : x for x in land_class_dist_ref }
+    land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
 
     cases = []
     for i in range(num_cases):
@@ -128,27 +135,28 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
         last_pass_disturbance = "Wildfire"
         historic_disturbance = "Wildfire"
         unfccc_land_class = "UNFCCC_FL_R_FL"
-        if creation_disturbance in ["Wildfire", "Clearcut harvesting with salvage"]:
-            age = np.random.randint(0, 350)
-            last_pass_disturbance = creation_disturbance
-        if creation_disturbance == "Deforestation":
-            delay = np.random.randint(0, 20) #unfccc rules
-            last_pass_disturbance = creation_disturbance
-            unfccc_land_class = land_class_by_dist_type[last_pass_disturbance]["land_class_code"]
-        if creation_disturbance == "Afforestation":
-            #since there are constant pools, spinup, and therefore historic/last pass disturbance types do not apply
-            unfccc_land_class = "UNFCCC_CL_R_CL"
-            afforestation_pre_type = np.random.choice(list(afforestation_pre_types), 1)[0]
-            if len(disturbance_events) > 0:
-                # Since we are trying to model the afforestation case,
-                # override the randomly selected first disturbance with
-                # afforestation.
-                disturbance_events[0]["disturbance_type"] = "Afforestation"
-            else:
-                disturbance_events.append({
-                    "disturbance_type": "Afforestation",
-                    "time_step": np.random.randint(1, n_steps)
-                })
+        if not growth_only:
+            if creation_disturbance in ["Wildfire", "Clearcut harvesting with salvage"]:
+                age = np.random.randint(0, 350)
+                last_pass_disturbance = creation_disturbance
+            if creation_disturbance == "Deforestation":
+                delay = np.random.randint(0, 20) #unfccc rules
+                last_pass_disturbance = creation_disturbance
+                unfccc_land_class = land_class_by_dist_type[last_pass_disturbance]["land_class_code"]
+            if creation_disturbance == "Afforestation":
+                #since there are constant pools, spinup, and therefore historic/last pass disturbance types do not apply
+                unfccc_land_class = "UNFCCC_CL_R_CL"
+                afforestation_pre_type = np.random.choice(list(afforestation_pre_types), 1)[0]
+                if len(disturbance_events) > 0:
+                    # Since we are trying to model the afforestation case,
+                    # override the randomly selected first disturbance with
+                    # afforestation.
+                    disturbance_events[0]["disturbance_type"] = "Afforestation"
+                else:
+                    disturbance_events.append({
+                        "disturbance_type": "Afforestation",
+                        "time_step": np.random.randint(1, n_steps)
+                    })
 
         cases.append(create_scenario(
             id = i + 1,
