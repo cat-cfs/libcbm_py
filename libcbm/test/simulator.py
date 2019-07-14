@@ -44,7 +44,6 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         ])
     ])
 
-    transitions_config = []
     species_reference = cbm_defaults.load_species_reference(dbpath, "en-CA")
     spatial_unit_reference = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(dbpath, "en-CA")
     disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")

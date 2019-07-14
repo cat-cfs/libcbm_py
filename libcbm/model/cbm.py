@@ -4,7 +4,12 @@ import json, os,logging
 
 class CBM:
     def __init__(self, dll):
-
+        """Creates a new instance of the CBM model with the specified LibCBM wrapper instance.
+        The wrapper instance is initialized with model parameters and configuration.
+        
+        Arguments:
+            dll {LibCBMWrapper} -- an instance of the LibCBMWrapper.
+        """
         self.dll = dll
 
         self.opNames = [
@@ -69,21 +74,22 @@ class CBM:
         The only parameter modified by this function is "pools".  
 
         All parameters other than pools and classifiers are subject to
-        promotion meaning if a scalar value is provided, that value will be
+        promotion, meaning if a scalar value is provided, that value will be
         repeated in a vector of length n_stands
         
         Arguments:
-            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools) this 
-            parameter is modified by this function
+            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools) this
+                paramater is assigned the result of CBM carbon pool spinup
             classifiers {ndarray} -- an int matrix of shape 
-                (n_stands, n_classifiers) which are associated with growth
-                curves
+                (n_stands, n_classifiers) Values are classifiers value ids
+                referencing the classifier values stored in model parameters
+                and configuration
             inventory_age {ndarray} or {int} -- int or int vector of length
                 n_stands. Each value represents the age of a stand at the
                 outset of CBM simulation.
             spatial_unit {ndarray} or {int} -- int or int vector of length
-                n_stands. Each value represent a key to CBM-CFS3 model
-                parameters
+                n_stands. Each value represent a key several parameters stored
+                in model parameters and configuration
             afforestation_pre_type_id {ndarray} or {int} -- int or int vector
                 of length n_stands. Each > zero value represents a key to a 
                 non-forest pre type, meaning the stand has pre-defined
@@ -110,18 +116,18 @@ class CBM:
             min_rotations {ndarray} or {int} -- int or int vector 
                 of length n_stands. If specified, it defines the minimum number
                 of historical rotations to perform. If unspecified a default 
-                value passed to the dll configuration will be used.
-                (default: {None})
+                value stored in the model parameters and configuration will be 
+                used. (default: {None})
             max_rotations {ndarray} or {int} -- int or int vector 
                 of length n_stands. If specified, it defines the maximum number
                 of historical rotations to perform. If unspecified a default 
-                value passed to the dll configuration will be used.
-                (default: {None})
+                value stored in the model parameters and configuration will be
+                used. (default: {None})
             mean_annual_temp  {ndarray} or {float64} -- float64 or float64 
                 vector of length n_stands.  If specified defines the mean
                 annual temperature used in the spinup procedure.  If
-                unspecified a default value passed to the dll configuration
-                will be used. (default: {None})
+                unspecified a default value stored in the model parameters and
+                configuration will be used. (default: {None})
             debug {bool} -- if true this function will return a pandas 
                 dataframe of selected spinup state variables. 
                 (default: {False})
@@ -218,6 +224,7 @@ class CBM:
                     "step": step,
                     "disturbance_type": disturbance_types
                     }))
+
             iteration = iteration + 1
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
@@ -235,11 +242,52 @@ class CBM:
             age)
 
 
-    def step(self, pools, flux, classifiers, age, disturbance_types,
-            spatial_unit, mean_annual_temp, transition_rule_ids,
+    def step(self, pools, flux, classifiers, age, disturbance_type,
+            spatial_unit, mean_annual_temp, transition_rule_id,
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, enabled, land_class,
-            growth_multipliers, regeneration_delay):
+            growth_multiplier, regeneration_delay):
+        """Advances the specified arguments through one time step of CBM simulation.
+        
+        In the following documentation
+         - "const" indicates a parameter will not be modified by this function
+         - "promotable" indicates if a scalar value is passed it will be repeated in a vector of length n_stands
+
+        Arguments:
+            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools) 
+                Assigned the result of the CBM timestep carbon dynamics
+            flux {ndarray} -- a float64 matrix of shape 
+                (n_stands, n_flux_indicators) Assigned the flux indicators, as
+                configured in the model parameters and configuration which 
+                occur in the timestep carbon dynamics
+            classifiers {ndarray} -- an int matrix of shape 
+                (n_stands, n_classifiers) Values are classifiers value ids
+                referencing the classifier values in the model parameters and
+                configuration.
+            age {ndarray} -- int vector of length n_stands.  The model will 
+                update age depending on stand state and disturbances
+            disturbance_type {ndarray} -- const, promotable int, or int vector of
+                length n_stands. The vector of disturbance type ids to apply 
+                to stands in this step. Negative or 0 values indicate no 
+                disturbance, and > 0 values reference the disturbance type
+                parameters stored in the model parameters and configuration.
+            spatial_unit {ndarray} or {int} -- const, promotable int or int 
+                vector of length n_stands. Each value represent a key several
+                parameters stored in model parameters and configuration.
+            mean_annual_temp {ndarray} or {float64} -- const, promotable float64
+                or float64 vector of length n_stands. Each value is used in the
+                computation of dead organic matter decay rates.
+            transition_rule_ids {[type]} -- [description]
+            last_disturbance_type {[type]} -- [description]
+            time_since_last_disturbance {[type]} -- [description]
+            time_since_land_class_change {[type]} -- [description]
+            growth_enabled {[type]} -- [description]
+            enabled {[type]} -- [description]
+            land_class {[type]} -- [description]
+            growth_multiplier {[type]} -- [description]
+            regeneration_delay {[type]} -- [description]
+        """
+        
 
         pools[:,0] = 1.0
         flux *= 0.0
@@ -247,8 +295,8 @@ class CBM:
 
         spatial_unit = self.promote_scalar(spatial_unit, nstands, dtype=np.int32)
         mean_annual_temp = self.promote_scalar(mean_annual_temp, nstands, dtype=np.int32)
-        disturbance_types = self.promote_scalar(disturbance_types, nstands, dtype=np.int32)
-        transition_rule_ids = self.promote_scalar(transition_rule_ids, nstands, dtype=np.int32)
+        disturbance_type = self.promote_scalar(disturbance_type, nstands, dtype=np.int32)
+        transition_rule_id = self.promote_scalar(transition_rule_id, nstands, dtype=np.int32)
 
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
@@ -265,25 +313,25 @@ class CBM:
 
         logging.info("AdvanceStandState")
         self.dll.AdvanceStandState(classifiers, spatial_unit,
-            disturbance_types, transition_rule_ids, last_disturbance_type,
+            disturbance_type, transition_rule_id, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
             growth_enabled, enabled, land_class, regeneration_delay, age)
 
         logging.info("GetDisturbanceOps")
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
-                                  disturbance_types)
+                                  disturbance_type)
         logging.info("Compute flux")
         self.dll.ComputeFlux([ops["disturbance"]],
             [self.opProcesses["disturbance"]], pools, flux,
             enabled=None)
-        #enabled = none on line above is due to a possible bug in CBM3:
+        #enabled = none on line above is due to a possible bug in CBM3. This is very much an edge case:
         #stands can be disturbed despite having other C-dynamics processes disabled
         #(which happens in peatland, cropland, and other non forest landclasses)
 
         logging.info("GetMerchVolumeGrowthOps")
         self.dll.GetMerchVolumeGrowthOps(ops["growth"],
             classifiers, pools, age, spatial_unit, last_disturbance_type,
-            time_since_last_disturbance, growth_multipliers, growth_enabled)
+            time_since_last_disturbance, growth_multiplier, growth_enabled)
         
         logging.info("GetTurnoverOps")
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],

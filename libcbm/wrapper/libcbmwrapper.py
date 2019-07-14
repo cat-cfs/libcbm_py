@@ -3,12 +3,6 @@ from numpy.ctypeslib import ndpointer
 
 class LibCBM_SpinupState:
     """Wrapper for low level enum of the same name defined in LibCBM C/C++ code
-    
-    Raises:
-        ValueError: An integer value which is not a defined SpinupState
-    
-    Returns:
-        [type] -- [description]
     """
     HistoricalRotation = 0,
     HistoricalDisturbance = 1,
@@ -39,7 +33,7 @@ class LibCBM_SpinupState:
         else: raise ValueError("invalid spinup state code")
 
 class LibCBM_Matrix(ctypes.Structure):
-    """Wrapper for low level C/C++ LibCBM structure of the same name
+    """Wrapper for low level C/C++ LibCBM structure of the same name. 
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
