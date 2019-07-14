@@ -67,7 +67,10 @@ class CBM:
         initializing the specified carbon pools.  Each parameter has a first
         dimension of n_stands, with the exception of debug which is a bool.
         
-        setting debug to true will return for each stand the time series of
+        All ndarray parameters must have the ndarray.flags property set with
+        the C_CONTIGUOUS attribute.
+
+        Setting debug to true will return for each stand the time series of
         selected state variables used in the spinup procedure. has a 
         significant negative impact on both CPU and memory performance.
 
@@ -247,11 +250,19 @@ class CBM:
             last_disturbance_type, time_since_last_disturbance,
             time_since_land_class_change, growth_enabled, enabled, land_class,
             growth_multiplier, regeneration_delay):
-        """Advances the specified arguments through one time step of CBM simulation.
+        """Advances the specified arguments through one time step of CBM
+        simulation.
         
+        Several variables reference the "model parameters and configuration"
+        which are passed to the LibCBMWrapper initialization methods.
+
+        All ndarray parameters must have the ndarray.flags property set with
+        the C_CONTIGUOUS attribute.
+
         In the following documentation
          - "const" indicates a parameter will not be modified by this function
-         - "promotable" indicates if a scalar value is passed it will be repeated in a vector of length n_stands
+         - "promotable" indicates if a scalar value is passed it will be
+           repeated in a vector of length n_stands
 
         Arguments:
             pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools) 
@@ -266,26 +277,48 @@ class CBM:
                 configuration.
             age {ndarray} -- int vector of length n_stands.  The model will 
                 update age depending on stand state and disturbances
-            disturbance_type {ndarray} -- const, promotable int, or int vector of
-                length n_stands. The vector of disturbance type ids to apply 
-                to stands in this step. Negative or 0 values indicate no 
+            disturbance_type {ndarray} -- const, promotable int, or int vector
+                of length n_stands. The vector of disturbance type ids to apply
+                to stands in this step. Negative or 0 values indicate no
                 disturbance, and > 0 values reference the disturbance type
                 parameters stored in the model parameters and configuration.
             spatial_unit {ndarray} or {int} -- const, promotable int or int 
                 vector of length n_stands. Each value represent a key several
                 parameters stored in model parameters and configuration.
-            mean_annual_temp {ndarray} or {float64} -- const, promotable float64
-                or float64 vector of length n_stands. Each value is used in the
-                computation of dead organic matter decay rates.
-            transition_rule_ids {[type]} -- [description]
-            last_disturbance_type {[type]} -- [description]
-            time_since_last_disturbance {[type]} -- [description]
-            time_since_land_class_change {[type]} -- [description]
-            growth_enabled {[type]} -- [description]
-            enabled {[type]} -- [description]
-            land_class {[type]} -- [description]
-            growth_multiplier {[type]} -- [description]
-            regeneration_delay {[type]} -- [description]
+            mean_annual_temp {ndarray} or {float64} -- const, promotable
+                float64 or float64 vector of length n_stands. Each value is
+                used in the computation of dead organic matter decay rates.
+            transition_rule_id {ndarray} -- const, promotable int or int 
+                vector of length n_stands. Each value corresponds to a
+                transition rule id specified in the model parameters and
+                configuration.
+            last_disturbance_type {ndarray} --  int vector of length n_stands.
+                This value is set to the step's disturbance type id, if one is
+                defined, and otherwise it is unmodified.
+            time_since_last_disturbance {ndarray} -- int vector of length
+                n_stands.  Incremented if no disturbance occurred for this
+                step, and otherwise reset.
+            time_since_land_class_change {ndarray} -- int vector of length 
+                n_stands.  Incremented if no unfccc land class change occurred
+                for this step, and otherwise reset.
+            growth_enabled {ndarray} -- int vector of length n_stands. 
+                Modified by this function, and used by this function to enable
+                or disable CBM growth depending on the status of the stand.
+            enabled {ndarray}-- int vector of length n_stands. 
+                Modified by this function, and used by this function to enable
+                or disable all carbon dynamics depending on the status of the
+                stand.
+            land_class {ndarray} -- int vector of length n_stands. Set by this
+                function for deforestation, afforestation and landclass
+                transitional periods according to UNFCCC land class accounting
+                rules.
+            growth_multiplier {ndarray} -- const, promotable float64 vector of
+                length n_stands. multiplier applied (for sensitivity analysis)
+                to growth increments for this step.
+            regeneration_delay {ndarray} -- int vector of length n_stands.
+                Variable to store transition rule regeneration delays, which
+                can be used to delay re-growth after disturbance.  Set if a
+                transition rule occurs, and also decremented by this method.
         """
         
 
@@ -297,6 +330,7 @@ class CBM:
         mean_annual_temp = self.promote_scalar(mean_annual_temp, nstands, dtype=np.int32)
         disturbance_type = self.promote_scalar(disturbance_type, nstands, dtype=np.int32)
         transition_rule_id = self.promote_scalar(transition_rule_id, nstands, dtype=np.int32)
+        growth_multiplier = self.promote_scalar(growth_multiplier, nstands, dtype=np.float)
 
         logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }

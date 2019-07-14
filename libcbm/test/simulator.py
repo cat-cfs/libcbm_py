@@ -180,9 +180,9 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
         "time_since_last_disturbance": time_since_last_disturbance,
         "time_since_land_class_change": time_since_land_class_change,
         "growth_enabled": growth_enabled,
-        "growth_multipliers": growth_multipliers,
+        "growth_multiplier": growth_multipliers,
         "regeneration_delay": regeneration_delay,
-        "disturbance_types": disturbance_types,
+        "disturbance_type": disturbance_types,
         "enabled": enabled
         })
     for t in range(1, nsteps+1):
@@ -197,17 +197,17 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             flux=flux,
             classifiers=classifiers,
             age=age,
-            disturbance_types = disturbance_types,
+            disturbance_type = disturbance_types,
             spatial_unit=spatial_units,
             mean_annual_temp=None,
-            transition_rule_ids=transition_rules,
+            transition_rule_id=transition_rules,
             last_disturbance_type=last_disturbance_type,
             time_since_last_disturbance=time_since_last_disturbance,
             time_since_land_class_change=time_since_land_class_change,
             growth_enabled=growth_enabled,
             enabled=enabled,
             land_class=land_class,
-            growth_multipliers=growth_multipliers,
+            growth_multiplier=growth_multipliers,
             regeneration_delay=regeneration_delay)
         pool_result = append_pools_data(pool_result, nstands, t, pools, pooldef)
         flux_result = append_flux_data(flux_result, nstands, t, flux, flux_indicator_names)
@@ -220,9 +220,9 @@ def run_libCBM(dllpath, dbpath, cases, nsteps, spinup_debug = False):
             "time_since_last_disturbance": time_since_last_disturbance,
             "time_since_land_class_change": time_since_land_class_change,
             "growth_enabled": growth_enabled,
-            "growth_multipliers": growth_multipliers,
+            "growth_multiplier": growth_multipliers,
             "regeneration_delay": regeneration_delay,
-            "disturbance_types": disturbance_types,
+            "disturbance_type": disturbance_types,
             "enabled": enabled
             }))
 
