@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import json, os,logging
+import json, os
 
 class CBM:
     def __init__(self, dll):
@@ -90,9 +90,10 @@ class CBM:
             inventory_age {ndarray} or {int} -- int or int vector of length
                 n_stands. Each value represents the age of a stand at the
                 outset of CBM simulation.
-            spatial_unit {ndarray} or {int} -- int or int vector of length
-                n_stands. Each value represent a key several parameters stored
-                in model parameters and configuration
+            spatial_unit {ndarray} or {int} -- const, promotable int or int 
+                vector of length n_stands. Each value represent a key
+                associated with several parameters stored in model parameters
+                and configuration.
             afforestation_pre_type_id {ndarray} or {int} -- int or int vector
                 of length n_stands. Each > zero value represents a key to a 
                 non-forest pre type, meaning the stand has pre-defined
@@ -162,14 +163,11 @@ class CBM:
         delay = self.promote_scalar(delay, n_stands, dtype=np.int32)
         mean_annual_temp = self.promote_scalar(mean_annual_temp, n_stands, dtype=np.float)
 
-        logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(n_stands) for x in self.opNames }
 
-        logging.info("GetTurnoverOps")
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
                                 spatial_unit)
 
-        logging.info("GetDecayOps")
         self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"],
             ops["slow_mixing"], spatial_unit, True, mean_annual_temp)
 
@@ -188,10 +186,7 @@ class CBM:
             debug_output = pd.DataFrame()
         iteration = 0
 
-        
-
         while (True):
-            logging.info("AdvanceSpinupState")
 
             n_finished = self.dll.AdvanceSpinupState(
                 spatial_unit, return_interval, min_rotations, max_rotations,
@@ -201,16 +196,14 @@ class CBM:
                 lastRotationSlowC, enabled)
             if n_finished == n_stands:
                 break
-            logging.info("GetMerchVolumeGrowthOps")
+
             self.dll.GetMerchVolumeGrowthOps(ops["growth"],
                 classifiers, pools, age, spatial_unit, None, None, None,
                 growth_enabled)
 
-            logging.info("GetDisturbanceOps")
             self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
                                        disturbance_types)
 
-            logging.info("ComputePools")
             self.dll.ComputePools([ops[x] for x in opSchedule], pools, enabled)
 
             self.dll.EndSpinupStep(spinup_state, pools, disturbance_types,
@@ -233,10 +226,87 @@ class CBM:
             self.dll.FreeOp(ops[x])
         return debug_output
 
+
     def init(self, last_pass_disturbance_type, delay, inventory_age,
              spatial_unit, afforestation_pre_type_id, pools, last_disturbance_type,
              time_since_last_disturbance, time_since_land_class_change,
              growth_enabled, enabled, land_class, age):
+        """Set the initial state of CBM variable after spinup and prior to 
+        starting CBM simulation.
+        
+        Several variables reference the "model parameters and configuration"
+        which are passed to the LibCBMWrapper initialization methods.
+
+        All ndarray parameters must have the ndarray.flags property set with
+        the C_CONTIGUOUS attribute.
+
+        In the following documentation
+         - "const" indicates a parameter will not be modified by this function
+         - "promotable" indicates if a scalar value is passed it will be
+           repeated in a vector of length n_stands
+
+        Arguments:
+            last_pass_disturbance_type {ndarray} -- const, promotable int, or
+                int vector of length n_stands. Defines the most recent
+                disturbance that occurred in CBM. In the case that this
+                disturbance is a deforestation type, the initial landclass
+                will be set by this method.
+            delay {ndarray} -- const, promotable int, or int vector of length
+                n_stands.  The number of timesteps that have elapsed since a
+                deforestation event occurred, since certain land classes expire
+                after a timestep limit, this is used to walk through the
+                transitional landclasses and arrive at the initial unfccc land
+                class state.
+            inventory_age {ndarray} -- const, promotable int, or int vector of
+                length n_stands.  The number of timesteps that have elapsed
+                since a non-deforestation last pass disturbance type has
+                occurred.  Used to assign the initial inventory age.
+            spatial_unit {ndarray} or {int} -- const, promotable int or int 
+                vector of length n_stands. Each value represent a key
+                associated with several parameters stored in model parameters
+                and configuration.
+            afforestation_pre_type_id {ndarray} -- const, promotable int, or
+                int vector of length n_stands.  When set to a valid
+                afforestation pre-type, the last pass disturbance type is
+                ignored, and the initial pool values are set by this method.
+                The enabled flag is also set to 0, meaning that at the start
+                of CBM simulation, the stand will not be simulated, until an
+                afforestation event occurs.
+            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools)
+                this paramater is assigned by this method when
+                afforestation_pre_type_id is > 0
+            last_disturbance_type {ndarray} -- [description]
+            time_since_last_disturbance {ndarray} -- int vector of length
+                n_stands. Set based on the inventory_age or delay values to
+                the number of timesteps since a disturbance last occurred.
+            time_since_land_class_change {ndarray} -- int vector of length
+                n_stands. Set to the number of timesteps since a land-class
+                changing disturbance event (if any) occurred, and otherwise 0.
+            growth_enabled {ndarray} -- int vector of length n_stands. Assigned
+                based on the value of last_disturbance_type. For example in the
+                case of deforestation, this will be set to 0.
+            enabled {ndarray} -- int vector of length n_stands. Assigned for
+                cases where no CBM simulation should occur. For example for
+                peatlands or pre-afforestation land this will be set to 0.
+            land_class {ndarray} -- int vector of length n_stands. Set to the
+                deforestation related land class id, if a deforestation
+                disturbance type id is used, and otherwise not modified by
+                this function.
+            age {ndarray} -- int vector of length n_stands. Set to the
+                inventory_age value, unless last_disturbance_type is a
+                deforestation type, or afforestation_pre_type_id is a valid
+                afforestation pre-type-id.  In these deforestation or 
+                afforestation cases a non-zero inventory_age also triggers an
+                error.
+        """        
+
+        nstands = pools.shape[0]
+
+        last_pass_disturbance_type = self.promote_scalar(last_pass_disturbance_type, nstands, dtype=np.int32)
+        delay = self.promote_scalar(delay, nstands, dtype=np.int32)
+        inventory_age = self.promote_scalar(inventory_age, nstands, dtype=np.int32)
+        spatial_unit = self.promote_scalar(spatial_unit, nstands, dtype=np.int32)
+        afforestation_pre_type_id = self.promote_scalar(afforestation_pre_type_id, nstands, dtype=np.int32)
 
         self.dll.InitializeLandState(last_pass_disturbance_type, delay,
             inventory_age, spatial_unit, afforestation_pre_type_id, pools,
@@ -283,8 +353,9 @@ class CBM:
                 disturbance, and > 0 values reference the disturbance type
                 parameters stored in the model parameters and configuration.
             spatial_unit {ndarray} or {int} -- const, promotable int or int 
-                vector of length n_stands. Each value represent a key several
-                parameters stored in model parameters and configuration.
+                vector of length n_stands. Each value represent a key
+                associated with several parameters stored in model parameters
+                and configuration.
             mean_annual_temp {ndarray} or {float64} -- const, promotable
                 float64 or float64 vector of length n_stands. Each value is
                 used in the computation of dead organic matter decay rates.
@@ -332,7 +403,6 @@ class CBM:
         transition_rule_id = self.promote_scalar(transition_rule_id, nstands, dtype=np.int32)
         growth_multiplier = self.promote_scalar(growth_multiplier, nstands, dtype=np.float)
 
-        logging.info("AllocateOp")
         ops = { x: self.dll.AllocateOp(nstands) for x in self.opNames }
 
         annual_process_opSchedule = [
@@ -345,16 +415,14 @@ class CBM:
             "slow_mixing"
             ]
 
-        logging.info("AdvanceStandState")
         self.dll.AdvanceStandState(classifiers, spatial_unit,
             disturbance_type, transition_rule_id, last_disturbance_type,
             time_since_last_disturbance, time_since_land_class_change,
             growth_enabled, enabled, land_class, regeneration_delay, age)
 
-        logging.info("GetDisturbanceOps")
         self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
                                   disturbance_type)
-        logging.info("Compute flux")
+
         self.dll.ComputeFlux([ops["disturbance"]],
             [self.opProcesses["disturbance"]], pools, flux,
             enabled=None)
@@ -362,20 +430,16 @@ class CBM:
         #stands can be disturbed despite having other C-dynamics processes disabled
         #(which happens in peatland, cropland, and other non forest landclasses)
 
-        logging.info("GetMerchVolumeGrowthOps")
         self.dll.GetMerchVolumeGrowthOps(ops["growth"],
             classifiers, pools, age, spatial_unit, last_disturbance_type,
             time_since_last_disturbance, growth_multiplier, growth_enabled)
         
-        logging.info("GetTurnoverOps")
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
             spatial_unit)
 
-        logging.info("GetDecayOps")
         self.dll.GetDecayOps(ops["dom_decay"], ops["slow_decay"],
             ops["slow_mixing"], spatial_unit, mean_annual_temp)
 
-        logging.info("Compute flux")
         self.dll.ComputeFlux([ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
             pools, flux, enabled)
