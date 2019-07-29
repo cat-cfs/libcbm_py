@@ -261,4 +261,8 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints
 cbm3_python_git
-/libcbm/docs/_build
+
+
+# Visual Studio Code
+.vscode
+
