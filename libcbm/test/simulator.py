@@ -7,12 +7,14 @@ from libcbm.configuration import libcbmconfig
 from libcbm.configuration import cbmconfig
 from libcbm.test import casegeneration
 
+
 def append_pools_data(df, nstands, timestep, pools, pooldef):
     data = {"timestep": timestep, "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)]}
     data.update({x["name"]: pools[:,x["index"]] for x in pooldef})
     cols=["timestep","identifier"] + [x["name"] for x in pooldef]
     df = df.append(pd.DataFrame(data=data, columns=cols))
     return df
+
 
 def append_flux_data(df, nstands, timestep, flux, flux_indicator_names):
     data = {"timestep": timestep, "identifier": [casegeneration.get_classifier_name(x) for x in range(1,nstands+1)]}

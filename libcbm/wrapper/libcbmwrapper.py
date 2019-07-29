@@ -14,17 +14,17 @@ class LibCBM_SpinupState:
     def get_name(x):
         """gets the name of the enum field associated with the specified
         integer
-        
+
         Arguments:
             x {int} -- an integer matching the value of one of the enum fields
-        
+
         Raises:
-            ValueError: raised when the specified value is not a defined enum field 
-        
+            ValueError: raised when the specified value is not a defined enum field
+
         Returns:
             str -- the name of the enum field associated with the specified integer
         """
-        if x == 0: return "HistoricalRotation" 
+        if x == 0: return "HistoricalRotation"
         elif x == 1: return "HistoricalDisturbance"
         elif x == 2: return "LastPassDisturbance"
         elif x == 3: return "GrowToFinalAge"
@@ -33,7 +33,7 @@ class LibCBM_SpinupState:
         else: raise ValueError("invalid spinup state code")
 
 class LibCBM_Matrix(ctypes.Structure):
-    """Wrapper for low level C/C++ LibCBM structure of the same name. 
+    """Wrapper for low level C/C++ LibCBM structure of the same name.
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
@@ -90,14 +90,14 @@ class LibCBM_Error(ctypes.Structure):
 def getNullableNdarray(a, type=ctypes.c_double):
     """helper method for wrapper parameters that can be specified either as
     null pointers or pointers to numpy memory
-    
+
     Arguments:
-        a {array_like} or {None} -- array to convert to pointer, if None is 
+        a {array_like} or {None} -- array to convert to pointer, if None is
         specified None is returned.
-    
+
     Keyword Arguments:
         type {object} -- type supported by ctypes.POINTER (default: {ctypes.c_double})
-    
+
     Returns:
         [type] -- [description]
     """
@@ -110,10 +110,10 @@ def getNullableNdarray(a, type=ctypes.c_double):
 class LibCBMWrapper():
     def __init__(self, dllpath):
         """Initializes the underlying LibCBM library, storing the allocated handle in this instance.
-        
+
         Arguments:
             dllpath {str} -- path to the compiled LibCBM dll on Windows, or compiled LibCBM .so file for Linux
-        
+
         Returns:
             None
         """
@@ -271,7 +271,7 @@ class LibCBMWrapper():
         self._dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
             ctypes.POINTER(LibCBM_Error), # error struct
             ctypes.c_void_p, #handle
-            ctypes.ARRAY(ctypes.c_size_t, 1), #op_ids 
+            ctypes.ARRAY(ctypes.c_size_t, 1), #op_ids
             ctypes.c_size_t, #n stands
             LibCBM_Matrix_Int, #classifiers
             LibCBM_Matrix, #pools
@@ -504,7 +504,7 @@ class LibCBMWrapper():
             state, poolMat, disturbance_types, age, slowPools, growth_enabled)
 
 
-    def GetMerchVolumeGrowthOps(self, growth_op, 
+    def GetMerchVolumeGrowthOps(self, growth_op,
         classifiers, pools, ages, spatial_units, last_dist_type,
         time_since_last_dist, growth_multipliers, growth_enabled):
 

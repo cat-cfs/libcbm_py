@@ -1,8 +1,8 @@
-#loads cbm defaults into configuration dictionary format
+# loads cbm defaults into configuration dictionary format
 import sqlite3
 
 queries = {
-    "decay_parameters" : """
+    "decay_parameters": """
         select
         pool.id as Pool,
         decay_parameter.base_decay_rate as OrganicMatterDecayRate,
@@ -18,7 +18,8 @@ queries = {
     "slow_mixing_rate": "select rate from slow_mixing_rate;",
 
     "mean_annual_temp": """
-        select spatial_unit.id as spatial_unit_id, spatial_unit.mean_annual_temperature
+        select spatial_unit.id as spatial_unit_id,
+        spatial_unit.mean_annual_temperature
         from spatial_unit;
     """,
 
@@ -38,13 +39,14 @@ queries = {
         turnover_parameter.stem_snag as StemSnagTurnoverRate
         from eco_boundary
         inner join turnover_parameter on
-        eco_boundary.turnover_parameter_id = turnover_parameter.id; 
+        eco_boundary.turnover_parameter_id = turnover_parameter.id;
     """,
 
     "disturbance_matrix_values": "select * from disturbance_matrix_value",
 
-    "disturbance_matrix_associations": "select * from disturbance_matrix_association;",
-    
+    "disturbance_matrix_associations":
+        "select * from disturbance_matrix_association;",
+
     "root_parameter": """
         select root_parameter.*,
         biomass_to_carbon_rate.rate as biomass_to_carbon_rate
@@ -123,8 +125,8 @@ queries = {
         afforestation_initial_pool.spatial_unit_id,
         afforestation_initial_pool.pool_id,
         afforestation_initial_pool.value
-        from afforestation_pre_type 
-        inner join afforestation_initial_pool on 
+        from afforestation_pre_type
+        inner join afforestation_initial_pool on
         afforestation_initial_pool.afforestation_pre_type_id = afforestation_pre_type.id
     """
 
@@ -140,9 +142,13 @@ def load_cbm_parameters(sqlitePath):
             cursor.execute(query)
             data = [[col for col in row] for row in cursor]
             if table in result:
-                raise AssertionError("duplicate table name detected {}".format(table))
+                raise AssertionError(
+                    "duplicate table name detected {}"
+                    .format(table))
             result[table] = {
-                "column_map": { v[0]: i for i,v in enumerate(cursor.description) },
+                "column_map": {
+                    v[0]: i for i, v in
+                    enumerate(cursor.description)},
                 "data": data
             }
 
@@ -152,7 +158,7 @@ def load_cbm_parameters(sqlitePath):
 def load_species_reference(path, locale_code="en-CA"):
     query = """
         select species_tr.name, species.id, species.forest_type_id
-        from species 
+        from species
         inner join species_tr on species_tr.species_id = species.id
         inner join locale on species_tr.locale_id = locale.id
         where locale.code = ?"""
@@ -160,13 +166,16 @@ def load_species_reference(path, locale_code="en-CA"):
     with sqlite3.connect(path) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query, (locale_code,)):
-            result[row[0]] = {"species_id": int(row[1]), "forest_type_id": int(row[2])}
+            result[row[0]] = {
+                "species_id": int(row[1]),
+                "forest_type_id": int(row[2])}
     return result
 
 
 def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
     query = """
-        select spatial_unit.id, admin_boundary_tr.name as admin_boundary_name, eco_boundary_tr.name as eco_boundary_name from spatial_unit
+        select spatial_unit.id, admin_boundary_tr.name as admin_boundary_name,
+        eco_boundary_tr.name as eco_boundary_name from spatial_unit
         inner join eco_boundary on eco_boundary.id = spatial_unit.eco_boundary_id
         inner join admin_boundary on admin_boundary.id = spatial_unit.admin_boundary_id
         inner join eco_boundary_tr on eco_boundary_tr.eco_boundary_id = eco_boundary.id
@@ -179,18 +188,19 @@ def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         for row in cursor.execute(query, (locale_code,)):
-            result[(row[1],row[2])] = row[0]
+            result[(row[1], row[2])] = row[0]
     return result
+
 
 def get_land_class_disturbance_reference(sqlitePath, locale_code="en-CA"):
     query = """
-        select 
+        select
         disturbance_type.id as disturbance_type_id,
         disturbance_type_tr.name as disturbance_type_name,
         land_class.id as land_class_id,
         land_class.code as land_class_code,
         land_class_tr.description as land_class_description
-        from disturbance_type 
+        from disturbance_type
         inner join land_class on disturbance_type.transition_land_class_id = land_class.id
         inner join land_class_tr on land_class_tr.land_class_id = land_class.id
         inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
@@ -213,9 +223,9 @@ def get_land_class_disturbance_reference(sqlitePath, locale_code="en-CA"):
 
 def get_land_class_reference(sqlitePath, locale_code="en-CA"):
     query = """
-        select 
+        select
         land_class.id as land_class_id, land_class.code, land_class_tr.description
-        from land_class 
+        from land_class
         inner join land_class_tr on land_class_tr.land_class_id = land_class.id
         inner join locale on land_class_tr.locale_id = locale.id
         where locale.code = ?
@@ -234,7 +244,7 @@ def get_land_class_reference(sqlitePath, locale_code="en-CA"):
 def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
     query = """
         select  disturbance_type.id, disturbance_type_tr.name
-        from disturbance_type 
+        from disturbance_type
         inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
         inner join locale on disturbance_type_tr.locale_id = locale.id
         where locale.code = ?
@@ -248,8 +258,8 @@ def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
 
 def get_afforestation_types_by_name(sqlitePath, locale_code="en-CA"):
     query = """
-        select afforestation_pre_type.id, afforestation_pre_type_tr.name 
-        from afforestation_pre_type inner join afforestation_pre_type_tr 
+        select afforestation_pre_type.id, afforestation_pre_type_tr.name
+        from afforestation_pre_type inner join afforestation_pre_type_tr
         on afforestation_pre_type_tr.afforestation_pre_type_id = afforestation_pre_type.id
         inner join locale on afforestation_pre_type_tr.locale_id = locale.id
         where locale.code = ? and afforestation_pre_type.id>0
@@ -288,11 +298,11 @@ def load_flux_indicators(sqlitePath):
     result = []
     flux_indicator_source_sql = """
         select flux_indicator_source.pool_id from flux_indicator
-        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id 
+        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id
         where flux_indicator.id = ?"""
     flux_indicator_sink_sql = """
         select flux_indicator_sink.pool_id from flux_indicator
-        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id 
+        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id
         where flux_indicator.id = ?"""
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()

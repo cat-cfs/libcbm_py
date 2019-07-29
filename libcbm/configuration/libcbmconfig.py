@@ -8,7 +8,7 @@ def load_json(path):
 
 def load_raw(path):
     '''
-    loads configuration json from an exisiting file
+    loads configuration json from an existing file
     '''
     with open(path, 'r') as configfile:
         configString = configfile.read()
