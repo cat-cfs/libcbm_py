@@ -1,5 +1,10 @@
-import ctypes, logging, sqlite3, os, numpy as np
+import ctypes
+import logging
+import sqlite3
+import os
+import numpy as np
 from numpy.ctypeslib import ndpointer
+
 
 class LibCBM_SpinupState:
     """Wrapper for low level enum of the same name defined in LibCBM C/C++ code
@@ -10,6 +15,7 @@ class LibCBM_SpinupState:
     GrowToFinalAge = 3,
     Delay = 4,
     Done = 5
+
     @staticmethod
     def get_name(x):
         """gets the name of the enum field associated with the specified
@@ -19,18 +25,28 @@ class LibCBM_SpinupState:
             x {int} -- an integer matching the value of one of the enum fields
 
         Raises:
-            ValueError: raised when the specified value is not a defined enum field
+            ValueError: raised when the specified value is not a defined enum
+            field
 
         Returns:
-            str -- the name of the enum field associated with the specified integer
+            str -- the name of the enum field associated with the specified
+            integer
         """
-        if x == 0: return "HistoricalRotation"
-        elif x == 1: return "HistoricalDisturbance"
-        elif x == 2: return "LastPassDisturbance"
-        elif x == 3: return "GrowToFinalAge"
-        elif x == 4: return "Delay"
-        elif x == 5: return "Done"
-        else: raise ValueError("invalid spinup state code")
+        if x == 0:
+            return"HistoricalRotation"
+        elif x == 1:
+            return "HistoricalDisturbance"
+        elif x == 2:
+            return "LastPassDisturbance"
+        elif x == 3:
+            return "GrowToFinalAge"
+        elif x == 4:
+            return "Delay"
+        elif x == 5:
+            return "Done"
+        else:
+            raise ValueError("invalid spinup state code")
+
 
 class LibCBM_Matrix(ctypes.Structure):
     """Wrapper for low level C/C++ LibCBM structure of the same name.
@@ -40,17 +56,22 @@ class LibCBM_Matrix(ctypes.Structure):
                 ('values', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self, matrix):
-        if len(matrix.shape) == 1 and matrix.shape[0]==1:
+        if len(matrix.shape) == 1 and matrix.shape[0] == 1:
             self.rows = 1
             self.cols = 1
-        elif len(matrix.shape)==2:
+        elif len(matrix.shape) == 2:
             self.rows = matrix.shape[0]
             self.cols = matrix.shape[1]
         else:
-            raise ValueError("matrix must have either 2 dimensions or be a single cell matrix")
-        if not matrix.flags["C_CONTIGUOUS"] or not matrix.dtype == np.double:
-            raise ValueError("matrix must be c contiguous and of type np.double")
+            raise ValueError(
+                "matrix must have either 2 dimensions or be a single cell "
+                "matrix")
+        if not matrix.flags["C_CONTIGUOUS"] or \
+           not matrix.dtype == np.double:
+            raise ValueError(
+                "matrix must be c contiguous and of type np.double")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
 
 class LibCBM_Matrix_Int(ctypes.Structure):
 
@@ -59,17 +80,21 @@ class LibCBM_Matrix_Int(ctypes.Structure):
                 ('values', ctypes.POINTER(ctypes.c_int))]
 
     def __init__(self, matrix):
-        if len(matrix.shape) == 1 and matrix.shape[0]==1:
+        if len(matrix.shape) == 1 and matrix.shape[0] == 1:
             self.rows = 1
             self.cols = 1
-        elif len(matrix.shape)==2:
+        elif len(matrix.shape) == 2:
             self.rows = matrix.shape[0]
             self.cols = matrix.shape[1]
         else:
-            raise ValueError("matrix must have either 2 dimensions or be a single cell matrix")
+            raise ValueError(
+                "matrix must have either 2 dimensions or be a single cell "
+                "matrix")
         if not matrix.flags["C_CONTIGUOUS"] or not matrix.dtype == np.int32:
-            raise ValueError("matrix must be c contiguous and of type np.int32")
+            raise ValueError(
+                "matrix must be c contiguous and of type np.int32")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
+
 
 class LibCBM_Error(ctypes.Structure):
     _fields_ = [("Error", ctypes.c_int),
@@ -86,6 +111,7 @@ class LibCBM_Error(ctypes.Structure):
     def getErrorMessage(self):
         msg = ctypes.cast(getattr(self, "Message"), ctypes.c_char_p).value
         return msg
+
 
 def getNullableNdarray(a, type=ctypes.c_double):
     """helper method for wrapper parameters that can be specified either as
@@ -107,19 +133,20 @@ def getNullableNdarray(a, type=ctypes.c_double):
         result = np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
         return result
 
+
 class LibCBMWrapper():
     def __init__(self, dllpath):
-        """Initializes the underlying LibCBM library, storing the allocated handle in this instance.
+        """Initializes the underlying LibCBM library, storing the allocated
+        handle in this instance.
 
         Arguments:
-            dllpath {str} -- path to the compiled LibCBM dll on Windows, or compiled LibCBM .so file for Linux
+            dllpath {str} -- path to the compiled LibCBM dll on Windows,
+            or compiled LibCBM .so file for Linux
 
         Returns:
             None
         """
         self.handle = False
-        #necessary because supporting libraries are in the same dir as the main one
-        #this needs to be fixed (will likely switch to static library)
 
         cwd = os.getcwd()
         os.chdir(os.path.dirname(dllpath))
@@ -133,104 +160,134 @@ class LibCBMWrapper():
         )
 
         self._dll.LibCBM_Initialize.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_char_p # config json string
+            ctypes.POINTER(LibCBM_Error),  # error struct
+            ctypes.c_char_p  # config json string
         )
         self._dll.LibCBM_Initialize.restype = ctypes.c_void_p
 
         self._dll.LibCBM_Allocate_Op.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_size_t #n ops
+            ctypes.POINTER(LibCBM_Error),  # error struct
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t  # n ops
         )
         self._dll.LibCBM_Allocate_Op.restype = ctypes.c_size_t
 
         self._dll.LibCBM_Free_Op.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_size_t #op id
+            ctypes.POINTER(LibCBM_Error),  # error struct
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t  # op id
         )
 
         self._dll.LibCBM_SetOp.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_size_t, #op_id
-            ctypes.POINTER(LibCBM_Matrix),#matrices
-            ctypes.c_size_t, #n_matrices
-            ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"), #matrix_index
-            ctypes.c_size_t #n_matrix_index
+            ctypes.POINTER(LibCBM_Error),  # error struct
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t,  # op_id
+            ctypes.POINTER(LibCBM_Matrix),  # matrices
+            ctypes.c_size_t,  # n_matrices
+            ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
+            ctypes.c_size_t  # n_matrix_index
         )
 
         self._dll.LibCBM_ComputePools.argtypes = (
-                ctypes.POINTER(LibCBM_Error), # error struct
-                ctypes.c_void_p, #handle
-                ctypes.POINTER(ctypes.c_size_t), #op ids
-                ctypes.c_size_t, #number of op ids
-                LibCBM_Matrix, #pools
-                ctypes.POINTER(ctypes.c_int) #enabled
+                ctypes.POINTER(LibCBM_Error),  # error struct
+                ctypes.c_void_p,  # handle
+                ctypes.POINTER(ctypes.c_size_t),  # op ids
+                ctypes.c_size_t,  # number of op ids
+                LibCBM_Matrix,  # pools
+                ctypes.POINTER(ctypes.c_int)  # enabled
             )
 
         self._dll.LibCBM_ComputeFlux.argtypes = (
-                ctypes.POINTER(LibCBM_Error), # error struct
-                ctypes.c_void_p, #handle
-                ctypes.POINTER(ctypes.c_size_t), #op ids
-                ctypes.POINTER(ctypes.c_size_t), #op process ids
-                ctypes.c_size_t, #number of ops
-                LibCBM_Matrix, # pools (nstands by npools)
-                LibCBM_Matrix, # flux (nstands by nfluxIndicators)
-                ctypes.POINTER(ctypes.c_int) #enabled
+                ctypes.POINTER(LibCBM_Error),  # error struct
+                ctypes.c_void_p,  # handle
+                ctypes.POINTER(ctypes.c_size_t),  # op ids
+                ctypes.POINTER(ctypes.c_size_t),  # op process ids
+                ctypes.c_size_t,  # number of ops
+                LibCBM_Matrix,  # pools (nstands by npools)
+                LibCBM_Matrix,  # flux (nstands by nfluxIndicators)
+                ctypes.POINTER(ctypes.c_int)  # enabled
             )
 
         self._dll.LibCBM_Initialize_CBM.argtypes = (
-                ctypes.POINTER(LibCBM_Error), # error struct
-                ctypes.c_void_p, #handle
-                ctypes.c_char_p # config json string
+                ctypes.POINTER(LibCBM_Error),  # error struct
+                ctypes.c_void_p,  # handle
+                ctypes.c_char_p  # config json string
             )
 
         self._dll.LibCBM_AdvanceStandState.argtypes = (
-                ctypes.POINTER(LibCBM_Error), # error struct
-                ctypes.c_void_p, #handle
-                ctypes.c_size_t, #n stands
-                LibCBM_Matrix_Int, #classifiers
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # spatial_units (length n)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # disturbance_types (length n)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # transition_rule_ids (length n)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # last_disturbance_type (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_last_disturbance (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # time_since_land_class_change (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # growth_enabled (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # enabled (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # land_class (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # regeneration_delay (length n) (return value)
-                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # age (length n) (return value)
+                ctypes.POINTER(LibCBM_Error),  # error struct
+                ctypes.c_void_p,  # handle
+                ctypes.c_size_t,  # n stands
+                LibCBM_Matrix_Int,  # classifiers
+                # spatial_units (length n)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # disturbance_types (length n)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # transition_rule_ids (length n)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # last_disturbance_type (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # time_since_last_disturbance (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # time_since_land_class_change (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # growth_enabled (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # enabled (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # land_class (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # regeneration_delay (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+                # age (length n) (return value)
+                ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
             )
 
         self._dll.LibCBM_EndStep.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_size_t, #n stands
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),#age
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),#regeneration_delay
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS") #enabled
+            # error struct
+            ctypes.POINTER(LibCBM_Error),
+            # handle
+            ctypes.c_void_p,
+            # n stands
+            ctypes.c_size_t,
+            # age
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # regeneration_delay
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # enabled
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
             )
 
         self._dll.LibCBM_InitializeLandState.argtypes = (
-            ctypes.POINTER(LibCBM_Error), # error struct
-            ctypes.c_void_p, #handle
-            ctypes.c_size_t, #n stands
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_pass_disturbance (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #delay (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #initial_age (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #spatial unit id (length n)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #afforestation pre type id (length n)
-            LibCBM_Matrix, # pools
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #last_disturbance_type (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_last_disturbance (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #time_since_land_class_change (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #growth_enabled (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #enabled (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), #land_class (length n) (return value)
-            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")  #age (length n) (return value)
+            ctypes.POINTER(LibCBM_Error),  # error struct
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t,  # n stands
+            # last_pass_disturbance (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # delay (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # initial_age (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # spatial unit id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # afforestation pre type id (length n)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # pools
+            LibCBM_Matrix,
+            # last_disturbance_type (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # time_since_last_disturbance (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # time_since_land_class_change (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # growth_enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # enabled (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # land_class (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+            # age (length n) (return value)
+            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
         )
 
         self._dll.LibCBM_AdvanceSpinupState.argtypes = (

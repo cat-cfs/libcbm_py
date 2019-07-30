@@ -332,12 +332,11 @@ class CBM:
             time_since_last_disturbance, time_since_land_class_change,
             growth_enabled, enabled, land_class, age)
 
-    def step(
-        self, pools, flux, classifiers, age, disturbance_type,
-        spatial_unit, mean_annual_temp, transition_rule_id,
-            last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled, land_class,
-            growth_multiplier, regeneration_delay):
+    def step(self, pools, flux, classifiers, age, disturbance_type,
+             spatial_unit, mean_annual_temp, transition_rule_id,
+             last_disturbance_type, time_since_last_disturbance,
+             time_since_land_class_change, growth_enabled, enabled, land_class,
+             growth_multiplier, regeneration_delay):
         """Advances the specified arguments through one time step of CBM
         simulation.
 
