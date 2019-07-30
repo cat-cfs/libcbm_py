@@ -309,7 +309,61 @@ class LibCBMWrapper():
                 raise RuntimeError(err.getErrorMessage())
 
     def Initialize(self, config):
+        """Initialize libcbm with pools, and flux indicators
 
+        Arguments:
+            config {str} -- a json formatted string containing configuration
+            for libcbm pools and flux definitions.
+
+            The number of pools, and flux indicators defined here, corresponds
+            to other data dimensions used during the lifetime of this instance:
+                1. The number of pools here defines the number of columns in
+                   the pool value matrix used by several other libCBM functions
+                2. The number of flux_indicators here defines the number of
+                   columns in the flux indicator matrix in the
+                   ComputeFlux method.
+
+            Example:
+                {
+                    "pools": [
+                        {"id": 1, "index": 0, "name": "pool_1"},
+                        {"id": 2, "index": 1, "name": "pool_2"},
+                           ...
+                        {"id": n, "index": n-1, "name": "pool_n"}],
+
+                    "flux_indicators": [
+                        {
+                            "id": 1,
+                            "index": 0,
+                            "process_id": 1,
+                            "source_pools": [1, 2]
+                            "sink_pools": [3]
+                        },
+                        {
+                            "id": 2,
+                            "index": 1,
+                            "process_id": 1,
+                            "source_pools": [1, 2]
+                            "sink_pools": [3]
+                        },
+                        ...
+                    ]
+                }
+
+            Pool/Flux Indicators configuration rules:
+                1. ids may be any integer, but are constrained to be unique
+                   within the set of pools.
+                2. indexes must be the ordered set of integers from 0 to
+                   n_pools - 1.
+                3. For flux indicator source_pools and sink_pools, list values
+                   correspond to id values in the collection of pools
+
+
+
+        Raises:
+            RuntimeError: if an error is detected in libCBM, it will be
+            re-raised with an appropriate error message.
+        """
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
 
         self.handle = self._dll.LibCBM_Initialize(
@@ -321,6 +375,21 @@ class LibCBMWrapper():
             raise RuntimeError(self.err.getErrorMessage())
 
     def AllocateOp(self, n):
+        """Allocates storage for n matrices, returning an id for the
+        allocated block.
+
+        Arguments:
+            n {int} -- The number of matrices to allocate.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+            prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+            re-raised with an appropriate error message.
+
+        Returns:
+            int -- the id for an allocated block of matrices
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -334,6 +403,17 @@ class LibCBMWrapper():
         return op_id
 
     def FreeOp(self, op_id):
+        """Deallocates a matrix block that was allocated by the AllocateOp method.
+
+        Arguments:
+            op_id {int} -- The id for an allocated block of matrices.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -345,6 +425,24 @@ class LibCBMWrapper():
             raise RuntimeError(self.err.getErrorMessage())
 
     def SetOp(self, op_id, matrices, matrix_index):
+        """Assigns values to an allocated block of matrices.
+
+        Arguments:
+            op_id {int} -- The id for an allocated block of matrices
+            matrices {list of ndarray} -- a list of n by 3 matrices which are
+                coordinate format triplet values (row,column,value).  All
+                defined row/column combinations are set with the value, and
+                all other matrix cells are assumed to be 0.
+            matrix_index {ndarray} -- an array of length n stands where the
+                value is an index to a matrix in the specified list of matrices
+                provided to this function.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         matrices_array = (LibCBM_Matrix * len(matrices))()
@@ -354,6 +452,8 @@ class LibCBMWrapper():
         self._dll.LibCBM_SetOp(
             ctypes.byref(self.err), self.handle, op_id, matrices_p,
             len(matrices), matrix_index, matrix_index.shape[0])
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def ComputePools(self, ops, pools, enabled=None):
 
