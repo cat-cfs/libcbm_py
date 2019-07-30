@@ -508,14 +508,20 @@ class LibCBMWrapper():
     def ComputeFlux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
 
+        Performs the same operation as ComputePools, except that the fluxes
+        are tracked in the specified flux parameter, according to the
+        flux_indicators configuration passed to the LibCBM initialize method.
+
         Arguments:
             ops {ndarray} -- list of matrix block ids as allocated by the
                 AllocateOp function.
             op_processes {ndarray} -- list of integers of length n_ops.
                 Ids referencing flux indicator process_id definition in the
                 LibCBM Initialize method.
-            pools {ndarray} -- [description]
-            flux {ndarray} -- [description]
+            pools {ndarray} -- matrix of shape n_stands by n_pools. The values
+                in this matrix are updated by this function.
+            flux {ndarray} -- matrix of shape n_stands by n_flux_indicators.
+                The values in this matrix are updated by this function.
 
         Keyword Arguments:
             enabled {ndarray} -- optional int vector of length n stands. If
@@ -555,6 +561,57 @@ class LibCBMWrapper():
             raise RuntimeError(self.err.getErrorMessage())
 
     def InitializeCBM(self, config):
+        """Initializes CBM-specific functionality within LibCBM
+
+        Arguments:
+            config {str} -- A json formatted string containing CBM
+                configuration.
+
+            See libcbm.configuration.cbm_defaults for construction of the
+            "cbm_defaults" value.  It is too large to include a useful example
+            here.
+
+            Example:
+                {
+                    "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
+                    "classifiers": [
+                        {"id": 1, "name": "a"},
+                        {"id": 2, "name": "b"},
+                        {"id": 3, "name": "c"}
+                    ],
+                    "classifier_values": [
+                        {"id": 1, "classifier_id": 1, "value": "a1", "description": "a1"}
+                    ],
+                    "merch_volume_to_biomass": {
+                        'db_path': './cbm_defaults.db',
+                        'merch_volume_curves': [
+                            {
+                                'classifier_set': {
+                                    'type': 'name', 'values': ['a1','b2','c1']
+                                },
+                                'components': [
+                                    {
+                                    'species_id': 1,
+                                    'age_volume_pairs': [(age0, vol0),
+                                                         (age1, vol0),
+                                                         (ageN, volN)]
+                                    },
+                                    {
+                                    'species_id': 2,
+                                    'age_volume_pairs': [(age0, vol0),
+                                                         (age1, vol0),
+                                                         (ageN, volN)]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+
+        Raises:
+            AssertionError: [description]
+            RuntimeError: [description]
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 

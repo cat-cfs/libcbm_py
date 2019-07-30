@@ -26,8 +26,9 @@ def save_config(path, config):
 
 def initialize_config(save_path=None, **kwargs):
     '''
-    initialize config sets up the json configuration object passed to the underlying dll
-    returns config as string, and optionally saves to specified path
+    initialize config sets up the json configuration object passed to the
+    underlying dll returns config as string, and optionally saves to specified
+    path
     '''
     configuration = kwargs
     if save_path:
