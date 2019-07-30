@@ -580,7 +580,24 @@ class LibCBMWrapper():
                         {"id": 3, "name": "c"}
                     ],
                     "classifier_values": [
-                        {"id": 1, "classifier_id": 1, "value": "a1", "description": "a1"}
+                        {
+                            "id": 1,
+                            "classifier_id": 1,
+                            "value": "a1",
+                            "description": "a1"
+                        },
+                        {
+                            "id": 2,
+                            "classifier_id": 2,
+                            "value": "b2",
+                            "description": "b2"
+                        },
+                        {
+                            "id": 3,
+                            "classifier_id": 3,
+                            "value": "c1",
+                            "description": "c1"
+                        }
                     ],
                     "merch_volume_to_biomass": {
                         'db_path': './cbm_defaults.db',
