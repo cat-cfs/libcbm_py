@@ -1,9 +1,11 @@
 import ctypes
 import numpy as np
 
+
 class LibCBM_Matrix(ctypes.Structure):
     """Wrapper for low level C/C++ LibCBM structure of the same name.
-    Used to pass a 2 dimensional numpy matrix as raw float64 memory to LibCBM
+    Used to pass a 2 dimensional numpy matrix or single valued array as raw
+    float64 memory to LibCBM.
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
@@ -29,7 +31,8 @@ class LibCBM_Matrix(ctypes.Structure):
 
 class LibCBM_Matrix_Int(ctypes.Structure):
     """Wrapper for low level C/C++ LibCBM structure of the same name.
-    Used to pass a 2 dimensional numpy matrix as raw float64 memory to LibCBM
+    Used to pass a 2 dimensional numpy matrix or single valued array as raw
+    int32 memory to LibCBM.
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
