@@ -289,7 +289,8 @@ class CBM:
             pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools)
                 this paramater is assigned by this method when
                 afforestation_pre_type_id is > 0
-            last_disturbance_type {ndarray} -- [description]
+            last_disturbance_type {ndarray} -- int vector of length
+                n_stands. Set to the last_pass_disturbance_type.
             time_since_last_disturbance {ndarray} -- int vector of length
                 n_stands. Set based on the inventory_age or delay values to
                 the number of timesteps since a disturbance last occurred.

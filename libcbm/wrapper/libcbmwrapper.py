@@ -23,7 +23,9 @@ def getNullableNdarray(a, type=ctypes.c_double):
         (default: {ctypes.c_double})
 
     Returns:
-        [type] -- [description]
+        None or ctypes.POINTER -- if the specified argument is None, None is
+        returned, otherwise the argument is converted to a C_CONTIGUOUS
+        pointer to the underlying ndarray data.
     """
     if a is None:
         return None
