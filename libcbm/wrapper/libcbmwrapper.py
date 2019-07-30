@@ -480,8 +480,9 @@ class LibCBMWrapper():
         Keyword Arguments:
             enabled {ndarray} -- optional int vector of length n stands. If
                 specified, enables or disables flows for each stand, based on
-                the value at each stand index. If unspecified, all flows are
-                assumed to be enabled. (default: {None})
+                the value at each stand index. (0 is disabled, !0 is enabled)
+                If unspecified, all flows are assumed to be enabled.
+                (default: {None})
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -508,18 +509,28 @@ class LibCBMWrapper():
         """Computes and tracks flows between pool values for all stands.
 
         Arguments:
-            ops {[type]} -- [description]
-            op_processes {[type]} -- [description]
-            pools {[type]} -- [description]
-            flux {[type]} -- [description]
+            ops {ndarray} -- list of matrix block ids as allocated by the
+                AllocateOp function.
+            op_processes {ndarray} -- list of integers of length n_ops.
+                Ids referencing flux indicator process_id definition in the
+                LibCBM Initialize method.
+            pools {ndarray} -- [description]
+            flux {ndarray} -- [description]
 
         Keyword Arguments:
-            enabled {[type]} -- [description] (default: {None})
+            enabled {ndarray} -- optional int vector of length n stands. If
+                specified, enables or disables flows for each stand, based on
+                the value at each stand index. (0 is disabled, !0 is enabled)
+                If unspecified, all flows are assumed to be enabled.
+                (default: {None})
 
         Raises:
-            AssertionError: [description]
-            ValueError: [description]
-            RuntimeError: [description]
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            ValueError: raised when parameters passed to this function are not
+                valid.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
         """
         if not self.handle:
             raise AssertionError("dll not initialized")
