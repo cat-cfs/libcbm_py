@@ -456,7 +456,39 @@ class LibCBMWrapper():
             raise RuntimeError(self.err.getErrorMessage())
 
     def ComputePools(self, ops, pools, enabled=None):
+        """Computes flows between pool values for all stands.
 
+        Each value in the ops parameter is an id to a matrix block, and is also
+        conceptually a list of matrixes of length n stands.
+
+        Performs the following computation:
+
+            for op in ops:
+                for s in len(n_stands):
+                    M = get_matrix(op,s)
+                    pools[s,:] = np.matmul(pools[s,:], M)
+
+        Where get_matrix is a function returning the matrix for the
+        op, stand index combination.
+
+        Arguments:
+            ops {ndarray} -- list of matrix block ids as allocated by the
+                AllocateOp function.
+            pools {ndarray} -- matrix of shape n_stands by n_pools. The values
+                in this matrix are updated by this function.
+
+        Keyword Arguments:
+            enabled {ndarray} -- optional int vector of length n stands. If
+                specified, enables or disables flows for each stand, based on
+                the value at each stand index. If unspecified, all flows are
+                assumed to be enabled. (default: {None})
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -473,6 +505,22 @@ class LibCBMWrapper():
             raise RuntimeError(self.err.getErrorMessage())
 
     def ComputeFlux(self, ops, op_processes, pools, flux, enabled=None):
+        """Computes and tracks flows between pool values for all stands.
+
+        Arguments:
+            ops {[type]} -- [description]
+            op_processes {[type]} -- [description]
+            pools {[type]} -- [description]
+            flux {[type]} -- [description]
+
+        Keyword Arguments:
+            enabled {[type]} -- [description] (default: {None})
+
+        Raises:
+            AssertionError: [description]
+            ValueError: [description]
+            RuntimeError: [description]
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
