@@ -74,7 +74,8 @@ class LibCBM_Matrix(ctypes.Structure):
 
 
 class LibCBM_Matrix_Int(ctypes.Structure):
-
+    """Wrapper for low level C/C++ LibCBM structure of the same name.
+    """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
                 ('values', ctypes.POINTER(ctypes.c_int))]
@@ -97,6 +98,10 @@ class LibCBM_Matrix_Int(ctypes.Structure):
 
 
 class LibCBM_Error(ctypes.Structure):
+    """Wrapper for low level C/C++ LibCBM structure of the same name.
+    Stores string error message when they occur in library functions.
+    """
+    
     _fields_ = [("Error", ctypes.c_int),
                 ("Message", ctypes.ARRAY(ctypes.c_byte, 1000))]
 
@@ -105,10 +110,16 @@ class LibCBM_Error(ctypes.Structure):
         setattr(self, "Message", ctypes.ARRAY(ctypes.c_byte, 1000)())
 
     def getError(self):
+        """Gets the error code from an error returned by a library function.
+        If no error occured this is zero.
+        """
         code = getattr(self, "Error")
         return code
 
     def getErrorMessage(self):
+        """Gets the error message from an error returned by a library
+        function.  If no error occurred this is an empty string.
+        """
         msg = ctypes.cast(getattr(self, "Message"), ctypes.c_char_p).value
         return msg
 
@@ -371,6 +382,7 @@ class LibCBMWrapper():
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        """frees the allocated libcbm handle"""
         if self.handle:
             err = LibCBM_Error()
             self._dll.LibCBM_Free(ctypes.byref(err), self.handle)
