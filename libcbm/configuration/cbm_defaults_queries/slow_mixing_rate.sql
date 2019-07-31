@@ -1,0 +1,1 @@
+select rate from slow_mixing_rate;

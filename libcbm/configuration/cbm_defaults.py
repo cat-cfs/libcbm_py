@@ -1,57 +1,19 @@
 # loads cbm defaults into configuration dictionary format
 import sqlite3
-
+import libcbm.configuration.cbm_defaults_queries
 queries = {
-    "decay_parameters": """
-        select
-        pool.id as Pool,
-        decay_parameter.base_decay_rate as OrganicMatterDecayRate,
-        decay_parameter.reference_temp as ReferenceTemp,
-        decay_parameter.q10 as Q10,
-        decay_parameter.prop_to_atmosphere as PropToAtmosphere,
-        decay_parameter.max_rate as MaxDecayRate
-        from decay_parameter
-        inner join dom_pool on dom_pool.id = decay_parameter.dom_pool_id
-        inner join pool on pool.id = dom_pool.pool_id;
-        """,
+    k: libcbm.configuration.cbm_defaults_queries.get_query(
+        "{}.sql".format(k))
+    for k in [
+        "decay_parameters",
+        "slow_mixing_rate",
+        "mean_annual_temp",
+        "turnover_parameters",
+        "disturbance_matrix_values",
+        "disturbance_matrix_associations",
+        "root_parameter"
+        ]}
 
-    "slow_mixing_rate": "select rate from slow_mixing_rate;",
-
-    "mean_annual_temp": """
-        select spatial_unit.id as spatial_unit_id,
-        spatial_unit.mean_annual_temperature
-        from spatial_unit;
-    """,
-
-    "turnover_parameters": """
-        select eco_boundary.id as EcoBoundaryId,
-        turnover_parameter.sw_foliage as SoftwoodFoliageFallRate,
-        turnover_parameter.hw_foliage as HardwoodFoliageFallRate,
-        turnover_parameter.stem_turnover as StemAnnualTurnoverRate,
-        turnover_parameter.sw_branch as SoftwoodBranchTurnoverRate,
-        turnover_parameter.hw_branch as HardwoodBranchTurnoverRate,
-        turnover_parameter.coarse_ag_split as CoarseRootAGSplit,
-        turnover_parameter.coarse_root as CoarseRootTurnProp,
-        turnover_parameter.fine_ag_split as FineRootAGSplit,
-        turnover_parameter.fine_root as FineRootTurnProp,
-        turnover_parameter.branch_snag_split as OtherToBranchSnagSplit,
-        turnover_parameter.branch_snag as BranchSnagTurnoverRate,
-        turnover_parameter.stem_snag as StemSnagTurnoverRate
-        from eco_boundary
-        inner join turnover_parameter on
-        eco_boundary.turnover_parameter_id = turnover_parameter.id;
-    """,
-
-    "disturbance_matrix_values": "select * from disturbance_matrix_value",
-
-    "disturbance_matrix_associations":
-        "select * from disturbance_matrix_association;",
-
-    "root_parameter": """
-        select root_parameter.*,
-        biomass_to_carbon_rate.rate as biomass_to_carbon_rate
-        from root_parameter, biomass_to_carbon_rate
-    """,
 
     "growth_multipliers": """
         select
