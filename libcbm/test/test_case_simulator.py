@@ -5,10 +5,8 @@
 
 import numpy as np
 import pandas as pd
-from libcbm.configuration import cbm_defaults
-from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
-from libcbm.model.cbm import CBM
-from libcbm.configuration import libcbmconfig
+
+from libcbm.model import cbm_factory
 from libcbm.configuration import cbmconfig
 from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test import casegeneration
@@ -65,54 +63,53 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
     return df
 
 
-def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
+def get_test_case_classifier_factory(cases):
 
-    dll = LibCBMWrapper(dll_path)
+    def create_classifiers():
+        # create a single classifier/classifier value for the single growth curve
+        classifiers_config = cbmconfig.classifier_config([
+            cbmconfig.classifier("growth_curve", [
+                cbmconfig.classifier_value(
+                    casegeneration.get_classifier_name(c["id"]))
+                for c in cases
+                ])
+            ])
+        return classifiers_config
+    return create_classifiers
+
+def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
+
+    def create_merch_volume_config():
+        curves = []
+        for c in cases:
+            classifier_set = [casegeneration.get_classifier_name(c["id"])]
+            merch_volumes = []
+            for component in c["components"]:
+                merch_volumes.append({
+                    "species_id": cbm_defaults_ref.get_species_id([component["species"]]),
+                    "age_volume_pairs": component["age_volume_pairs"]
+                })
+
+            curve = cbmconfig.merch_volume_curve(
+                classifier_set=classifier_set,
+                merch_volumes=merch_volumes)
+            curves.append(curve)
+
+        merch_volume_to_biomass_config = \
+            cbmconfig.merch_volume_to_biomass_config(db_path, curves)
+        return merch_volume_to_biomass_config
+
+    return create_merch_volume_config
+
+def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
+               spinup_debug=False):
+
     ref = CBMDefaultsReference(db_path, "en-CA")
 
-    pooldef = cbm_defaults.load_cbm_pools(db_path)
-    flux_ind = cbm_defaults.load_flux_indicators(db_path)
-
-
-    dll.Initialize(libcbmconfig.to_string(
-        {
-            "pools": pooldef,
-            "flux_indicators": flux_ind
-        }))
-
-    # create a single classifier/classifier value for the single growth curve
-    classifiers_config = cbmconfig.classifier_config([
-        cbmconfig.classifier("growth_curve", [
-            cbmconfig.classifier_value(casegeneration.get_classifier_name(c["id"]))
-            for c in cases
-        ])
-    ])
-
-    curves = []
-    for c in cases:
-        classifier_set = [casegeneration.get_classifier_name(c["id"])]
-        merch_volumes = []
-        for component in c["components"]:
-            merch_volumes.append({
-                "species_id": ref.get_species_id([component["species"]]),
-                "age_volume_pairs": component["age_volume_pairs"]
-            })
-
-        curve = cbmconfig.merch_volume_curve(
-            classifier_set = classifier_set,
-            merch_volumes = merch_volumes)
-        curves.append(curve)
-
-    merch_volume_to_biomass_config = cbmconfig.merch_volume_to_biomass_config(
-        db_path, curves)
-
-    dll.InitializeCBM(libcbmconfig.to_string({
-        "cbm_defaults": cbm_defaults.load_cbm_parameters(db_path),
-        "merch_volume_to_biomass": merch_volume_to_biomass_config,
-        "classifiers": classifiers_config["classifiers"],
-        "classifier_values": classifiers_config["classifier_values"],
-        "transitions": []
-    }))
+    cbm = cbm_factory.create(
+        model_factory, db_path, dll_path,
+        get_test_case_merch_volume_factory(cases, db_path, ref),
+        get_test_case_classifier_factory(cases))
 
     n_stands = len(cases)
 
@@ -125,7 +122,8 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
         dtype=np.int32)
 
     last_pass_disturbance_type = np.array(
-        [ref.get_disturbance_type_id(c["last_pass_disturbance"]) for c in cases],
+        [ref.get_disturbance_type_id(c["last_pass_disturbance"])
+        for c in cases],
         dtype=np.int32)
 
     delay = np.array([c["delay"] for c in cases], dtype=np.int32)
@@ -176,18 +174,17 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
             dist_type_id = disturbance_types_reference[e["disturbance_type"]]
             if i_c in disturbances:
                 if time_step in disturbances[i_c]:
-                    raise ValueError("more than one event found for index {0}, timestep {1}"
-                                     .format(i_c, time_step))
+                    raise ValueError(
+                        "more than one event found for index {0}, timestep {1}"
+                        .format(i_c, time_step))
                 else:
                     disturbances[i_c][time_step] = dist_type_id
             else:
                 disturbances[i_c] = { time_step: dist_type_id }
 
-
-    cbm3 = CBM(dll)
     pool_result = pd.DataFrame()
     flux_result = pd.DataFrame()
-    spinup_debug = cbm3.spinup(
+    spinup_debug = cbm.spinup(
         pools=pools,
         classifiers=classifiers,
         inventory_age=inventory_age,
@@ -199,7 +196,7 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
         mean_annual_temp=None,
         debug=spinup_debug)
 
-    cbm3.init(
+    cbm.init(
         last_pass_disturbance_type=last_pass_disturbance_type,
         delay=delay,
         inventory_age=inventory_age,
@@ -216,7 +213,7 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
 
     pool_result = append_pools_data(pool_result, n_stands, 0, pools, pooldef)
     state_variable_result = pd.DataFrame(data={
-        "identifier": [casegeneration.get_classifier_name(x) for x in range(1, n_stands+1)],
+        "identifier": [casegeneration.get_classifier_name(x) for x in range(1, n_stands + 1)],
         "timestep": 0,
         "age": age,
         "land_class": land_class,
@@ -236,7 +233,7 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
             if t in v:
                 disturbance_types[k] = v[t]
 
-        cbm3.step(
+        cbm.step(
             pools=pools,
             flux=flux,
             classifiers=classifiers,

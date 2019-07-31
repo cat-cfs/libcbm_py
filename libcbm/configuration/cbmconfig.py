@@ -13,14 +13,12 @@ def classifier_config(classifiers):
     Returns a dictionary like this one:
 
         {'classifiers':       [{'id': 1, 'name': 'growth_curve'}],
-         'classifier_values': [{'id': 1, 'classifier_id': 1, 'value': '1', 'description': ''}],
-         'classifier_index':  [{'1': 1}]}
+         'classifier_values': [{'id': 1, 'classifier_id': 1, 'value': '1', 'description': ''}]}
 
     """
     result = {
         "classifiers":       [],
         "classifier_values": [],
-        "classifier_index":  []
     }
     for i, c in enumerate(classifiers):
         classifier = c[0]

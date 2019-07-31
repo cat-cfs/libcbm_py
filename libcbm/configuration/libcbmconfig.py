@@ -1,5 +1,6 @@
 import json
 
+
 def load_json(path):
     with open(path) as f:
         data = json.load(f)
@@ -35,5 +36,3 @@ def initialize_config(save_path=None, **kwargs):
         save_config(save_path, configuration)
 
     return to_string(configuration)
-
-
