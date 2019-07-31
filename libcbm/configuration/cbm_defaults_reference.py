@@ -53,3 +53,15 @@ def load_data(sqlite_path, query, locale_code="en-CA", as_data_frame=False):
         with sqlite3.connect(sqlite_path) as conn:
             df = pd.read_sql_query(sql=query, con=conn, params=(locale_code,))
             return df
+
+
+class CBMDefaultsReference:
+
+    def __init__(self, sqlite_path, locale_code="en-CA"):
+
+        self.sqlite_path = sqlite_path
+        self.locale_code = locale_code
+
+        self.species_ref = load_data(sqlite_path, species_reference_query, locale_code)
+
+    def get_species_id(species_name):
