@@ -1,103 +1,48 @@
-# loads cbm defaults into configuration dictionary format
 import sqlite3
 import libcbm.configuration.cbm_defaults_queries
-queries = {
-    k: libcbm.configuration.cbm_defaults_queries.get_query(
-        "{}.sql".format(k))
-    for k in [
-        "decay_parameters",
-        "slow_mixing_rate",
-        "mean_annual_temp",
-        "turnover_parameters",
-        "disturbance_matrix_values",
-        "disturbance_matrix_associations",
-        "root_parameter"
-        ]}
-
-
-    "growth_multipliers": """
-        select
-        growth_multiplier_series.disturbance_type_id,
-        growth_multiplier_value.forest_type_id,
-        growth_multiplier_value.time_step,
-        growth_multiplier_value.value
-        from growth_multiplier_series
-        inner join growth_multiplier_value on
-        growth_multiplier_value.growth_multiplier_series_id =
-        growth_multiplier_series.id
-    """,
-
-    "land_classes": """
-        select land_class.id, land_class.is_forest, land_class.is_simulated,
-        land_class.transitional_period, land_class.transition_id
-        from land_class;
-    """,
-
-    "land_class_transitions": """
-        select disturbance_type.id as disturbance_type_id,
-        disturbance_type.transition_land_class_id
-        from disturbance_type
-        where disturbance_type.transition_land_class_id is not null
-    """,
-
-    "spatial_units": "select spatial_unit.id as spatial_unit_id, spatial_unit.eco_boundary_id from spatial_unit;",
-
-    "random_return_interval": """
-        select eco_boundary.id as eco_boundary_id,
-        random_return_interval.a_Nu,
-        random_return_interval.b_Nu,
-        random_return_interval.a_Lambda,
-        random_return_interval.b_Lambda
-        from eco_boundary inner join
-        random_return_interval on
-        eco_boundary.random_return_interval_id =
-        random_return_interval.id;
-    """,
-
-    "flux_indicator_process": """
-        select flux_indicator.id as flux_indicator_id, flux_process.id as flux_process_id from flux_indicator
-        inner join flux_process on flux_process.id = flux_indicator.flux_process_id
-    """,
-
-    "flux_indicator_source": """
-        select flux_indicator.id, flux_indicator_source.pool_id from flux_indicator
-        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id
-    """,
-
-    "flux_indicator_sink": """
-        select flux_indicator.id, flux_indicator_sink.pool_id from flux_indicator
-        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id
-    """,
-
-    "spinup_parameter": """
-        select
-        spatial_unit.id as spatial_unit_id,
-        spinup_parameter.return_interval,
-        spinup_parameter.historic_mean_temperature,
-        spinup_parameter.min_rotations,
-        spinup_parameter.max_rotations,
-        spinup_parameter.return_interval
-        from spinup_parameter inner join spatial_unit on
-        spatial_unit.spinup_parameter_id == spinup_parameter.id
-    """,
-
-    "afforestation_pre_type": """
-        select
-        afforestation_pre_type.id,
-        afforestation_initial_pool.spatial_unit_id,
-        afforestation_initial_pool.pool_id,
-        afforestation_initial_pool.value
-        from afforestation_pre_type
-        inner join afforestation_initial_pool on
-        afforestation_initial_pool.afforestation_pre_type_id = afforestation_pre_type.id
-    """
-
-
-}
 
 
 def load_cbm_parameters(sqlitePath):
+    """Loads cbm default parameters into configuration dictionary format.
+    Used for initializing CBM functionality in LibCBM via the InitializeCBM
+    function.
+
+    Arguments:
+        sqlitePath {str} -- Path to a CBM parameters database as formatted
+        like: https://github.com/cat-cfs/cbm_defaults
+
+    Raises:
+        AssertionError: if the name of any 2 queries is the same, an error is
+            raised.
+
+    Returns:
+        dict -- a dictionary of name/formatted data pairs for use with LibCBM
+            configuration
+    """
     result = {}
+
+    queries = {
+        k: libcbm.configuration.cbm_defaults_queries.get_query(
+            "{}.sql".format(k))
+        for k in [
+            "decay_parameters",
+            "slow_mixing_rate",
+            "mean_annual_temp",
+            "turnover_parameters",
+            "disturbance_matrix_values",
+            "disturbance_matrix_associations",
+            "root_parameter",
+            "growth_multipliers",
+            "land_classes",
+            "land_class_transitions",
+            "spatial_units",
+            "random_return_interval",
+            "flux_indicator_process",
+            "flux_indicator_source",
+            "flux_indicator_sink",
+            "spinup_parameter"
+            ]}
+
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         for table, query in queries.items():
@@ -115,174 +60,3 @@ def load_cbm_parameters(sqlitePath):
             }
 
     return result
-
-
-def load_species_reference(path, locale_code="en-CA"):
-    query = """
-        select species_tr.name, species.id, species.forest_type_id
-        from species
-        inner join species_tr on species_tr.species_id = species.id
-        inner join locale on species_tr.locale_id = locale.id
-        where locale.code = ?"""
-    result = {}
-    with sqlite3.connect(path) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result[row[0]] = {
-                "species_id": int(row[1]),
-                "forest_type_id": int(row[2])}
-    return result
-
-
-def get_spatial_unit_ids_by_admin_eco_name(sqlitePath, locale_code="en-CA"):
-    query = """
-        select spatial_unit.id, admin_boundary_tr.name as admin_boundary_name,
-        eco_boundary_tr.name as eco_boundary_name from spatial_unit
-        inner join eco_boundary on eco_boundary.id = spatial_unit.eco_boundary_id
-        inner join admin_boundary on admin_boundary.id = spatial_unit.admin_boundary_id
-        inner join eco_boundary_tr on eco_boundary_tr.eco_boundary_id = eco_boundary.id
-        inner join admin_boundary_tr on admin_boundary_tr.admin_boundary_id = admin_boundary.id
-        inner join locale on admin_boundary_tr.locale_id = locale.id
-        where admin_boundary_tr.locale_id = eco_boundary_tr.locale_id and locale.code = ?
-        order by spatial_unit.id
-        """
-    result = {}
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result[(row[1], row[2])] = row[0]
-    return result
-
-
-def get_land_class_disturbance_reference(sqlitePath, locale_code="en-CA"):
-    query = """
-        select
-        disturbance_type.id as disturbance_type_id,
-        disturbance_type_tr.name as disturbance_type_name,
-        land_class.id as land_class_id,
-        land_class.code as land_class_code,
-        land_class_tr.description as land_class_description
-        from disturbance_type
-        inner join land_class on disturbance_type.transition_land_class_id = land_class.id
-        inner join land_class_tr on land_class_tr.land_class_id = land_class.id
-        inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
-        inner join locale dt_loc on disturbance_type_tr.locale_id = dt_loc.id
-        inner join locale lc_loc on land_class_tr.locale_id = lc_loc.id
-        where dt_loc.code = ? and lc_loc.code = ?
-    """
-    result = []
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,locale_code)):
-            result.append({
-            "disturbance_type_id": row[0],
-            "disturbance_type_name": row[1],
-            "land_class_id": row[2],
-            "land_class_code": row[3],
-            "land_class_description": row[4]
-            })
-    return result
-
-def get_land_class_reference(sqlitePath, locale_code="en-CA"):
-    query = """
-        select
-        land_class.id as land_class_id, land_class.code, land_class_tr.description
-        from land_class
-        inner join land_class_tr on land_class_tr.land_class_id = land_class.id
-        inner join locale on land_class_tr.locale_id = locale.id
-        where locale.code = ?
-    """
-    result = []
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result.append({
-            "land_class_id": row[0],
-            "land_class_code": row[1],
-            "land_class_description": row[2]
-            })
-    return result
-
-def get_disturbance_type_ids_by_name(sqlitePath, locale_code="en-CA"):
-    query = """
-        select  disturbance_type.id, disturbance_type_tr.name
-        from disturbance_type
-        inner join disturbance_type_tr on disturbance_type_tr.disturbance_type_id == disturbance_type.id
-        inner join locale on disturbance_type_tr.locale_id = locale.id
-        where locale.code = ?
-        """
-    result = {}
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result[row[1]] = row[0]
-    return result
-
-def get_afforestation_types_by_name(sqlitePath, locale_code="en-CA"):
-    query = """
-        select afforestation_pre_type.id, afforestation_pre_type_tr.name
-        from afforestation_pre_type inner join afforestation_pre_type_tr
-        on afforestation_pre_type_tr.afforestation_pre_type_id = afforestation_pre_type.id
-        inner join locale on afforestation_pre_type_tr.locale_id = locale.id
-        where locale.code = ? and afforestation_pre_type.id>0
-        """
-    result = {}
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query, (locale_code,)):
-            result[row[1]] = row[0]
-    return result
-
-
-def get_flux_indicator_names(sqlitePath):
-    query = """select flux_indicator.id, flux_indicator.name from flux_indicator
-        """
-    result = []
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        for row in cursor.execute(query):
-            result.append({"id": row[0], "name": row[1]})
-    return result
-
-
-def load_cbm_pools(sqlitePath):
-    result = []
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        index = 0
-        for row in cursor.execute("select code, id from pool order by id"):
-            result.append({"name": row[0], "id": row[1], "index": index})
-            index += 1
-        return result
-
-
-def load_flux_indicators(sqlitePath):
-    result = []
-    flux_indicator_source_sql = """
-        select flux_indicator_source.pool_id from flux_indicator
-        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id
-        where flux_indicator.id = ?"""
-    flux_indicator_sink_sql = """
-        select flux_indicator_sink.pool_id from flux_indicator
-        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id
-        where flux_indicator.id = ?"""
-    with sqlite3.connect(sqlitePath) as conn:
-        cursor = conn.cursor()
-        index = 0;
-        flux_indicator_rows = list(cursor.execute("select id, flux_process_id from flux_indicator"))
-        for row in flux_indicator_rows:
-            flux_indicator = {
-                "id": row[0],
-                "index": index,
-                "process_id": row[1],
-                "source_pools": [],
-                "sink_pools": []
-            }
-            for source_pool_row in cursor.execute(flux_indicator_source_sql, (row[0],)):
-                flux_indicator["source_pools"].append(int(source_pool_row[0]))
-            for sink_pool_row in cursor.execute(flux_indicator_sink_sql, (row[0],)):
-                flux_indicator["sink_pools"].append(int(sink_pool_row[0]))
-            result.append(flux_indicator)
-            index += 1
-        return result
-

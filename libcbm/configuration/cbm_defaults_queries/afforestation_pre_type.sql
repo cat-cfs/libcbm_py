@@ -1,0 +1,8 @@
+select
+afforestation_pre_type.id,
+afforestation_initial_pool.spatial_unit_id,
+afforestation_initial_pool.pool_id,
+afforestation_initial_pool.value
+from afforestation_pre_type
+inner join afforestation_initial_pool on
+afforestation_initial_pool.afforestation_pre_type_id = afforestation_pre_type.id

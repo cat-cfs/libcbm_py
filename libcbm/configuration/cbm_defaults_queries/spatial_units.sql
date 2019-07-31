@@ -1,0 +1,1 @@
+select spatial_unit.id as spatial_unit_id, spatial_unit.eco_boundary_id from spatial_unit;

@@ -1,0 +1,9 @@
+select
+growth_multiplier_series.disturbance_type_id,
+growth_multiplier_value.forest_type_id,
+growth_multiplier_value.time_step,
+growth_multiplier_value.value
+from growth_multiplier_series
+inner join growth_multiplier_value on
+growth_multiplier_value.growth_multiplier_series_id =
+growth_multiplier_series.id
