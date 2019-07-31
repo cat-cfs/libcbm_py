@@ -87,13 +87,6 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
             for c in cases
         ])
     ])
-    # flux_indicator_names = cbm_defaults.get_flux_indicator_names(db_path)
-    # species_reference = cbm_defaults.load_species_reference(db_path, "en-CA")
-    # spatial_unit_reference = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(db_path, "en-CA")
-    # disturbance_types_reference = cbm_defaults.get_disturbance_type_ids_by_name(db_path, "en-CA")
-    # afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(db_path, "en-CA")
-    # land_class_ref = cbm_defaults.get_land_class_reference(db_path, "en-CA")
-    # land_classes_by_code = {x["land_class_code"]: x for x in land_class_ref}
 
     curves = []
     for c in cases:
@@ -139,26 +132,28 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
 
     classifiers = np.zeros((n_stands, 1), dtype=np.int32)
 
-    classifiers[:,0]=[classifiers_config["classifier_index"][0] \
+    classifiers[:, 0] = [classifiers_config["classifier_index"][0] \
         [casegeneration.get_classifier_name(c["id"])] for c in cases]
 
     spatial_units = np.array(
         [ref.get_spatial_unit_id(c["admin_boundary"], c["eco_boundary"])
-            for c in cases], dtype=np.int32)
+            for c in cases],
+        dtype=np.int32)
 
     afforestation_pre_type_ids = []
     for c in cases:
         if not c["afforestation_pre_type"] is None:
             afforestation_pre_type_ids.append(
-                afforestation_pre_types[c["afforestation_pre_type"]])
+                ref.get_afforestation_pre_type_id(c["afforestation_pre_type"]))
         else:
             afforestation_pre_type_ids.append(0)
 
-    afforestation_pre_type_id = np.array(afforestation_pre_type_ids, dtype=np.int32)
+    afforestation_pre_type_id = np.array(
+        afforestation_pre_type_ids, dtype=np.int32)
 
     land_class = np.ones(n_stands, dtype=np.int32)
     land_class[afforestation_pre_type_id > 0] = \
-        land_classes_by_code["UNFCCC_CL_R_CL"]["land_class_id"]
+        ref.get_land_class_id("UNFCCC_CL_R_CL")
     last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
     time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
@@ -170,7 +165,7 @@ def run_libCBM(dll_path, db_path, cases, n_steps, spinup_debug=False):
     disturbance_types = np.zeros(n_stands, dtype=np.int32)
     transition_rules = np.zeros(n_stands, dtype=np.int32)
 
-    pools = np.zeros((n_stands,len(pooldef)))
+    pools = np.zeros((n_stands, len(pooldef)))
     flux = np.zeros((n_stands, len(flux_ind)))
     enabled = np.ones(n_stands, dtype=np.int32)
 
