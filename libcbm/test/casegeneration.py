@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import libcbm.configuration.cbm_defaults as cbm_defaults
+from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 
 
 def get_classifier_value_name(id):
@@ -50,7 +50,8 @@ def get_expCurve_func():
 
 def create_scenario(id, age, area, delay, afforestation_pre_type,
                     unfccc_land_class, admin_boundary, eco_boundary,
-                    historic_disturbance, last_pass_disturbance, components, events):
+                    historic_disturbance, last_pass_disturbance, components,
+                    events):
     return {
         "id": id,
         "age": age,
@@ -81,15 +82,19 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                        growth_only=False):
 
     np.random.seed(random_seed)
+    ref = CBMDefaultsReference(db_path, "en-CA")
+    species_ref = ref.get_species()
 
-    species_ref = cbm_defaults.load_species_reference(db_path, "en-CA")
+    # exclude species names that are too long for the CBM-CFS3 project
+    # database schema, and forest_types that are not hardwood or softwood
     species = [
-        k for k, v in species_ref.items()
-        if len(k) < 50 and v["forest_type_id"] in [1,3]
-        ] # exclude species names that are too long for the CBM-CFS3 project database schema
+        k for k in species_ref
+        if len(k["species_name"]) < 50 and k["forest_type_id"] in [1, 3]
+        ]
 
-    spatial_units = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(db_path, "en-CA")
-    random_spus = np.random.choice([",".join(x) for x in spatial_units.keys()], num_cases)
+    spatial_units = ref.get_spatial_units()
+    random_spus = np.random.choice(
+        [",".join(x["spatial_unit_id"]) for x in spatial_units], num_cases)
 
     disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(db_path, "en-CA")
 
