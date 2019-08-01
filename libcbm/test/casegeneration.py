@@ -1,22 +1,27 @@
 import math
 import numpy as np
 import libcbm.configuration.cbm_defaults as cbm_defaults
-def get_classifier_name(id):
+
+
+def get_classifier_value_name(id):
     return str(id)
 
 
 def get_random_sigmoid_func():
     x_0 = np.random.rand(1)[0] * 100
     L = np.random.rand(1)[0] * 400
-    k=0.1 
+    k = 0.1
+
     def sigmoid(x):
         return L/(1+math.exp(-k*(x-x_0)))
     return sigmoid
 
-#return a step of value y for the range minx to maxX
+
+# return a step of value y for the range minx to maxX
 def get_step_func():
     y = np.random.rand(1)[0] * 500
     minX = np.random.randint(low=1, high=200)
+
     def step(x):
         if x == 0:
             return 0
@@ -29,6 +34,7 @@ def get_step_func():
 
 def get_ramp_func():
     rate = np.random.rand(1)[0] * 5
+
     def ramp(x):
         return x*rate
     return ramp
@@ -36,16 +42,17 @@ def get_ramp_func():
 
 def get_expCurve_func():
     yMax = np.random.rand(1)[0] * 500
+
     def expCurve(x):
         return yMax - math.exp(-x) * yMax
     return expCurve
 
 
 def create_scenario(id, age, area, delay, afforestation_pre_type,
-    unfccc_land_class, admin_boundary, eco_boundary,
-    historic_disturbance, last_pass_disturbance, components, events):
+                    unfccc_land_class, admin_boundary, eco_boundary,
+                    historic_disturbance, last_pass_disturbance, components, events):
     return {
-        "id":id,
+        "id": id,
         "age": age,
         "area": area,
         "delay": delay,
@@ -65,34 +72,35 @@ def choose_random_yield_func(func_factories=[
             get_step_func,
             get_ramp_func,
             get_expCurve_func]):
-    return np.random.choice(func_factories,1)[0]()
+    return np.random.choice(func_factories, 1)[0]()
 
 
-def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
-    max_disturbances, max_components, growth_generator, n_growth_digits,
-    age_interval, growth_curve_len, growth_only=False):
+def generate_scenarios(random_seed, num_cases, db_path, n_steps,
+                       max_disturbances, max_components, growth_generator,
+                       n_growth_digits, age_interval, growth_curve_len,
+                       growth_only=False):
 
     np.random.seed(random_seed)
 
-    species_ref = cbm_defaults.load_species_reference(dbpath, "en-CA")
+    species_ref = cbm_defaults.load_species_reference(db_path, "en-CA")
     species = [
-        k for k,v in species_ref.items()
-        if len(k)<50 and v["forest_type_id"] in [1,3]
-        ] #exclude species names that are too long for the CBM-CFS3 project database schema
+        k for k, v in species_ref.items()
+        if len(k) < 50 and v["forest_type_id"] in [1,3]
+        ] # exclude species names that are too long for the CBM-CFS3 project database schema
 
-    spatial_units = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(dbpath, "en-CA")
+    spatial_units = cbm_defaults.get_spatial_unit_ids_by_admin_eco_name(db_path, "en-CA")
     random_spus = np.random.choice([",".join(x) for x in spatial_units.keys()], num_cases)
 
-    disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(dbpath, "en-CA")
-    
+    disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(db_path, "en-CA")
+
     #the following disturbance type ids don't have full coverage for all spatial units, so if they are included
     #it is possible a random draw can produce an invalid combination of dist type/spu
     disturbance_types = {k:v for k,v in disturbance_types.items() if v not in [12,13,14,15,16,17,18,19,20,21] }
-    #the 4 spruce beetle types have a strange unicode issue in the name 
+    #the 4 spruce beetle types have a strange unicode issue in the name
     disturbance_types = {k:v for k,v in disturbance_types.items() if not "Spruce beetle" in k }
 
-    afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(dbpath, "en-CA")
-    land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(dbpath, "en-CA")
+    afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(db_path, "en-CA")
+    land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(db_path, "en-CA")
     land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
 
     cases = []
@@ -159,16 +167,16 @@ def generate_scenarios(random_seed, num_cases, dbpath, n_steps,
                     })
 
         cases.append(create_scenario(
-            id = i + 1,
-            age = age,
-            area = 1.0,
-            delay = delay,
-            afforestation_pre_type = afforestation_pre_type,
-            unfccc_land_class = unfccc_land_class,
-            admin_boundary = spu[0],
-            eco_boundary = spu[1],
-            historic_disturbance = historic_disturbance,
-            last_pass_disturbance = last_pass_disturbance,
-            components = components,
-            events = disturbance_events))
+            id=i + 1,
+            age=age,
+            area=1.0,
+            delay=delay,
+            afforestation_pre_type=afforestation_pre_type,
+            unfccc_land_class=unfccc_land_class,
+            admin_boundary=spu[0],
+            eco_boundary=spu[1],
+            historic_disturbance=historic_disturbance,
+            last_pass_disturbance=last_pass_disturbance,
+            components=components,
+            events=disturbance_events))
     return cases

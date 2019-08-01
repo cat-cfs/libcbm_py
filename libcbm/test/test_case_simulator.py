@@ -30,7 +30,7 @@ def append_pools_data(df, n_stands, timestep, pools, pooldef):
         pandas.DataFrame -- the modified dataframe
     """
     data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_name(x) for x in range(1, n_stands+1)]}
+        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands+1)]}
     data.update({x["name"]: pools[:, x["index"]] for x in pooldef})
     cols = ["timestep", "identifier"] + [x["name"] for x in pooldef]
     df = df.append(pd.DataFrame(data=data, columns=cols))
@@ -55,7 +55,7 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
         pandas.DataFrame -- the modified dataframe
     """
     data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_name(x) for x in range(1, n_stands + 1)]}
+        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands + 1)]}
     data.update(
         {x["name"]: flux[:, x["id"] - 1] for x in flux_indicator_ref})
     cols = ["timestep", "identifier"] + [x["name"] for x in flux_indicator_ref]
@@ -63,30 +63,33 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
     return df
 
 
-def get_test_case_classifier_factory(cases):
+def get_test_case_classifier_factory(cases, classifier_name):
 
     def create_classifiers():
         # create a single classifier/classifier value for the single growth curve
         classifiers_config = cbmconfig.classifier_config([
-            cbmconfig.classifier("growth_curve", [
+            cbmconfig.classifier(classifier_name, [
                 cbmconfig.classifier_value(
-                    casegeneration.get_classifier_name(c["id"]))
+                    casegeneration.get_classifier_value_name(c["id"]))
                 for c in cases
                 ])
             ])
         return classifiers_config
     return create_classifiers
 
+
 def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
 
     def create_merch_volume_config():
         curves = []
         for c in cases:
-            classifier_set = [casegeneration.get_classifier_name(c["id"])]
+            classifier_set = [
+                casegeneration.get_classifier_value_name(c["id"])]
             merch_volumes = []
             for component in c["components"]:
                 merch_volumes.append({
-                    "species_id": cbm_defaults_ref.get_species_id([component["species"]]),
+                    "species_id": cbm_defaults_ref.get_species_id(
+                        [component["species"]]),
                     "age_volume_pairs": component["age_volume_pairs"]
                 })
 
@@ -101,15 +104,17 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
 
     return create_merch_volume_config
 
+
 def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
                spinup_debug=False):
 
     ref = CBMDefaultsReference(db_path, "en-CA")
 
+    classifier_name = "identifier"
     cbm = cbm_factory.create(
         model_factory, db_path, dll_path,
         get_test_case_merch_volume_factory(cases, db_path, ref),
-        get_test_case_classifier_factory(cases))
+        get_test_case_classifier_factory(cases, classifier_name))
 
     n_stands = len(cases)
 
@@ -123,15 +128,16 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
 
     last_pass_disturbance_type = np.array(
         [ref.get_disturbance_type_id(c["last_pass_disturbance"])
-        for c in cases],
+            for c in cases],
         dtype=np.int32)
 
     delay = np.array([c["delay"] for c in cases], dtype=np.int32)
 
     classifiers = np.zeros((n_stands, 1), dtype=np.int32)
 
-    classifiers[:, 0] = [classifiers_config["classifier_index"][0] \
-        [casegeneration.get_classifier_name(c["id"])] for c in cases]
+    classifiers[:, 0] = [cbm.get_classifier_value_id(
+        classifier_name, casegeneration.get_classifier_value_name(c["id"]))
+        for c in cases]
 
     spatial_units = np.array(
         [ref.get_spatial_unit_id(c["admin_boundary"], c["eco_boundary"])
@@ -171,7 +177,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
     for i_c, c in enumerate(cases):
         for e in c["events"]:
             time_step = e["time_step"]
-            dist_type_id = disturbance_types_reference[e["disturbance_type"]]
+            dist_type_id = ref.get_disturbance_type_id(e["disturbance_type"])
             if i_c in disturbances:
                 if time_step in disturbances[i_c]:
                     raise ValueError(
@@ -180,7 +186,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
                 else:
                     disturbances[i_c][time_step] = dist_type_id
             else:
-                disturbances[i_c] = { time_step: dist_type_id }
+                disturbances[i_c] = {time_step: dist_type_id}
 
     pool_result = pd.DataFrame()
     flux_result = pd.DataFrame()
@@ -213,7 +219,8 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
 
     pool_result = append_pools_data(pool_result, n_stands, 0, pools, pooldef)
     state_variable_result = pd.DataFrame(data={
-        "identifier": [casegeneration.get_classifier_name(x) for x in range(1, n_stands + 1)],
+        "identifier": [casegeneration.get_classifier_value_name(x)
+            for x in range(1, n_stands + 1)],
         "timestep": 0,
         "age": age,
         "land_class": land_class,
@@ -229,7 +236,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
     for t in range(1, n_steps+1):
 
         disturbance_types = disturbance_types * 0
-        for k,v in disturbances.items():
+        for k, v in disturbances.items():
             if t in v:
                 disturbance_types[k] = v[t]
 
@@ -250,10 +257,11 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
             land_class=land_class,
             growth_multiplier=growth_multipliers,
             regeneration_delay=regeneration_delay)
+
         pool_result = append_pools_data(pool_result, n_stands, t, pools, pooldef)
         flux_result = append_flux_data(flux_result, n_stands, t, flux, flux_indicator_names)
         state_variable_result = state_variable_result.append(pd.DataFrame(data = {
-            "identifier": [casegeneration.get_classifier_name(x) for x in range(1,n_stands+1)],
+            "identifier": [casegeneration.get_classifier_value_name(x) for x in range(1,n_stands+1)],
             "timestep": t,
             "age": age,
             "land_class": land_class,

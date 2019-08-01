@@ -5,7 +5,7 @@ import os
 
 
 class CBM:
-    def __init__(self, dll):
+    def __init__(self, dll, config):
         """Creates a new instance of the CBM model with the specified
         LibCBM wrapper instance. The wrapper instance is initialized
         with model parameters and configuration.
@@ -14,6 +14,14 @@ class CBM:
             dll {LibCBMWrapper} -- an instance of the LibCBMWrapper.
         """
         self.dll = dll
+        self.config = config
+
+        config_string = json.dumps(config)
+        dll.InitializeCBM(config_string)
+
+        self.classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
+
+        self.classifier_lookup = {x["name"]:{} for x in config["classifiers"]}
 
         self.opNames = [
             "growth",
@@ -34,6 +42,9 @@ class CBM:
             "slow_mixing": 2,
             "disturbance": 3
         }
+
+    def get_classifier_value_id(self, classifier, classifier_value):
+        return 0
 
     def promote_scalar(self, value, size, dtype):
         """If the specified value is scalar promote it to a numpy array filled
