@@ -6,7 +6,7 @@ import pandas as pd
 import libcbm.configuration.cbm_defaults_queries as queries
 
 # queries for species name/species id associations
-species_reference_query = queries.get_query("species_name_ref.sql")
+species_reference_query = queries.get_query("species_ref.sql")
 
 disturbance_reference_query = queries.get_query("disturbance_type_ref.sql")
 
@@ -102,7 +102,22 @@ class CBMDefaultsReference:
         Returns:
             int -- the id associated with the specified name
         """
-        return self.species_by_name[species_name]["id"]
+        return self.species_by_name[species_name]["species_id"]
+
+    def get_species(self):
+        """Get all name and id information about every CBM species as a list
+        of rows with keys:
+            -species_id
+            -species_name
+            -genus_id
+            -genus_name
+            -forest_type_id
+            -forest_type_name
+
+        Returns:
+            list of dict -- all species names and ids
+        """
+        return self.species_ref
 
     def get_disturbance_type_id(self, disturbance_type_name):
         """Get the disturbance type id associated with the specified
@@ -129,6 +144,19 @@ class CBMDefaultsReference:
         """
         return self.spatial_unit_by_admin_eco_names[
             (admin_boundary_name, eco_boundary_name)]["id"]
+
+    def get_spatial_units(self):
+        """Get name and id information for the spatial units defined in the
+        underlying cbm_defaults database.  Returns a list of dictionaries
+        with the following keys:
+            - spatial_unit_id
+            - admin_boundary_name
+            - eco_boundary_name
+
+        Returns:
+            list of dict -- spatial unit data
+        """
+        return self.spatial_unit_ref
 
     def get_afforestation_pre_type_id(self, afforestation_pre_type_name):
         """Get the afforestation pre-type id associated with the specified
