@@ -20,14 +20,15 @@ class CBM:
         dll.InitializeCBM(config_string)
 
         # create an index for lookup of classifiers
-        self.classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
+        classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
         self.classifier_lookup = {}
         for cv in config["classifier_values"]:
             classifier_id = cv["classifier_id"]
-            if classifier_id in self.classifier_lookup:
-                self.classifier_lookup[classifier_id][cv["id"]] = cv
+            classifier_name = classifier_id_lookup[classifier_id]["name"]
+            if classifier_name in self.classifier_lookup:
+                self.classifier_lookup[classifier_name][cv["value"]] = cv
             else:
-                self.classifier_lookup[classifier_id] = {cv["id"]: cv}
+                self.classifier_lookup[classifier_name] = {cv["value"]: cv}
 
         self.opNames = [
             "growth",
@@ -49,8 +50,20 @@ class CBM:
             "disturbance": 3
         }
 
-    def get_classifier_value_id(self, classifier, classifier_value):
-        self.classifier_lookup[classifier][classifier_value]["id"]
+    def get_classifier_value_id(self, classifier_name, classifier_value_name):
+        """Get the classifier value id associated with the classifier_name,
+        classifier_value_name pair
+
+        Arguments:
+            classifier {str} -- name of the classifier
+            classifier_value {str} -- name of the classifier value
+
+        Returns:
+            int -- identifier for the classifier/classifier value
+        """
+        c = self.classifier_lookup[classifier_name]
+        cv = c[classifier_value_name]
+        return cv["id"]
 
     def promote_scalar(self, value, size, dtype):
         """If the specified value is scalar promote it to a numpy array filled

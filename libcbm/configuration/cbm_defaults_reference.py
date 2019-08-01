@@ -46,17 +46,13 @@ def load_data(sqlite_path, query, query_params=None, as_data_frame=False):
         [type] -- [description]
     """
     if not as_data_frame:
-        result = []
         with sqlite3.connect(sqlite_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             if query_params:
-                for row in cursor.execute(query, query_params):
-                    result.append(row)
+                return cursor.execute(query, query_params).fetchall()
             else:
-                for row in cursor.execute(query):
-                    result.append(row)
-        return result
+                return cursor.execute(query).fetchall()
     else:
         with sqlite3.connect(sqlite_path) as conn:
             if query_params:
@@ -143,7 +139,8 @@ class CBMDefaultsReference:
         Returns:
             int -- disturbance type id
         """
-        return self.disturbance_type_by_name[disturbance_type_name]["id"]
+        match = self.disturbance_type_by_name[disturbance_type_name]
+        return match["disturbance_type_id"]
 
     def get_disturbance_types(self):
         """Get all name and id information about every CBM disturbance type
@@ -168,7 +165,7 @@ class CBMDefaultsReference:
             int -- the spatial unit id
         """
         return self.spatial_unit_by_admin_eco_names[
-            (admin_boundary_name, eco_boundary_name)]["id"]
+            (admin_boundary_name, eco_boundary_name)]["spatial_unit_id"]
 
     def get_spatial_units(self):
         """Get name and id information for the spatial units defined in the
@@ -218,7 +215,7 @@ class CBMDefaultsReference:
         Returns:
             int -- the land class id associated with the code
         """
-        return self.land_class_by_code[land_class_code]["id"]
+        return self.land_class_by_code[land_class_code]["land_class_id"]
 
     def get_land_class_disturbance_ref(self):
         """Get name and id information for the cbm disturbance types that

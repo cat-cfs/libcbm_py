@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from libcbm.model import cbm_factory
+from libcbm.model import model_factory
 from libcbm.configuration import cbmconfig
 from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test import casegeneration
@@ -59,7 +60,7 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_names):
         casegeneration.get_classifier_value_name(x)
         for x in range(1, n_stands + 1)]}
     data.update(
-        {x["name"]: flux[:, i] for i, x in enumerate(flux_indicator_names)})
+        {x: flux[:, i] for i, x in enumerate(flux_indicator_names)})
     cols = ["timestep", "identifier"] + [x for x in flux_indicator_names]
     df = df.append(pd.DataFrame(data=data, columns=cols))
     return df
@@ -123,7 +124,7 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
             for component in c["components"]:
                 merch_volumes.append({
                     "species_id": cbm_defaults_ref.get_species_id(
-                        [component["species"]]),
+                        component["species"]),
                     "age_volume_pairs": component["age_volume_pairs"]
                 })
 
@@ -188,18 +189,26 @@ def get_disturbances(cases, ref):
     return disturbances
 
 
-def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
-               spinup_debug=False):
+def assemble_cbm(cases, classifier_name, db_path, libcbm_path,
+                 cbm_defaults_ref):
+    cbm = cbm_factory.create(
+        model_factory=model_factory,
+        db_path=db_path,
+        dll_path=libcbm_path,
+        merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
+            cases, db_path, cbm_defaults_ref),
+        classifiers_factory=get_test_case_classifier_factory(
+            cases, classifier_name))
+    return cbm
+
+
+def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     ref = CBMDefaultsReference(db_path, "en-CA")
     pool_codes = ref.get_pools()
     flux_indicators = ref.get_flux_indicators()
     classifier_name = "identifier"
-    cbm = cbm_factory.create(
-        model_factory, db_path, dll_path,
-        get_test_case_merch_volume_factory(cases, db_path, ref),
-        get_test_case_classifier_factory(cases, classifier_name))
-
+    cbm = assemble_cbm(cases, classifier_name, db_path, dll_path, ref)
     n_stands = len(cases)
 
     inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)

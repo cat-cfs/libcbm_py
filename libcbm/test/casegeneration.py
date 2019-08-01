@@ -95,7 +95,7 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
     spatial_units = ref.get_spatial_units()
 
     random_spatial_units = np.random.choice([
-        ",".join([x["admin_boundary_name"], x["admin_boundary_name"]])
+        ",".join([x["admin_boundary_name"], x["eco_boundary_name"]])
         for x in spatial_units], num_cases)
 
     disturbance_types = ref.get_disturbance_types()
