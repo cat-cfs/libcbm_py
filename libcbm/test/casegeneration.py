@@ -93,18 +93,30 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
         ]
 
     spatial_units = ref.get_spatial_units()
-    random_spus = np.random.choice(
+    random_spatial_units = np.random.choice(
         [",".join(x["spatial_unit_id"]) for x in spatial_units], num_cases)
 
-    disturbance_types = cbm_defaults.get_disturbance_type_ids_by_name(db_path, "en-CA")
+    disturbance_types = ref.get_disturbance_types()
 
-    #the following disturbance type ids don't have full coverage for all spatial units, so if they are included
-    #it is possible a random draw can produce an invalid combination of dist type/spu
-    disturbance_types = {k:v for k,v in disturbance_types.items() if v not in [12,13,14,15,16,17,18,19,20,21] }
-    #the 4 spruce beetle types have a strange unicode issue in the name
-    disturbance_types = {k:v for k,v in disturbance_types.items() if not "Spruce beetle" in k }
+    # the following disturbance type ids don't have full coverage for all
+    # spatial units, so if they are included it is possible a random draw can
+    # produce an invalid combination of dist type/spu
+    disturbance_types = [
+        x for x in disturbance_types
+        if x["disturbance_type_id"] not in
+        [12, 13, 14, 15, 16, 17, 18, 19, 20, 21]]
+    # the 4 spruce beetle types have a strange unicode issue in the name
+    disturbance_types = [
+        x for x in disturbance_types
+        if "Spruce beetle" not in x["disturbance_type_name"]]
 
-    afforestation_pre_types = cbm_defaults.get_afforestation_types_by_name(db_path, "en-CA")
+    disturbance_type_names = [
+        x["disturbance_type_name"] for x in disturbance_types]
+
+    afforestation_pre_types = ref.get_afforestation_pre_types()
+    afforestation_pre_type_names = [
+        x["afforestation_pre_type_name"] for x in afforestation_pre_types]
+
     land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(db_path, "en-CA")
     land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
 
@@ -112,20 +124,21 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
     for i in range(num_cases):
         num_components = np.random.randint(1,max_components) if max_components > 1 else 1
         random_species = np.random.choice(list(species), num_components)
-        spu = random_spus[i].split(',')
+        spu = random_spatial_units[i].split(',')
         components = []
         for c in range(num_components):
             growth_func = choose_random_yield_func()
             components.append({
                 "species": random_species[c],
-                "age_volume_pairs": [(x, round(growth_func(x),n_growth_digits))
-                                     for x in range(0,growth_curve_len,age_interval)]
+                "age_volume_pairs": [(x, round(growth_func(x), n_growth_digits))
+                                     for x in range(0, growth_curve_len, age_interval)]
             })
 
         disturbance_events = []
         if max_disturbances > 0:
-            num_disturbances = np.random.randint(0,max_disturbances)
-            random_dist_types = np.random.choice(list(disturbance_types), num_disturbances)
+            num_disturbances = np.random.randint(0, max_disturbances)
+            random_dist_types = np.random.choice(
+                disturbance_type_names, num_disturbances)
             if num_disturbances > 0:
                 event_interval = n_steps // num_disturbances
                 for d in range(num_disturbances):
@@ -153,13 +166,16 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                 age = np.random.randint(0, 350)
                 last_pass_disturbance = creation_disturbance
             if creation_disturbance == "Deforestation":
-                delay = np.random.randint(0, 20) #unfccc rules
+                delay = np.random.randint(0, 20)  # UNFCCC rules
                 last_pass_disturbance = creation_disturbance
                 unfccc_land_class = land_class_by_dist_type[last_pass_disturbance]["land_class_code"]
             if creation_disturbance == "Afforestation":
-                #since there are constant pools, spinup, and therefore historic/last pass disturbance types do not apply
+                # since there are constant pools in the afforestation case,
+                # spinup, and therefore historic/last pass disturbance types
+                # do not apply
                 unfccc_land_class = "UNFCCC_CL_R_CL"
-                afforestation_pre_type = np.random.choice(list(afforestation_pre_types), 1)[0]
+                afforestation_pre_type = np.random.choice(
+                    list(afforestation_pre_type_names), 1)[0]
                 if len(disturbance_events) > 0:
                     # Since we are trying to model the afforestation case,
                     # override the randomly selected first disturbance with

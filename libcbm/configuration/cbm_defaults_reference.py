@@ -66,12 +66,12 @@ class CBMDefaultsReference:
         locale_param = (locale_code,)
         self.species_ref = load_data(
             sqlite_path, species_reference_query, locale_param)
-        self.species_by_name = {x["name"]: x for x in self.species_ref}
+        self.species_by_name = {x["species_name"]: x for x in self.species_ref}
 
         self.disturbance_type_ref = load_data(
             sqlite_path, disturbance_reference_query, locale_param)
         self.disturbance_type_by_name = {
-            x["name"]: x for x in self.disturbance_type_ref}
+            x["disturbance_type_name"]: x for x in self.disturbance_type_ref}
 
         self.spatial_unit_ref = load_data(
             sqlite_path, spatial_unit_reference_query, locale_param)
@@ -131,6 +131,17 @@ class CBMDefaultsReference:
         """
         return self.disturbance_type_by_name[disturbance_type_name]["id"]
 
+    def get_disturbance_types(self):
+        """Get all name and id information about every CBM disturbance type
+        as a list of rows with keys:
+            -disturbance_type_id
+            -disturbance_type_name
+
+        Returns:
+            [type] -- [description]
+        """
+        return self.disturbance_type_ref
+
     def get_spatial_unit_id(self, admin_boundary_name, eco_boundary_name):
         """Get the spatial unit id associated with the specified
         admin-boundary-name, eco-boundary-name combination
@@ -170,6 +181,18 @@ class CBMDefaultsReference:
         """
         return self.afforestation_pre_type_by_name[
             afforestation_pre_type_name]["id"]
+
+    def get_afforestation_pre_types(self):
+        """Get name and id information for the afforestation pre-types
+        defined in the underlying cbm_defaults database.  Returns a list
+        of dictionaries with the following keys:
+            -afforestation_pre_type_id
+            -afforestation_pre_type_name
+
+        Returns:
+            [type] -- [description]
+        """
+        return self.afforestation_pre_type_ref
 
     def get_land_class_id(self, land_class_code):
         """Get the land class id associated with the specified CBM land class

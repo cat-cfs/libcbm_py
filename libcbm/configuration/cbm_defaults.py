@@ -40,7 +40,8 @@ def load_cbm_parameters(sqlitePath):
             "flux_indicator_process",
             "flux_indicator_source",
             "flux_indicator_sink",
-            "spinup_parameter"
+            "spinup_parameter",
+            "afforestation_pre_type"
             ]}
 
     with sqlite3.connect(sqlitePath) as conn:
@@ -104,4 +105,3 @@ def load_flux_indicators(sqlitePath):
             result.append(flux_indicator)
             index += 1
         return result
-
