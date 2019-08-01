@@ -82,7 +82,8 @@ class CBMDefaultsReference:
         self.afforestation_pre_type_ref = load_data(
             sqlite_path, afforestation_pre_type_query, locale_param)
         self.afforestation_pre_type_by_name = {
-            x["name"]: x for x in self.afforestation_pre_type_ref}
+            x["afforestation_pre_type_name"]: x
+            for x in self.afforestation_pre_type_ref}
 
         self.land_class_ref = load_data(
             sqlite_path, land_class_query, locale_param)
@@ -92,6 +93,12 @@ class CBMDefaultsReference:
         self.pools_ref = load_data(sqlite_path, pools_query)
 
         self.flux_indicator_ref = load_data(sqlite_path, flux_indicator_query)
+
+        self.land_class_disturbance_ref = load_data(
+            sqlite_path, land_class_disturbance_query, locale_param)
+        self.land_classes_by_dist_type = {
+            x["disturbance_type_name"]: x
+            for x in self.land_class_disturbance_ref}
 
     def get_species_id(self, species_name):
         """Get the species id associated with the specified species name.
@@ -177,10 +184,10 @@ class CBMDefaultsReference:
             afforestation_pre_type_name {str} -- [description]
 
         Returns:
-            [type] -- [description]
+            int -- afforestation_pre_type_id
         """
         return self.afforestation_pre_type_by_name[
-            afforestation_pre_type_name]["id"]
+            afforestation_pre_type_name]["afforestation_pre_type_id"]
 
     def get_afforestation_pre_types(self):
         """Get name and id information for the afforestation pre-types
@@ -190,7 +197,7 @@ class CBMDefaultsReference:
             -afforestation_pre_type_name
 
         Returns:
-            [type] -- [description]
+            list -- afforestation pre type data
         """
         return self.afforestation_pre_type_ref
 
@@ -205,6 +212,48 @@ class CBMDefaultsReference:
             int -- the land class id associated with the code
         """
         return self.land_class_by_code[land_class_code]["id"]
+
+    def get_land_class_disturbance_ref(self):
+        """Get name and id information for the cbm disturbance types that
+        cause a change to UNFCCC land class, along with the post-disturbance
+        land class.  Non-land class altering disturbance types are not
+        included in the result. Returns a list of dictionaries with the
+        following keys:
+            -disturbance_type_id
+            -disturbance_type_name
+            -land_class_id
+            -land_class_code
+            -land_class_description
+
+        Returns:
+            list of dict -- disturbance type/landclass data
+        """
+        return self.land_class_disturbance_ref
+
+    def get_land_class_by_disturbance_type(self, disturbance_type_name):
+        """For the specified disturbance_type_name get UNFCCC land class
+        info for the land class caused by the disturbance type.  If no
+        UNFCCC land class is associated, return None.
+
+        Arguments:
+            disturbance_type_name {str} -- a disturbance type name
+
+        Returns:
+            dict, or None -- if a match is found for the specified name, a
+            dictionary containing values for:
+                -land_class_id
+                -land_class_code
+                -land_class_description
+            is returned
+        """
+        if disturbance_type_name not in self.land_classes_by_dist_type:
+            return None
+        match = self.land_classes_by_dist_type[disturbance_type_name]
+        return {
+            "land_class_id": match["land_class_id"],
+            "land_class_code": match["land_class_code"],
+            "land_class_description": match["land_class_description"]
+        }
 
     def get_pools(self):
         """Get the ordered list of human readable pool codes defined in cbm_defaults

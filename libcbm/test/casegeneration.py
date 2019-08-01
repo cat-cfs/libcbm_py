@@ -117,12 +117,15 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
     afforestation_pre_type_names = [
         x["afforestation_pre_type_name"] for x in afforestation_pre_types]
 
-    land_class_dist_ref = cbm_defaults.get_land_class_disturbance_reference(db_path, "en-CA")
-    land_class_by_dist_type = { x["disturbance_type_name"] : x for x in land_class_dist_ref }
+    post_deforestation_land_class = ref.get_land_class_by_disturbance_type(
+        "Deforestation")
+    post_deforestation_land_class_code = \
+        post_deforestation_land_class["land_class_code"]
 
     cases = []
     for i in range(num_cases):
-        num_components = np.random.randint(1,max_components) if max_components > 1 else 1
+        num_components = np.random.randint(1, max_components) \
+            if max_components > 1 else 1
         random_species = np.random.choice(list(species), num_components)
         spu = random_spatial_units[i].split(',')
         components = []
@@ -146,7 +149,8 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                     max_timestep = event_interval*(d+1)+1
                     disturbance_events.append({
                         "disturbance_type": random_dist_types[d],
-                        "time_step": np.random.randint(min_timestep, max_timestep)
+                        "time_step": np.random.randint(
+                            min_timestep, max_timestep)
                     })
 
         creation_disturbance = np.random.choice([
@@ -162,13 +166,14 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
         historic_disturbance = "Wildfire"
         unfccc_land_class = "UNFCCC_FL_R_FL"
         if not growth_only:
-            if creation_disturbance in ["Wildfire", "Clearcut harvesting with salvage"]:
+            if creation_disturbance in [
+                "Wildfire", "Clearcut harvesting with salvage"]:
                 age = np.random.randint(0, 350)
                 last_pass_disturbance = creation_disturbance
             if creation_disturbance == "Deforestation":
                 delay = np.random.randint(0, 20)  # UNFCCC rules
                 last_pass_disturbance = creation_disturbance
-                unfccc_land_class = land_class_by_dist_type[last_pass_disturbance]["land_class_code"]
+                unfccc_land_class = post_deforestation_land_class_code
             if creation_disturbance == "Afforestation":
                 # since there are constant pools in the afforestation case,
                 # spinup, and therefore historic/last pass disturbance types
