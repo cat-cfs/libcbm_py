@@ -27,10 +27,12 @@ afforestation_pre_type_query = queries.get_query(
     "afforestation_pre_type_ref.sql")
 
 # queries for names of flux indicators id/name associations
-flux_indicator_ref = queries.get_query("flux_indicator_ref.sql")
+flux_indicator_query = queries.get_query("flux_indicator_ref.sql")
+
+pools_query = queries.get_query("pools.sql")
 
 
-def load_data(sqlite_path, query, locale_code="en-CA", as_data_frame=False):
+def load_data(sqlite_path, query, query_params=None, as_data_frame=False):
     """loads the specified query into a list of dictionary formatted query
 
     Arguments:
@@ -48,12 +50,12 @@ def load_data(sqlite_path, query, locale_code="en-CA", as_data_frame=False):
         with sqlite3.connect(sqlite_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            for row in cursor.execute(query, (locale_code,)):
+            for row in cursor.execute(query, query_params):
                 result.append(row)
         return result
     else:
         with sqlite3.connect(sqlite_path) as conn:
-            df = pd.read_sql_query(sql=query, con=conn, params=(locale_code,))
+            df = pd.read_sql_query(sql=query, con=conn, params=query_params)
             return df
 
 
@@ -61,30 +63,35 @@ class CBMDefaultsReference:
 
     def __init__(self, sqlite_path, locale_code="en-CA"):
 
+        locale_param = (locale_code,)
         self.species_ref = load_data(
-            sqlite_path, species_reference_query, locale_code)
+            sqlite_path, species_reference_query, locale_param)
         self.species_by_name = {x["name"]: x for x in self.species_ref}
 
         self.disturbance_type_ref = load_data(
-            sqlite_path, disturbance_reference_query, locale_code)
+            sqlite_path, disturbance_reference_query, locale_param)
         self.disturbance_type_by_name = {
             x["name"]: x for x in self.disturbance_type_ref}
 
         self.spatial_unit_ref = load_data(
-            sqlite_path, spatial_unit_reference_query, locale_code)
+            sqlite_path, spatial_unit_reference_query, locale_param)
         self.spatial_unit_by_admin_eco_names = {
             (x["admin_boundary_name"], x["eco_boundary_name"]): x
             for x in self.spatial_unit_ref}
 
         self.afforestation_pre_type_ref = load_data(
-            sqlite_path, afforestation_pre_type_query, locale_code)
+            sqlite_path, afforestation_pre_type_query, locale_param)
         self.afforestation_pre_type_by_name = {
             x["name"]: x for x in self.afforestation_pre_type_ref}
 
         self.land_class_ref = load_data(
-            sqlite_path, land_class_query, locale_code)
+            sqlite_path, land_class_query, locale_param)
         self.land_class_by_code = {
             x["code"]: x for x in self.land_class_ref}
+
+        self.pools_ref = load_data(sqlite_path, pools_query)
+
+        self.flux_indicator_ref = load_data(sqlite_path, flux_indicator_query)
 
     def get_species_id(self, species_name):
         """Get the species id associated with the specified species name.
@@ -147,3 +154,20 @@ class CBMDefaultsReference:
             int -- the land class id associated with the code
         """
         return self.land_class_by_code[land_class_code]["id"]
+
+    def get_pools(self):
+        """Get the ordered list of human readable pool codes defined in cbm_defaults
+
+        Returns:
+            list -- list of str codes for cbm pools
+        """
+        return [x["code"] for x in self.pools_ref]
+
+    def get_flux_indicators(self):
+        """Get the ordered list of human readable flux indicator codes defined
+            in cbm_defaults
+
+        Returns:
+            list -- list of string names of flux indicators
+        """
+        return [x["name"] for x in self.flux_indicator_ref]

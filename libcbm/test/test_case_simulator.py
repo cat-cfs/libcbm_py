@@ -12,7 +12,7 @@ from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test import casegeneration
 
 
-def append_pools_data(df, n_stands, timestep, pools, pooldef):
+def append_pools_data(df, n_stands, timestep, pools, pool_codes):
     """Appends timestep pool values for all simulated stands to the specified
     dataframe.
 
@@ -23,21 +23,22 @@ def append_pools_data(df, n_stands, timestep, pools, pooldef):
         timestep {int} -- the timestep number
         pools {ndarray} -- the n_stands by n_pools matrix of pool values at
             the end of the timestep
-        pooldef {list} -- list of dictionary describing each cbm pool. Used
-            for column names in the dataframe.
+        pool_codes {list} -- list of ordered pool codes describing cbm pool.
+            Used for column names in the dataframe.
 
     Returns:
         pandas.DataFrame -- the modified dataframe
     """
     data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands + 1)]}
-    data.update({x["name"]: pools[:, x["index"]] for x in pooldef})
-    cols = ["timestep", "identifier"] + [x["name"] for x in pooldef]
+        casegeneration.get_classifier_value_name(x)
+        for x in range(1, n_stands + 1)]}
+    data.update({x: pools[:, i] for i, x in enumerate(pool_codes)})
+    cols = ["timestep", "identifier"] + [x for x in pool_codes]
     df = df.append(pd.DataFrame(data=data, columns=cols))
     return df
 
 
-def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
+def append_flux_data(df, n_stands, timestep, flux, flux_indicator_names):
     """Appends timestep flux values for all simulated stands to the specified
     dataframe.
 
@@ -48,17 +49,18 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
         timestep {int} -- the timestep number
         flux {ndarray} -- the n_stands by n_flux_indicators matrix of flux
             values computed during the timestep interval
-        flux_indicator_ref {list} -- list of dictionary describing each cbm
-            flux indicators. Used for column names in the dataframe.
+        flux_indicator_names {list} -- list of strings describing each cbm
+            flux indicator. Used for column names in the dataframe.
 
     Returns:
         pandas.DataFrame -- the modified dataframe
     """
     data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands + 1)]}
+        casegeneration.get_classifier_value_name(x)
+        for x in range(1, n_stands + 1)]}
     data.update(
-        {x["name"]: flux[:, x["id"] - 1] for x in flux_indicator_ref})
-    cols = ["timestep", "identifier"] + [x["name"] for x in flux_indicator_ref]
+        {x["name"]: flux[:, i] for i, x in enumerate(flux_indicator_names)})
+    cols = ["timestep", "identifier"] + [x for x in flux_indicator_names]
     df = df.append(pd.DataFrame(data=data, columns=cols))
     return df
 
@@ -123,6 +125,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
                spinup_debug=False):
 
     ref = CBMDefaultsReference(db_path, "en-CA")
+    pool_codes = ref.get_pools()
 
     classifier_name = "identifier"
     cbm = cbm_factory.create(
@@ -183,7 +186,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
     disturbance_types = np.zeros(n_stands, dtype=np.int32)
     transition_rules = np.zeros(n_stands, dtype=np.int32)
 
-    pools = np.zeros((n_stands, len(pooldef)))
+    pools = np.zeros((n_stands, len(pool_codes)))
     flux = np.zeros((n_stands, len(flux_ind)))
     enabled = np.ones(n_stands, dtype=np.int32)
 
@@ -231,7 +234,8 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
         land_class=land_class,
         age=age)
 
-    pool_result = append_pools_data(pool_result, n_stands, 0, pools, pooldef)
+    pool_result = append_pools_data(
+        pool_result, n_stands, 0, pools, pool_codes)
     state_variable_result = pd.DataFrame(data={
         "identifier": [
             casegeneration.get_classifier_value_name(x)
@@ -273,21 +277,26 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
             growth_multiplier=growth_multipliers,
             regeneration_delay=regeneration_delay)
 
-        pool_result = append_pools_data(pool_result, n_stands, t, pools, pooldef)
-        flux_result = append_flux_data(flux_result, n_stands, t, flux, flux_indicator_names)
-        state_variable_result = state_variable_result.append(pd.DataFrame(data = {
-            "identifier": [casegeneration.get_classifier_value_name(x) for x in range(1,n_stands+1)],
-            "timestep": t,
-            "age": age,
-            "land_class": land_class,
-            "last_disturbance_type": last_disturbance_type,
-            "time_since_last_disturbance": time_since_last_disturbance,
-            "time_since_land_class_change": time_since_land_class_change,
-            "growth_enabled": growth_enabled,
-            "growth_multiplier": growth_multipliers,
-            "regeneration_delay": regeneration_delay,
-            "disturbance_type": disturbance_types,
-            "enabled": enabled
+        pool_result = append_pools_data(
+            pool_result, n_stands, t, pools, pool_codes)
+        flux_result = append_flux_data(
+            flux_result, n_stands, t, flux, flux_indicator_names)
+        state_variable_result = state_variable_result.append(
+            pd.DataFrame(data={
+                "identifier": [
+                    casegeneration.get_classifier_value_name(x)
+                    for x in range(1, n_stands+1)],
+                "timestep": t,
+                "age": age,
+                "land_class": land_class,
+                "last_disturbance_type": last_disturbance_type,
+                "time_since_last_disturbance": time_since_last_disturbance,
+                "time_since_land_class_change": time_since_land_class_change,
+                "growth_enabled": growth_enabled,
+                "growth_multiplier": growth_multipliers,
+                "regeneration_delay": regeneration_delay,
+                "disturbance_type": disturbance_types,
+                "enabled": enabled
             }))
 
     return {

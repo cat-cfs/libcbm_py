@@ -17,7 +17,7 @@ def load_raw(path):
 
 
 def to_string(config):
-    return json.dumps(config, indent=4)#, ensure_ascii=True)
+    return json.dumps(config, indent=4)  #, ensure_ascii=True)
 
 
 def save_config(path, config):

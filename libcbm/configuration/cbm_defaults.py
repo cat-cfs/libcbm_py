@@ -17,7 +17,7 @@ def load_cbm_parameters(sqlitePath):
 
     Returns:
         dict -- a dictionary of name/formatted data pairs for use with LibCBM
-            configuration
+            configuration.
     """
     result = {}
 
@@ -67,7 +67,9 @@ def load_cbm_pools(sqlitePath):
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         index = 0
-        for row in cursor.execute("select code, id from pool order by id"):
+        query = \
+            libcbm.configuration.cbm_defaults_queries.get_query("pools.sql")
+        for row in cursor.execute(query):
             result.append({"name": row[0], "id": row[1], "index": index})
             index += 1
         return result
@@ -86,7 +88,7 @@ def load_flux_indicators(sqlitePath):
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         index = 0
-        flux_indicator_rows = list(cursor.execute("select id, flux_process_id from flux_indicator"))
+        flux_indicator_rows = list(cursor.execute("select id, flux_process_id from flux_indicator order by id"))
         for row in flux_indicator_rows:
             flux_indicator = {
                 "id": row[0],

@@ -1,1 +1,1 @@
-select flux_indicator.id, flux_indicator.name from flux_indicator;
+select flux_indicator.id, flux_indicator.name from flux_indicator order by flux_indicator.id;
