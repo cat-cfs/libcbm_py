@@ -95,8 +95,26 @@ def get_test_case_classifier_factory(cases, classifier_name):
 
 
 def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
+    """Creates a factory function for transforming test case data into
+        merchantable volume configuration input for libcbm.
 
+    Arguments:
+        cases {list} -- a list of dictionary objects specifying test cases
+        db_path {str} -- path to a cbm_defaults database (which contains
+            merchantable volume to biomass conversion parameters)
+        cbm_defaults_ref {CBMDefaultsReference} -- class used to convert
+            species names into species ids for libcbm consumption
+
+    Returns:
+        func -- a factory function which produces libcbm merch volume config
+    """
     def create_merch_volume_config():
+        """translates test case data into merchantable volume
+           configuration input for libcbm.
+
+        Returns:
+            dict -- merch volume config
+        """
         curves = []
         for c in cases:
             classifier_set = [
@@ -121,12 +139,61 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
     return create_merch_volume_config
 
 
+def get_disturbances(cases, ref):
+    """Transform test cases into dictionary storage for disturbance events
+
+    Returns a dictionary of the form:
+        {
+            case_index_0:
+            {
+                time_step: disturbance_type_id,
+            },
+            ...
+            case_index_k:
+            {
+                time_step: disturbance_type_id,
+            }
+        }
+
+    Cases that do not have disturbance events will be omitted from the
+    result, and any case that specifies more than one event on a single
+    timestep will result in a ValueError
+
+    Arguments:
+        cases {list} -- a list of dictionary objects specifying test cases
+        ref {CBMDefaultsReference} -- class used to convert a disturbance name
+            string into a disturbance type id
+
+    Raises:
+        ValueError: raised if more than one event is detected for a single
+            case on a given timestep
+
+    Returns:
+        dict -- a nested dictionary of disturbance type ids by time step:
+    """
+    disturbances = {}
+    for i_c, c in enumerate(cases):
+        for e in c["events"]:
+            time_step = e["time_step"]
+            dist_type_id = ref.get_disturbance_type_id(e["disturbance_type"])
+            if i_c in disturbances:
+                if time_step in disturbances[i_c]:
+                    raise ValueError(
+                        "more than one event found for index {0}, timestep {1}"
+                        .format(i_c, time_step))
+                else:
+                    disturbances[i_c][time_step] = dist_type_id
+            else:
+                disturbances[i_c] = {time_step: dist_type_id}
+    return disturbances
+
+
 def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
                spinup_debug=False):
 
     ref = CBMDefaultsReference(db_path, "en-CA")
     pool_codes = ref.get_pools()
-
+    flux_indicators = ref.get_flux_indicators()
     classifier_name = "identifier"
     cbm = cbm_factory.create(
         model_factory, db_path, dll_path,
@@ -175,6 +242,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
     land_class = np.ones(n_stands, dtype=np.int32)
     land_class[afforestation_pre_type_id > 0] = \
         ref.get_land_class_id("UNFCCC_CL_R_CL")
+
     last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
     time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
@@ -187,27 +255,13 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
     transition_rules = np.zeros(n_stands, dtype=np.int32)
 
     pools = np.zeros((n_stands, len(pool_codes)))
-    flux = np.zeros((n_stands, len(flux_ind)))
+    flux = np.zeros((n_stands, len(flux_indicators)))
     enabled = np.ones(n_stands, dtype=np.int32)
-
-    disturbances = {}
-    for i_c, c in enumerate(cases):
-        for e in c["events"]:
-            time_step = e["time_step"]
-            dist_type_id = ref.get_disturbance_type_id(e["disturbance_type"])
-            if i_c in disturbances:
-                if time_step in disturbances[i_c]:
-                    raise ValueError(
-                        "more than one event found for index {0}, timestep {1}"
-                        .format(i_c, time_step))
-                else:
-                    disturbances[i_c][time_step] = dist_type_id
-            else:
-                disturbances[i_c] = {time_step: dist_type_id}
 
     pool_result = pd.DataFrame()
     flux_result = pd.DataFrame()
-    spinup_debug = cbm.spinup(
+
+    spinup_debug_output = cbm.spinup(
         pools=pools,
         classifiers=classifiers,
         inventory_age=inventory_age,
@@ -236,6 +290,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
 
     pool_result = append_pools_data(
         pool_result, n_stands, 0, pools, pool_codes)
+
     state_variable_result = pd.DataFrame(data={
         "identifier": [
             casegeneration.get_classifier_value_name(x)
@@ -252,9 +307,15 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
         "disturbance_type": disturbance_types,
         "enabled": enabled
         })
+
+    disturbances = get_disturbances(cases, ref)
+
     for t in range(1, n_steps+1):
 
+        # clear the disturbance events for this timestep
         disturbance_types = disturbance_types * 0
+
+        # fetch the disturbance events for each index for this timestep
         for k, v in disturbances.items():
             if t in v:
                 disturbance_types[k] = v[t]
@@ -280,7 +341,7 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
         pool_result = append_pools_data(
             pool_result, n_stands, t, pools, pool_codes)
         flux_result = append_flux_data(
-            flux_result, n_stands, t, flux, flux_indicator_names)
+            flux_result, n_stands, t, flux, flux_indicators)
         state_variable_result = state_variable_result.append(
             pd.DataFrame(data={
                 "identifier": [
@@ -303,5 +364,5 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
         "pools": pool_result,
         "flux": flux_result,
         "state_variable_result": state_variable_result,
-        "spinup_debug": spinup_debug
+        "spinup_debug": spinup_debug_output
     }
