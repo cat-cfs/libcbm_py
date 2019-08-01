@@ -30,7 +30,7 @@ def append_pools_data(df, n_stands, timestep, pools, pooldef):
         pandas.DataFrame -- the modified dataframe
     """
     data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands+1)]}
+        casegeneration.get_classifier_value_name(x) for x in range(1, n_stands + 1)]}
     data.update({x["name"]: pools[:, x["index"]] for x in pooldef})
     cols = ["timestep", "identifier"] + [x["name"] for x in pooldef]
     df = df.append(pd.DataFrame(data=data, columns=cols))
@@ -64,9 +64,23 @@ def append_flux_data(df, n_stands, timestep, flux, flux_indicator_ref):
 
 
 def get_test_case_classifier_factory(cases, classifier_name):
+    """Create a function for translating test cases into LibCBM classifiers
+    configuration
 
+    Arguments:
+        cases {list} -- a list of dictionary objects specifying test cases
+        classifier_name {str} -- the single classifier name used by the test
+            case simulator
+
+    Returns:
+        [func] -- a function that will return classifier configuration
+    """
     def create_classifiers():
-        # create a single classifier/classifier value for the single growth curve
+        """translates test cases into LibCBM classifier configuration
+
+        Returns:
+            dict -- classifier configuration
+        """
         classifiers_config = cbmconfig.classifier_config([
             cbmconfig.classifier(classifier_name, [
                 cbmconfig.classifier_value(
@@ -219,7 +233,8 @@ def run_libCBM(model_factory, dll_path, db_path, cases, n_steps,
 
     pool_result = append_pools_data(pool_result, n_stands, 0, pools, pooldef)
     state_variable_result = pd.DataFrame(data={
-        "identifier": [casegeneration.get_classifier_value_name(x)
+        "identifier": [
+            casegeneration.get_classifier_value_name(x)
             for x in range(1, n_stands + 1)],
         "timestep": 0,
         "age": age,

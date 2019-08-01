@@ -19,9 +19,15 @@ class CBM:
         config_string = json.dumps(config)
         dll.InitializeCBM(config_string)
 
+        # create an index for lookup of classifiers
         self.classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
-
-        self.classifier_lookup = {x["name"]:{} for x in config["classifiers"]}
+        self.classifier_lookup = {}
+        for cv in config["classifier_values"]:
+            classifier_id = cv["classifier_id"]
+            if classifier_id in self.classifier_lookup:
+                self.classifier_lookup[classifier_id][cv["id"]] = cv
+            else:
+                self.classifier_lookup[classifier_id] = {cv["id"]: cv}
 
         self.opNames = [
             "growth",
@@ -44,7 +50,7 @@ class CBM:
         }
 
     def get_classifier_value_id(self, classifier, classifier_value):
-        return 0
+        self.classifier_lookup[classifier][classifier_value]["id"]
 
     def promote_scalar(self, value, size, dtype):
         """If the specified value is scalar promote it to a numpy array filled

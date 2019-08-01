@@ -25,7 +25,7 @@ def get_step_func():
     def step(x):
         if x == 0:
             return 0
-        if x>=minX:
+        if x >= minX:
             return y
         else:
             return 0
