@@ -88,13 +88,15 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
     # exclude species names that are too long for the CBM-CFS3 project
     # database schema, and forest_types that are not hardwood or softwood
     species = [
-        k for k in species_ref
+        k["species_name"] for k in species_ref
         if len(k["species_name"]) < 50 and k["forest_type_id"] in [1, 3]
         ]
 
     spatial_units = ref.get_spatial_units()
-    random_spatial_units = np.random.choice(
-        [",".join(x["spatial_unit_id"]) for x in spatial_units], num_cases)
+
+    random_spatial_units = np.random.choice([
+        ",".join([x["admin_boundary_name"], x["admin_boundary_name"]])
+        for x in spatial_units], num_cases)
 
     disturbance_types = ref.get_disturbance_types()
 
@@ -126,15 +128,16 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
     for i in range(num_cases):
         num_components = np.random.randint(1, max_components) \
             if max_components > 1 else 1
-        random_species = np.random.choice(list(species), num_components)
+        random_species = np.random.choice(species, num_components)
         spu = random_spatial_units[i].split(',')
         components = []
         for c in range(num_components):
             growth_func = choose_random_yield_func()
             components.append({
                 "species": random_species[c],
-                "age_volume_pairs": [(x, round(growth_func(x), n_growth_digits))
-                                     for x in range(0, growth_curve_len, age_interval)]
+                "age_volume_pairs": [
+                    (x, round(growth_func(x), n_growth_digits))
+                    for x in range(0, growth_curve_len, age_interval)]
             })
 
         disturbance_events = []

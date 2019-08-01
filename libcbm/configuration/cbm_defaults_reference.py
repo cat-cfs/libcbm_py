@@ -50,13 +50,20 @@ def load_data(sqlite_path, query, query_params=None, as_data_frame=False):
         with sqlite3.connect(sqlite_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            for row in cursor.execute(query, query_params):
-                result.append(row)
+            if query_params:
+                for row in cursor.execute(query, query_params):
+                    result.append(row)
+            else:
+                for row in cursor.execute(query):
+                    result.append(row)
         return result
     else:
         with sqlite3.connect(sqlite_path) as conn:
-            df = pd.read_sql_query(sql=query, con=conn, params=query_params)
-            return df
+            if query_params:
+                return pd.read_sql_query(
+                    sql=query, con=conn, params=query_params)
+            else:
+                return pd.read_sql_query(sql=query, con=conn)
 
 
 class CBMDefaultsReference:
