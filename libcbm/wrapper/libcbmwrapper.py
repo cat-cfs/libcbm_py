@@ -35,12 +35,12 @@ def getNullableNdarray(a, type=ctypes.c_double):
 
 
 class LibCBMWrapper():
-    def __init__(self, dllpath):
+    def __init__(self, dll_path):
         """Initializes the underlying LibCBM library, storing the allocated
         handle in this instance.
 
         Arguments:
-            dllpath {str} -- path to the compiled LibCBM dll on Windows,
+            dll_path {str} -- path to the compiled LibCBM dll on Windows,
             or compiled LibCBM .so file for Linux
 
         Returns:
@@ -49,8 +49,8 @@ class LibCBMWrapper():
         self.handle = False
 
         cwd = os.getcwd()
-        os.chdir(os.path.dirname(dllpath))
-        self._dll = ctypes.CDLL(dllpath)
+        os.chdir(os.path.dirname(dll_path))
+        self._dll = ctypes.CDLL(dll_path)
         os.chdir(cwd)
         self.err = LibCBM_Error()
 
@@ -624,7 +624,17 @@ class LibCBMWrapper():
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "transitions": [
+                        {
+                            "id": 1,
+                            "classifier_set": {
+                                'type': 'name', 'values': ['a1','b2','?']
+                            },
+                            "regeneration_delay": 0,
+                            "reset_age": 0
+                        }
+                    ]
                 }
 
         Raises:
