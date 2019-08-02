@@ -22,7 +22,7 @@ def initialize(inventory, n_stands, n_pools, n_flux_indicators, n_classifiers):
         # if not user specified, allocate inventory with default values
         inventory = pd.DataFrame({
             # simulation constant variables
-            "area": np.ones(n_stands, dtype=np.int32),
+            "area": np.ones(n_stands, dtype=np.float),
             "inventory_age": np.zeros(n_stands, dtype=np.int32),
             "spatial_units": np.zeros(n_stands, dtype=np.int32),
             "afforestation_pre_type_id": np.zeros(n_stands, dtype=np.int32),
