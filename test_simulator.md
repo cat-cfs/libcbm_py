@@ -31,26 +31,27 @@ libcbm_path =  r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
 ```
 
 ```python
-case = casegeneration.create_scenario(
-    id=1,
-    age=20,
-    area=1,
-    delay=0,
-    afforestation_pre_type=None,
-    unfccc_land_class = "UNFCCC_FL_R_FL",
-    admin_boundary = "British Columbia",
-    eco_boundary ="Pacific Maritime",
-    historic_disturbance = "Wildfire",
-    last_pass_disturbance = "Wildfire",
-    components=[
+case = {
+    "id": 1,
+    "age": 20,
+    "area": 1,
+    "delay": 0,
+    "afforestation_pre_type": None,
+    "unfccc_land_class": "UNFCCC_FL_R_FL",
+    "admin_boundary": "British Columbia",
+    "eco_boundary": "Pacific Maritime",
+    "historic_disturbance": "Wildfire",
+    "last_pass_disturbance": "Wildfire",
+    "components": [
         {
             "species": "Spruce",
             "age_volume_pairs": [(0,0),(10,20),(50,100),(100,200),(300,300)]
         }
     ],
-    events=[
+    "events": [
         {"disturbance_type": "Deforestation", "time_step": 60},
-        {"disturbance_type": "Wildfire", "time_step": 20}])
+        {"disturbance_type": "Wildfire", "time_step": 20}
+    ]}
 ```
 
 ```python
@@ -115,8 +116,4 @@ flux[['DisturbanceBioCH4Emission', 'DisturbanceBioCO2Emission',
       'DisturbanceSWBranchSnagToAir', 'DisturbanceSWStemSnagToAir', 'DisturbanceSlowAGToAir',
       'DisturbanceSlowBGToAir', 'DisturbanceSoftProduction', 'DisturbanceVFastAGToAir',
       'DisturbanceVFastBGToAir']].sum().plot(kind="bar",figsize=(10,10))
-```
-
-```python
-
 ```

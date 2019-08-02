@@ -24,14 +24,12 @@ It also performs tests by running equivalent matrix operations using the numpy m
 ```python
 from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
 from libcbm.configuration import cbm_defaults
-
 ```
 
 ```python
 import os, json
 import numpy as np
 import scipy.sparse
-
 ```
 
 

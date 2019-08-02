@@ -81,11 +81,6 @@ merch_volume_to_biomass_config = cbmconfig.merch_volume_to_biomass_config(
 ```
 
 ```python
-
-
-```
-
-```python
 pooldef = cbm_defaults.load_cbm_pools(dbpath)
 dll.Initialize(json.dumps(
         {
@@ -105,16 +100,8 @@ dll.InitializeCBM(json.dumps(cbm_config))
 
 ```
 
-```python
-
-```
-
 ## Set up the simulation variables  ##
 
-
-```python
-
-```
 
 ```python
 nstands = 1

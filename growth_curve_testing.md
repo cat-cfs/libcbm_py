@@ -62,7 +62,6 @@ cases = casegeneration.generate_scenarios(
     n_steps=n_steps,
     max_disturbances = 0,
     max_components = 1,
-    growth_generator = lambda: casegeneration.choose_random_yield_func,
     n_growth_digits = 2,
     age_interval=age_interval,
     growth_curve_len=age_interval*num_age_classes,

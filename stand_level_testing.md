@@ -34,7 +34,7 @@ from libcbm.test import poolcomparison
 ```
 
 ```python
-age_interval=5
+age_interval = 5
 num_age_classes = 40 #required by cbm3
 n_steps = 250
 cbm3_exe_path = r"M:\CBM Tools and Development\Builds\CBMBuilds\20190530_growth_increment_fix"
@@ -52,22 +52,17 @@ cases = casegeneration.generate_scenarios(
     random_seed = 1,
     num_cases = 5,
     db_path = cbm_defaults_db_path,
-    n_steps=n_steps,
+    n_steps = n_steps,
     max_disturbances = 3,
     max_components = 1,
-    growth_generator = lambda: casegeneration.get_random_sigmoid_func,
     n_growth_digits = 2,
     age_interval=age_interval,
-    growth_curve_len=age_interval*num_age_classes)
+    growth_curve_len=age_interval * num_age_classes)
 
 ```
 
 ```python
 libcbm_result = test_case_simulator.run_test_cases(cbm_defaults_db_path, libcbm_path, cases, n_steps, spinup_debug=False)
-```
-
-```python
-
 ```
 
 ```python
