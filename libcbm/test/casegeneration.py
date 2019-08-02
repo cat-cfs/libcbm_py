@@ -4,10 +4,24 @@ from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 
 
 def get_classifier_value_name(id):
+    """encodes a test case id as a classifier value name
+
+    Arguments:
+        id {int} -- test case id
+
+    Returns:
+        str -- encoded classifier value name
+    """
     return str(id)
 
 
 def get_random_sigmoid_func():
+    """randomly parameterizes and returns a sigmoid function
+    of x
+
+    Returns:
+        func -- a sigmoid unction
+    """
     x_0 = np.random.rand(1)[0] * 100
     L = np.random.rand(1)[0] * 400
     k = 0.1
@@ -17,8 +31,13 @@ def get_random_sigmoid_func():
     return sigmoid
 
 
-# return a step of value y for the range minx to maxX
 def get_step_func():
+    """randomly parameterizes and returns a step function
+    of x
+
+    Returns:
+        func -- a step function
+    """
     y = np.random.rand(1)[0] * 500
     minX = np.random.randint(low=1, high=200)
 
@@ -33,6 +52,12 @@ def get_step_func():
 
 
 def get_ramp_func():
+    """randomly parameterizes and returns a ramp function
+    of x
+
+    Returns:
+        func -- a ramp function
+    """
     rate = np.random.rand(1)[0] * 5
 
     def ramp(x):
@@ -41,31 +66,17 @@ def get_ramp_func():
 
 
 def get_expCurve_func():
+    """randomly parameterizes and returns a exponential curve as a function
+    of x
+
+    Returns:
+        func -- an exp curve function
+    """
     yMax = np.random.rand(1)[0] * 500
 
     def expCurve(x):
         return yMax - math.exp(-x) * yMax
     return expCurve
-
-
-def create_scenario(id, age, area, delay, afforestation_pre_type,
-                    unfccc_land_class, admin_boundary, eco_boundary,
-                    historic_disturbance, last_pass_disturbance, components,
-                    events):
-    return {
-        "id": id,
-        "age": age,
-        "area": area,
-        "delay": delay,
-        "afforestation_pre_type": afforestation_pre_type,
-        "unfccc_land_class": unfccc_land_class,
-        "admin_boundary": admin_boundary,
-        "eco_boundary": eco_boundary,
-        "historic_disturbance": historic_disturbance,
-        "last_pass_disturbance": last_pass_disturbance,
-        "components": components,
-        "events": events
-    }
 
 
 def choose_random_yield_func(func_factories=[
@@ -77,13 +88,42 @@ def choose_random_yield_func(func_factories=[
 
 
 def generate_scenarios(random_seed, num_cases, db_path, n_steps,
-                       max_disturbances, max_components, growth_generator,
-                       n_growth_digits, age_interval, growth_curve_len,
-                       growth_only=False):
+                       max_disturbances, max_components, n_growth_digits,
+                       age_interval, growth_curve_len, growth_only=False):
+    """create a list of test cases for comparing CBM-CFS3 versus libCBM.
 
+    Arguments:
+        random_seed {int} -- a random seed for all random functions within
+            the test generator
+        num_cases {int} -- the number of random cases (ie. number of stands
+            to generate)
+        db_path {str} -- path to a cbm_defaults database
+        n_steps {int} -- the number of timesteps to simulate
+        max_disturbances {int} -- the maximum number of disturbances that
+            can occur on randomly generated stand scenarios
+        max_components {int} -- the maximum number of growth curve component
+            that can occur on a randomly generated stand
+        n_growth_digits {[type]} -- included since CBM3 has a rounding to the
+            second decimal place for growth curves
+        age_interval {int} -- the number of years between growth curve values
+        growth_curve_len {int} -- the number of growth curve values
+
+    Keyword Arguments:
+        growth_only {bool} -- if set to True, stands will only be forested
+            initially (default: {False})
+
+    Returns:
+        list -- a list of parameters which can be run as stand level
+        simulations by both libCBM and by CBM-CFS3
+    """
     np.random.seed(random_seed)
     ref = CBMDefaultsReference(db_path, "en-CA")
     species_ref = ref.get_species()
+
+    fire_type = "Wildfire"
+    harvest_type = "Clearcut harvesting with salvage"
+    deforestation_type = "Deforestation"
+    afforestation_type = "Afforestation"
 
     # exclude species names that are too long for the CBM-CFS3 project
     # database schema, and forest_types that are not hardwood or softwood
@@ -148,8 +188,8 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
             if num_disturbances > 0:
                 event_interval = n_steps // num_disturbances
                 for d in range(num_disturbances):
-                    min_timestep = event_interval*d+1
-                    max_timestep = event_interval*(d+1)+1
+                    min_timestep = event_interval * d + 1
+                    max_timestep = event_interval * (d + 1) + 1
                     disturbance_events.append({
                         "disturbance_type": random_dist_types[d],
                         "time_step": np.random.randint(
@@ -157,27 +197,24 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                     })
 
         creation_disturbance = np.random.choice([
-            "Wildfire",
-            "Clearcut harvesting with salvage",
-            "Deforestation",
-            "Afforestation"], 1)[0]
+            fire_type, harvest_type, deforestation_type, afforestation_type
+            ], 1)[0]
 
         age = 0
         delay = 0
         afforestation_pre_type = None
-        last_pass_disturbance = "Wildfire"
-        historic_disturbance = "Wildfire"
+        last_pass_disturbance = fire_type
+        historic_disturbance = fire_type
         unfccc_land_class = "UNFCCC_FL_R_FL"
         if not growth_only:
-            if creation_disturbance in [
-                "Wildfire", "Clearcut harvesting with salvage"]:
+            if creation_disturbance in [fire_type, harvest_type]:
                 age = np.random.randint(0, 350)
                 last_pass_disturbance = creation_disturbance
-            if creation_disturbance == "Deforestation":
+            if creation_disturbance == deforestation_type:
                 delay = np.random.randint(0, 20)  # UNFCCC rules
                 last_pass_disturbance = creation_disturbance
                 unfccc_land_class = post_deforestation_land_class_code
-            if creation_disturbance == "Afforestation":
+            if creation_disturbance == afforestation_type:
                 # since there are constant pools in the afforestation case,
                 # spinup, and therefore historic/last pass disturbance types
                 # do not apply
@@ -188,24 +225,26 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                     # Since we are trying to model the afforestation case,
                     # override the randomly selected first disturbance with
                     # afforestation.
-                    disturbance_events[0]["disturbance_type"] = "Afforestation"
+                    disturbance_events[0]["disturbance_type"] = \
+                        afforestation_type
                 else:
                     disturbance_events.append({
-                        "disturbance_type": "Afforestation",
+                        "disturbance_type": afforestation_type,
                         "time_step": np.random.randint(1, n_steps)
                     })
 
-        cases.append(create_scenario(
-            id=i + 1,
-            age=age,
-            area=1.0,
-            delay=delay,
-            afforestation_pre_type=afforestation_pre_type,
-            unfccc_land_class=unfccc_land_class,
-            admin_boundary=spu[0],
-            eco_boundary=spu[1],
-            historic_disturbance=historic_disturbance,
-            last_pass_disturbance=last_pass_disturbance,
-            components=components,
-            events=disturbance_events))
+        cases.append({
+            "id": i + 1,
+            "age": age,
+            "area": 1.0,
+            "delay": delay,
+            "afforestation_pre_type": afforestation_pre_type,
+            "unfccc_land_class": unfccc_land_class,
+            "admin_boundary": spu[0],
+            "eco_boundary": spu[1],
+            "historic_disturbance": historic_disturbance,
+            "last_pass_disturbance": last_pass_disturbance,
+            "components": components,
+            "events": disturbance_events})
+
     return cases

@@ -190,7 +190,29 @@ def get_disturbances(cases, ref):
 
 
 def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
+    """Run CBM simulation test cases with libcbm
 
+    Arguments:
+        db_path {str} -- path to a cbm_defaults database
+        dll_path {str} -- path to the libcbm compiled library
+        cases {list} -- list of test cases in the format created by
+            libcbm.test.casegeneration.generate_scenarios
+        n_steps {int} -- the number of timesteps to run for every test case
+
+    Keyword Arguments:
+        spinup_debug {bool} -- if specified, and True extra spinup debugging
+            information is generated and returned (causes performance drop)
+            (default: {False})
+
+    Returns:
+        dict -- dictionary containing the following keys/values:
+            - pools: pd.DataFrame of pool results by case,timestep
+            - flux:  pd.DataFrame of flux results by case,timestep
+            - state_variable_result: pd.DataFrame of state variable
+                simulation results by case,timestep
+            - spinup_debug: if enabled, addition spinup debugging output in a
+                pd.DataFrame by case,timestep
+    """
     ref = CBMDefaultsReference(db_path, "en-CA")
     pool_codes = ref.get_pools()
     flux_indicators = ref.get_flux_indicators()
