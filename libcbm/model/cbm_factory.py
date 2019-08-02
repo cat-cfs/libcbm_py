@@ -5,8 +5,21 @@ import json
 
 def create(dll_path, db_path, model_factory, merch_volume_to_biomass_factory,
            classifiers_factory):
+    """create and initialize an instance of the CBM model
 
-    dll = model_factory.create(dll_path, db_path)
+    Arguments:
+        dll_path {str} -- path to the libcbm compiled library
+        db_path {str} -- path to a cbm_defaults formatted sqlite database
+        model_factory {func} -- function for creating the handle to the
+            low level libcbm library.
+        merch_volume_to_biomass_factory {func} -- function that creates a
+            valid merchantable volume to biomass configuration for CBM
+        classifiers_factory {func} -- [description]
+
+    Returns:
+        libcbm.model.CBM -- instance of the CBM model
+    """
+    dll = model_factory(dll_path, db_path)
     merch_volume_to_biomass_config = \
         merch_volume_to_biomass_factory()
     classifiers_config = classifiers_factory()

@@ -189,26 +189,22 @@ def get_disturbances(cases, ref):
     return disturbances
 
 
-def assemble_cbm(cases, classifier_name, db_path, libcbm_path,
-                 cbm_defaults_ref):
-    cbm = cbm_factory.create(
-        model_factory=model_factory,
-        db_path=db_path,
-        dll_path=libcbm_path,
-        merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
-            cases, db_path, cbm_defaults_ref),
-        classifiers_factory=get_test_case_classifier_factory(
-            cases, classifier_name))
-    return cbm
-
-
 def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     ref = CBMDefaultsReference(db_path, "en-CA")
     pool_codes = ref.get_pools()
     flux_indicators = ref.get_flux_indicators()
     classifier_name = "identifier"
-    cbm = assemble_cbm(cases, classifier_name, db_path, dll_path, ref)
+
+    cbm = cbm_factory.create(
+        model_factory=model_factory.create,
+        db_path=db_path,
+        dll_path=dll_path,
+        merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
+            cases, db_path, ref),
+        classifiers_factory=get_test_case_classifier_factory(
+            cases, classifier_name))
+
     n_stands = len(cases)
 
     inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)
