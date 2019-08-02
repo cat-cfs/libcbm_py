@@ -1,7 +1,10 @@
 Welcome to libcbm's documentation!
 ==================================
 
-.. automodule:: model.cbm
+.. autoclass:: libcbm.model.cbm.CBM
+    :members:
+
+.. automodule:: libcbm.model.cbm_factory
     :members:
     
 .. toctree::

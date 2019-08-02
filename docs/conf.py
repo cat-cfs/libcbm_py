@@ -12,13 +12,13 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'libcbm'
-copyright = '2019, Scott Morken'
+copyright = '2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada'
 author = 'Scott Morken'
 
 
