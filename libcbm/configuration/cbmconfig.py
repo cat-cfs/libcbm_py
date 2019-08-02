@@ -16,9 +16,14 @@ def classifier_config(classifiers):
     """
     Returns a dictionary like this one:
 
-        {'classifiers':       [{'id': 1, 'name': 'growth_curve'}],
-         'classifier_values': [{
-             'id': 1, 'classifier_id': 1, 'value': '1', 'description': ''}]}
+        {
+            'classifiers': [{'id': 1, 'name': 'growth_curve'}],
+            'classifier_values': [{
+                'id': 1,
+                'classifier_id': 1,
+                'value': '1',
+                'description': ''}]
+        }
 
     """
     result = {

@@ -1,5 +1,5 @@
 import sqlite3
-import libcbm.configuration.cbm_defaults_queries
+from libcbm.configuration import cbm_defaults_queries
 
 
 def load_cbm_parameters(sqlitePath):
@@ -22,7 +22,7 @@ def load_cbm_parameters(sqlitePath):
     result = {}
 
     queries = {
-        k: libcbm.configuration.cbm_defaults_queries.get_query(
+        k: cbm_defaults_queries.get_query(
             "{}.sql".format(k))
         for k in [
             "decay_parameters",
@@ -37,9 +37,6 @@ def load_cbm_parameters(sqlitePath):
             "land_class_transitions",
             "spatial_units",
             "random_return_interval",
-            "flux_indicator_process",
-            "flux_indicator_source",
-            "flux_indicator_sink",
             "spinup_parameter",
             "afforestation_pre_type"
             ]}
@@ -64,12 +61,27 @@ def load_cbm_parameters(sqlitePath):
 
 
 def load_cbm_pools(sqlitePath):
+    """Loads cbm pool information from a cbm_defaults database into the
+    format expected by the libcbm compiled library.
+
+    Example of output:
+        [
+            {"name": "pool1", "id": 1, "index": 0},
+            {"name": "pool2", "id": 2, "index": 1},
+            ...,
+            {"name": "poolN", "id": N, "index": N-1},
+        ]
+    Arguments:
+        sqlitePath {str} -- path to a cbm_defaults database
+
+    Returns:
+        list -- list of dictionaries describing CBM pools
+    """
     result = []
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         index = 0
-        query = \
-            libcbm.configuration.cbm_defaults_queries.get_query("pools.sql")
+        query = cbm_defaults_queries.get_query("pools.sql")
         for row in cursor.execute(query):
             result.append({"name": row[0], "id": row[1], "index": index})
             index += 1
@@ -77,19 +89,40 @@ def load_cbm_pools(sqlitePath):
 
 
 def load_flux_indicators(sqlitePath):
+    """Loads cbm flux indicator information from a cbm_defaults database
+    into the format expected by the libcbm compiled library.
+
+    Used to capture flows between specified source pools and specified sink
+    pools for a given process to return as model output.
+
+    Example of output:
+        [
+            {
+                "id": 1,
+                "index": 0,
+                "process_id": 1,
+                "source_pools": [1, 2, 3, 4],
+                "sink_pools": [5, 6, 7, 8],
+            },
+        ]
+
+    Arguments:
+        sqlitePath {str} -- path to a cbm_defaults database
+
+    Returns:
+        list -- list of dictionaries describing CBM flux indicators
+    """
     result = []
-    flux_indicator_source_sql = """
-        select flux_indicator_source.pool_id from flux_indicator
-        inner join flux_indicator_source on flux_indicator_source.flux_indicator_id = flux_indicator.id
-        where flux_indicator.id = ?"""
-    flux_indicator_sink_sql = """
-        select flux_indicator_sink.pool_id from flux_indicator
-        inner join flux_indicator_sink on flux_indicator_sink.flux_indicator_id = flux_indicator.id
-        where flux_indicator.id = ?"""
+    flux_indicator_source_sql = cbm_defaults_queries.get_query(
+        "flux_indicator_source.sql")
+    flux_indicator_sink_sql = cbm_defaults_queries.get_query(
+        "flux_indicator_sink.sql")
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         index = 0
-        flux_indicator_rows = list(cursor.execute("select id, flux_process_id from flux_indicator order by id"))
+        flux_indicator_sql = cbm_defaults_queries.get_query(
+            "flux_indicator.sql")
+        flux_indicator_rows = list(cursor.execute(flux_indicator_sql))
         for row in flux_indicator_rows:
             flux_indicator = {
                 "id": row[0],
@@ -98,9 +131,11 @@ def load_flux_indicators(sqlitePath):
                 "source_pools": [],
                 "sink_pools": []
             }
-            for source_pool_row in cursor.execute(flux_indicator_source_sql, (row[0],)):
+            for source_pool_row in cursor.execute(
+                    flux_indicator_source_sql, (row[0],)):
                 flux_indicator["source_pools"].append(int(source_pool_row[0]))
-            for sink_pool_row in cursor.execute(flux_indicator_sink_sql, (row[0],)):
+            for sink_pool_row in cursor.execute(
+                    flux_indicator_sink_sql, (row[0],)):
                 flux_indicator["sink_pools"].append(int(sink_pool_row[0]))
             result.append(flux_indicator)
             index += 1
