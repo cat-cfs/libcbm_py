@@ -87,8 +87,9 @@ class CBM:
             pandas.DataFrame or None -- returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
-        variables.pools[:, 0] = 1.0
-        n_stands = variables.pools.shape[0]
+        pools = variables.pools.to_numpy()
+        pools[:, 0] = 1.0
+        n_stands = pools.shape[0]
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
@@ -131,7 +132,7 @@ class CBM:
 
             self.dll.GetMerchVolumeGrowthOps(
                 ops["growth"], inventory.classifiers.to_numpy(),
-                variables.pools, variables.age, inventory.spatial_unit,
+                pools, variables.age, inventory.spatial_unit,
                 None, None, None, variables.growth_enabled)
 
             self.dll.GetDisturbanceOps(
@@ -139,11 +140,11 @@ class CBM:
                 variables.disturbance_types)
 
             self.dll.ComputePools(
-                [ops[x] for x in opSchedule], variables.pools,
+                [ops[x] for x in opSchedule], pools,
                 variables.enabled)
 
             self.dll.EndSpinupStep(
-                variables.spinup_state, variables.pools,
+                variables.spinup_state, pools,
                 variables.disturbance_types, variables.age,
                 variables.slowPools, variables.growth_enabled)
 
@@ -184,7 +185,7 @@ class CBM:
         self.dll.InitializeLandState(
             inventory.last_pass_disturbance_type, inventory.delay,
             inventory.age, inventory.spatial_unit,
-            inventory.afforestation_pre_type_id, variables.pools,
+            inventory.afforestation_pre_type_id, variables.pools.to_numpy(),
             variables.state.last_disturbance_type,
             variables.state.time_since_last_disturbance,
             variables.state.time_since_land_class_change,
@@ -213,10 +214,11 @@ class CBM:
                 - mean annual temperature
                 - transitions
         """
-
-        variables.pools[:, 0] = 1.0
-        variables.flux *= 0.0
-        n_stands = variables.pools.shape[0]
+        pools = variables.pools.to_numpy()
+        flux = variables.flux.to_numpy()
+        pools[:, 0] = 1.0
+        flux *= 0.0
+        n_stands = pools.shape[0]
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
@@ -246,7 +248,7 @@ class CBM:
 
         self.dll.ComputeFlux(
             [ops["disturbance"]], [self.opProcesses["disturbance"]],
-            variables.pools, variables.flux, enabled=None)
+            pools, flux, enabled=None)
 
         # enabled = none on line above is due to a possible bug in CBM3. This
         # is very much an edge case:
@@ -254,7 +256,7 @@ class CBM:
         # disabled (which happens in peatland)
 
         self.dll.GetMerchVolumeGrowthOps(
-            ops["growth"], inventory.classifiers.to_numpy(), inventory.pools,
+            ops["growth"], inventory.classifiers.to_numpy(), pools,
             variables.state.age, inventory.spatial_unit,
             variables.state.last_disturbance_type,
             variables.state.time_since_last_disturbance,
@@ -271,7 +273,7 @@ class CBM:
         self.dll.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
-            variables.pools, variables.flux, variables.state.enabled)
+            pools, flux, variables.state.enabled)
 
         self.dll.EndStep(
             variables.state.age, variables.state.regeneration_delay,
