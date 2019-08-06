@@ -3,10 +3,56 @@ import numpy as np
 from types import SimpleNamespace
 
 
+def promote_scalar(value, size, dtype):
+    """If the specified value is scalar promote it to a numpy array filled
+    with the scalar value, and otherwise return the value.  This is purely
+    a helper function to allow scalar parameters for certain vector
+    functions
+
+    Arguments:
+        value {ndarray} or {number} or {None} -- value to promote
+        size {int} -- the length of the resulting vector if promotion
+        occurs
+        dtype {object} -- object used to define the type of the resulting
+        vector if promotion occurs
+
+    Returns:
+        ndarray or None -- returns either the original value, a promoted
+        scalar or None depending on the specified values
+    """
+    if value is None:
+        return None
+    if isinstance(value, np.ndarray):
+        return value
+    else:
+        return np.ones(size, dtype=dtype) * value
+
+
 def initialize_pools(n_stands, pool_codes):
     return pd.DataFrame(
         data=np.zeros(n_stands, len(pool_codes)),
         columns=pool_codes)
+
+
+def initialize_flux_indicators(n_stands, flux_indicator_codes):
+    return pd.DataFrame(
+        data=np.zeros(n_stands, len(flux_indicator_codes)),
+        columns=flux_indicator_codes)
+
+
+def initialze_spinup_parameters(n_stands, return_interval=None,
+                                min_rotations=None, max_rotations=None,
+                                mean_annual_temp=None):
+    parameters = SimpleNamespace()
+    parameters.return_interval = promote_scalar(
+        return_interval, n_stands, dtype=np.int32)
+    parameters.min_rotations = promote_scalar(
+        min_rotations, n_stands, dtype=np.int32)
+    parameters.max_rotations = promote_scalar(
+        max_rotations, n_stands, dtype=np.int32)
+    parameters.mean_annual_temp = promote_scalar(
+        mean_annual_temp, n_stands, dtype=np.float)
+    return parameters
 
 
 def initialize_spinup_variables(n_stands, pools):
@@ -42,8 +88,15 @@ def initialize_inventory(n_stands, classifiers, inventory):
     # validate the inventory columns, for other functions to operate, at least
     # the above columns are required
     cols = list(inventory.columns.values)
+    missing_cols = []
     for c in required_cols:
-
+        if c not in cols:
+            missing_cols.append(c)
+    if len(missing_cols) > 0:
+        raise ValueError(
+            "columns missing from inventory: {}".format(
+                ", ".join(missing_cols)
+            ))
     i.inventory = inventory
 
 

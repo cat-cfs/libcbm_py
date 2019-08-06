@@ -65,33 +65,9 @@ class CBM:
         cv = c[classifier_value_name]
         return cv["id"]
 
-    def promote_scalar(self, value, size, dtype):
-        """If the specified value is scalar promote it to a numpy array filled
-        with the scalar value, and otherwise return the value.  This is purely
-        a helper function to allow scalar parameters for certain vector
-        functions
 
-        Arguments:
-            value {ndarray} or {number} or {None} -- value to promote
-            size {int} -- the length of the resulting vector if promotion
-            occurs
-            dtype {object} -- object used to define the type of the resulting
-            vector if promotion occurs
 
-        Returns:
-            ndarray or None -- returns either the original value, a promoted
-            scalar or None depending on the specified values
-        """
-        if value is None:
-            return None
-        if isinstance(value, np.ndarray):
-            return value
-        else:
-            return np.ones(size, dtype=dtype) * value
-
-    def spinup(self, inventory, variables, return_interval=None,
-               min_rotations=None, max_rotations=None, mean_annual_temp=None,
-               debug=False):
+    def spinup(self, inventory, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified carbon pools.  Each parameter has a first
         dimension of n_stands, with the exception of debug which is a bool.
@@ -172,14 +148,7 @@ class CBM:
         variables.pools[:, 0] = 1.0
         n_stands = variables.pools.shape[0]
 
-        return_interval = self.promote_scalar(
-            return_interval, n_stands, dtype=np.int32)
-        min_rotations = self.promote_scalar(
-            min_rotations, n_stands, dtype=np.int32)
-        max_rotations = self.promote_scalar(
-            max_rotations, n_stands, dtype=np.int32)
-        mean_annual_temp = self.promote_scalar(
-            mean_annual_temp, n_stands, dtype=np.float)
+
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
@@ -188,7 +157,7 @@ class CBM:
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            inventory.spatial_unit, True, mean_annual_temp)
+            inventory.spatial_unit, True, parameters.mean_annual_temp)
 
         opSchedule = [
             "growth",
@@ -208,9 +177,10 @@ class CBM:
         while (True):
 
             n_finished = self.dll.AdvanceSpinupState(
-                inventory.spatial_unit, return_interval, min_rotations,
-                max_rotations, inventory.age, inventory.delay,
-                variables.slowPools, inventory.historic_disturbance_type,
+                inventory.spatial_unit, parameters.return_interval,
+                parameters.min_rotations, parameters.max_rotations,
+                inventory.age, inventory.delay, variables.slowPools,
+                inventory.historic_disturbance_type,
                 inventory.last_pass_disturbance_type,
                 inventory.afforestation_pre_type_id, variables.spinup_state,
                 variables.disturbance_types, variables.rotation,
