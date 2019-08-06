@@ -1,5 +1,50 @@
 import pandas as pd
 import numpy as np
+from types import SimpleNamespace
+
+
+def initialize_pools(n_stands, pool_codes):
+    return pd.DataFrame(
+        data=np.zeros(n_stands, len(pool_codes)),
+        columns=pool_codes)
+
+
+def initialize_spinup_variables(n_stands, pools):
+    variables = SimpleNamespace()
+    variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
+    variables.slowPools = np.zeros(n_stands, dtype=np.float)
+    variables.disturbance_types = np.zeros(n_stands, dtype=np.int32)
+    variables.rotation = np.zeros(n_stands, dtype=np.int32)
+    variables.step = np.zeros(n_stands, dtype=np.int32)
+    variables.lastRotationSlowC = np.zeros(n_stands, dtype=np.float)
+    variables.enabled = np.ones(n_stands, dtype=np.int32)
+    variables.age = np.zeros(n_stands, dtype=np.int32)
+    variables.growth_enabled = np.ones(n_stands, dtype=np.int32)
+    variables.pools = pools
+    return variables
+
+
+def initialize_classifiers(n_stands, classifier_names):
+    pd.DataFrame(
+        data=np.zeros(n_stands, len(classifier_names)),
+        columns=classifier_names)
+
+
+def initialize_inventory(n_stands, classifiers, inventory):
+    i = SimpleNamespace()
+    i.classifiers = classifiers
+
+    required_cols = [
+        "spatial_unit", "age", "spatial_units",
+        "afforestation_pre_type_id", "land_class",
+        "historic_disturbance_type", "last_pass_disturbance_type",
+        "delay"]
+    # validate the inventory columns, for other functions to operate, at least
+    # the above columns are required
+    cols = list(inventory.columns.values)
+    for c in required_cols:
+
+    i.inventory = inventory
 
 
 def initialize(inventory, n_stands, n_pools, n_flux_indicators, n_classifiers):
@@ -23,7 +68,7 @@ def initialize(inventory, n_stands, n_pools, n_flux_indicators, n_classifiers):
         inventory = pd.DataFrame({
             # simulation constant variables
             "area": np.ones(n_stands, dtype=np.float),
-            "inventory_age": np.zeros(n_stands, dtype=np.int32),
+            "age": np.zeros(n_stands, dtype=np.int32),
             "spatial_units": np.zeros(n_stands, dtype=np.int32),
             "afforestation_pre_type_id": np.zeros(n_stands, dtype=np.int32),
             "land_class": np.ones(n_stands, dtype=np.int32),

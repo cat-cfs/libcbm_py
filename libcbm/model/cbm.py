@@ -89,11 +89,9 @@ class CBM:
         else:
             return np.ones(size, dtype=dtype) * value
 
-    def spinup(self, pools, classifiers, inventory_age,
-               spatial_unit, afforestation_pre_type_id,
-               historic_disturbance_type, last_pass_disturbance_type,
-               delay, return_interval=None, min_rotations=None,
-               max_rotations=None, mean_annual_temp=None, debug=False):
+    def spinup(self, inventory, variables, return_interval=None,
+               min_rotations=None, max_rotations=None, mean_annual_temp=None,
+               debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified carbon pools.  Each parameter has a first
         dimension of n_stands, with the exception of debug which is a bool.
@@ -171,46 +169,26 @@ class CBM:
             pandas.DataFrame or None -- returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
-        pools[:, 0] = 1.0
-        n_stands = pools.shape[0]
+        variables.pools[:, 0] = 1.0
+        n_stands = variables.pools.shape[0]
 
-        # allocate working variables
-        age = np.zeros(n_stands, dtype=np.int32)
-        slowPools = np.zeros(n_stands, dtype=np.float)
-        spinup_state = np.zeros(n_stands, dtype=np.uint32)
-        rotation = np.zeros(n_stands, dtype=np.int32)
-        step = np.zeros(n_stands, dtype=np.int32)
-        lastRotationSlowC = np.zeros(n_stands, dtype=np.float)
-        disturbance_types = np.zeros(n_stands, dtype=np.int32)
-        growth_enabled = np.ones(n_stands, dtype=np.int32)
-        enabled = np.ones(n_stands, dtype=np.int32)
-
-        inventory_age = self.promote_scalar(
-            inventory_age, n_stands, dtype=np.int32)
-        spatial_unit = self.promote_scalar(
-            spatial_unit, n_stands, dtype=np.int32)
-        historic_disturbance_type = self.promote_scalar(
-            historic_disturbance_type, n_stands, dtype=np.int32)
-        last_pass_disturbance_type = self.promote_scalar(
-            last_pass_disturbance_type, n_stands, dtype=np.int32)
         return_interval = self.promote_scalar(
             return_interval, n_stands, dtype=np.int32)
         min_rotations = self.promote_scalar(
             min_rotations, n_stands, dtype=np.int32)
         max_rotations = self.promote_scalar(
             max_rotations, n_stands, dtype=np.int32)
-        delay = self.promote_scalar(delay, n_stands, dtype=np.int32)
         mean_annual_temp = self.promote_scalar(
             mean_annual_temp, n_stands, dtype=np.float)
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
-                                spatial_unit)
+                                inventory.spatial_unit)
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            spatial_unit, True, mean_annual_temp)
+            inventory.spatial_unit, True, mean_annual_temp)
 
         opSchedule = [
             "growth",
@@ -230,38 +208,46 @@ class CBM:
         while (True):
 
             n_finished = self.dll.AdvanceSpinupState(
-                spatial_unit, return_interval, min_rotations, max_rotations,
-                inventory_age, delay, slowPools, historic_disturbance_type,
-                last_pass_disturbance_type, afforestation_pre_type_id,
-                spinup_state, disturbance_types, rotation, step,
-                lastRotationSlowC, enabled)
+                inventory.spatial_unit, return_interval, min_rotations,
+                max_rotations, inventory.age, inventory.delay,
+                variables.slowPools, inventory.historic_disturbance_type,
+                inventory.last_pass_disturbance_type,
+                inventory.afforestation_pre_type_id, variables.spinup_state,
+                variables.disturbance_types, variables.rotation,
+                variables.step, variables.lastRotationSlowC,
+                variables.enabled)
             if n_finished == n_stands:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], classifiers, pools, age, spatial_unit, None,
-                None, None, growth_enabled)
+                ops["growth"], inventory.classifiers, variables.pools,
+                variables.age, inventory.spatial_unit, None,
+                None, None, variables.growth_enabled)
 
-            self.dll.GetDisturbanceOps(ops["disturbance"], spatial_unit,
-                                       disturbance_types)
+            self.dll.GetDisturbanceOps(
+                ops["disturbance"], inventory.spatial_unit,
+                variables.disturbance_types)
 
-            self.dll.ComputePools([ops[x] for x in opSchedule], pools, enabled)
+            self.dll.ComputePools(
+                [ops[x] for x in opSchedule], variables.pools,
+                variables.enabled)
 
             self.dll.EndSpinupStep(
-                spinup_state, pools, disturbance_types, age, slowPools,
-                growth_enabled)
+                variables.spinup_state, variables.pools,
+                variables.disturbance_types, variables.age,
+                variables.slowPools, variables.growth_enabled)
 
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
                     "index": list(range(n_stands)),
                     "iteration": iteration,
-                    "age": age,
-                    "slow_pools": slowPools,
-                    "spinup_state": spinup_state,
-                    "rotation": rotation,
-                    "last_rotation_c": lastRotationSlowC,
-                    "step": step,
-                    "disturbance_type": disturbance_types
+                    "age": variables.age,
+                    "slow_pools": variables.slowPools,
+                    "spinup_state": variables.spinup_state,
+                    "rotation": variables.rotation,
+                    "last_rotation_c": variables.lastRotationSlowC,
+                    "step": variables.step,
+                    "disturbance_type": variables.disturbance_types
                     }))
 
             iteration = iteration + 1
