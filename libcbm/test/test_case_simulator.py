@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from libcbm.model import cbm_factory
+from libcbm.model import cbm_variables
 from libcbm.model import model_factory
 from libcbm.configuration import cbmconfig
 from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
@@ -229,7 +230,9 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     n_stands = len(cases)
 
-    inventory_age = np.array([c["age"] for c in cases], dtype=np.int32)
+    classifiers = [cbm.get_classifier_value_id(
+        classifier_name, casegeneration.get_classifier_value_name(c["id"]))
+        for c in cases]
 
     historic_disturbance_type = np.array(
         [
@@ -241,14 +244,6 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
         [ref.get_disturbance_type_id(c["last_pass_disturbance"])
             for c in cases],
         dtype=np.int32)
-
-    delay = np.array([c["delay"] for c in cases], dtype=np.int32)
-
-    classifiers = np.zeros((n_stands, 1), dtype=np.int32)
-
-    classifiers[:, 0] = [cbm.get_classifier_value_id(
-        classifier_name, casegeneration.get_classifier_value_name(c["id"]))
-        for c in cases]
 
     spatial_units = np.array(
         [ref.get_spatial_unit_id(c["admin_boundary"], c["eco_boundary"])
@@ -270,6 +265,24 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     land_class[afforestation_pre_type_id > 0] = \
         ref.get_land_class_id("UNFCCC_CL_R_CL")
 
+    inventory = cbm_variables.initialize_inventory(
+        n_stands=n_stands,
+        classifiers=np.array(classifiers, ndmin=2),
+        inventory=pd.DataFrame({
+            "age": np.array([c["age"] for c in cases], dtype=np.int32),
+            "spatial_unit": spatial_units,
+            "afforestation_pre_type_id": afforestation_pre_type_ids,
+            "land_class": land_class,
+            "historic_disturbance_type": historic_disturbance_type,
+            "last_pass_disturbance_type": last_pass_disturbance_type,
+            "delay": np.array([c["delay"] for c in cases], dtype=np.int32)
+        }))
+
+    cbm_vars = cbm_variables.initialize_cbm_variables(
+        n_stands=n_stands,
+        pools=cbm_variables.initialize_pools(n_stands, pool_codes),
+        flux=cbm_variables.initialize_flux(n_stands, flux_indicators)
+    )
     last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
     time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
     time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
@@ -281,23 +294,17 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     disturbance_types = np.zeros(n_stands, dtype=np.int32)
     transition_rules = np.zeros(n_stands, dtype=np.int32)
 
-    pools = np.zeros((n_stands, len(pool_codes)))
-    flux = np.zeros((n_stands, len(flux_indicators)))
+
     enabled = np.ones(n_stands, dtype=np.int32)
 
     pool_result = pd.DataFrame()
     flux_result = pd.DataFrame()
 
     spinup_debug_output = cbm.spinup(
-        pools=pools,
-        classifiers=classifiers,
-        inventory_age=inventory_age,
-        spatial_unit=spatial_units,
-        afforestation_pre_type_id=afforestation_pre_type_id,
-        historic_disturbance_type=historic_disturbance_type,
-        last_pass_disturbance_type=last_pass_disturbance_type,
-        delay=delay,
-        mean_annual_temp=None,
+        inventory=inventory,
+        variables=spinup
+    )
+
         debug=spinup_debug)
 
     cbm.init(

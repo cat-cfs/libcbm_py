@@ -34,15 +34,15 @@ def initialize_pools(n_stands, pool_codes):
         columns=pool_codes)
 
 
-def initialize_flux_indicators(n_stands, flux_indicator_codes):
+def initialize_flux(n_stands, flux_indicator_codes):
     return pd.DataFrame(
         data=np.zeros(n_stands, len(flux_indicator_codes)),
         columns=flux_indicator_codes)
 
 
-def initialze_spinup_parameters(n_stands, return_interval=None,
-                                min_rotations=None, max_rotations=None,
-                                mean_annual_temp=None):
+def initialize_spinup_parameters(n_stands, return_interval=None,
+                                 min_rotations=None, max_rotations=None,
+                                 mean_annual_temp=None):
     parameters = SimpleNamespace()
     parameters.return_interval = promote_scalar(
         return_interval, n_stands, dtype=np.int32)
@@ -70,9 +70,31 @@ def initialize_spinup_variables(n_stands, pools):
     return variables
 
 
+def initialize_cbm_parameters(n_stands, disturbance_type=0,
+                              transition_rule_id=0, mean_annual_temp=None):
+    parameters = SimpleNamespace()
+    parameters.disturbance_type = promote_scalar(
+        disturbance_type, n_stands, dtype=np.int32)
+    parameters.transition_rule_id = promote_scalar(
+        disturbance_type, n_stands, dtype=np.int32)
+    parameters.mean_annual_temp = promote_scalar(
+        disturbance_type, n_stands, dtype=np.float)
+    return parameters
+
+
 def initialize_cbm_variables(n_stands, pools, flux):
     variables = SimpleNamespace()
-
+    variables.pools = pools
+    variables.flux = flux
+    variables.last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
+    variables.time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
+    variables.time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
+    variables.growth_enabled = np.zeros(n_stands, dtype=np.int32)
+    variables.enabled = np.ones(n_stands, dtype=np.int32)
+    variables.land_class = np.ones(n_stands, dtype=np.int32)
+    variables.age = np.zeros(n_stands, dtype=np.int32)
+    variables.growth_multiplier = np.ones(n_stands, dtype=np.float)
+    variables.regeneration_delay = np.zeros(n_stands, dtype=np.int32)
     return variables
 
 
@@ -87,8 +109,7 @@ def initialize_inventory(n_stands, classifiers, inventory):
     i.classifiers = classifiers
 
     required_cols = [
-        "spatial_unit", "age", "spatial_units",
-        "afforestation_pre_type_id", "land_class",
+        "spatial_unit", "age", "afforestation_pre_type_id", "land_class",
         "historic_disturbance_type", "last_pass_disturbance_type",
         "delay"]
     # validate the inventory columns, for other functions to operate, at least
@@ -104,6 +125,7 @@ def initialize_inventory(n_stands, classifiers, inventory):
                 ", ".join(missing_cols)
             ))
     i.inventory = inventory
+    return i
 
 
 def initialize(inventory, n_stands, n_pools, n_flux_indicators, n_classifiers):

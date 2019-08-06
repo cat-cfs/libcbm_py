@@ -65,7 +65,6 @@ class CBM:
         cv = c[classifier_value_name]
         return cv["id"]
 
-
     def spinup(self, inventory, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified carbon pools.  Each parameter has a first
@@ -224,11 +223,6 @@ class CBM:
         return debug_output
 
     def init(self, inventory, variables):
-        # last_pass_disturbance_type, delay, inventory_age,
-        #         spatial_unit, afforestation_pre_type_id, pools,
-        #         last_disturbance_type, time_since_last_disturbance,
-        #         time_since_land_class_change, growth_enabled, enabled, land_class,
-        #         age):
         """Set the initial state of CBM variables after spinup and prior to
         starting CBM simulation.
 
@@ -307,7 +301,6 @@ class CBM:
             variables.time_since_last_disturbance,
             variables.time_since_land_class_change, variables.growth_enabled,
             variables.enabled, variables.land_class, variables.age)
-
 
     def step(self, inventory, variables, parameters):
         """Advances the specified arguments through one time step of CBM
@@ -416,9 +409,8 @@ class CBM:
             variables.pools, variables.flux, enabled=None)
         # enabled = none on line above is due to a possible bug in CBM3. This
         # is very much an edge case:
-        # stands can be disturbed despite having other C-dynamics processes
-        # disabled (which happens in peatland, cropland, and other non forest
-        # landclasses)
+        # stands can be disturbed despite having all other C-dynamics processes
+        # disabled (which happens in peatland)
 
         self.dll.GetMerchVolumeGrowthOps(
             ops["growth"], inventory.classifiers, inventory.pools,
