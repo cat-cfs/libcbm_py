@@ -154,9 +154,14 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
     """
 
     n_stands = len(cases)
-    classifiers = [cbm.get_classifier_value_id(
-        classifier_name, casegeneration.get_classifier_value_name(c["id"]))
-        for c in cases]
+    classifiers = pd.DataFrame({
+        classifier_name: [
+            cbm.get_classifier_value_id(
+                classifier_name,
+                casegeneration.get_classifier_value_name(c["id"])
+            )
+            for c in cases]
+    })
 
     historic_disturbance_type = np.array(
         [
@@ -190,7 +195,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         ref.get_land_class_id("UNFCCC_CL_R_CL")
 
     inventory = cbm_variables.initialize_inventory(
-        classifiers=np.array(classifiers, ndmin=2),
+        classifiers=classifiers,
         inventory=pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
             "spatial_unit": spatial_units,
@@ -249,7 +254,6 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
 
     cbm_vars = cbm_variables.initialize_cbm_variables(
-        n_stands=n_stands,
         pools=spinup_vars.pools,
         flux=cbm_variables.initialize_flux(n_stands, flux_indicators),
         state=cbm_variables.initialize_cbm_state_variables(n_stands)

@@ -221,6 +221,18 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
 
 
 def initialize_cbm_state_variables(n_stands):
+    """Creates a pandas dataframe containing state variables used by CBM
+    functions at simulation runtime, with default initial values.
+
+    The dataframe here has 1 row for each stand and is row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Arguments:
+        n_stands {int} -- the number of rows in the resulting dataframe.
+
+    Returns:
+        pandas.DataFrame -- a dataframe containing the CBM state variables.
+    """
     return pd.DataFrame({
         "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
         "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
@@ -234,32 +246,47 @@ def initialize_cbm_state_variables(n_stands):
     })
 
 
-def initialize_cbm_variables(n_stands, pools, flux, state):
+def initialize_cbm_variables(pools, flux, state):
+    """Gathers CBM variables into a common object, and performs some validation.
+
+    All dataframes here have 1 row for each stand and are row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Arguments:
+        pools {pandas.DataFrame} -- contains pool values for CBM simulation
+        flux {pandas.DataFrame} -- contains pool values for CBM simulation
+        state {pandas.DataFrame} -- contains state values for CBM simulation
+
+    Returns:
+        object -- an object with properties to access the pool, flux and
+        state simulation variables used by CBM.
+    """
     variables = SimpleNamespace()
+
     variables.pools = pools
     variables.flux = flux
     variables.state = state
     return variables
 
 
-def initialize_classifiers(n_stands, classifier_names):
-    pd.DataFrame(
-        data=np.zeros(n_stands, len(classifier_names)),
-        columns=classifier_names)
-
-
 def initialize_inventory(classifiers, inventory):
     """creates input for libcbm.model.CBM functions
 
+
     Arguments:
-        classifiers {pandas.DataFrame} -- [description]
-        inventory {pandas.DataFrame} -- [description]
+        classifiers {pandas.DataFrame} -- dataframe of inventory classifier
+            sets. Column names are the name of the classifiers, and values
+            are the ids for each classifier value associated with the
+            inventory at each row.
+        inventory {pandas.DataFrame} -- data defining the inventory
 
     Raises:
-        ValueError: [description]
+        ValueError: Raised if the number of rows for classifiers and
+        inventory are not the same.
 
     Returns:
-        [type] -- [description]
+        object -- an object containing the inventory and classifier
+        dataframes.
     """
     n_stands = len(inventory.index)
     if not len(classifiers.index) == n_stands:
@@ -269,22 +296,5 @@ def initialize_inventory(classifiers, inventory):
                 inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
     i.classifiers = classifiers
-
-    required_cols = [
-        "spatial_unit", "age", "afforestation_pre_type_id", "land_class",
-        "historic_disturbance_type", "last_pass_disturbance_type",
-        "delay"]
-    # validate the inventory columns, for other functions to operate, at least
-    # the above columns are required
-    cols = list(inventory.columns.values)
-    missing_cols = []
-    for c in required_cols:
-        if c not in cols:
-            missing_cols.append(c)
-    if len(missing_cols) > 0:
-        raise ValueError(
-            "columns missing from inventory: {}".format(
-                ", ".join(missing_cols)
-            ))
     i.inventory = inventory
     return i
