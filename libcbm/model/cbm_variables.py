@@ -56,12 +56,40 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
 
 
 def initialize_pools(n_stands, pool_codes):
+    """Create a dataframe for storing CBM pools
+
+    The dataframe here has 1 row for each stand and is row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Arguments:
+        n_stands {int} -- The number of stands, and therefore rows in the
+            resulting dataframe.
+        pool_codes {list} -- a list of pool names, which are used as column
+            labels in the resulting dataframe
+
+    Returns:
+        pandas.DataFrame -- A dataframe for storing CBM pools
+    """
     return pd.DataFrame(
         data=np.zeros(n_stands, len(pool_codes)),
         columns=pool_codes)
 
 
 def initialize_flux(n_stands, flux_indicator_codes):
+    """Create a dataframe for storing CBM flux indicator values
+
+    The dataframe here has 1 row for each stand and is row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Arguments:
+        n_stands {int} -- The number of stands, and therefore rows in the
+            resulting dataframe.
+        flux_indicator_codes {list} -- a list of flux indicator names, which
+            are used as column labels in the resulting dataframe
+
+    Returns:
+        pandas.DataFrame -- A dataframe for storing CBM flux indicators
+    """
     return pd.DataFrame(
         data=np.zeros(n_stands, len(flux_indicator_codes)),
         columns=flux_indicator_codes)
@@ -70,6 +98,37 @@ def initialize_flux(n_stands, flux_indicator_codes):
 def initialize_spinup_parameters(n_stands, return_interval=None,
                                  min_rotations=None, max_rotations=None,
                                  mean_annual_temp=None):
+    """Create spinup parameters as a collection of variable vectors
+
+    The variables here are all of length N stands and are row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Each keyword argument is optional, and if unspecified, libcbm will use a
+    default for the corresponding parameter drawn from cbm_defaults.  These
+    parameters are available here to override those default values on a
+    per-stand basis.
+
+    If a scalar value is provided to any of the parameters, that value will
+    be filled in the resulting vector.
+
+    Arguments:
+        n_stands {int} -- The length of each of the resulting variables
+            vectors returned by this function.
+
+    Keyword Arguments:
+        return_interval {numpy.ndarray} -- The number of years between
+            historical disturbances in the spinup function. (default: {None})
+        min_rotations {numpy.ndarray} -- The minimum number of historical
+            rotations to perform. (default: {None})
+        max_rotations {numpy.ndarray} -- The maximum number
+            of historical rotations to perform. (default: {None})
+        mean_annual_temp {numpy.ndarray} -- The mean annual temperature used
+            in the spinup procedure (default: {None})
+
+    Returns:
+        object -- Returns an object with properties to access each of the
+            spinup parameters
+    """
     parameters = SimpleNamespace()
     parameters.return_interval = promote_scalar(
         return_interval, n_stands, dtype=np.int32)
@@ -83,6 +142,26 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
 
 
 def initialize_spinup_variables(n_stands, pools):
+    """Creates a collection of vectors used as working/state variables for
+    the spinup routine.
+
+    The variables here are all of length N stands and are row-aligned with
+    all other vectors and dataframes using this convention.
+
+    Arguments:
+        n_stands {int} -- The number of stands
+        pools {pandas.DataFrame} -- a dataframe containing pools of dimension
+            n_stands by n_pools.
+
+    Returns:
+        object -- an object with properties to access working variables
+        needed by the spinup routine.
+    """
+
+    if len(pools.index) != n_stands:
+        raise ValueError(
+            "Number of pools does not match number of rows "
+            "in provided pools dataframe.")
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
     variables.slowPools = np.zeros(n_stands, dtype=np.float)
@@ -98,7 +177,39 @@ def initialize_spinup_variables(n_stands, pools):
 
 
 def initialize_cbm_parameters(n_stands, disturbance_type=0,
-                              transition_rule_id=0, mean_annual_temp=None):
+                              transition_id=0, mean_annual_temp=None):
+    """Create CBM parameters as a collection of variable vectors
+
+    The variables here are all of length N stands and are row-aligned with
+    all other vectors and dataframes using this convention.
+
+    The mean_annual temperature keyword argument is optional, and if
+    unspecified, libcbm will use a default for the corresponding parameter
+    drawn from cbm_defaults.
+
+    If a scalar value is provided to any of the parameters, that value will
+    be filled in the resulting vector.
+
+    Arguments:
+        n_stands {int} -- The number of stands
+
+    Keyword Arguments:
+        disturbance_type {numpy.ndarray} -- The disturbance type id which
+            references the disturbance types defined in the libCBM
+            configuration.  By convention, a negative or 0 value indicates
+            no disturbance (default: {0})
+        transition_id {numpy.ndarray} -- The transition id which references
+            the transition rules defined in the libCBM configuration.  By
+            convention, a negative or 0 value indicates no transition
+            (default: {0})
+        mean_annual_temp {numpy.ndarray} -- A value, in degrees Celsius,
+            that defines this timestep's mean annual temperature for each
+            stand. (default: {None})
+
+    Returns:
+        object -- an object with properties for each cbm parameter used by
+            the cbm step function.
+    """
     parameters = SimpleNamespace()
     parameters.disturbance_type = promote_scalar(
         disturbance_type, n_stands, dtype=np.int32)
