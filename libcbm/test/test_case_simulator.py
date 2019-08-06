@@ -141,14 +141,16 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
     """create a CBM inventory based on the specified test cases
 
     Arguments:
-        n_stands {[type]} -- [description]
-        cbm {[type]} -- [description]
-        cases {[type]} -- [description]
-        classifier_name {[type]} -- [description]
-        ref {[type]} -- [description]
+        cbm {libcbm.model.CBM} -- instance of CBM, used here to fetch
+            classifier value ids from configuration
+        cases {list} -- list of dict defining CBM test cases
+        classifier_name {str} -- name of the single classifier used by the
+            test cases
+        ref {CBMDefaultsReference} -- reference for transforming string names
 
     Returns:
-        [type] -- [description]
+        object -- an object which defines a valid inventory for
+        libcbm.model.CBM functions
     """
 
     n_stands = len(cases)
@@ -188,7 +190,6 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         ref.get_land_class_id("UNFCCC_CL_R_CL")
 
     inventory = cbm_variables.initialize_inventory(
-        n_stands=n_stands,
         classifiers=np.array(classifiers, ndmin=2),
         inventory=pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
@@ -258,8 +259,9 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
         n_stands=n_stands)
 
     inventory = initialize_inventory(
-        n_stands, cbm, cases, classifier_name, ref)
+        cbm, cases, classifier_name, ref)
 
+    # run CBM spinup
     spinup_debug_output = cbm.spinup(
         inventory=inventory,
         variables=spinup_vars,
@@ -267,6 +269,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
         debug=spinup_debug
     )
 
+    # initializes the CBM variables
     cbm.init(
         inventory=inventory,
         variables=cbm_variables)

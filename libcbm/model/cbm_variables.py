@@ -137,7 +137,25 @@ def initialize_classifiers(n_stands, classifier_names):
         columns=classifier_names)
 
 
-def initialize_inventory(n_stands, classifiers, inventory):
+def initialize_inventory(classifiers, inventory):
+    """creates input for libcbm.model.CBM functions
+
+    Arguments:
+        classifiers {pandas.DataFrame} -- [description]
+        inventory {pandas.DataFrame} -- [description]
+
+    Raises:
+        ValueError: [description]
+
+    Returns:
+        [type] -- [description]
+    """
+    n_stands = len(inventory.index)
+    if not len(classifiers.index) == n_stands:
+        raise ValueError(
+            ("number of inventory records: {inv} does not match number of "
+             "classifier sets: {c_sets}").format(
+                inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
     i.classifiers = classifiers
 

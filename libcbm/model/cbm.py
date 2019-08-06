@@ -186,9 +186,9 @@ class CBM:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory.classifiers, variables.pools,
-                variables.age, inventory.spatial_unit, None,
-                None, None, variables.growth_enabled)
+                ops["growth"], inventory.classifiers.to_numpy(),
+                variables.pools, variables.age, inventory.spatial_unit,
+                None, None, None, variables.growth_enabled)
 
             self.dll.GetDisturbanceOps(
                 ops["disturbance"], inventory.spatial_unit,
@@ -299,80 +299,19 @@ class CBM:
             inventory.afforestation_pre_type_id, variables.pools,
             variables.state.last_disturbance_type,
             variables.state.time_since_last_disturbance,
-            variables.state.time_since_land_class_change, variables.state.growth_enabled,
-            variables.state.enabled, variables.state.land_class, variables.state.age)
+            variables.state.time_since_land_class_change,
+            variables.state.growth_enabled, variables.state.enabled,
+            variables.state.land_class, variables.state.age)
 
     def step(self, inventory, variables, parameters):
-        """Advances the specified arguments through one time step of CBM
+        """Advances the specified CBM variables through one time step of CBM
         simulation.
 
-        Several variables reference the "model parameters and configuration"
-        which are passed to the LibCBMWrapper initialization methods.
-
-        All ndarray parameters must have the ndarray.flags property set with
-        the C_CONTIGUOUS attribute.
-
-        In the following documentation
-         - "const" indicates a parameter will not be modified by this function
-         - "promotable" indicates if a scalar value is passed it will be
-           repeated in a vector of length n_stands
 
         Arguments:
-            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools)
-                Assigned the result of the CBM timestep carbon dynamics
-            flux {ndarray} -- a float64 matrix of shape
-                (n_stands, n_flux_indicators) Assigned the flux indicators, as
-                configured in the model parameters and configuration which
-                occur in the timestep carbon dynamics
-            classifiers {ndarray} -- an int matrix of shape
-                (n_stands, n_classifiers) Values are classifiers value ids
-                referencing the classifier values in the model parameters and
-                configuration.
-            age {ndarray} -- int vector of length n_stands.  The model will
-                update age depending on stand state and disturbances
-            disturbance_type {ndarray} -- const, promotable int, or int vector
-                of length n_stands. The vector of disturbance type ids to apply
-                to stands in this step. Negative or 0 values indicate no
-                disturbance, and > 0 values reference the disturbance type
-                parameters stored in the model parameters and configuration.
-            spatial_unit {ndarray} or {int} -- const, promotable int or int
-                vector of length n_stands. Each value represent a key
-                associated with several parameters stored in model parameters
-                and configuration.
-            mean_annual_temp {ndarray} or {float64} -- const, promotable
-                float64 or float64 vector of length n_stands. Each value is
-                used in the computation of dead organic matter decay rates.
-            transition_rule_id {ndarray} -- const, promotable int or int
-                vector of length n_stands. Each value corresponds to a
-                transition rule id specified in the model parameters and
-                configuration.
-            last_disturbance_type {ndarray} --  int vector of length n_stands.
-                This value is set to the step's disturbance type id, if one is
-                defined, and otherwise it is unmodified.
-            time_since_last_disturbance {ndarray} -- int vector of length
-                n_stands.  Incremented if no disturbance occurred for this
-                step, and otherwise reset.
-            time_since_land_class_change {ndarray} -- int vector of length
-                n_stands.  Incremented if no UNFCCC land class change occurred
-                for this step, and otherwise reset.
-            growth_enabled {ndarray} -- int vector of length n_stands.
-                Modified by this function, and used by this function to enable
-                or disable CBM growth depending on the status of the stand.
-            enabled {ndarray}-- int vector of length n_stands.
-                Modified by this function, and used by this function to enable
-                or disable all carbon dynamics depending on the status of the
-                stand.
-            land_class {ndarray} -- int vector of length n_stands. Set by this
-                function for deforestation, afforestation and landclass
-                transitional periods according to UNFCCC land class accounting
-                rules.
-            growth_multiplier {ndarray} -- const, promotable float64 vector of
-                length n_stands. multiplier applied (for sensitivity analysis)
-                to growth increments for this step.
-            regeneration_delay {ndarray} -- int vector of length n_stands.
-                Variable to store transition rule regeneration delays, which
-                can be used to delay re-growth after disturbance.  Set if a
-                transition rule occurs, and also decremented by this method.
+            inventory {pandas.DataFrame} --
+            variables {[type]} -- [description]
+            parameters {[type]} -- [description]
         """
 
         variables.pools[:, 0] = 1.0
@@ -392,7 +331,7 @@ class CBM:
             ]
 
         self.dll.AdvanceStandState(
-            inventory.classifiers, inventory.spatial_unit,
+            inventory.classifiers.to_numpy(), inventory.spatial_unit,
             parameters.disturbance_type, parameters.transition_rule_id,
             variables.state.last_disturbance_type,
             variables.state.time_since_last_disturbance,
@@ -408,13 +347,14 @@ class CBM:
         self.dll.ComputeFlux(
             [ops["disturbance"]], [self.opProcesses["disturbance"]],
             variables.pools, variables.flux, enabled=None)
+
         # enabled = none on line above is due to a possible bug in CBM3. This
         # is very much an edge case:
         # stands can be disturbed despite having all other C-dynamics processes
         # disabled (which happens in peatland)
 
         self.dll.GetMerchVolumeGrowthOps(
-            ops["growth"], inventory.classifiers, inventory.pools,
+            ops["growth"], inventory.classifiers.to_numpy(), inventory.pools,
             variables.state.age, inventory.spatial_unit,
             variables.state.last_disturbance_type,
             variables.state.time_since_last_disturbance,
