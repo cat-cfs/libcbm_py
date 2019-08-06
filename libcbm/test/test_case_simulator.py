@@ -14,59 +14,6 @@ from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test import casegeneration
 
 
-def append_pools_data(df, n_stands, timestep, pools, pool_codes):
-    """Appends timestep pool values for all simulated stands to the specified
-    dataframe.
-
-    Arguments:
-        df {pandas.DataFrame} -- the dataframe into which pool results will be
-        appended
-        n_stands {int} -- the number of stands simulated through the timestep
-        timestep {int} -- the timestep number
-        pools {ndarray} -- the n_stands by n_pools matrix of pool values at
-            the end of the timestep
-        pool_codes {list} -- list of ordered pool codes describing cbm pool.
-            Used for column names in the dataframe.
-
-    Returns:
-        pandas.DataFrame -- the modified dataframe
-    """
-    data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_value_name(x)
-        for x in range(1, n_stands + 1)]}
-    data.update({x: pools[:, i] for i, x in enumerate(pool_codes)})
-    cols = ["timestep", "identifier"] + [x for x in pool_codes]
-    df = df.append(pd.DataFrame(data=data, columns=cols))
-    return df
-
-
-def append_flux_data(df, n_stands, timestep, flux, flux_indicator_names):
-    """Appends timestep flux values for all simulated stands to the specified
-    dataframe.
-
-    Arguments:
-        df {pandas.DataFrame} -- the dataframe into which pool results will
-            be appended
-        n_stands {int} -- the number of stands simulated through the timestep
-        timestep {int} -- the timestep number
-        flux {ndarray} -- the n_stands by n_flux_indicators matrix of flux
-            values computed during the timestep interval
-        flux_indicator_names {list} -- list of strings describing each cbm
-            flux indicator. Used for column names in the dataframe.
-
-    Returns:
-        pandas.DataFrame -- the modified dataframe
-    """
-    data = {"timestep": timestep, "identifier": [
-        casegeneration.get_classifier_value_name(x)
-        for x in range(1, n_stands + 1)]}
-    data.update(
-        {x: flux[:, i] for i, x in enumerate(flux_indicator_names)})
-    cols = ["timestep", "identifier"] + [x for x in flux_indicator_names]
-    df = df.append(pd.DataFrame(data=data, columns=cols))
-    return df
-
-
 def get_test_case_classifier_factory(cases, classifier_name):
     """Create a function for translating test cases into LibCBM classifiers
     configuration
@@ -190,46 +137,21 @@ def get_disturbances(cases, ref):
     return disturbances
 
 
-def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
-    """Run CBM simulation test cases with libcbm
+def initialize_inventory(cbm, cases, classifier_name, ref):
+    """create a CBM inventory based on the specified test cases
 
     Arguments:
-        db_path {str} -- path to a cbm_defaults database
-        dll_path {str} -- path to the libcbm compiled library
-        cases {list} -- list of test cases in the format created by
-            libcbm.test.casegeneration.generate_scenarios
-        n_steps {int} -- the number of timesteps to run for every test case
-
-    Keyword Arguments:
-        spinup_debug {bool} -- if specified, and True extra spinup debugging
-            information is generated and returned (causes performance drop)
-            (default: {False})
+        n_stands {[type]} -- [description]
+        cbm {[type]} -- [description]
+        cases {[type]} -- [description]
+        classifier_name {[type]} -- [description]
+        ref {[type]} -- [description]
 
     Returns:
-        dict -- dictionary containing the following keys/values:
-            - pools: pd.DataFrame of pool results by case,timestep
-            - flux:  pd.DataFrame of flux results by case,timestep
-            - state_variable_result: pd.DataFrame of state variable
-                simulation results by case,timestep
-            - spinup_debug: if enabled, addition spinup debugging output in a
-                pd.DataFrame by case,timestep
+        [type] -- [description]
     """
-    ref = CBMDefaultsReference(db_path, "en-CA")
-    pool_codes = ref.get_pools()
-    flux_indicators = ref.get_flux_indicators()
-    classifier_name = "identifier"
-
-    cbm = cbm_factory.create(
-        model_factory=model_factory.create,
-        db_path=db_path,
-        dll_path=dll_path,
-        merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
-            cases, db_path, ref),
-        classifiers_factory=get_test_case_classifier_factory(
-            cases, classifier_name))
 
     n_stands = len(cases)
-
     classifiers = [cbm.get_classifier_value_id(
         classifier_name, casegeneration.get_classifier_value_name(c["id"]))
         for c in cases]
@@ -277,6 +199,48 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
             "last_pass_disturbance_type": last_pass_disturbance_type,
             "delay": np.array([c["delay"] for c in cases], dtype=np.int32)
         }))
+    return inventory
+
+
+def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
+    """Run CBM simulation test cases with libcbm
+
+    Arguments:
+        db_path {str} -- path to a cbm_defaults database
+        dll_path {str} -- path to the libcbm compiled library
+        cases {list} -- list of test cases in the format created by
+            libcbm.test.casegeneration.generate_scenarios
+        n_steps {int} -- the number of timesteps to run for every test case
+
+    Keyword Arguments:
+        spinup_debug {bool} -- if specified, and True extra spinup debugging
+            information is generated and returned (causes performance drop)
+            (default: {False})
+
+    Returns:
+        dict -- dictionary containing the following keys/values:
+            - pools: pd.DataFrame of pool results by case,timestep
+            - flux:  pd.DataFrame of flux results by case,timestep
+            - state_variable_result: pd.DataFrame of state variable
+                simulation results by case,timestep
+            - spinup_debug: if enabled, addition spinup debugging output in a
+                pd.DataFrame by case,timestep
+    """
+    ref = CBMDefaultsReference(db_path, "en-CA")
+    pool_codes = ref.get_pools()
+    flux_indicators = ref.get_flux_indicators()
+    classifier_name = "identifier"
+
+    cbm = cbm_factory.create(
+        model_factory=model_factory.create,
+        db_path=db_path,
+        dll_path=dll_path,
+        merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
+            cases, db_path, ref),
+        classifiers_factory=get_test_case_classifier_factory(
+            cases, classifier_name))
+
+    n_stands = len(cases)
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
         n_stands, pool_codes)
@@ -286,13 +250,15 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     cbm_vars = cbm_variables.initialize_cbm_variables(
         n_stands=n_stands,
         pools=spinup_vars.pools,
-        flux=cbm_variables.initialize_flux(n_stands, flux_indicators)
+        flux=cbm_variables.initialize_flux(n_stands, flux_indicators),
+        state=cbm_variables.initialize_cbm_state_variables(n_stands)
     )
 
-    enabled = np.ones(n_stands, dtype=np.int32)
+    cbm_params = cbm_variables.initialize_cbm_parameters(
+        n_stands=n_stands)
 
-    pool_result = pd.DataFrame()
-    flux_result = pd.DataFrame()
+    inventory = initialize_inventory(
+        n_stands, cbm, cases, classifier_name, ref)
 
     spinup_debug_output = cbm.spinup(
         inventory=inventory,
@@ -301,79 +267,46 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
         debug=spinup_debug
     )
 
-    cbm.init(inventory, cbm_variables)
+    cbm.init(
+        inventory=inventory,
+        variables=cbm_variables)
 
-    pool_result = append_pools_data(
-        pool_result, n_stands, 0, pools, pool_codes)
+    # the following 3 variables store timestep by timestep results for
+    # pools, flux and state variables
+    pool_result = None
+    flux_result = None
+    state_variable_result = None
 
-    state_variable_result = pd.DataFrame(data={
-        "identifier": [
-            casegeneration.get_classifier_value_name(x)
-            for x in range(1, n_stands + 1)],
-        "timestep": 0,
-        "age": age,
-        "land_class": land_class,
-        "last_disturbance_type": last_disturbance_type,
-        "time_since_last_disturbance": time_since_last_disturbance,
-        "time_since_land_class_change": time_since_land_class_change,
-        "growth_enabled": growth_enabled,
-        "growth_multiplier": growth_multipliers,
-        "regeneration_delay": regeneration_delay,
-        "disturbance_type": disturbance_types,
-        "enabled": enabled
-        })
+    pool_result = cbm_variables.append_simulation_result(
+        pool_result, cbm_vars.pools, 0)
+
+    state_variable_result = cbm_variables.append_simulation_result(
+        state_variable_result, cbm_vars.state, 0)
 
     disturbances = get_disturbances(cases, ref)
 
     for t in range(1, n_steps+1):
 
         # clear the disturbance events for this timestep
-        disturbance_types = disturbance_types * 0
+        cbm_params.disturbance_type *= 0
 
         # fetch the disturbance events for each index for this timestep
         for k, v in disturbances.items():
             if t in v:
-                disturbance_types[k] = v[t]
+                cbm_params.disturbance_type[k] = v[t]
 
         cbm.step(
-            pools=pools,
-            flux=flux,
-            classifiers=classifiers,
-            age=age,
-            disturbance_type=disturbance_types,
-            spatial_unit=spatial_units,
-            mean_annual_temp=None,
-            transition_rule_id=transition_rules,
-            last_disturbance_type=last_disturbance_type,
-            time_since_last_disturbance=time_since_last_disturbance,
-            time_since_land_class_change=time_since_land_class_change,
-            growth_enabled=growth_enabled,
-            enabled=enabled,
-            land_class=land_class,
-            growth_multiplier=growth_multipliers,
-            regeneration_delay=regeneration_delay)
+            inventory=inventory,
+            variables=cbm_vars,
+            parameters=cbm_params
+        )
 
-        pool_result = append_pools_data(
-            pool_result, n_stands, t, pools, pool_codes)
-        flux_result = append_flux_data(
-            flux_result, n_stands, t, flux, flux_indicators)
-        state_variable_result = state_variable_result.append(
-            pd.DataFrame(data={
-                "identifier": [
-                    casegeneration.get_classifier_value_name(x)
-                    for x in range(1, n_stands+1)],
-                "timestep": t,
-                "age": age,
-                "land_class": land_class,
-                "last_disturbance_type": last_disturbance_type,
-                "time_since_last_disturbance": time_since_last_disturbance,
-                "time_since_land_class_change": time_since_land_class_change,
-                "growth_enabled": growth_enabled,
-                "growth_multiplier": growth_multipliers,
-                "regeneration_delay": regeneration_delay,
-                "disturbance_type": disturbance_types,
-                "enabled": enabled
-            }))
+        pool_result = cbm_variables.append_simulation_result(
+            pool_result, cbm_vars.pools, t)
+        flux_result = cbm_variables.append_simulation_result(
+            flux_result, cbm_vars.flux, t)
+        state_variable_result = cbm_variables.append_simulation_result(
+            state_variable_result, cbm_vars.state, t)
 
     return {
         "pools": pool_result,

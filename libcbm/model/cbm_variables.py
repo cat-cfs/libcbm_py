@@ -29,6 +29,31 @@ def promote_scalar(value, size, dtype):
 
 
 def append_simulation_result(simulation_result, timestep_data, timestep):
+    """Append the specified timestep data to a simulation result spanning
+        multiple time steps
+
+    Arguments:
+        simulation_result {pandas.DataFrame} -- a dataframe storing the
+            simulation results.  If this parameter is None a new dataframe
+            will be created with the single timestep as the contents.
+        timestep_data {pandas.DataFrame} -- a dataframe storing a single
+            timestep result
+        timestep {int} -- an integer which will be added to the data appended
+            to the larger simulation result in the "timestep" column
+
+    Returns:
+        pandas.DataFrame -- The simulation result with the specified timestep
+            data appended
+    """
+    ts = timestep_data.copy()
+    ts.reset_index()  # adds a column "index"
+    ts.insert(loc=0, column="timestep", value=timestep)
+    if simulation_result is None:
+        simulation_result = ts
+    else:
+        simulation_result.append(ts)
+    return simulation_result
+
 
 def initialize_pools(n_stands, pool_codes):
     return pd.DataFrame(
@@ -134,56 +159,3 @@ def initialize_inventory(n_stands, classifiers, inventory):
             ))
     i.inventory = inventory
     return i
-
-
-def initialize(inventory, n_stands, n_pools, n_flux_indicators, n_classifiers):
-    """Format and allocate variable compatible with simulation
-    functions in libcbm.model.cbm
-
-    Arguments:
-        inventory {pandas.DataFrame} -- A dataframe with n rows equal to the
-            value of the n_stands parameter, contains constant values which
-            define the initial state of CBM simulation
-        n_stands {int} -- the number of stands in the resulting dataset
-        n_pools {int} -- the number of pools
-        n_flux_indicators {int} -- the number of flux indicators
-        n_classifiers {int} -- the number of inventory classifiers
-
-    Returns:
-        dict -- dictionary containing numpy and DataFrame variables
-    """
-    if not inventory:
-        # if not user specified, allocate inventory with default values
-        inventory = pd.DataFrame({
-            # simulation constant variables
-            "area": np.ones(n_stands, dtype=np.float),
-            "age": np.zeros(n_stands, dtype=np.int32),
-            "spatial_units": np.zeros(n_stands, dtype=np.int32),
-            "afforestation_pre_type_id": np.zeros(n_stands, dtype=np.int32),
-            "land_class": np.ones(n_stands, dtype=np.int32),
-            "historic_disturbance_type": np.zeros(n_stands, dtype=np.int32),
-            "last_pass_disturbance_type": np.zeros(n_stands, dtype=np.int32),
-            "delay": np.zeros(n_stands, dtype=np.int32),
-        })
-    working_variables = {
-        "age": np.zeros(n_stands, dtype=np.int32),
-        "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
-        "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
-        "time_since_land_class_change": np.zeros(n_stands, dtype=np.int32),
-        "growth_multipliers": np.ones(n_stands, dtype=np.float),
-        "regeneration_delay": np.zeros(n_stands, dtype=np.int32),
-        "disturbance_types": np.zeros(n_stands, dtype=np.int32),
-        "transition_rules": np.zeros(n_stands, dtype=np.int32),
-        "growth_enabled": np.zeros(n_stands, dtype=np.int32),
-        "enabled": np.ones(n_stands, dtype=np.int32)
-    }
-    classifiers = np.zeros((n_stands, n_classifiers))
-    pools = np.zeros((n_stands, n_pools))
-    flux = np.zeros((n_stands, n_flux_indicators))
-    return {
-        "inventory": inventory,
-        "working_variables": working_variables,
-        "classifiers": classifiers,
-        "pools": pools,
-        "flux": flux
-    }
