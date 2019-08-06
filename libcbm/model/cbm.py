@@ -67,78 +67,22 @@ class CBM:
 
     def spinup(self, inventory, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
-        initializing the specified carbon pools.  Each parameter has a first
-        dimension of n_stands, with the exception of debug which is a bool.
+        initializing the specified variables.
 
-        All ndarray parameters must have the ndarray.flags property set with
-        the C_CONTIGUOUS attribute.
-
-        Setting debug to true will return for each stand the time series of
-        selected state variables used in the spinup procedure. has a
-        significant negative impact on both CPU and memory performance.
-
-        The only parameter modified by this function is "pools".
-
-        All parameters other than pools and classifiers are subject to
-        promotion, meaning if a scalar value is provided, that value will be
-        repeated in a vector of length n_stands
+        See libcbm.model.cbm_variables for creating this function's
+        parameters.
 
         Arguments:
-            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools)
-                this paramater is assigned the result of CBM carbon pool
-                spinup
-            classifiers {ndarray} -- an int matrix of shape
-                (n_stands, n_classifiers) Values are classifiers value ids
-                referencing the classifier values stored in model parameters
-                and configuration
-            inventory_age {ndarray} or {int} -- int or int vector of length
-                n_stands. Each value represents the age of a stand at the
-                outset of CBM simulation.
-            spatial_unit {ndarray} or {int} -- const, promotable int or int
-                vector of length n_stands. Each value represent a key
-                associated with several parameters stored in model parameters
-                and configuration.
-            afforestation_pre_type_id {ndarray} or {int} -- int or int vector
-                of length n_stands. Each > zero value represents a key to a
-                non-forest pre type, meaning the stand has pre-defined
-                dead-organic-matter pools and will not be simulated by the
-                spinup function. Zero or negative values represent a null
-                pre-type and spinup will run.
-            historic_disturbance_type {ndarray} or {int} -- int or int vector
-                of length n_stands.  The disturbance type id used for each
-                historical disturbance rotation in the spinup procedure.
-            last_pass_disturbance_type {ndarray} or {int} -- int or int vector
-                of length n_stands.  The disturbance type id used for the final
-                disturbance in the spinup procedure.
-            delay {ndarray} or {int} -- int or int vector of length n_stands.
-                For stands deforested by the last pass disturbance type, this
-                value indicates the number of years prior to the outset of
-                CBM simulation that pass since the deforestation event in the
-                spinup routine.
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+            variables {object} -- spinup working variables
+            parameters {object} -- spinup parameters
 
         Keyword Arguments:
-            return_interval {ndarray} or {int} -- int or int vector
-                of length n_stands. If specified, it defines the number of
-                years in each historical disturbance rotation.
-                (default: {None})
-            min_rotations {ndarray} or {int} -- int or int vector
-                of length n_stands. If specified, it defines the minimum number
-                of historical rotations to perform. If unspecified a default
-                value stored in the model parameters and configuration will be
-                used. (default: {None})
-            max_rotations {ndarray} or {int} -- int or int vector
-                of length n_stands. If specified, it defines the maximum number
-                of historical rotations to perform. If unspecified a default
-                value stored in the model parameters and configuration will be
-                used. (default: {None})
-            mean_annual_temp  {ndarray} or {float64} -- float64 or float64
-                vector of length n_stands.  If specified defines the mean
-                annual temperature used in the spinup procedure.  If
-                unspecified a default value stored in the model parameters and
-                configuration will be used. (default: {None})
             debug {bool} -- if true this function will return a pandas
                 dataframe of selected spinup state variables.
                 (default: {False})
+
         Returns:
             pandas.DataFrame or None -- returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
@@ -223,76 +167,20 @@ class CBM:
         return debug_output
 
     def init(self, inventory, variables):
-        """Set the initial state of CBM variables after spinup and prior to
-        starting CBM simulation.
+        """Set the initial state of CBM variables after spinup and prior
+        to starting CBM simulation
 
-        Several variables reference the "model parameters and configuration"
-        which are passed to the LibCBMWrapper initialization methods.
-
-        All ndarray parameters must have the ndarray.flags property set with
-        the C_CONTIGUOUS attribute.
-
-        In the following documentation
-         - "const" indicates a parameter will not be modified by this function
-         - "promotable" indicates if a scalar value is passed it will be
-           repeated in a vector of length n_stands
+        See libcbm.model.cbm_variables for creating this function's
+        parameters.
 
         Arguments:
-            last_pass_disturbance_type {ndarray} -- const, promotable int, or
-                int vector of length n_stands. Defines the most recent
-                disturbance that occurred in CBM. In the case that this
-                disturbance is a deforestation type, the initial landclass
-                will be set by this method.
-            delay {ndarray} -- const, promotable int, or int vector of length
-                n_stands.  The number of timesteps that have elapsed since a
-                deforestation event occurred, since certain land classes expire
-                after a timestep limit, this is used to walk through the
-                transitional landclasses and arrive at the initial UNFCCC land
-                class state.
-            inventory_age {ndarray} -- const, promotable int, or int vector of
-                length n_stands.  The number of timesteps that have elapsed
-                since a non-deforestation last pass disturbance type has
-                occurred.  Used to assign the initial inventory age.
-            spatial_unit {ndarray} or {int} -- const, promotable int or int
-                vector of length n_stands. Each value represent a key
-                associated with several parameters stored in model parameters
-                and configuration.
-            afforestation_pre_type_id {ndarray} -- const, promotable int, or
-                int vector of length n_stands.  When set to a valid
-                afforestation pre-type, the last pass disturbance type is
-                ignored, and the initial pool values are set by this method.
-                The enabled flag is also set to 0, meaning that at the start
-                of CBM simulation, the stand will not be simulated, until an
-                afforestation event occurs.
-            pools {ndarray} -- a float64 matrix of shape (n_stands, n_pools)
-                this paramater is assigned by this method when
-                afforestation_pre_type_id is > 0
-            last_disturbance_type {ndarray} -- int vector of length
-                n_stands. Set to the last_pass_disturbance_type.
-            time_since_last_disturbance {ndarray} -- int vector of length
-                n_stands. Set based on the inventory_age or delay values to
-                the number of timesteps since a disturbance last occurred.
-            time_since_land_class_change {ndarray} -- int vector of length
-                n_stands. Set to the number of timesteps since a land-class
-                changing disturbance event (if any) occurred, and otherwise 0.
-            growth_enabled {ndarray} -- int vector of length n_stands. Assigned
-                based on the value of last_disturbance_type. For example in the
-                case of deforestation, this will be set to 0.
-            enabled {ndarray} -- int vector of length n_stands. Assigned for
-                cases where no CBM simulation should occur. For example for
-                peatlands or pre-afforestation land this will be set to 0.
-            land_class {ndarray} -- int vector of length n_stands. Set to the
-                deforestation related land class id, if a deforestation
-                disturbance type id is used, and otherwise not modified by
-                this function.
-            age {ndarray} -- int vector of length n_stands. Set to the
-                inventory_age value, unless last_disturbance_type is a
-                deforestation type, or afforestation_pre_type_id is a valid
-                afforestation pre-type-id.  In these deforestation or
-                afforestation cases a non-zero inventory_age also triggers an
-                error.
+            inventory {object} -- Read-only data comprised of classifier sets
+                and cbm inventory data
+            variables {object} -- simulation variables for:
+                - pool variables
+                - flux variables
+                - state variables
         """
-
         self.dll.InitializeLandState(
             inventory.last_pass_disturbance_type, inventory.delay,
             inventory.age, inventory.spatial_unit,
@@ -307,11 +195,23 @@ class CBM:
         """Advances the specified CBM variables through one time step of CBM
         simulation.
 
+        See libcbm.model.cbm_variables for creating this function's
+        parameters.
 
         Arguments:
-            inventory {pandas.DataFrame} --
-            variables {[type]} -- [description]
-            parameters {[type]} -- [description]
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data.  Inventory data will not be modified
+                by this function, but classifier sets may be modified if
+                transition rules are used.
+            variables {object} -- simulation variables altered by this
+                function. Comprised of:
+                - pool variables
+                - flux variables
+                - state variables
+            parameters {object} -- read-only parameters used in a CBM timestep:
+                - disturbance types
+                - mean annual temperature
+                - transitions
         """
 
         variables.pools[:, 0] = 1.0

@@ -288,6 +288,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     disturbances = get_disturbances(cases, ref)
 
+    # run CBM for n_steps
     for t in range(1, n_steps+1):
 
         # clear the disturbance events for this timestep
