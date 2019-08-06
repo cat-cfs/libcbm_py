@@ -28,6 +28,8 @@ def promote_scalar(value, size, dtype):
         return np.ones(size, dtype=dtype) * value
 
 
+def append_simulation_result(simulation_result, timestep_data, timestep):
+
 def initialize_pools(n_stands, pool_codes):
     return pd.DataFrame(
         data=np.zeros(n_stands, len(pool_codes)),
@@ -82,19 +84,25 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
     return parameters
 
 
-def initialize_cbm_variables(n_stands, pools, flux):
+def initialize_cbm_state_variables(n_stands):
+    return pd.DataFrame({
+        "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
+        "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
+        "time_since_land_class_change": np.zeros(n_stands, dtype=np.int32),
+        "growth_enabled": np.zeros(n_stands, dtype=np.int32),
+        "enabled": np.ones(n_stands, dtype=np.int32),
+        "land_class": np.ones(n_stands, dtype=np.int32),
+        "age": np.zeros(n_stands, dtype=np.int32),
+        "growth_multiplier": np.ones(n_stands, dtype=np.float),
+        "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
+    })
+
+
+def initialize_cbm_variables(n_stands, pools, flux, state):
     variables = SimpleNamespace()
     variables.pools = pools
     variables.flux = flux
-    variables.last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
-    variables.time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
-    variables.time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
-    variables.growth_enabled = np.zeros(n_stands, dtype=np.int32)
-    variables.enabled = np.ones(n_stands, dtype=np.int32)
-    variables.land_class = np.ones(n_stands, dtype=np.int32)
-    variables.age = np.zeros(n_stands, dtype=np.int32)
-    variables.growth_multiplier = np.ones(n_stands, dtype=np.float)
-    variables.regeneration_delay = np.zeros(n_stands, dtype=np.int32)
+    variables.state = state
     return variables
 
 

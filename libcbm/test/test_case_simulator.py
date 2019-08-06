@@ -278,22 +278,16 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
             "delay": np.array([c["delay"] for c in cases], dtype=np.int32)
         }))
 
+    spinup_vars = cbm_variables.initialize_spinup_variables(
+        n_stands, pool_codes)
+
+    spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
+
     cbm_vars = cbm_variables.initialize_cbm_variables(
         n_stands=n_stands,
-        pools=cbm_variables.initialize_pools(n_stands, pool_codes),
+        pools=spinup_vars.pools,
         flux=cbm_variables.initialize_flux(n_stands, flux_indicators)
     )
-    last_disturbance_type = np.zeros(n_stands, dtype=np.int32)
-    time_since_last_disturbance = np.zeros(n_stands, dtype=np.int32)
-    time_since_land_class_change = np.zeros(n_stands, dtype=np.int32)
-    growth_enabled = np.zeros(n_stands, dtype=np.int32)
-
-    age = np.zeros(n_stands, dtype=np.int32)
-    growth_multipliers = np.ones(n_stands, dtype=np.float)
-    regeneration_delay = np.zeros(n_stands, dtype=np.int32)
-    disturbance_types = np.zeros(n_stands, dtype=np.int32)
-    transition_rules = np.zeros(n_stands, dtype=np.int32)
-
 
     enabled = np.ones(n_stands, dtype=np.int32)
 
@@ -302,25 +296,12 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     spinup_debug_output = cbm.spinup(
         inventory=inventory,
-        variables=spinup
+        variables=spinup_vars,
+        parameters=spinup_params,
+        debug=spinup_debug
     )
 
-        debug=spinup_debug)
-
-    cbm.init(
-        last_pass_disturbance_type=last_pass_disturbance_type,
-        delay=delay,
-        inventory_age=inventory_age,
-        spatial_unit=spatial_units,
-        afforestation_pre_type_id=afforestation_pre_type_id,
-        pools=pools,
-        last_disturbance_type=last_disturbance_type,
-        time_since_last_disturbance=time_since_last_disturbance,
-        time_since_land_class_change=time_since_land_class_change,
-        growth_enabled=growth_enabled,
-        enabled=enabled,
-        land_class=land_class,
-        age=age)
+    cbm.init(inventory, cbm_variables)
 
     pool_result = append_pools_data(
         pool_result, n_stands, 0, pools, pool_codes)

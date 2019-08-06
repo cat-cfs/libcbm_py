@@ -297,10 +297,10 @@ class CBM:
             inventory.last_pass_disturbance_type, inventory.delay,
             inventory.age, inventory.spatial_unit,
             inventory.afforestation_pre_type_id, variables.pools,
-            variables.last_disturbance_type,
-            variables.time_since_last_disturbance,
-            variables.time_since_land_class_change, variables.growth_enabled,
-            variables.enabled, variables.land_class, variables.age)
+            variables.state.last_disturbance_type,
+            variables.state.time_since_last_disturbance,
+            variables.state.time_since_land_class_change, variables.state.growth_enabled,
+            variables.state.enabled, variables.state.land_class, variables.state.age)
 
     def step(self, inventory, variables, parameters):
         """Advances the specified arguments through one time step of CBM
@@ -394,11 +394,12 @@ class CBM:
         self.dll.AdvanceStandState(
             inventory.classifiers, inventory.spatial_unit,
             parameters.disturbance_type, parameters.transition_rule_id,
-            variables.last_disturbance_type,
-            variables.time_since_last_disturbance,
-            variables.time_since_land_class_change, variables.growth_enabled,
-            variables.enabled, variables.land_class,
-            variables.regeneration_delay, variables.age)
+            variables.state.last_disturbance_type,
+            variables.state.time_since_last_disturbance,
+            variables.state.time_since_land_class_change,
+            variables.state.growth_enabled, variables.state.enabled,
+            variables.state.land_class, variables.state.regeneration_delay,
+            variables.state.age)
 
         self.dll.GetDisturbanceOps(
             ops["disturbance"], inventory.spatial_unit,
@@ -414,10 +415,10 @@ class CBM:
 
         self.dll.GetMerchVolumeGrowthOps(
             ops["growth"], inventory.classifiers, inventory.pools,
-            variables.age, inventory.spatial_unit,
-            variables.last_disturbance_type,
-            variables.time_since_last_disturbance,
-            variables.growth_multiplier, variables.growth_enabled)
+            variables.state.age, inventory.spatial_unit,
+            variables.state.last_disturbance_type,
+            variables.state.time_since_last_disturbance,
+            variables.state.growth_multiplier, variables.state.growth_enabled)
 
         self.dll.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"],
@@ -430,11 +431,11 @@ class CBM:
         self.dll.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
-            variables.pools, variables.flux, variables.enabled)
+            variables.pools, variables.flux, variables.state.enabled)
 
         self.dll.EndStep(
-            variables.age, variables.regeneration_delay,
-            variables.growth_enabled)
+            variables.state.age, variables.state.regeneration_delay,
+            variables.state.growth_enabled)
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
