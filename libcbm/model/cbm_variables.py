@@ -70,6 +70,12 @@ def initialize_spinup_variables(n_stands, pools):
     return variables
 
 
+def initialize_cbm_variables(n_stands, pools, flux):
+    variables = SimpleNamespace()
+
+    return variables
+
+
 def initialize_classifiers(n_stands, classifier_names):
     pd.DataFrame(
         data=np.zeros(n_stands, len(classifier_names)),

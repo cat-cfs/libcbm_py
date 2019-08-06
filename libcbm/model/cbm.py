@@ -66,7 +66,6 @@ class CBM:
         return cv["id"]
 
 
-
     def spinup(self, inventory, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified carbon pools.  Each parameter has a first
@@ -148,8 +147,6 @@ class CBM:
         variables.pools[:, 0] = 1.0
         n_stands = variables.pools.shape[0]
 
-
-
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
@@ -226,11 +223,12 @@ class CBM:
             self.dll.FreeOp(ops[x])
         return debug_output
 
-    def init(self, last_pass_disturbance_type, delay, inventory_age,
-             spatial_unit, afforestation_pre_type_id, pools,
-             last_disturbance_type, time_since_last_disturbance,
-             time_since_land_class_change, growth_enabled, enabled, land_class,
-             age):
+    def init(self, inventory, variables):
+        # last_pass_disturbance_type, delay, inventory_age,
+        #         spatial_unit, afforestation_pre_type_id, pools,
+        #         last_disturbance_type, time_since_last_disturbance,
+        #         time_since_land_class_change, growth_enabled, enabled, land_class,
+        #         age):
         """Set the initial state of CBM variables after spinup and prior to
         starting CBM simulation.
 
@@ -301,29 +299,17 @@ class CBM:
                 error.
         """
 
-        n_stands = pools.shape[0]
-
-        last_pass_disturbance_type = self.promote_scalar(
-            last_pass_disturbance_type, n_stands, dtype=np.int32)
-        delay = self.promote_scalar(delay, n_stands, dtype=np.int32)
-        inventory_age = self.promote_scalar(
-            inventory_age, n_stands, dtype=np.int32)
-        spatial_unit = self.promote_scalar(
-            spatial_unit, n_stands, dtype=np.int32)
-        afforestation_pre_type_id = self.promote_scalar(
-            afforestation_pre_type_id, n_stands, dtype=np.int32)
-
         self.dll.InitializeLandState(
-            last_pass_disturbance_type, delay, inventory_age, spatial_unit,
-            afforestation_pre_type_id, pools, last_disturbance_type,
-            time_since_last_disturbance, time_since_land_class_change,
-            growth_enabled, enabled, land_class, age)
+            inventory.last_pass_disturbance_type, inventory.delay,
+            inventory.age, inventory.spatial_unit,
+            inventory.afforestation_pre_type_id, variables.pools,
+            variables.last_disturbance_type,
+            variables.time_since_last_disturbance,
+            variables.time_since_land_class_change, variables.growth_enabled,
+            variables.enabled, variables.land_class, variables.age)
 
-    def step(self, pools, flux, classifiers, age, disturbance_type,
-             spatial_unit, mean_annual_temp, transition_rule_id,
-             last_disturbance_type, time_since_last_disturbance,
-             time_since_land_class_change, growth_enabled, enabled, land_class,
-             growth_multiplier, regeneration_delay):
+
+    def step(self, inventory, variables, parameters):
         """Advances the specified arguments through one time step of CBM
         simulation.
 
@@ -396,20 +382,9 @@ class CBM:
                 transition rule occurs, and also decremented by this method.
         """
 
-        pools[:, 0] = 1.0
-        flux *= 0.0
-        n_stands = pools.shape[0]
-
-        spatial_unit = self.promote_scalar(
-            spatial_unit, n_stands, dtype=np.int32)
-        mean_annual_temp = self.promote_scalar(
-            mean_annual_temp, n_stands, dtype=np.int32)
-        disturbance_type = self.promote_scalar(
-            disturbance_type, n_stands, dtype=np.int32)
-        transition_rule_id = self.promote_scalar(
-            transition_rule_id, n_stands, dtype=np.int32)
-        growth_multiplier = self.promote_scalar(
-            growth_multiplier, n_stands, dtype=np.float)
+        variables.pools[:, 0] = 1.0
+        variables.flux *= 0.0
+        n_stands = variables.pools.shape[0]
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
@@ -424,17 +399,21 @@ class CBM:
             ]
 
         self.dll.AdvanceStandState(
-            classifiers, spatial_unit, disturbance_type, transition_rule_id,
-            last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled, land_class,
-            regeneration_delay, age)
+            inventory.classifiers, inventory.spatial_unit,
+            parameters.disturbance_type, parameters.transition_rule_id,
+            variables.last_disturbance_type,
+            variables.time_since_last_disturbance,
+            variables.time_since_land_class_change, variables.growth_enabled,
+            variables.enabled, variables.land_class,
+            variables.regeneration_delay, variables.age)
 
         self.dll.GetDisturbanceOps(
-            ops["disturbance"], spatial_unit, disturbance_type)
+            ops["disturbance"], inventory.spatial_unit,
+            parameters.disturbance_type)
 
         self.dll.ComputeFlux(
-            [ops["disturbance"]], [self.opProcesses["disturbance"]], pools,
-            flux, enabled=None)
+            [ops["disturbance"]], [self.opProcesses["disturbance"]],
+            variables.pools, variables.flux, enabled=None)
         # enabled = none on line above is due to a possible bug in CBM3. This
         # is very much an edge case:
         # stands can be disturbed despite having other C-dynamics processes
@@ -442,22 +421,28 @@ class CBM:
         # landclasses)
 
         self.dll.GetMerchVolumeGrowthOps(
-            ops["growth"], classifiers, pools, age, spatial_unit,
-            last_disturbance_type, time_since_last_disturbance,
-            growth_multiplier, growth_enabled)
+            ops["growth"], inventory.classifiers, inventory.pools,
+            variables.age, inventory.spatial_unit,
+            variables.last_disturbance_type,
+            variables.time_since_last_disturbance,
+            variables.growth_multiplier, variables.growth_enabled)
 
         self.dll.GetTurnoverOps(
-            ops["snag_turnover"], ops["biomass_turnover"], spatial_unit)
+            ops["snag_turnover"], ops["biomass_turnover"],
+            inventory.spatial_unit)
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            spatial_unit, mean_annual_temp)
+            inventory.spatial_unit, parameters.mean_annual_temp)
 
         self.dll.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
-            [self.opProcesses[x] for x in annual_process_opSchedule], pools,
-            flux, enabled)
+            [self.opProcesses[x] for x in annual_process_opSchedule],
+            variables.pools, variables.flux, variables.enabled)
 
-        self.dll.EndStep(age, regeneration_delay, growth_enabled)
+        self.dll.EndStep(
+            variables.age, variables.regeneration_delay,
+            variables.growth_enabled)
+
         for x in self.opNames:
             self.dll.FreeOp(ops[x])
