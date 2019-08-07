@@ -657,14 +657,30 @@ class LibCBMWrapper(LibCBM_ctypes):
         """[summary]
 
         Arguments:
-            growth_op {[type]} -- [description]
-            inventory {[type]} -- [description]
-            pools {[type]} -- [description]
-            state_variables {[type]} -- [description]
+            growth_op {int} -- handle for a block of matrices to store merch
+                growth operations as allocated by the AllocateOp function
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Used by this function to find correct
+                growth parameters, and to find a yield curve associated with
+                inventory classifier sets. Will not be modified by this
+                function. See: libcbm.model.cbm_variables.initialize_inventory
+                for a compatible definition
+            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                n_stands by n_pools. Used by this function to compute a root
+                increment, and also to limit negative growth increments such
+                that a negative biomass pools are prevented.  This parameter
+                is not modified by this function.
+            state_variables {pandas.DataFrame} -- simulation variables which
+                define all non-pool state in the CBM model.  This function
+                call will not alter this parameter.
+                libcbm.model.cbm_variables.initialize_cbm_state_variables for
+                a compatible definition
 
         Raises:
-            AssertionError: [description]
-            RuntimeError: [description]
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
         """
         if not self.handle:
             raise AssertionError("dll not initialized")
