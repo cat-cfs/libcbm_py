@@ -258,7 +258,7 @@ class LibCBM_ctypes():
             ctypes.c_size_t,  # n stands
             # spatial unit id (nullable, length n_stands)
             ctypes.POINTER(ctypes.c_int),
-            # use historic mean annual temperature (scalar)
+            # use historical mean annual temperature (scalar)
             ctypes.c_bool,
             # mean annual temp (nullable, length n_stands)
             ctypes.POINTER(ctypes.c_double)

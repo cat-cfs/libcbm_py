@@ -91,7 +91,6 @@ class CBM:
                 debug is set to true, and None otherwise.
         """
 
-        pools[:, 0] = 1.0
         n_stands = pools.shape[0]
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
@@ -101,7 +100,7 @@ class CBM:
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            inventory.spatial_unit, True, parameters.mean_annual_temp)
+            inventory, parameters, historical_mean_annual_temp=True)
 
         opSchedule = [
             "growth",
@@ -127,12 +126,7 @@ class CBM:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory, variables.pools,
-                SimpleNamespace(**{
-
-                }))
-                #pools, variables.age, inventory.spatial_unit,
-                #None, None, None, variables.growth_enabled)
+                ops["growth"], inventory, variables.pools, variables)
 
             self.dll.GetDisturbanceOps(
                 ops["disturbance"], inventory, variables)
@@ -141,10 +135,7 @@ class CBM:
                 [ops[x] for x in opSchedule], pools,
                 variables.enabled)
 
-            self.dll.EndSpinupStep(
-                variables.spinup_state, pools,
-                variables.disturbance_type, variables.age,
-                variables.slow_pools, variables.growth_enabled)
+            self.dll.EndSpinupStep(pools, variables)
 
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
@@ -193,22 +184,21 @@ class CBM:
         parameters.
 
         Arguments:
-            inventory {object} -- Data comprised of classifier sets
+            inventory {pandas.DataFrame} -- Data comprised of classifier sets
                 and cbm inventory data.  Inventory data will not be modified
                 by this function, but classifier sets may be modified if
                 transition rules are used.
-            variables {object} -- simulation variables altered by this
-                function. Comprised of:
-                - pool variables
-                - flux variables
-                - state variables
+            pools {pandas.DataFrame or numpy.ndarray} -- ...
+            flux {pandas.DataFrame or numpy.ndarray} -- ...
+            state_variables {pandas.DataFrame} -- simulation variables which
+                define all non-pool state in the CBM model.  Altered by this
+                function call.
             parameters {object} -- read-only parameters used in a CBM timestep:
                 - disturbance types
                 - mean annual temperature
                 - transitions
         """
 
-        pools[:, 0] = 1.0
         flux *= 0.0
         n_stands = pools.shape[0]
 
@@ -224,7 +214,7 @@ class CBM:
             "slow_mixing"
             ]
 
-        self.dll.AdvanceStandState(inventory, variables.state, parameters)
+        self.dll.AdvanceStandState(inventory, state_variables, parameters)
 
         self.dll.GetDisturbanceOps(
             ops["disturbance"], inventory, parameters)
@@ -239,28 +229,22 @@ class CBM:
         # disabled (which happens in peatland)
 
         self.dll.GetMerchVolumeGrowthOps(
-            ops["growth"], inventory.classifiers.values, pools,
-            variables.state.age.values, inventory.spatial_unit,
-            variables.state.last_disturbance_type.values,
-            variables.state.time_since_last_disturbance.values,
-            variables.state.growth_multiplier.values, variables.state.growth_enabled.values)
+            ops["growth"], inventory, pools, state_variables)
 
         self.dll.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"],
-            inventory.spatial_unit)
+            inventory)
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            inventory.spatial_unit, parameters.mean_annual_temp)
+            inventory, parameters)
 
         self.dll.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
-            pools, flux, variables.state.enabled.values)
+            pools, flux, state_variables.enabled)
 
-        self.dll.EndStep(
-            variables.state.age.values, variables.state.regeneration_delay.values,
-            variables.state.growth_enabled.values)
+        self.dll.EndStep(state_variables)
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])

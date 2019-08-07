@@ -290,7 +290,7 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise AssertionError("dll not initialized")
 
         n_ops = len(ops)
-        poolMat = LibCBM_Matrix(pools)
+        poolMat = LibCBM_Matrix(get_ndarray(pools))
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
@@ -340,8 +340,13 @@ class LibCBMWrapper(LibCBM_ctypes):
         n_ops = len(ops)
         if len(op_processes) != n_ops:
             raise ValueError("ops and op_processes must be of equal length")
-        poolMat = LibCBM_Matrix(pools)
-        fluxMat = LibCBM_Matrix(flux)
+        poolMat = LibCBM_Matrix(get_ndarray(pools))
+        f = get_ndarray(flux)
+
+        f *= 0  # Initialize the flux result to 0.
+        # TODO: move this into the lower level code
+
+        fluxMat = LibCBM_Matrix(get_ndarray(flux))
 
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
@@ -467,13 +472,14 @@ class LibCBMWrapper(LibCBM_ctypes):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def EndStep(self, age, regeneration_delay, enabled):
+    def EndStep(self, state_variables):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        n = age.shape[0]
+        v = unpack_ndarrays(state_variables)
+        n = v.age.shape[0]
         self._dll.LibCBM_EndStep(
-            ctypes.byref(self.err), self.handle, n, age, regeneration_delay,
-            enabled)
+            ctypes.byref(self.err), self.handle, n, v.age,
+            v.regeneration_delay, v.enabled)
 
     def InitializeLandState(self, inventory, pools, state_variables):
 
@@ -520,15 +526,15 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         return n_finished
 
-    def EndSpinupStep(self, state, pools, disturbance_type, age, slowPools,
-                      growth_enabled):
+    def EndSpinupStep(self, pools, variables):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        n = age.shape[0]
+        v = unpack_ndarrays(variables)
+        n = v.age.shape[0]
         poolMat = LibCBM_Matrix(pools)
         self._dll.LibCBM_EndSpinupStep(
-            ctypes.byref(self.err), self.handle, n, state, poolMat,
-            disturbance_type, age, slowPools, growth_enabled)
+            ctypes.byref(self.err), self.handle, n, v.spinup_state, poolMat,
+            v.disturbance_type, v.age, v.slowPools, v.growth_enabled)
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
@@ -546,7 +552,8 @@ class LibCBMWrapper(LibCBM_ctypes):
             ctypes.byref(self.err), self.handle, opIds, n, classifiersMat,
             poolMat, v.age, i.spatial_unit,
             get_nullable_ndarray(v.last_disturbance_type, type=ctypes.c_int),
-            get_nullable_ndarray(v.time_since_last_disturbance, type=ctypes.c_int),
+            get_nullable_ndarray(
+                v.time_since_last_disturbance, type=ctypes.c_int),
             get_nullable_ndarray(v.growth_multiplier, type=ctypes.c_double),
             get_nullable_ndarray(v.growth_enabled, type=ctypes.c_int))
 
@@ -554,32 +561,34 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise RuntimeError(self.err.getErrorMessage())
 
     def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
-                       spatial_units):
+                       inventory):
         if not self.handle:
             raise AssertionError("dll not initialized")
-
-        n = spatial_units.shape[0]
+        i = unpack_ndarrays(inventory)
+        n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (2))(
             *[biomass_turnover_op, snag_turnover_op])
 
         self._dll.LibCBM_GetTurnoverOps(
-            ctypes.byref(self.err), self.handle, opIds, n, spatial_units)
+            ctypes.byref(self.err), self.handle, opIds, n, i.spatial_unit)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
     def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
-                    spatial_units, historic_mean_annual_temp=False,
-                    mean_annual_temp=None):
+                    inventory, parameters, historical_mean_annual_temp=False):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        n = spatial_units.shape[0]
+        i = unpack_ndarrays(inventory)
+        p = unpack_ndarrays(parameters)
+        n = i.spatial_units.shape[0]
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(
             ctypes.byref(self.err), self.handle, opIds, n,
-            get_nullable_ndarray(spatial_units, ctypes.c_int),
-            historic_mean_annual_temp, get_nullable_ndarray(mean_annual_temp))
+            get_nullable_ndarray(i.spatial_units, ctypes.c_int),
+            historical_mean_annual_temp,
+            get_nullable_ndarray(p.mean_annual_temp))
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 

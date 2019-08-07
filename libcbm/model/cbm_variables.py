@@ -70,9 +70,16 @@ def initialize_pools(n_stands, pool_codes):
     Returns:
         pandas.DataFrame -- A dataframe for storing CBM pools
     """
-    return pd.DataFrame(
+    pools = pd.DataFrame(
         data=np.zeros((n_stands, len(pool_codes))),
         columns=pool_codes)
+
+    # By convention the libcbm CBM implementation uses an input pool at
+    # index 0 whose value is always 1.0.
+    # TODO: move this into the lower level code, since it is a model behaviour
+    pools["input"] = 1.0
+
+    return pools
 
 
 def initialize_flux(n_stands, flux_indicator_codes):
@@ -168,7 +175,7 @@ def initialize_spinup_variables(n_stands):
     variables.growth_enabled = np.ones(n_stands, dtype=np.int32)
 
     # these variables are not used during spinup, but are needed
-    # for CBM functions, and will be passed as nulls
+    # for CBM function signatures, and will be passed as nulls
     variables.last_disturbance_type = None
     variables.time_since_last_disturbance = None
     variables.growth_multiplier = None

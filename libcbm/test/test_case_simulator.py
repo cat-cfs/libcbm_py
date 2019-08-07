@@ -248,13 +248,13 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     n_stands = len(cases)
     pools = cbm_variables.initialize_pools(n_stands, pool_codes)
-    spinup_vars = cbm_variables.initialize_spinup_variables(
-        n_stands=n_stands)
+    flux = cbm_variables.initialize_flux(n_stands, flux_indicators)
 
+    spinup_vars = cbm_variables.initialize_spinup_variables(n_stands)
     spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
 
-    cbm_params = cbm_variables.initialize_cbm_parameters(
-        n_stands=n_stands)
+    cbm_params = cbm_variables.initialize_cbm_parameters(n_stands)
+    cbm_state = cbm_variables.initialize_cbm_state_variables(n_stands)
 
     inventory = initialize_inventory(
         cbm, cases, classifier_name, ref)
@@ -272,7 +272,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     cbm.init(
         inventory=inventory,
         pools=pools,
-        state_variables=cbm_vars)
+        state_variables=cbm_state)
 
     # the following 3 variables store timestep by timestep results for
     # pools, flux and state variables
@@ -281,10 +281,10 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     state_variable_result = None
 
     pool_result = cbm_variables.append_simulation_result(
-        pool_result, cbm_vars.pools, 0)
+        pool_result, pools, 0)
 
     state_variable_result = cbm_variables.append_simulation_result(
-        state_variable_result, cbm_vars.state, 0)
+        state_variable_result, cbm_state, 0)
 
     disturbances = get_disturbances(cases, ref)
 
@@ -300,17 +300,15 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
                 cbm_params.disturbance_type[k] = v[t]
 
         cbm.step(
-            inventory=inventory,
-            variables=cbm_vars,
-            parameters=cbm_params
-        )
+            inventory=inventory, pools=pools, flux=flux,
+            state_variables=cbm_state, parameters=cbm_params)
 
         pool_result = cbm_variables.append_simulation_result(
-            pool_result, cbm_vars.pools, t)
+            pool_result, pools, t)
         flux_result = cbm_variables.append_simulation_result(
-            flux_result, cbm_vars.flux, t)
+            flux_result, flux, t)
         state_variable_result = cbm_variables.append_simulation_result(
-            state_variable_result, cbm_vars.state, t)
+            state_variable_result, cbm_state, t)
 
     return {
         "pools": pool_result,
