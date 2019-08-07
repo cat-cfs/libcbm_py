@@ -475,23 +475,22 @@ class LibCBMWrapper(LibCBM_ctypes):
             ctypes.byref(self.err), self.handle, n, age, regeneration_delay,
             enabled)
 
-    def InitializeLandState(self, last_pass_disturbance, delay, initial_age,
-                            spatial_units, afforestation_pre_type_id, pools,
-                            last_disturbance_type, time_since_last_disturbance,
-                            time_since_land_class_change, growth_enabled,
-                            enabled, land_class, age):
+    def InitializeLandState(self, inventory, pools, state_variables):
 
         if not self.handle:
             raise AssertionError("dll not initialized")
 
-        n = last_pass_disturbance.shape[0]
-        poolMat = LibCBM_Matrix(pools)
+        i = unpack_ndarrays(inventory)
+        v = unpack_ndarrays(state_variables)
+        n = i.last_pass_disturbance_type.shape[0]
+        poolMat = LibCBM_Matrix(get_ndarray(pools))
+
         self._dll.LibCBM_InitializeLandState(
-            ctypes.byref(self.err), self.handle, n, last_pass_disturbance,
-            delay, initial_age, spatial_units, afforestation_pre_type_id,
-            poolMat, last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled, land_class,
-            age)
+            ctypes.byref(self.err), self.handle, n,
+            i.last_pass_disturbance_type, i.delay, i.age, i.spatial_unit,
+            i.afforestation_pre_type_id, poolMat, v.last_disturbance_type,
+            v.time_since_last_disturbance, v.time_since_land_class_change,
+            v.growth_enabled, v.enabled, v.land_class, v.age)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())

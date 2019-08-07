@@ -272,7 +272,6 @@ def initialize_cbm_variables(pools, flux, state):
 def initialize_inventory(classifiers, inventory):
     """creates input for libcbm.model.CBM functions
 
-
     Arguments:
         classifiers {pandas.DataFrame} -- dataframe of inventory classifier
             sets. Column names are the name of the classifiers, and values

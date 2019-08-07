@@ -175,14 +175,7 @@ class CBM:
                 - state variables
         """
         self.dll.InitializeLandState(
-            inventory.last_pass_disturbance_type, inventory.delay,
-            inventory.age, inventory.spatial_unit,
-            inventory.afforestation_pre_type_id, variables.pools.values,
-            variables.state.last_disturbance_type.values,
-            variables.state.time_since_last_disturbance.values,
-            variables.state.time_since_land_class_change.values,
-            variables.state.growth_enabled.values, variables.state.enabled.values,
-            variables.state.land_class.values, variables.state.age.values)
+            inventory, variables.pools, variables.state)
 
     def step(self, inventory, variables, parameters):
         """Advances the specified CBM variables through one time step of CBM
