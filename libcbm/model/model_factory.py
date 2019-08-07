@@ -1,5 +1,5 @@
 from libcbm.configuration import cbm_defaults
-from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 import json
 
 

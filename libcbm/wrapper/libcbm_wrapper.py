@@ -48,21 +48,25 @@ def get_ndarray(a):
     """Helper method to deal with numpy arrays stored in pandas objects.
     Returns specified value if it is already an np.ndarray instance, and
     otherwise gets a reference to the underlying numpy.ndarray storage
-    from a pandas.DataFrame or pandas.Series.
+    from a pandas.DataFrame or pandas.Series.  If None is specified, None is
+    returned.
 
     Arguments:
-        a {ndarray, pandas.DataFrame, or pandas.Series} -- data to potentially
-        convert to ndarray
+        a {None, ndarray, pandas.DataFrame, or pandas.Series} -- data to
+        potentially convert to ndarray
 
     Returns:
-        ndarray - an ndarray
+        ndarray, or None - an ndarray
     """
+    if a is None:
+        return None
     if isinstance(a, np.ndarray):
         return a
     elif isinstance(a, pd.DataFrame) or isinstance(a, pd.Series):
         return a.values
     else:
-        raise ValueError("Specified type not supported for conversion to ndarray")
+        raise ValueError(
+            "Specified type not supported for conversion to ndarray")
 
 
 def get_nullable_ndarray(a, type=ctypes.c_double):
@@ -494,18 +498,21 @@ class LibCBMWrapper(LibCBM_ctypes):
     def AdvanceSpinupState(self, inventory, variables, parameters):
         if not self.handle:
             raise AssertionError("dll not initialized")
-
-        n = spatial_units.shape[0]
+        i = unpack_variables(inventory)
+        p = unpack_variables(parameters)
+        v = unpack_variables(variables)
+        n = i.spatial_unit.shape[0]
 
         n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err), self.handle, n,
-            get_nullable_ndarray(spatial_units, type=ctypes.c_int),
-            get_nullable_ndarray(returnInterval, type=ctypes.c_int),
-            get_nullable_ndarray(minRotations, type=ctypes.c_int),
-            get_nullable_ndarray(maxRotations, type=ctypes.c_int),
-            finalAge, delay, slowPools, historical_disturbance,
-            last_pass_disturbance, afforestation_pre_type_id, state,
-            disturbance_types, rotation, step, lastRotationSlowC, enabled)
+            get_nullable_ndarray(i.spatial_unit, type=ctypes.c_int),
+            get_nullable_ndarray(p.return_interval, type=ctypes.c_int),
+            get_nullable_ndarray(p.min_rotations, type=ctypes.c_int),
+            get_nullable_ndarray(p.max_rotations, type=ctypes.c_int),
+            i.age, i.delay, v.slow_pools, i.historic_disturbance_type,
+            i.last_pass_disturbance_type, i.afforestation_pre_type_id,
+            v.spinup_state, v.disturbance_types, v.rotation, v.step,
+            v.last_rotation_slow_C, v.enabled)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())

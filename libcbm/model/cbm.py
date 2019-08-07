@@ -118,15 +118,8 @@ class CBM:
         while (True):
 
             n_finished = self.dll.AdvanceSpinupState(
-                inventory.spatial_unit, parameters.return_interval,
-                parameters.min_rotations, parameters.max_rotations,
-                inventory.age, inventory.delay, variables.slowPools,
-                inventory.historic_disturbance_type,
-                inventory.last_pass_disturbance_type,
-                inventory.afforestation_pre_type_id, variables.spinup_state,
-                variables.disturbance_types, variables.rotation,
-                variables.step, variables.lastRotationSlowC,
-                variables.enabled)
+                inventory, variables, parameters)
+
             if n_finished == n_stands:
                 break
 
@@ -146,7 +139,7 @@ class CBM:
             self.dll.EndSpinupStep(
                 variables.spinup_state, pools,
                 variables.disturbance_types, variables.age,
-                variables.slowPools, variables.growth_enabled)
+                variables.slow_pools, variables.growth_enabled)
 
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
