@@ -344,8 +344,6 @@ class LibCBMWrapper(LibCBM_ctypes):
         p = get_ndarray(pools)
         poolMat = LibCBM_Matrix(p)
 
-        flux *= 0.0  # Initialize the flux result to 0.
-        # TODO: move this into the lower level code
         f = get_ndarray(flux)
         fluxMat = LibCBM_Matrix(f)
 
