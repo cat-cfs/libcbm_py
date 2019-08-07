@@ -8,6 +8,9 @@ from libcbm.wrapper.libcbm_error import LibCBM_Error
 
 
 class LibCBM_ctypes():
+    """Wrapper for the low level functions in the libcbm C/C++ library
+    """
+
     def __init__(self, dll_path):
         """Initializes the underlying LibCBM library, storing the allocated
         handle in this instance.

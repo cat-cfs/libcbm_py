@@ -3,15 +3,69 @@ import logging
 import sqlite3
 import os
 import numpy as np
-
-
+import pandas as pd
+from types import SimpleNamespace
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
 
 
-def getNullableNdarray(a, type=ctypes.c_double):
+def unpack_variables(variables):
+    """Convert and return a set of variables as a types.SimpleNamespace whose
+    members are only ndarray.
+    Supports 2 cases:
+        1: the specified variables are already stored in a SimpleNamespace
+        whose properties are one of pd.Series,pd.DataFrame,or np.ndarray.
+        For each property in the namespace, convert to an ndarray if
+        necessary.
+        2: the specified variables are the columns of a pandas.DataFrame.
+        Return a reference to each column's underlying numpy.ndarray storage
+
+    Arguments:
+        variables {SimpleNamespace or pd.DataFrame} -- The set of variables to
+        unpack.
+
+    Raises:
+        ValueError: the type of the specified argument was not supported
+
+    Returns:
+        SimpleNamespace -- a SimpleNamespace whose properties are ndarray.
+    """
+    properties = {}
+    if isinstance(variables, SimpleNamespace):
+        for k, v in variables.__dict__.items():
+            properties[k] = get_ndarray(v)
+    elif isinstance(variables, pd.DataFrame):
+        for c in variables:
+            properties[c] = get_ndarray(variables[c])
+    else:
+        raise ValueError("Unsupported type")
+    return SimpleNamespace(**properties)
+
+
+def get_ndarray(a):
+    """Helper method to deal with numpy arrays stored in pandas objects.
+    Returns specified value if it is already an np.ndarray instance, and
+    otherwise gets a reference to the underlying numpy.ndarray storage
+    from a pandas.DataFrame or pandas.Series.
+
+    Arguments:
+        a {ndarray, pandas.DataFrame, or pandas.Series} -- data to potentially
+        convert to ndarray
+
+    Returns:
+        ndarray - an ndarray
+    """
+    if isinstance(a, np.ndarray):
+        return a
+    elif isinstance(a, pd.DataFrame) or isinstance(a, pd.Series):
+        return a.values
+    else:
+        raise ValueError("Specified type not supported for conversion to ndarray")
+
+
+def get_nullable_ndarray(a, type=ctypes.c_double):
     """helper method for wrapper parameters that can be specified either as
     null pointers or pointers to numpy memory
 
@@ -31,7 +85,7 @@ def getNullableNdarray(a, type=ctypes.c_double):
     if a is None:
         return None
     else:
-        result = np.ascontiguousarray(a).ctypes.data_as(ctypes.POINTER(type))
+        result = get_ndarray(a).ctypes.data_as(ctypes.POINTER(type))
         return result
 
 
@@ -105,7 +159,7 @@ class LibCBMWrapper(LibCBM_ctypes):
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
 
         self.handle = self._dll.LibCBM_Initialize(
-            ctypes.byref(self.err),  # error struct
+            ctypes.byref(self.err),  # error structure
             p_config
             )
 
@@ -238,7 +292,7 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         self._dll.LibCBM_ComputePools(
             ctypes.byref(self.err), self.handle, ops_p, n_ops, poolMat,
-            getNullableNdarray(enabled, type=ctypes.c_int))
+            get_nullable_ndarray(enabled, type=ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -293,7 +347,7 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         self._dll.LibCBM_ComputeFlux(
             ctypes.byref(self.err), self.handle, ops_p, op_process_p, n_ops,
-            poolMat, fluxMat, getNullableNdarray(enabled, type=ctypes.c_int))
+            poolMat, fluxMat, get_nullable_ndarray(enabled, type=ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -437,21 +491,18 @@ class LibCBMWrapper(LibCBM_ctypes):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def AdvanceSpinupState(self, spatial_units, returnInterval, minRotations,
-                           maxRotations, finalAge, delay, slowPools,
-                           historical_disturbance, last_pass_disturbance,
-                           afforestation_pre_type_id, state, disturbance_types,
-                           rotation, step, lastRotationSlowC, enabled):
+    def AdvanceSpinupState(self, inventory, variables, parameters):
         if not self.handle:
             raise AssertionError("dll not initialized")
+
         n = spatial_units.shape[0]
 
         n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err), self.handle, n,
-            getNullableNdarray(spatial_units, type=ctypes.c_int),
-            getNullableNdarray(returnInterval, type=ctypes.c_int),
-            getNullableNdarray(minRotations, type=ctypes.c_int),
-            getNullableNdarray(maxRotations, type=ctypes.c_int),
+            get_nullable_ndarray(spatial_units, type=ctypes.c_int),
+            get_nullable_ndarray(returnInterval, type=ctypes.c_int),
+            get_nullable_ndarray(minRotations, type=ctypes.c_int),
+            get_nullable_ndarray(maxRotations, type=ctypes.c_int),
             finalAge, delay, slowPools, historical_disturbance,
             last_pass_disturbance, afforestation_pre_type_id, state,
             disturbance_types, rotation, step, lastRotationSlowC, enabled)
@@ -484,10 +535,10 @@ class LibCBMWrapper(LibCBM_ctypes):
         self._dll.LibCBM_GetMerchVolumeGrowthOps(
             ctypes.byref(self.err), self.handle, opIds, n, classifiersMat,
             poolMat, ages, spatial_units,
-            getNullableNdarray(last_dist_type, type=ctypes.c_int),
-            getNullableNdarray(time_since_last_dist, type=ctypes.c_int),
-            getNullableNdarray(growth_multipliers, type=ctypes.c_double),
-            getNullableNdarray(growth_enabled, type=ctypes.c_int))
+            get_nullable_ndarray(last_dist_type, type=ctypes.c_int),
+            get_nullable_ndarray(time_since_last_dist, type=ctypes.c_int),
+            get_nullable_ndarray(growth_multipliers, type=ctypes.c_double),
+            get_nullable_ndarray(growth_enabled, type=ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -517,8 +568,8 @@ class LibCBMWrapper(LibCBM_ctypes):
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(
             ctypes.byref(self.err), self.handle, opIds, n,
-            getNullableNdarray(spatial_units, ctypes.c_int),
-            historic_mean_annual_temp, getNullableNdarray(mean_annual_temp))
+            get_nullable_ndarray(spatial_units, ctypes.c_int),
+            historic_mean_annual_temp, get_nullable_ndarray(mean_annual_temp))
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
