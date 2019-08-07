@@ -129,8 +129,7 @@ class CBM:
                 None, None, None, variables.growth_enabled)
 
             self.dll.GetDisturbanceOps(
-                ops["disturbance"], inventory.spatial_unit,
-                variables.disturbance_types)
+                ops["disturbance"], inventory, variables)
 
             self.dll.ComputePools(
                 [ops[x] for x in opSchedule], pools,
@@ -138,7 +137,7 @@ class CBM:
 
             self.dll.EndSpinupStep(
                 variables.spinup_state, pools,
-                variables.disturbance_types, variables.age,
+                variables.disturbance_type, variables.age,
                 variables.slow_pools, variables.growth_enabled)
 
             if(debug):
@@ -151,7 +150,7 @@ class CBM:
                     "rotation": variables.rotation,
                     "last_rotation_c": variables.lastRotationSlowC,
                     "step": variables.step,
-                    "disturbance_type": variables.disturbance_types
+                    "disturbance_type": variables.disturbance_type
                     }))
 
             iteration = iteration + 1
@@ -228,8 +227,7 @@ class CBM:
         self.dll.AdvanceStandState(inventory, variables.state, parameters)
 
         self.dll.GetDisturbanceOps(
-            ops["disturbance"], inventory.spatial_unit,
-            parameters.disturbance_type)
+            ops["disturbance"], inventory, parameters)
 
         self.dll.ComputeFlux(
             [ops["disturbance"]], [self.opProcesses["disturbance"]],

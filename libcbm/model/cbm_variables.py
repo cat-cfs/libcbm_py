@@ -165,7 +165,7 @@ def initialize_spinup_variables(n_stands, pools):
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
     variables.slow_pools = np.zeros(n_stands, dtype=np.float)
-    variables.disturbance_types = np.zeros(n_stands, dtype=np.int32)
+    variables.disturbance_type = np.zeros(n_stands, dtype=np.int32)
     variables.rotation = np.zeros(n_stands, dtype=np.int32)
     variables.step = np.zeros(n_stands, dtype=np.int32)
     variables.last_rotation_slow_C = np.zeros(n_stands, dtype=np.float)

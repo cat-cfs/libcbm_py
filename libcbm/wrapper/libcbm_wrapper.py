@@ -513,7 +513,7 @@ class LibCBMWrapper(LibCBM_ctypes):
             get_nullable_ndarray(p.max_rotations, type=ctypes.c_int),
             i.age, i.delay, v.slow_pools, i.historic_disturbance_type,
             i.last_pass_disturbance_type, i.afforestation_pre_type_id,
-            v.spinup_state, v.disturbance_types, v.rotation, v.step,
+            v.spinup_state, v.disturbance_type, v.rotation, v.step,
             v.last_rotation_slow_C, v.enabled)
 
         if self.err.Error != 0:
@@ -521,7 +521,7 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         return n_finished
 
-    def EndSpinupStep(self, state, pools, disturbance_types, age, slowPools,
+    def EndSpinupStep(self, state, pools, disturbance_type, age, slowPools,
                       growth_enabled):
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -529,7 +529,7 @@ class LibCBMWrapper(LibCBM_ctypes):
         poolMat = LibCBM_Matrix(pools)
         self._dll.LibCBM_EndSpinupStep(
             ctypes.byref(self.err), self.handle, n, state, poolMat,
-            disturbance_types, age, slowPools, growth_enabled)
+            disturbance_type, age, slowPools, growth_enabled)
 
     def GetMerchVolumeGrowthOps(self, growth_op, classifiers, pools, ages,
                                 spatial_units, last_dist_type,
@@ -582,16 +582,18 @@ class LibCBMWrapper(LibCBM_ctypes):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def GetDisturbanceOps(self, disturbance_op, spatial_units,
-                          disturbance_type_ids):
+    def GetDisturbanceOps(self, disturbance_op, inventory,
+                          parameters):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        n = spatial_units.shape[0]
+        spatial_unit = unpack_ndarrays(inventory).spatial_unit
+        disturbance_type = unpack_ndarrays(parameters).disturbance_type
+        n = spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
 
         self._dll.LibCBM_GetDisturbanceOps(
-            ctypes.byref(self.err), self.handle, opIds, n, spatial_units,
-            disturbance_type_ids)
+            ctypes.byref(self.err), self.handle, opIds, n, spatial_unit,
+            disturbance_type)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
