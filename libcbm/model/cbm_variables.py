@@ -51,7 +51,7 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
     if simulation_result is None:
         simulation_result = ts
     else:
-        simulation_result.append(ts)
+        simulation_result = simulation_result.append(ts)
     return simulation_result
 
 
