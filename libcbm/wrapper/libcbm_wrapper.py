@@ -290,7 +290,8 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise AssertionError("dll not initialized")
 
         n_ops = len(ops)
-        poolMat = LibCBM_Matrix(get_ndarray(pools))
+        p = get_ndarray(pools)
+        poolMat = LibCBM_Matrix(p)
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
@@ -340,23 +341,23 @@ class LibCBMWrapper(LibCBM_ctypes):
         n_ops = len(ops)
         if len(op_processes) != n_ops:
             raise ValueError("ops and op_processes must be of equal length")
-        poolMat = LibCBM_Matrix(get_ndarray(pools))
-        f = get_ndarray(flux)
+        p = get_ndarray(pools)
+        poolMat = LibCBM_Matrix(p)
 
-        f *= 0  # Initialize the flux result to 0.
+        flux *= 0.0  # Initialize the flux result to 0.
         # TODO: move this into the lower level code
-
-        fluxMat = LibCBM_Matrix(get_ndarray(flux))
+        f = get_ndarray(flux)
+        fluxMat = LibCBM_Matrix(f)
 
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
         op_process_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t))
-
+        enabled = get_nullable_ndarray(enabled, type=ctypes.c_int)
         self._dll.LibCBM_ComputeFlux(
             ctypes.byref(self.err), self.handle, ops_p, op_process_p, n_ops,
-            poolMat, fluxMat, get_nullable_ndarray(enabled, type=ctypes.c_int))
+            poolMat, fluxMat, enabled)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -531,10 +532,10 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise AssertionError("dll not initialized")
         v = unpack_ndarrays(variables)
         n = v.age.shape[0]
-        poolMat = LibCBM_Matrix(pools)
+        poolMat = LibCBM_Matrix(get_ndarray(pools))
         self._dll.LibCBM_EndSpinupStep(
             ctypes.byref(self.err), self.handle, n, v.spinup_state, poolMat,
-            v.disturbance_type, v.age, v.slowPools, v.growth_enabled)
+            v.disturbance_type, v.age, v.slow_pools, v.growth_enabled)
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
@@ -581,12 +582,12 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise AssertionError("dll not initialized")
         i = unpack_ndarrays(inventory)
         p = unpack_ndarrays(parameters)
-        n = i.spatial_units.shape[0]
+        n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         self._dll.LibCBM_GetDecayOps(
             ctypes.byref(self.err), self.handle, opIds, n,
-            get_nullable_ndarray(i.spatial_units, ctypes.c_int),
+            get_nullable_ndarray(i.spatial_unit, ctypes.c_int),
             historical_mean_annual_temp,
             get_nullable_ndarray(p.mean_annual_temp))
         if self.err.Error != 0:

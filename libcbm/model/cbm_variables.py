@@ -22,7 +22,7 @@ def promote_scalar(value, size, dtype):
     """
     if value is None:
         return None
-    if isinstance(value, np.ndarray):
+    elif isinstance(value, np.ndarray):
         return value
     else:
         return np.ones(size, dtype=dtype) * value
@@ -77,7 +77,7 @@ def initialize_pools(n_stands, pool_codes):
     # By convention the libcbm CBM implementation uses an input pool at
     # index 0 whose value is always 1.0.
     # TODO: move this into the lower level code, since it is a model behaviour
-    pools["input"] = 1.0
+    pools[pool_codes[0]] = 1.0
 
     return pools
 
@@ -220,9 +220,9 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
     parameters.disturbance_type = promote_scalar(
         disturbance_type, n_stands, dtype=np.int32)
     parameters.transition_rule_id = promote_scalar(
-        disturbance_type, n_stands, dtype=np.int32)
+        transition_id, n_stands, dtype=np.int32)
     parameters.mean_annual_temp = promote_scalar(
-        disturbance_type, n_stands, dtype=np.float)
+        mean_annual_temp, n_stands, dtype=np.float)
     return parameters
 
 

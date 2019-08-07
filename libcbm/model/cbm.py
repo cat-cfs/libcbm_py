@@ -96,7 +96,7 @@ class CBM:
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
 
         self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
-                                inventory.spatial_unit)
+                                inventory)
 
         self.dll.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
@@ -126,7 +126,7 @@ class CBM:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory, variables.pools, variables)
+                ops["growth"], inventory, pools, variables)
 
             self.dll.GetDisturbanceOps(
                 ops["disturbance"], inventory, variables)
