@@ -649,6 +649,8 @@ class LibCBMWrapper(LibCBM_ctypes):
         self._dll.LibCBM_EndSpinupStep(
             ctypes.byref(self.err), self.handle, n, v.spinup_state, poolMat,
             v.disturbance_type, v.age, v.slow_pools, v.growth_enabled)
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
