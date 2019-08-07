@@ -11,7 +11,7 @@ from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
 
 
-def unpack_variables(variables):
+def unpack_ndarrays(variables):
     """Convert and return a set of variables as a types.SimpleNamespace whose
     members are only ndarray.
     Supports 2 cases:
@@ -446,22 +446,23 @@ class LibCBMWrapper(LibCBM_ctypes):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def AdvanceStandState(self, classifiers, spatial_units, disturbance_types,
-                          transition_rule_ids, last_disturbance_type,
-                          time_since_last_disturbance,
-                          time_since_land_class_change, growth_enabled,
-                          enabled, land_class, regeneration_delay, age):
+    def AdvanceStandState(self, inventory, state_variables, parameters):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        n = classifiers.shape[0]
-        classifiersMat = LibCBM_Matrix_Int(classifiers)
+
+        i = unpack_ndarrays(inventory)
+        v = unpack_ndarrays(state_variables)
+        p = unpack_ndarrays(parameters)
+
+        n = i.classifiers.shape[0]
+        classifiersMat = LibCBM_Matrix_Int(i.classifiers)
 
         self._dll.LibCBM_AdvanceStandState(
             ctypes.byref(self.err), self.handle, n, classifiersMat,
-            spatial_units, disturbance_types, transition_rule_ids,
-            last_disturbance_type, time_since_last_disturbance,
-            time_since_land_class_change, growth_enabled, enabled,
-            land_class, regeneration_delay, age)
+            i.spatial_unit, p.disturbance_type, p.transition_rule_id,
+            v.last_disturbance_type, v.time_since_last_disturbance,
+            v.time_since_land_class_change, v.growth_enabled, v.enabled,
+            v.land_class, v.regeneration_delay, v.age)
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -498,9 +499,10 @@ class LibCBMWrapper(LibCBM_ctypes):
     def AdvanceSpinupState(self, inventory, variables, parameters):
         if not self.handle:
             raise AssertionError("dll not initialized")
-        i = unpack_variables(inventory)
-        p = unpack_variables(parameters)
-        v = unpack_variables(variables)
+
+        i = unpack_ndarrays(inventory)
+        p = unpack_ndarrays(parameters)
+        v = unpack_ndarrays(variables)
         n = i.spatial_unit.shape[0]
 
         n_finished = self._dll.LibCBM_AdvanceSpinupState(

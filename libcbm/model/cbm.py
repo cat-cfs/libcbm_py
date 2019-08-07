@@ -225,15 +225,7 @@ class CBM:
             "slow_mixing"
             ]
 
-        self.dll.AdvanceStandState(
-            inventory.classifiers.values, inventory.spatial_unit,
-            parameters.disturbance_type, parameters.transition_rule_id,
-            variables.state.last_disturbance_type.values,
-            variables.state.time_since_last_disturbance.values,
-            variables.state.time_since_land_class_change.values,
-            variables.state.growth_enabled.values, variables.state.enabled.values,
-            variables.state.land_class.values, variables.state.regeneration_delay.values,
-            variables.state.age.values)
+        self.dll.AdvanceStandState(inventory, variables.state, parameters)
 
         self.dll.GetDisturbanceOps(
             ops["disturbance"], inventory.spatial_unit,
