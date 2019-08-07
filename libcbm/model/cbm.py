@@ -76,10 +76,20 @@ class CBM:
         Arguments:
             inventory {object} -- Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-            pools {object} -- CBM pools (of dimension n_stands by n_pools)
-                initialized with spinup carbon values by this function
-            variables {object} -- spinup working variables
-            parameters {object} -- spinup parameters
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
+            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                dimension n_stands by n_pools. Initialized with spinup carbon
+                values by this function.  Column order is important. See:
+                libcbm.model.cbm_variables.initialize_pools for a compatible
+                definition
+            variables {object} -- Spinup working variables.  Defines all
+                non-pool simulation state during spinup.  See:
+                libcbm.model.cbm_variables.initialize_spinup_variables for a
+                compatible definition
+            parameters {object} -- spinup parameters. See:
+                libcbm.model.cbm_variables.initialize_spinup_parameters for a
+                compatible definition
 
         Keyword Arguments:
             debug {bool} -- if true this function will return a pandas
@@ -164,14 +174,20 @@ class CBM:
         parameters.
 
         Arguments:
-            inventory {object} -- Read-only data comprised of classifier sets
-                and cbm inventory data
-            pools {object} -- CBM pools (of dimension n_stands by n_pools)
-                initialized with non-forest initial carbon values by this
-                function where applicable
-            state_variables {object} -- state variables to be initialized by
-                this function for the start of CBM simulation
-
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
+            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                dimension n_stands by n_pools. Initialized with spinup carbon
+                values by this function.  Column order is important. See:
+                libcbm.model.cbm_variables.initialize_pools for a compatible
+                definition
+            state_variables {pandas.DataFrame} -- Simulation variables which
+                define all non-pool state in the CBM model.  Altered by this
+                function call.  See:
+                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                for a compatible definition
         """
         self.dll.InitializeLandState(
             inventory, pools, state_variables)
@@ -188,18 +204,28 @@ class CBM:
                 and cbm inventory data.  Inventory data will not be modified
                 by this function, but classifier sets may be modified if
                 transition rules are used.
-            pools {pandas.DataFrame or numpy.ndarray} -- ...
-            flux {pandas.DataFrame or numpy.ndarray} -- ...
+            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                dimension n_stands by n_pools. Initialized with spinup carbon
+                values by this function.  Column order is important. See:
+                libcbm.model.cbm_variables.initialize_pools for a compatible
+                definition
+            pools {pandas.DataFrame or numpy.ndarray} -- CBM flux values of
+                dimension n_stands by n_flux_indicators. Initialized with
+                spinup carbon values by this function.  Column order is
+                important. See: libcbm.model.cbm_variables.initialize_flux
+                for a compatible definition.
             state_variables {pandas.DataFrame} -- simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
-                function call.
-            parameters {object} -- read-only parameters used in a CBM timestep:
-                - disturbance types
-                - mean annual temperature
-                - transitions
+                function call.  See:
+                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                for a compatible definition
+            parameters {object} -- Read-only parameters used in a CBM timestep.
+                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
+                a compatible definition.
         """
 
         flux *= 0.0
+
         n_stands = pools.shape[0]
 
         ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
