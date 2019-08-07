@@ -200,16 +200,16 @@ class CBM:
         parameters.
 
         Arguments:
-            inventory {pandas.DataFrame} -- Data comprised of classifier sets
-                and cbm inventory data.  Inventory data will not be modified
-                by this function, but classifier sets may be modified if
-                transition rules are used.
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
             pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
                 dimension n_stands by n_pools. Initialized with spinup carbon
                 values by this function.  Column order is important. See:
                 libcbm.model.cbm_variables.initialize_pools for a compatible
                 definition
-            pools {pandas.DataFrame or numpy.ndarray} -- CBM flux values of
+            flux {pandas.DataFrame or numpy.ndarray} -- CBM flux values of
                 dimension n_stands by n_flux_indicators. Initialized with
                 spinup carbon values by this function.  Column order is
                 important. See: libcbm.model.cbm_variables.initialize_flux

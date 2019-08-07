@@ -94,7 +94,8 @@ def get_nullable_ndarray(a, type=ctypes.c_double):
 
 
 class LibCBMWrapper(LibCBM_ctypes):
-
+    """Exposes low level ctypes wrapper to regular python functions
+    """
     def __enter__(self):
         return self
 
@@ -270,8 +271,9 @@ class LibCBMWrapper(LibCBM_ctypes):
         Arguments:
             ops {ndarray} -- list of matrix block ids as allocated by the
                 AllocateOp function.
-            pools {ndarray} -- matrix of shape n_stands by n_pools. The values
-                in this matrix are updated by this function.
+            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                n_stands by n_pools. The values in this matrix are updated by
+                this function.
 
         Keyword Arguments:
             enabled {ndarray} -- optional int vector of length n stands. If
@@ -315,10 +317,14 @@ class LibCBMWrapper(LibCBM_ctypes):
             op_processes {ndarray} -- list of integers of length n_ops.
                 Ids referencing flux indicator process_id definition in the
                 LibCBM Initialize method.
-            pools {ndarray} -- matrix of shape n_stands by n_pools. The values
-                in this matrix are updated by this function.
-            flux {ndarray} -- matrix of shape n_stands by n_flux_indicators.
-                The values in this matrix are updated by this function.
+            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                n_stands by n_pools. The values in this matrix are updated by
+                this function.
+            flux {ndarray or pandas.DataFrame} -- matrix of shape n_stands
+                by n_flux_indicators. The values in this matrix are updated
+                by this function according to the definition of flux
+                indicators in the configuration and the flows that occur in
+                the specified operations.
 
         Keyword Arguments:
             enabled {ndarray} -- optional int vector of length n stands. If
@@ -436,8 +442,10 @@ class LibCBMWrapper(LibCBM_ctypes):
                 }
 
         Raises:
-            AssertionError: [description]
-            RuntimeError: [description]
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
         """
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -451,6 +459,29 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise RuntimeError(self.err.getErrorMessage())
 
     def AdvanceStandState(self, inventory, state_variables, parameters):
+        """Advances CBM stand variables through a timestep based on the
+        current simulation state.
+
+        Arguments:
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
+            state_variables {pandas.DataFrame} -- simulation variables which
+                define all non-pool state in the CBM model.  Altered by this
+                function call.  See:
+                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                for a compatible definition
+            parameters {object} -- Read-only parameters used in a CBM timestep.
+                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
+                a compatible definition.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -472,6 +503,20 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise RuntimeError(self.err.getErrorMessage())
 
     def EndStep(self, state_variables):
+        """Applies end-of-timestep changes to the CBM state
+
+        state_variables {pandas.DataFrame} -- simulation variables which
+            define all non-pool state in the CBM model.  This
+            function call will alter this variable with end-of-step changes.
+            See: libcbm.model.cbm_variables.initialize_cbm_state_variables
+            for a compatible definition
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         v = unpack_ndarrays(state_variables)
@@ -479,9 +524,35 @@ class LibCBMWrapper(LibCBM_ctypes):
         self._dll.LibCBM_EndStep(
             ctypes.byref(self.err), self.handle, n, v.age,
             v.regeneration_delay, v.enabled)
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def InitializeLandState(self, inventory, pools, state_variables):
+        """Initializes CBM state to values appropriate for after running
+        spinup and before starting CBM stepping
 
+        Arguments:
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
+            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                n_stands by n_pools. The values in this matrix are updated by
+                this function for stands that have an afforestation pre-type
+                defined.
+            state_variables {pandas.DataFrame} -- simulation variables which
+                define all non-pool state in the CBM model.  This
+                function call will alter this variable with CBM initial state
+                values. See:
+                libcbm.model.cbm_variables.initialize_cbm_state_variables for
+                a compatible definition
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -501,6 +572,31 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise RuntimeError(self.err.getErrorMessage())
 
     def AdvanceSpinupState(self, inventory, variables, parameters):
+        """Advances spinup state variables through one spinup step.
+
+        Arguments:
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
+            variables {object} -- Spinup working variables.  Defines all
+                non-pool simulation state during spinup.  See:
+                libcbm.model.cbm_variables.initialize_spinup_variables for a
+                compatible definition
+            parameters {object} -- spinup parameters. See:
+                libcbm.model.cbm_variables.initialize_spinup_parameters for a
+                compatible definition
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+
+        Returns:
+            int -- The number of stands finished running the spinup routine
+            as of the end of this call.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
 
@@ -526,6 +622,25 @@ class LibCBMWrapper(LibCBM_ctypes):
         return n_finished
 
     def EndSpinupStep(self, pools, variables):
+        """Applies end-of-timestep changes to the spinup state
+
+        Arguments:
+            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                n_stands by n_pools. The values in this matrix are used to
+                compute a criteria for exiting the spinup routing.  They not
+                altered by this function.
+            variables {object} -- Spinup working variables.  Defines all
+                non-pool simulation state during spinup.  Set to an
+                end-of-timestep state by this function. See:
+                libcbm.model.cbm_variables.initialize_spinup_variables for a
+                compatible definition
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         v = unpack_ndarrays(variables)
@@ -537,6 +652,18 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
+        """[summary]
+
+        Arguments:
+            growth_op {[type]} -- [description]
+            inventory {[type]} -- [description]
+            pools {[type]} -- [description]
+            state_variables {[type]} -- [description]
+
+        Raises:
+            AssertionError: [description]
+            RuntimeError: [description]
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = pools.shape[0]
