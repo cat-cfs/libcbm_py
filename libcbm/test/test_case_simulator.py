@@ -247,18 +247,11 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
             cases, classifier_name))
 
     n_stands = len(cases)
-
+    pools = cbm_variables.initialize_pools(n_stands, pool_codes)
     spinup_vars = cbm_variables.initialize_spinup_variables(
-        n_stands=n_stands,
-        pools=cbm_variables.initialize_pools(n_stands, pool_codes))
+        n_stands=n_stands)
 
     spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
-
-    cbm_vars = cbm_variables.initialize_cbm_variables(
-        pools=spinup_vars.pools,
-        flux=cbm_variables.initialize_flux(n_stands, flux_indicators),
-        state=cbm_variables.initialize_cbm_state_variables(n_stands)
-    )
 
     cbm_params = cbm_variables.initialize_cbm_parameters(
         n_stands=n_stands)
@@ -269,6 +262,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     # run CBM spinup
     spinup_debug_output = cbm.spinup(
         inventory=inventory,
+        pools=pools,
         variables=spinup_vars,
         parameters=spinup_params,
         debug=spinup_debug
@@ -277,7 +271,8 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     # initializes the CBM variables
     cbm.init(
         inventory=inventory,
-        variables=cbm_vars)
+        pools=pools,
+        state_variables=cbm_vars)
 
     # the following 3 variables store timestep by timestep results for
     # pools, flux and state variables

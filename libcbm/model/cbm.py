@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import json
 import os
+from types import SimpleNamespace
 
 
 class CBM:
@@ -65,7 +66,7 @@ class CBM:
         cv = c[classifier_value_name]
         return cv["id"]
 
-    def spinup(self, inventory, variables, parameters, debug=False):
+    def spinup(self, inventory, pools, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
@@ -75,6 +76,8 @@ class CBM:
         Arguments:
             inventory {object} -- Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
+            pools {object} -- CBM pools (of dimension n_stands by n_pools)
+                initialized with spinup carbon values by this function
             variables {object} -- spinup working variables
             parameters {object} -- spinup parameters
 
@@ -87,7 +90,7 @@ class CBM:
             pandas.DataFrame or None -- returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
-        pools = variables.pools.values
+
         pools[:, 0] = 1.0
         n_stands = pools.shape[0]
 
@@ -124,9 +127,12 @@ class CBM:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory.classifiers.values,
-                pools, variables.age, inventory.spatial_unit,
-                None, None, None, variables.growth_enabled)
+                ops["growth"], inventory, variables.pools,
+                SimpleNamespace(**{
+
+                }))
+                #pools, variables.age, inventory.spatial_unit,
+                #None, None, None, variables.growth_enabled)
 
             self.dll.GetDisturbanceOps(
                 ops["disturbance"], inventory, variables)
@@ -159,7 +165,7 @@ class CBM:
             self.dll.FreeOp(ops[x])
         return debug_output
 
-    def init(self, inventory, variables):
+    def init(self, inventory, pools, state_variables):
         """Set the initial state of CBM variables after spinup and prior
         to starting CBM simulation
 
@@ -169,15 +175,17 @@ class CBM:
         Arguments:
             inventory {object} -- Read-only data comprised of classifier sets
                 and cbm inventory data
-            variables {object} -- simulation variables for:
-                - pool variables
-                - flux variables
-                - state variables
+            pools {object} -- CBM pools (of dimension n_stands by n_pools)
+                initialized with non-forest initial carbon values by this
+                function where applicable
+            state_variables {object} -- state variables to be initialized by
+                this function for the start of CBM simulation
+
         """
         self.dll.InitializeLandState(
-            inventory, variables.pools, variables.state)
+            inventory, pools, state_variables)
 
-    def step(self, inventory, variables, parameters):
+    def step(self, inventory, pools, flux, state_variables, parameters):
         """Advances the specified CBM variables through one time step of CBM
         simulation.
 
@@ -199,8 +207,7 @@ class CBM:
                 - mean annual temperature
                 - transitions
         """
-        pools = variables.pools.values
-        flux = variables.flux.values
+
         pools[:, 0] = 1.0
         flux *= 0.0
         n_stands = pools.shape[0]

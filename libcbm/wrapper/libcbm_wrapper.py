@@ -530,23 +530,25 @@ class LibCBMWrapper(LibCBM_ctypes):
             ctypes.byref(self.err), self.handle, n, state, poolMat,
             disturbance_type, age, slowPools, growth_enabled)
 
-    def GetMerchVolumeGrowthOps(self, growth_op, classifiers, pools, ages,
-                                spatial_units, last_dist_type,
-                                time_since_last_dist, growth_multipliers,
-                                growth_enabled):
+    def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
+                                state_variables):
         if not self.handle:
             raise AssertionError("dll not initialized")
         n = pools.shape[0]
-        poolMat = LibCBM_Matrix(pools)
-        classifiersMat = LibCBM_Matrix_Int(classifiers)
+        poolMat = LibCBM_Matrix(get_ndarray(pools))
+
         opIds = (ctypes.c_size_t * (1))(*[growth_op])
+        i = unpack_ndarrays(inventory)
+        classifiersMat = LibCBM_Matrix_Int(get_ndarray(i.classifiers))
+        v = unpack_ndarrays(state_variables)
+
         self._dll.LibCBM_GetMerchVolumeGrowthOps(
             ctypes.byref(self.err), self.handle, opIds, n, classifiersMat,
-            poolMat, ages, spatial_units,
-            get_nullable_ndarray(last_dist_type, type=ctypes.c_int),
-            get_nullable_ndarray(time_since_last_dist, type=ctypes.c_int),
-            get_nullable_ndarray(growth_multipliers, type=ctypes.c_double),
-            get_nullable_ndarray(growth_enabled, type=ctypes.c_int))
+            poolMat, v.age, i.spatial_unit,
+            get_nullable_ndarray(v.last_disturbance_type, type=ctypes.c_int),
+            get_nullable_ndarray(v.time_since_last_disturbance, type=ctypes.c_int),
+            get_nullable_ndarray(v.growth_multiplier, type=ctypes.c_double),
+            get_nullable_ndarray(v.growth_enabled, type=ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())

@@ -141,7 +141,7 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     return parameters
 
 
-def initialize_spinup_variables(n_stands, pools):
+def initialize_spinup_variables(n_stands):
     """Creates a collection of vectors used as working/state variables for
     the spinup routine.
 
@@ -150,18 +150,12 @@ def initialize_spinup_variables(n_stands, pools):
 
     Arguments:
         n_stands {int} -- The number of stands
-        pools {pandas.DataFrame} -- a dataframe containing pools of dimension
-            n_stands by n_pools.
 
     Returns:
         object -- an object with properties to access working variables
         needed by the spinup routine.
     """
 
-    if len(pools.index) != n_stands:
-        raise ValueError(
-            "Number of pools does not match number of rows "
-            "in provided pools dataframe.")
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
     variables.slow_pools = np.zeros(n_stands, dtype=np.float)
@@ -172,7 +166,12 @@ def initialize_spinup_variables(n_stands, pools):
     variables.enabled = np.ones(n_stands, dtype=np.int32)
     variables.age = np.zeros(n_stands, dtype=np.int32)
     variables.growth_enabled = np.ones(n_stands, dtype=np.int32)
-    variables.pools = pools
+
+    # these variables are not used during spinup, but are needed
+    # for CBM functions, and will be passed as nulls
+    variables.last_disturbance_type = None
+    variables.time_since_last_disturbance = None
+    variables.growth_multiplier = None
     return variables
 
 
@@ -244,29 +243,6 @@ def initialize_cbm_state_variables(n_stands):
         "growth_multiplier": np.ones(n_stands, dtype=np.float),
         "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
     })
-
-
-def initialize_cbm_variables(pools, flux, state):
-    """Gathers CBM variables into a common object, and performs some validation.
-
-    All dataframes here have 1 row for each stand and are row-aligned with
-    all other vectors and dataframes using this convention.
-
-    Arguments:
-        pools {pandas.DataFrame} -- contains pool values for CBM simulation
-        flux {pandas.DataFrame} -- contains pool values for CBM simulation
-        state {pandas.DataFrame} -- contains state values for CBM simulation
-
-    Returns:
-        object -- an object with properties to access the pool, flux and
-        state simulation variables used by CBM.
-    """
-    variables = SimpleNamespace()
-
-    variables.pools = pools
-    variables.flux = flux
-    variables.state = state
-    return variables
 
 
 def initialize_inventory(classifiers, inventory):
