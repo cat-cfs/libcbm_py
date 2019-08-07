@@ -71,7 +71,7 @@ def initialize_pools(n_stands, pool_codes):
         pandas.DataFrame -- A dataframe for storing CBM pools
     """
     return pd.DataFrame(
-        data=np.zeros(n_stands, len(pool_codes)),
+        data=np.zeros((n_stands, len(pool_codes))),
         columns=pool_codes)
 
 
@@ -91,7 +91,7 @@ def initialize_flux(n_stands, flux_indicator_codes):
         pandas.DataFrame -- A dataframe for storing CBM flux indicators
     """
     return pd.DataFrame(
-        data=np.zeros(n_stands, len(flux_indicator_codes)),
+        data=np.zeros((n_stands, len(flux_indicator_codes))),
         columns=flux_indicator_codes)
 
 
@@ -282,7 +282,7 @@ def initialize_inventory(classifiers, inventory):
 
     Raises:
         ValueError: Raised if the number of rows for classifiers and
-        inventory are not the same.
+        data are not the same.
 
     Returns:
         object -- an object containing the inventory and classifier
@@ -296,5 +296,14 @@ def initialize_inventory(classifiers, inventory):
                 inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
     i.classifiers = classifiers
-    i.inventory = inventory
+    i.age = inventory.age.to_numpy()
+    i.spatial_unit = inventory.spatial_unit.to_numpy()
+    i.afforestation_pre_type_id = \
+        inventory.afforestation_pre_type_id.to_numpy()
+    i.land_class = inventory.land_class.to_numpy()
+    i.historic_disturbance_type = \
+        inventory.historic_disturbance_type.to_numpy()
+    i.last_pass_disturbance_type = \
+        inventory.last_pass_disturbance_type.to_numpy()
+    i.delay = inventory.delay.to_numpy()
     return i

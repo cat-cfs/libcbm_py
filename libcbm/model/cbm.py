@@ -87,7 +87,7 @@ class CBM:
             pandas.DataFrame or None -- returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
-        pools = variables.pools.to_numpy()
+        pools = variables.pools.values
         pools[:, 0] = 1.0
         n_stands = pools.shape[0]
 
@@ -131,7 +131,7 @@ class CBM:
                 break
 
             self.dll.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory.classifiers.to_numpy(),
+                ops["growth"], inventory.classifiers.values,
                 pools, variables.age, inventory.spatial_unit,
                 None, None, None, variables.growth_enabled)
 
@@ -185,12 +185,12 @@ class CBM:
         self.dll.InitializeLandState(
             inventory.last_pass_disturbance_type, inventory.delay,
             inventory.age, inventory.spatial_unit,
-            inventory.afforestation_pre_type_id, variables.pools.to_numpy(),
-            variables.state.last_disturbance_type,
-            variables.state.time_since_last_disturbance,
-            variables.state.time_since_land_class_change,
-            variables.state.growth_enabled, variables.state.enabled,
-            variables.state.land_class, variables.state.age)
+            inventory.afforestation_pre_type_id, variables.pools.values,
+            variables.state.last_disturbance_type.values,
+            variables.state.time_since_last_disturbance.values,
+            variables.state.time_since_land_class_change.values,
+            variables.state.growth_enabled.values, variables.state.enabled.values,
+            variables.state.land_class.values, variables.state.age.values)
 
     def step(self, inventory, variables, parameters):
         """Advances the specified CBM variables through one time step of CBM
@@ -214,8 +214,8 @@ class CBM:
                 - mean annual temperature
                 - transitions
         """
-        pools = variables.pools.to_numpy()
-        flux = variables.flux.to_numpy()
+        pools = variables.pools.values
+        flux = variables.flux.values
         pools[:, 0] = 1.0
         flux *= 0.0
         n_stands = pools.shape[0]
@@ -233,14 +233,14 @@ class CBM:
             ]
 
         self.dll.AdvanceStandState(
-            inventory.classifiers.to_numpy(), inventory.spatial_unit,
+            inventory.classifiers.values, inventory.spatial_unit,
             parameters.disturbance_type, parameters.transition_rule_id,
-            variables.state.last_disturbance_type,
-            variables.state.time_since_last_disturbance,
-            variables.state.time_since_land_class_change,
-            variables.state.growth_enabled, variables.state.enabled,
-            variables.state.land_class, variables.state.regeneration_delay,
-            variables.state.age)
+            variables.state.last_disturbance_type.values,
+            variables.state.time_since_last_disturbance.values,
+            variables.state.time_since_land_class_change.values,
+            variables.state.growth_enabled.values, variables.state.enabled.values,
+            variables.state.land_class.values, variables.state.regeneration_delay.values,
+            variables.state.age.values)
 
         self.dll.GetDisturbanceOps(
             ops["disturbance"], inventory.spatial_unit,
@@ -256,11 +256,11 @@ class CBM:
         # disabled (which happens in peatland)
 
         self.dll.GetMerchVolumeGrowthOps(
-            ops["growth"], inventory.classifiers.to_numpy(), pools,
-            variables.state.age, inventory.spatial_unit,
-            variables.state.last_disturbance_type,
-            variables.state.time_since_last_disturbance,
-            variables.state.growth_multiplier, variables.state.growth_enabled)
+            ops["growth"], inventory.classifiers.values, pools,
+            variables.state.age.values, inventory.spatial_unit,
+            variables.state.last_disturbance_type.values,
+            variables.state.time_since_last_disturbance.values,
+            variables.state.growth_multiplier.values, variables.state.growth_enabled.values)
 
         self.dll.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"],
@@ -273,11 +273,11 @@ class CBM:
         self.dll.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
-            pools, flux, variables.state.enabled)
+            pools, flux, variables.state.enabled.values)
 
         self.dll.EndStep(
-            variables.state.age, variables.state.regeneration_delay,
-            variables.state.growth_enabled)
+            variables.state.age.values, variables.state.regeneration_delay.values,
+            variables.state.growth_enabled.values)
 
         for x in self.opNames:
             self.dll.FreeOp(ops[x])

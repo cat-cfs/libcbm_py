@@ -155,12 +155,12 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
 
     n_stands = len(cases)
     classifiers = pd.DataFrame({
-        classifier_name: [
+        classifier_name: np.array([
             cbm.get_classifier_value_id(
                 classifier_name,
                 casegeneration.get_classifier_value_name(c["id"])
             )
-            for c in cases]
+            for c in cases], dtype=np.int32)
     })
 
     historic_disturbance_type = np.array(
@@ -199,7 +199,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         inventory=pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
             "spatial_unit": spatial_units,
-            "afforestation_pre_type_id": afforestation_pre_type_ids,
+            "afforestation_pre_type_id": afforestation_pre_type_id,
             "land_class": land_class,
             "historic_disturbance_type": historic_disturbance_type,
             "last_pass_disturbance_type": last_pass_disturbance_type,
@@ -249,7 +249,8 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     n_stands = len(cases)
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
-        n_stands, pool_codes)
+        n_stands=n_stands,
+        pools=cbm_variables.initialize_pools(n_stands, pool_codes))
 
     spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
 
@@ -276,7 +277,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     # initializes the CBM variables
     cbm.init(
         inventory=inventory,
-        variables=cbm_variables)
+        variables=cbm_vars)
 
     # the following 3 variables store timestep by timestep results for
     # pools, flux and state variables
