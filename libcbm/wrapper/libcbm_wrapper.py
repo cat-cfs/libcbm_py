@@ -605,12 +605,24 @@ class LibCBMWrapper(LibCBM_ctypes):
         v = unpack_ndarrays(variables)
         n = i.spatial_unit.shape[0]
 
+        # If return_interval, min_rotations, max_rotations are explicitly
+        # set by the user, ignore the spatial unit, which is used to set
+        # default value for these 3 variables.
+        return_interval = get_nullable_ndarray(
+            p.return_interval, type=ctypes.c_int)
+        min_rotations = get_nullable_ndarray(
+            p.min_rotations, type=ctypes.c_int)
+        max_rotations = get_nullable_ndarray(
+            p.max_rotations, type=ctypes.c_int)
+        spatial_unit = None
+        if return_interval is None or min_rotations is None \
+           or max_rotations is None:
+            spatial_unit = get_nullable_ndarray(
+                i.spatial_unit, type=ctypes.c_int)
+
         n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err), self.handle, n,
-            get_nullable_ndarray(i.spatial_unit, type=ctypes.c_int),
-            get_nullable_ndarray(p.return_interval, type=ctypes.c_int),
-            get_nullable_ndarray(p.min_rotations, type=ctypes.c_int),
-            get_nullable_ndarray(p.max_rotations, type=ctypes.c_int),
+            spatial_unit, return_interval, min_rotations, max_rotations,
             i.age, i.delay, v.slow_pools, i.historic_disturbance_type,
             i.last_pass_disturbance_type, i.afforestation_pre_type_id,
             v.spinup_state, v.disturbance_type, v.rotation, v.step,
@@ -654,17 +666,20 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
-        """[summary]
+        """Computes CBM merchantable growth as a bulk matrix operation.
 
         Arguments:
-            growth_op {int} -- handle for a block of matrices to store merch
-                growth operations as allocated by the AllocateOp function
+            growth_op {int} -- Handle for a block of matrices as allocated by
+                the AllocateOp function. Used to compute merch volume growth.
+            turnover operations.
             inventory {object} -- Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
-                growth parameters, and to find a yield curve associated with
-                inventory classifier sets. Will not be modified by this
-                function. See: libcbm.model.cbm_variables.initialize_inventory
-                for a compatible definition
+                parameters from the set of merch volume growth parameters
+                passed to library initialization, and to find a yield curve
+                associated with inventory classifier sets. Will not be
+                modified by this function. See:
+                libcbm.model.cbm_variables.initialize_inventory for a
+                compatible definition
             pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
                 n_stands by n_pools. Used by this function to compute a root
                 increment, and also to limit negative growth increments such
@@ -706,6 +721,29 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
                        inventory):
+        """Computes biomass turnovers and dead organic matter turnovers as
+        bulk matrix operations.
+
+        Arguments:
+            biomass_turnover_op {int} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to compute biomass
+                turnover operations.
+            snag_turnover_op {[type]} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to compute dom
+                    (specifically snags) turnover operations.
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Used by this function to find correct
+                parameters from the set of turnover parameters passed to
+                library initialization. Will not be modified by this
+                function. See: libcbm.model.cbm_variables.initialize_inventory
+                for a compatible definition
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         i = unpack_ndarrays(inventory)
@@ -721,6 +759,43 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
                     inventory, parameters, historical_mean_annual_temp=False):
+        """Computes dead organic matter decay as bulk matrix operations.
+
+        Arguments:
+            dom_decay_op {int} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to compute dom
+                decay operations.
+            slow_decay_op {int} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to compute slow
+                pool decay operations.
+            slow_mixing_op {[type]} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to compute slow
+                pool mixing operations.
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Used by this function to find correct
+                parameters from the set of decay parameters passed to library
+                initialization. Will not be modified by this
+                function. See: libcbm.model.cbm_variables.initialize_inventory
+                for a compatible definition
+            parameters {object} -- Read-only parameters used to optionally set
+                explicit mean annual temp for the decay function.
+                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
+                a compatible definition.
+
+        Keyword Arguments:
+            historical_mean_annual_temp {bool} -- If set to true, the
+                historical default mean annual temperature is used. This
+                is intended for spinup.  If explicit mean annual temperature
+                is provided via the parameters argument, this parameter will
+                be ignored, and the explicit mean annual temp will be used.
+                (default: {False})
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         i = unpack_ndarrays(inventory)
@@ -738,6 +813,30 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetDisturbanceOps(self, disturbance_op, inventory,
                           parameters):
+        """Sets up CBM disturbance matrices as a bulk matrix operation.
+
+        Arguments:
+            disturbance_op {int} -- Handle for a block of matrices as
+                allocated by the AllocateOp function. Used to disturbance
+                flows.
+            inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Used by this function to find correct
+                parameters from the set of disturbance parameters passed to
+                library initialization. Will not be modified by this function.
+                See: libcbm.model.cbm_variables.initialize_inventory
+                for a compatible definition
+            parameters {object} -- Read-only parameters used to set
+                disturbance type id to fetch the appropriate disturbance
+                matrix. See:
+                libcbm.model.cbm_variables.initialize_cbm_parameters for
+                a compatible definition.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
         if not self.handle:
             raise AssertionError("dll not initialized")
         spatial_unit = unpack_ndarrays(inventory).spatial_unit
