@@ -9,16 +9,17 @@ def promote_scalar(value, size, dtype):
     a helper function to allow scalar parameters for certain vector
     functions
 
-    Arguments:
-        value {ndarray} or {number} or {None} -- value to promote
-        size {int} -- the length of the resulting vector if promotion
-        occurs
-        dtype {object} -- object used to define the type of the resulting
-        vector if promotion occurs
+    Args:
+        value (numpy.ndarray, number, or None): value to promote
+        size (int): the length of the resulting vector if promotion
+            occurs
+        dtype (object): object used to define the type of the resulting
+            vector if promotion occurs
+
 
     Returns:
-        ndarray or None -- returns either the original value, a promoted
-        scalar or None depending on the specified values
+        ndarray or None: returns either the original value, a promoted
+            scalar or None depending on the specified values
     """
     if value is None:
         return None
@@ -30,19 +31,19 @@ def promote_scalar(value, size, dtype):
 
 def append_simulation_result(simulation_result, timestep_data, timestep):
     """Append the specified timestep data to a simulation result spanning
-        multiple time steps
+    multiple time steps
 
-    Arguments:
-        simulation_result {pandas.DataFrame} -- a dataframe storing the
+    Args:
+        simulation_result (pandas.DataFrame): a dataframe storing the
             simulation results.  If this parameter is None a new dataframe
             will be created with the single timestep as the contents.
-        timestep_data {pandas.DataFrame} -- a dataframe storing a single
+        timestep_data (pandas.DataFrame): a dataframe storing a single
             timestep result
-        timestep {int} -- an integer which will be added to the data appended
+        timestep (int): an integer which will be added to the data appended
             to the larger simulation result in the "timestep" column
 
     Returns:
-        pandas.DataFrame -- The simulation result with the specified timestep
+        pandas.DataFrame: The simulation result with the specified timestep
             data appended
     """
     ts = timestep_data.copy()
@@ -61,14 +62,14 @@ def initialize_pools(n_stands, pool_codes):
     The dataframe here has 1 row for each stand and is row-aligned with
     all other vectors and dataframes using this convention.
 
-    Arguments:
-        n_stands {int} -- The number of stands, and therefore rows in the
+    Args:
+        n_stands (int): The number of stands, and therefore rows in the
             resulting dataframe.
-        pool_codes {list} -- a list of pool names, which are used as column
+        pool_codes (list): a list of pool names, which are used as column
             labels in the resulting dataframe
 
     Returns:
-        pandas.DataFrame -- A dataframe for storing CBM pools
+        pandas.DataFrame: A dataframe for storing CBM pools
     """
     pools = pd.DataFrame(
         data=np.zeros((n_stands, len(pool_codes))),
@@ -88,14 +89,14 @@ def initialize_flux(n_stands, flux_indicator_codes):
     The dataframe here has 1 row for each stand and is row-aligned with
     all other vectors and dataframes using this convention.
 
-    Arguments:
-        n_stands {int} -- The number of stands, and therefore rows in the
+    Args:
+        n_stands (int): The number of stands, and therefore rows in the
             resulting dataframe.
-        flux_indicator_codes {list} -- a list of flux indicator names, which
+        flux_indicator_codes (list): a list of flux indicator names, which
             are used as column labels in the resulting dataframe
 
     Returns:
-        pandas.DataFrame -- A dataframe for storing CBM flux indicators
+        pandas.DataFrame: A dataframe for storing CBM flux indicators
     """
     return pd.DataFrame(
         data=np.zeros((n_stands, len(flux_indicator_codes))),
@@ -115,25 +116,24 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     parameters are available here to override those default values on a
     per-stand basis.
 
-    If a scalar value is provided to any of the parameters, that value will
-    be filled in the resulting vector.
+    If a scalar value is provided to any of the optional parameters, that
+    value will be promoted (see: `promote_scalar`) in the resulting vector.
 
-    Arguments:
-        n_stands {int} -- The length of each of the resulting variables
+    Args:
+        n_stands (int): The length of each of the resulting variables
             vectors returned by this function.
-
-    Keyword Arguments:
-        return_interval {numpy.ndarray} -- The number of years between
-            historical disturbances in the spinup function. (default: {None})
-        min_rotations {numpy.ndarray} -- The minimum number of historical
-            rotations to perform. (default: {None})
-        max_rotations {numpy.ndarray} -- The maximum number
-            of historical rotations to perform. (default: {None})
-        mean_annual_temp {numpy.ndarray} -- The mean annual temperature used
-            in the spinup procedure (default: {None})
+        return_interval (numpy.ndarray or number, optional): The number of
+            years between historical disturbances in the spinup function.
+            Defaults to None.
+        min_rotations (numpy.ndarray or number, optional): The minimum number
+            of historical rotations to perform. Defaults to None.
+        max_rotations (numpy.ndarray or number, optional): The maximum number
+            of historical rotations to perform. Defaults to None.
+        mean_annual_temp (numpy.ndarray or number, optional): The mean annual
+            temperature used in the spinup procedure. Defaults to None.
 
     Returns:
-        object -- Returns an object with properties to access each of the
+        object: Returns an object with properties to access each of the
             spinup parameters
     """
     parameters = SimpleNamespace()
@@ -152,15 +152,12 @@ def initialize_spinup_variables(n_stands):
     """Creates a collection of vectors used as working/state variables for
     the spinup routine.
 
-    The variables here are all of length N stands and are row-aligned with
-    all other vectors and dataframes using this convention.
-
-    Arguments:
-        n_stands {int} -- The number of stands
+    Args:
+        n_stands (int): The number of stands
 
     Returns:
-        object -- an object with properties to access working variables
-        needed by the spinup routine.
+        object: an object with properties to access working variables
+            needed by the spinup routine.
     """
 
     variables = SimpleNamespace()
@@ -191,29 +188,27 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
 
     The mean_annual temperature keyword argument is optional, and if
     unspecified, libcbm will use a default for the corresponding parameter
-    drawn from cbm_defaults.
+    drawn from the cbm_defaults database.
 
-    If a scalar value is provided to any of the parameters, that value will
-    be filled in the resulting vector.
+    If a scalar value is provided to any of the optional parameters, that value
+    will be filled in the resulting vector.
 
-    Arguments:
-        n_stands {int} -- The number of stands
-
-    Keyword Arguments:
-        disturbance_type {numpy.ndarray} -- The disturbance type id which
-            references the disturbance types defined in the libCBM
-            configuration.  By convention, a negative or 0 value indicates
-            no disturbance (default: {0})
-        transition_id {numpy.ndarray} -- The transition id which references
-            the transition rules defined in the libCBM configuration.  By
-            convention, a negative or 0 value indicates no transition
-            (default: {0})
-        mean_annual_temp {numpy.ndarray} -- A value, in degrees Celsius,
-            that defines this timestep's mean annual temperature for each
-            stand. (default: {None})
+    Args:
+        n_stands (int): The number of stands
+        disturbance_type (numpy.ndarray or int, optional): The disturbance
+            type id which references the disturbance types defined in the
+            libCBM configuration.  By convention, a negative or 0 value
+            indicates no disturbance. Defaults to 0.
+        transition_id (numpy.ndarray, int, optional): The transition id which
+            references the transition rules defined in the libCBM
+            configuration.  By convention, a negative or 0 value indicates no
+            transition. Defaults to 0.
+        mean_annual_temp (numpy.ndarray, int, optional): A value, in degrees
+            Celsius, that defines this timestep's mean annual temperature for
+            each stand. Defaults to None.
 
     Returns:
-        object -- an object with properties for each cbm parameter used by
+        object: an object with properties for each cbm parameter used by
             the cbm step function.
     """
     parameters = SimpleNamespace()
@@ -233,11 +228,11 @@ def initialize_cbm_state_variables(n_stands):
     The dataframe here has 1 row for each stand and is row-aligned with
     all other vectors and dataframes using this convention.
 
-    Arguments:
-        n_stands {int} -- the number of rows in the resulting dataframe.
+    Args:
+        n_stands (int): the number of rows in the resulting dataframe.
 
     Returns:
-        pandas.DataFrame -- a dataframe containing the CBM state variables.
+        pandas.DataFrame: a dataframe containing the CBM state variables.
     """
     return pd.DataFrame({
         "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
@@ -253,22 +248,33 @@ def initialize_cbm_state_variables(n_stands):
 
 
 def initialize_inventory(classifiers, inventory):
-    """creates input for libcbm.model.CBM functions
+    """Creates input for `libcbm.model.cbm.CBM` functions
 
-    Arguments:
-        classifiers {pandas.DataFrame} -- dataframe of inventory classifier
+    Args:
+        classifiers (pandas.DataFrame): dataframe of inventory classifier
             sets. Column names are the name of the classifiers, and values
             are the ids for each classifier value associated with the
             inventory at each row.
-        inventory {pandas.DataFrame} -- data defining the inventory
+        inventory (pandas.DataFrame): Data defining the inventory. Columns:
 
+            - age: the inventory age at the start of CBM simulation
+            - spatial_unit: the spatial unit id
+            - afforestation_pre_type_id: If the stand is initially
+                non-forested, this can be used to set an initial soil
+                condition.
+            - land_class: a UNFCCC land class code.
+            - historical_disturbance_type: the id for a disturbance type
+                used for the historical disturbance rotations in the spinup
+                routine.
+            - last_pass_disturbance_type: the id for a disturbance type used
+              for the final disturbance in the spinup routine.
     Raises:
         ValueError: Raised if the number of rows for classifiers and
-        data are not the same.
+            data are not the same.
 
     Returns:
-        object -- an object containing the inventory and classifier
-        dataframes.
+        object: an object containing the inventory and classifier
+            data.
     """
     n_stands = len(inventory.index)
     if not len(classifiers.index) == n_stands:
@@ -283,7 +289,7 @@ def initialize_inventory(classifiers, inventory):
     i.afforestation_pre_type_id = \
         inventory.afforestation_pre_type_id.to_numpy()
     i.land_class = inventory.land_class.to_numpy()
-    i.historic_disturbance_type = \
+    i.historical_disturbance_type = \
         inventory.historic_disturbance_type.to_numpy()
     i.last_pass_disturbance_type = \
         inventory.last_pass_disturbance_type.to_numpy()
