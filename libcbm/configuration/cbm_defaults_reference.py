@@ -32,40 +32,37 @@ flux_indicator_query = queries.get_query("flux_indicator_ref.sql")
 pools_query = queries.get_query("pools.sql")
 
 
-def load_data(sqlite_path, query, query_params=None, as_data_frame=False):
+def load_data(sqlite_path, query, query_params=None):
     """loads the specified query into a list of dictionary formatted query
 
-    Arguments:
-        sqlite_path {str} -- path to a SQLite database
-        query {str}  -- sqlite query
-
-    Keyword Arguments:
-        locale_code {str} -- [description] (default: {"en-CA"})
+    Args:
+        sqlite_path (str): path to a SQLite database
+        query (str): sqlite query
+        query_params (Tuple, optional): tuple of query parameters to pass to
+            the sqlite3 execute method. Defaults to None.
 
     Returns:
-        [type] -- [description]
+        list: a list of sqlite3.Row objects containing the query results
     """
-    if not as_data_frame:
-        with sqlite3.connect(sqlite_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
-            if query_params:
-                return cursor.execute(query, query_params).fetchall()
-            else:
-                return cursor.execute(query).fetchall()
-    else:
-        with sqlite3.connect(sqlite_path) as conn:
-            if query_params:
-                return pd.read_sql_query(
-                    sql=query, con=conn, params=query_params)
-            else:
-                return pd.read_sql_query(sql=query, con=conn)
+    with sqlite3.connect(sqlite_path) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        if query_params:
+            return cursor.execute(query, query_params).fetchall()
+        else:
+            return cursor.execute(query).fetchall()
 
 
 class CBMDefaultsReference:
 
     def __init__(self, sqlite_path, locale_code="en-CA"):
+        """Creates a reference to information stored in a cbm_defaults database.
 
+        Args:
+            sqlite_path (str): path to a cbm_defaults sqlite database.
+            locale_code (str, optional): locale code as defined in the locale
+                table of the cbm_defaults database. Defaults to "en-CA".
+        """
         locale_param = (locale_code,)
         self.species_ref = load_data(
             sqlite_path, species_reference_query, locale_param)
