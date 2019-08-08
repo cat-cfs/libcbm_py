@@ -7,17 +7,17 @@ def load_cbm_parameters(sqlitePath):
     Used for initializing CBM functionality in LibCBM via the InitializeCBM
     function.
 
-    Arguments:
-        sqlitePath {str} -- Path to a CBM parameters database as formatted
-        like: https://github.com/cat-cfs/cbm_defaults
+    Args:
+        sqlitePath (str): Path to a CBM parameters database as formatted
+            like: https://github.com/cat-cfs/cbm_defaults
 
     Raises:
-        AssertionError: if the name of any 2 queries is the same, an error is
+        AssertionError:  if the name of any 2 queries is the same, an error is
             raised.
 
     Returns:
-        dict -- a dictionary of name/formatted data pairs for use with LibCBM
-            configuration.
+        dict: a dictionary of name/formatted data pairs for use with LibCBM
+        configuration.
     """
     result = {}
 
@@ -64,18 +64,20 @@ def load_cbm_pools(sqlitePath):
     """Loads cbm pool information from a cbm_defaults database into the
     format expected by the libcbm compiled library.
 
-    Example of output:
-        [
-            {"name": "pool1", "id": 1, "index": 0},
-            {"name": "pool2", "id": 2, "index": 1},
-            ...,
-            {"name": "poolN", "id": N, "index": N-1},
-        ]
-    Arguments:
-        sqlitePath {str} -- path to a cbm_defaults database
+    Args:
+        sqlitePath (str): path to a cbm_defaults database
 
     Returns:
-        list -- list of dictionaries describing CBM pools
+        list: list of dictionaries describing CBM pools
+
+            For example::
+
+                [
+                    {"name": "pool1", "id": 1, "index": 0},
+                    {"name": "pool2", "id": 2, "index": 1},
+                    ...,
+                    {"name": "poolN", "id": N, "index": N-1},
+                ]
     """
     result = []
     with sqlite3.connect(sqlitePath) as conn:
@@ -95,22 +97,23 @@ def load_flux_indicators(sqlitePath):
     Used to capture flows between specified source pools and specified sink
     pools for a given process to return as model output.
 
-    Example of output:
-        [
-            {
-                "id": 1,
-                "index": 0,
-                "process_id": 1,
-                "source_pools": [1, 2, 3, 4],
-                "sink_pools": [5, 6, 7, 8],
-            },
-        ]
-
-    Arguments:
-        sqlitePath {str} -- path to a cbm_defaults database
+    Args:
+        sqlitePath (str): path to a cbm_defaults database
 
     Returns:
-        list -- list of dictionaries describing CBM flux indicators
+        list: list of dictionaries describing CBM flux indicators.
+
+            For example::
+
+                [
+                    {
+                        "id": 1,
+                        "index": 0,
+                        "process_id": 1,
+                        "source_pools": [1, 2, 3, 4],
+                        "sink_pools": [5, 6, 7, 8],
+                    },
+                ]
     """
     result = []
     flux_indicator_source_sql = cbm_defaults_queries.get_query(

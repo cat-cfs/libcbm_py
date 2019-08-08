@@ -1,6 +1,9 @@
 Welcome to libcbm's documentation!
 ==================================
 
+.. automodule:: libcbm.configuration.cbmconfig
+    :members:
+    
 .. automodule:: libcbm.configuration.cbm_defaults_queries
     :members:
 

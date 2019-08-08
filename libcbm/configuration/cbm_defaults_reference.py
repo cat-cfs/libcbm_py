@@ -119,12 +119,13 @@ class CBMDefaultsReference:
         """Get all name and id information about every CBM species.
 
         Result is returned as a list of rows with keys:
-            -species_id
-            -species_name
-            -genus_id
-            -genus_name
-            -forest_type_id
-            -forest_type_name
+
+            - species_id
+            - species_name
+            - genus_id
+            - genus_name
+            - forest_type_id
+            - forest_type_name
 
         Returns:
             list: list of rows with species information
@@ -147,11 +148,12 @@ class CBMDefaultsReference:
     def get_disturbance_types(self):
         """Get all name and id information about every CBM disturbance type
         as a list of rows with keys:
-            -disturbance_type_id
-            -disturbance_type_name
+
+            - disturbance_type_id
+            - disturbance_type_name
 
         Returns:
-            [type] -- [description]
+            list -- list of rows with disturbance type information
         """
         return self.disturbance_type_ref
 
@@ -173,6 +175,7 @@ class CBMDefaultsReference:
         """Get name and id information for the spatial units defined in the
         underlying cbm_defaults database.  Returns a list of rows
         with the following keys:
+
             - spatial_unit_id
             - admin_boundary_name
             - eco_boundary_name
@@ -187,7 +190,7 @@ class CBMDefaultsReference:
         afforestation pre-type name
 
         Args:
-            afforestation_pre_type_name (str): [description]
+            afforestation_pre_type_name (str): an afforestation pre-type name
 
         Returns:
             int: the associated afforestation_pre_type_id
@@ -199,8 +202,9 @@ class CBMDefaultsReference:
         """Get name and id information for the afforestation pre-types
         defined in the underlying cbm_defaults database.  Returns a list
         of dictionaries with the following keys:
-            -afforestation_pre_type_id
-            -afforestation_pre_type_name
+
+            - afforestation_pre_type_id
+            - afforestation_pre_type_name
 
         Returns:
             list: list of rows with afforestation pre type data
@@ -225,11 +229,12 @@ class CBMDefaultsReference:
         land class.  Non-land class altering disturbance types are not
         included in the result. Returns a list of dictionaries with the
         following keys:
-            -disturbance_type_id
-            -disturbance_type_name
-            -land_class_id
-            -land_class_code
-            -land_class_description
+
+            - disturbance_type_id
+            - disturbance_type_name
+            - land_class_id
+            - land_class_code
+            - land_class_description
 
         Returns:
             list: a list of rows with disturbance type/landclass data
@@ -247,9 +252,11 @@ class CBMDefaultsReference:
         Returns:
             dict, or None: if a match is found for the specified name, a
             dictionary containing values for:
-                -land_class_id
-                -land_class_code
-                -land_class_description
+
+                - land_class_id
+                - land_class_code
+                - land_class_description
+
             is returned
         """
         if disturbance_type_name not in self.land_classes_by_dist_type:
