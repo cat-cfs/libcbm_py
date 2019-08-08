@@ -12,7 +12,7 @@ def get_unfccc_land_class_id_ref():
     CBM-CFS3 model for UNFCCC land class.
 
     Returns:
-        dict -- a dictionary of UNFCCC land class names and ids
+        dict: a dictionary of UNFCCC land class names and ids
     """
     return {
         "UNFCCC_FL_R_FL": 0, "UNFCCC_CL_R_CL": 1, "UNFCCC_GL_R_GL": 2,
@@ -47,7 +47,7 @@ def get_results_path(project_path):
 
     Args:
         name (str): the project name, which is used to form the subdirectory
-        and project file name
+            and project file name
 
     Returns:
         str: a path for the specified project
@@ -68,7 +68,7 @@ def get_config_path(toolbox_path, name):
             and project file name
 
     Returns:
-        [type]: [description]
+        str: a path for the SIT configuration based on the specified args
     """
     cbm3_project_dir = os.path.dirname(get_project_path(toolbox_path, name))
     return os.path.join(cbm3_project_dir, "{}.json".format(name))
