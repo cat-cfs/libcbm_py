@@ -4,13 +4,13 @@ from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
 
 
 def get_classifier_value_name(id):
-    """encodes a test case id as a classifier value name
+    """Encodes a test case id as a classifier value name
 
     Arguments:
-        id {int} -- test case id
+        id (int): test case id
 
     Returns:
-        str -- encoded classifier value name
+        str: encoded classifier value name
     """
     return str(id)
 
@@ -20,7 +20,7 @@ def get_random_sigmoid_func():
     of x
 
     Returns:
-        func -- a sigmoid unction
+        func: a sigmoid function
     """
     x_0 = np.random.rand(1)[0] * 100
     L = np.random.rand(1)[0] * 400
@@ -36,7 +36,7 @@ def get_step_func():
     of x
 
     Returns:
-        func -- a step function
+        func: a step function
     """
     y = np.random.rand(1)[0] * 500
     minX = np.random.randint(low=1, high=200)
@@ -56,7 +56,7 @@ def get_ramp_func():
     of x
 
     Returns:
-        func -- a ramp function
+        func: a ramp function
     """
     rate = np.random.rand(1)[0] * 5
 
@@ -70,7 +70,7 @@ def get_expCurve_func():
     of x
 
     Returns:
-        func -- an exp curve function
+        func: an exp curve function
     """
     yMax = np.random.rand(1)[0] * 500
 
@@ -86,35 +86,58 @@ def choose_random_yield_func(func_factories=[
             get_expCurve_func]):
     return np.random.choice(func_factories, 1)[0]()
 
+"""create a list of test cases for comparing CBM-CFS3 versus libCBM.
 
+Arguments:
+    random_seed {int} -- a random seed for all random functions within
+        the test generator
+    num_cases {int} -- the number of random cases (ie. number of stands
+        to generate)
+    db_path {str} -- path to a cbm_defaults database
+    n_steps {int} -- the number of timesteps to simulate
+    max_disturbances {int} -- the maximum number of disturbances that
+        can occur on randomly generated stand scenarios
+    max_components {int} -- the maximum number of growth curve component
+        that can occur on a randomly generated stand
+    n_growth_digits {int} -- included since CBM3 has a rounding to the
+        second decimal place for growth curves
+    age_interval {int} -- the number of years between growth curve values
+    growth_curve_len {int} -- the number of growth curve values
+
+Keyword Arguments:
+    growth_only {bool} -- if set to True, stands will only be forested
+        initially (default: {False})
+
+Returns:
+    list -- a list of parameters which can be run as stand level
+    simulations by both libCBM and by CBM-CFS3
+"""
 def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                        max_disturbances, max_components, n_growth_digits,
                        age_interval, growth_curve_len, growth_only=False):
-    """create a list of test cases for comparing CBM-CFS3 versus libCBM.
+    """Create a list of test cases for comparing CBM-CFS3 versus libCBM.
 
-    Arguments:
-        random_seed {int} -- a random seed for all random functions within
+    Args:
+        random_seed (int): a random seed for all random functions within
             the test generator
-        num_cases {int} -- the number of random cases (ie. number of stands
+        num_cases (int): the number of random cases (ie. number of stands
             to generate)
-        db_path {str} -- path to a cbm_defaults database
-        n_steps {int} -- the number of timesteps to simulate
-        max_disturbances {int} -- the maximum number of disturbances that
+        db_path (str): path to a cbm_defaults database
+        n_steps (int): the number of timesteps to simulate
+        max_disturbances (int): the maximum number of disturbances that
             can occur on randomly generated stand scenarios
-        max_components {int} -- the maximum number of growth curve component
+        max_components (int): the maximum number of growth curve component
             that can occur on a randomly generated stand
-        n_growth_digits {[type]} -- included since CBM3 has a rounding to the
+        n_growth_digits (int): included since CBM3 has a rounding to the
             second decimal place for growth curves
-        age_interval {int} -- the number of years between growth curve values
-        growth_curve_len {int} -- the number of growth curve values
-
-    Keyword Arguments:
-        growth_only {bool} -- if set to True, stands will only be forested
-            initially (default: {False})
+        age_interval (int): the number of years between growth curve values
+        growth_curve_len (int): the number of growth curve values
+        growth_only (bool, optional): If set to True, stands will only be
+            forested initially. Defaults to False.
 
     Returns:
-        list -- a list of parameters which can be run as stand level
-        simulations by both libCBM and by CBM-CFS3
+        list: A list of parameters which can be run as stand level
+            simulations by both libCBM and by CBM-CFS3
     """
     np.random.seed(random_seed)
     ref = CBMDefaultsReference(db_path, "en-CA")
