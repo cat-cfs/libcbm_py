@@ -248,7 +248,7 @@ def initialize_cbm_state_variables(n_stands):
 
 
 def initialize_inventory(classifiers, inventory):
-    """Creates input for `libcbm.model.cbm.CBM` functions
+    """Creates inventory input for :class:`libcbm.model.cbm.CBM` functions
 
     Args:
         classifiers (pandas.DataFrame): dataframe of inventory classifier

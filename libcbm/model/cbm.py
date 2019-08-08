@@ -11,8 +11,11 @@ class CBM:
         LibCBM wrapper instance. The wrapper instance is initialized
         with model parameters and configuration.
 
-        Arguments:
-            dll {LibCBMWrapper} -- an instance of the LibCBMWrapper.
+        Args:
+            dll (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an instance
+                of LibCBMWrapper.
+            config (dict): configuration dictionary. See
+                :class:`libcbm.configuration.cbmconfig` for documentation.
         """
         self.dll = dll
         self.config = config
@@ -55,12 +58,12 @@ class CBM:
         """Get the classifier value id associated with the classifier_name,
         classifier_value_name pair
 
-        Arguments:
-            classifier {str} -- name of the classifier
-            classifier_value {str} -- name of the classifier value
+        Args:
+            classifier (str): name of the classifier
+            classifier_value (str): name of the classifier value
 
         Returns:
-            int -- identifier for the classifier/classifier value
+            int: identifier for the classifier/classifier value
         """
         c = self.classifier_lookup[classifier_name]
         cv = c[classifier_value_name]
@@ -70,34 +73,30 @@ class CBM:
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
-        See libcbm.model.cbm_variables for creating this function's
-        parameters.
-
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            pools (pandas.DataFrame or numpy.ndarray): CBM pools of
                 dimension n_stands by n_pools. Initialized with spinup carbon
                 values by this function.  Column order is important. See:
-                libcbm.model.cbm_variables.initialize_pools for a compatible
-                definition
-            variables {object} -- Spinup working variables.  Defines all
+                :py:func:`libcbm.model.cbm_variables.initialize_pools` for a
+                compatible definition
+            variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  See:
-                libcbm.model.cbm_variables.initialize_spinup_variables for a
-                compatible definition
-            parameters {object} -- spinup parameters. See:
-                libcbm.model.cbm_variables.initialize_spinup_parameters for a
-                compatible definition
-
-        Keyword Arguments:
-            debug {bool} -- if true this function will return a pandas
-                dataframe of selected spinup state variables.
-                (default: {False})
+                :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
+                for a compatible definition
+            parameters (object): spinup parameters. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_spinup_parameters`
+                for a compatible definition
+            debug (bool, optional) If true this function will return a pandas
+                dataframe of selected spinup state variables. Defaults to
+                False.
 
         Returns:
-            pandas.DataFrame or None -- returns a debug dataframe if parameter
+            pandas.DataFrame or None: returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
 
@@ -168,25 +167,23 @@ class CBM:
 
     def init(self, inventory, pools, state_variables):
         """Set the initial state of CBM variables after spinup and prior
-        to starting CBM simulation
+        to starting CBM simulation stepping
 
-        See libcbm.model.cbm_variables for creating this function's
-        parameters.
-
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            pools (pandas.DataFrame or numpy.ndarray): -- CBM pools of
                 dimension n_stands by n_pools. Initialized with spinup carbon
                 values by this function.  Column order is important. See:
-                libcbm.model.cbm_variables.initialize_pools for a compatible
-                definition
-            state_variables {pandas.DataFrame} -- Simulation variables which
+                :py:func:`libcbm.model.cbm_variables.initialize_pools` for a
+                compatible definition
+            state_variables (pandas.DataFrame): -- Simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
                 function call.  See:
-                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
         """
         self.dll.InitializeLandState(
@@ -196,32 +193,31 @@ class CBM:
         """Advances the specified CBM variables through one time step of CBM
         simulation.
 
-        See libcbm.model.cbm_variables for creating this function's
-        parameters.
-
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            pools {pandas.DataFrame or numpy.ndarray} -- CBM pools of
+                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            pools (pandas.DataFrame or numpy.ndarray): CBM pools of
                 dimension n_stands by n_pools. Initialized with spinup carbon
                 values by this function.  Column order is important. See:
-                libcbm.model.cbm_variables.initialize_pools for a compatible
-                definition
-            flux {pandas.DataFrame or numpy.ndarray} -- CBM flux values of
+                :py:func:`libcbm.model.cbm_variables.initialize_pools` for a
+                compatible definition
+            flux (pandas.DataFrame or numpy.ndarray): CBM flux values of
                 dimension n_stands by n_flux_indicators. Initialized with
                 spinup carbon values by this function.  Column order is
-                important. See: libcbm.model.cbm_variables.initialize_flux
-                for a compatible definition.
-            state_variables {pandas.DataFrame} -- simulation variables which
+                important. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_flux` for a
+                compatible definition.
+            state_variables (pandas.DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
                 function call.  See:
-                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
-            parameters {object} -- Read-only parameters used in a CBM timestep.
-                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
-                a compatible definition.
+            parameters (object): Read-only parameters used in a CBM timestep.
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
+                for a compatible definition.
         """
 
         flux *= 0.0

@@ -6,12 +6,12 @@ import json
 def create(dll_path, db_path):
     """Creates and initializes a handle to the low level libcbm library.
 
-    Arguments:
-        dll_path {str} -- path to the libcbm compiled library
-        db_path {str} -- path to a cbm_defaults formatted sqlite database
+    Args:
+        dll_path (str): path to the libcbm compiled library
+        db_path (str): path to a cbm_defaults formatted sqlite database
 
     Returns:
-        LibCBMWrapper -- class with python wrapper functions for low level
+        LibCBMWrapper: class with python wrapper functions for low level
             library
     """
     pooldef = cbm_defaults.load_cbm_pools(db_path)
