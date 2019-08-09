@@ -112,53 +112,60 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         Arguments:
             config (str): a json formatted string containing configuration
-            for libcbm pools and flux definitions.
+                for libcbm pools and flux definitions.
 
-            The number of pools, and flux indicators defined here, corresponds
-            to other data dimensions used during the lifetime of this instance:
+                The number of pools, and flux indicators defined here,
+                corresponds to other data dimensions used during the lifetime
+                of this instance:
 
-                1. The number of pools here defines the number of columns in
-                   the pool value matrix used by several other libCBM functions
-                2. The number of flux_indicators here defines the number of
-                   columns in the flux indicator matrix in the
-                   ComputeFlux method.
+                    1. The number of pools here defines the number of columns
+                       in the pool value matrix used by several other libCBM
+                       functions
+                    2. The number of flux_indicators here defines the number
+                       of columns in the flux indicator matrix in the
+                       ComputeFlux method.
+                    3. The number of pools here defines the number of rows,
+                       and the number of columns of all matrices allocated by
+                       the :py:func:`AllocateOp` function.
 
-            Example::
 
-                {
-                    "pools": [
-                        {"id": 1, "index": 0, "name": "pool_1"},
-                        {"id": 2, "index": 1, "name": "pool_2"},
-                           ...
-                        {"id": n, "index": n-1, "name": "pool_n"}],
+                Example::
 
-                    "flux_indicators": [
-                        {
-                            "id": 1,
-                            "index": 0,
-                            "process_id": 1,
-                            "source_pools": [1, 2]
-                            "sink_pools": [3]
-                        },
-                        {
-                            "id": 2,
-                            "index": 1,
-                            "process_id": 1,
-                            "source_pools": [1, 2]
-                            "sink_pools": [3]
-                        },
-                        ...
-                    ]
-                }
+                    {
+                        "pools": [
+                            {"id": 1, "index": 0, "name": "pool_1"},
+                            {"id": 2, "index": 1, "name": "pool_2"},
+                            ...
+                            {"id": n, "index": n-1, "name": "pool_n"}],
 
-            Pool/Flux Indicators configuration rules:
+                        "flux_indicators": [
+                            {
+                                "id": 1,
+                                "index": 0,
+                                "process_id": 1,
+                                "source_pools": [1, 2]
+                                "sink_pools": [3]
+                            },
+                            {
+                                "id": 2,
+                                "index": 1,
+                                "process_id": 1,
+                                "source_pools": [1, 2]
+                                "sink_pools": [3]
+                            },
+                            ...
+                        ]
+                    }
 
-                1. ids may be any integer, but are constrained to be unique
-                   within the set of pools.
-                2. indexes must be the ordered set of integers from 0 to
-                   n_pools - 1.
-                3. For flux indicator source_pools and sink_pools, list values
-                   correspond to id values in the collection of pools
+                Pool/Flux Indicators configuration rules:
+
+                    1. ids may be any integer, but are constrained to be unique
+                       within the set of pools.
+                    2. indexes must be the ordered set of integers from 0 to
+                       n_pools - 1.
+                    3. For flux indicator source_pools and sink_pools, list
+                       values correspond to id values in the collection of
+                       pools
 
         Raises:
             RuntimeError: if an error is detected in libCBM, it will be
@@ -175,20 +182,22 @@ class LibCBMWrapper(LibCBM_ctypes):
             raise RuntimeError(self.err.getErrorMessage())
 
     def AllocateOp(self, n):
-        """Allocates storage for n matrices, returning an id for the
+        """Allocates storage for matrices, returning an id for the
         allocated block.
 
-        Arguments:
-            n {int} -- The number of matrices to allocate.
+        Args:
+            n (int): The number of elements in the allocated matrix block
+                index, which corresponds to the number of stands that can
+                be processed with this matrix block
 
         Raises:
             AssertionError: raised if the Initialize method was not called
-            prior to this method.
+                prior to this method.
             RuntimeError: if an error is detected in libCBM, it will be
-            re-raised with an appropriate error message.
+                re-raised with an appropriate error message.
 
         Returns:
-            int -- the id for an allocated block of matrices
+            int: the id for an allocated block of matrices
         """
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -205,8 +214,8 @@ class LibCBMWrapper(LibCBM_ctypes):
     def FreeOp(self, op_id):
         """Deallocates a matrix block that was allocated by the AllocateOp method.
 
-        Arguments:
-            op_id {int} -- The id for an allocated block of matrices.
+        Args:
+            op_id (int): The id for an allocated block of matrices.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -227,13 +236,70 @@ class LibCBMWrapper(LibCBM_ctypes):
     def SetOp(self, op_id, matrices, matrix_index):
         """Assigns values to an allocated block of matrices.
 
-        Arguments:
-            op_id {int} -- The id for an allocated block of matrices
-            matrices {list of ndarray} -- a list of n by 3 matrices which are
+            Example::
+
+                n_stands = 3
+                op_id = AllocateOp(n_stands)
+                matrix_0 = np.array([
+                    [0, 1, 0.5],
+                    [0, 0, 1.0],
+                    [1, 1, 1.0]
+                ])
+                matrix_1 = np.array([
+                    [1, 0, 0.5],
+                    [0, 0, 1.0],
+                    [1, 1, 0.5]
+                ])
+                matrices = [matrix_0, matrix_1]
+                matrix_index = [0,1,0]
+                SetOp(op_id, matrices, matrix_index)
+
+            In this example, a pair of matrices are passed. Here the matrices
+            are of dimension N by N where N is defined by the call to
+            :py:func:`Initialize`.
+
+            matrix_0:
+
+            ===  ===  ===  ===  ===
+             p   p0   p1   ...  pN
+            ===  ===  ===  ===  ===
+            p0   1.0  0.5  0.0  0.0
+            p1   0.0  1.0  0.0  0.0
+            ...  0.0  0.0  0.0  0.0
+            pN   0.0  0.0  0.0  0.0
+            ===  ===  ===  ===  ===
+
+            matrix_1:
+
+            ===  ===  ===  ===  ===
+             p   p0   p1   ...  pN
+            ===  ===  ===  ===  ===
+            p0   1.0  0.0  0.0  0.0
+            p1   0.5  0.5  0.0  0.0
+            ...  0.0  0.0  0.0  0.0
+            pN   0.0  0.0  0.0  0.0
+            ===  ===  ===  ===  ===
+
+            The matrices are indexed according to the following table:
+
+            ===========  ============
+            Stand_index  Matrix_index
+            ===========  ============
+                 0           0
+                 1           1
+                 2           0
+            ===========  ============
+
+            related functions: :py:func:`AllocateOp`, :py:func:`ComputePools`,
+                :py:func:`ComputeFlux`
+
+        Args:
+            op_id (int): The id for an allocated block of matrices
+            matrices (list): a list of n by 3 ndarray matrices which are
                 coordinate format triplet values (row,column,value).  All
                 defined row/column combinations are set with the value, and
                 all other matrix cells are assumed to be 0.
-            matrix_index {ndarray} -- an array of length n stands where the
+            matrix_index (ndarray): an array of length n stands where the
                 value is an index to a matrix in the specified list of matrices
                 provided to this function.
 
@@ -261,7 +327,7 @@ class LibCBMWrapper(LibCBM_ctypes):
         Each value in the ops parameter is an id to a matrix block, and is also
         conceptually a list of matrixes of length n stands.
 
-        Performs the following computation:
+        Performs the following computation::
 
             for op in ops:
                 for s in len(n_stands):
@@ -271,19 +337,18 @@ class LibCBMWrapper(LibCBM_ctypes):
         Where get_matrix is a function returning the matrix for the
         op, stand index combination.
 
-        Arguments:
-            ops {ndarray} -- list of matrix block ids as allocated by the
-                AllocateOp function.
-            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+        Args:
+            ops (ndarray): list of matrix block ids as allocated by the
+                :py:func:`AllocateOp` function.
+            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
-
-        Keyword Arguments:
-            enabled {ndarray} -- optional int vector of length n stands. If
-                specified, enables or disables flows for each stand, based on
-                the value at each stand index. (0 is disabled, !0 is enabled)
-                If unspecified, all flows are assumed to be enabled.
-                (default: {None})
+            enabled ([type], optional): optional int vector of length
+                n_stands. If specified, enables or disables flows for each
+                stand, based on the value at each stand index. A value of 0
+                indicates a disabled stand index, and any other value is an
+                enabled stand index !0 is enabled. If None, all flows
+                are assumed to be enabled. Defaults to None.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -372,77 +437,79 @@ class LibCBMWrapper(LibCBM_ctypes):
     def InitializeCBM(self, config):
         """Initializes CBM-specific functionality within LibCBM
 
-        Arguments:
-            config {str} -- A json formatted string containing CBM
+        Args:
+            config (str): A json formatted string containing CBM
                 configuration.
 
-            See libcbm.configuration.cbm_defaults for construction of the
-            "cbm_defaults" value.  It is too large to include a useful example
-            here.
+                See :py:mod:`libcbm.configuration.cbm_defaults` for
+                construction of the "cbm_defaults" value, and
+                :py:mod:`libcbm.configuration.cbmconfig` for helper methods.
 
-            Example:
-                {
-                    "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
-                    "classifiers": [
-                        {"id": 1, "name": "a"},
-                        {"id": 2, "name": "b"},
-                        {"id": 3, "name": "c"}
-                    ],
-                    "classifier_values": [
-                        {
-                            "id": 1,
-                            "classifier_id": 1,
-                            "value": "a1",
-                            "description": "a1"
-                        },
-                        {
-                            "id": 2,
-                            "classifier_id": 2,
-                            "value": "b2",
-                            "description": "b2"
-                        },
-                        {
-                            "id": 3,
-                            "classifier_id": 3,
-                            "value": "c1",
-                            "description": "c1"
-                        }
-                    ],
-                    "merch_volume_to_biomass": {
-                        'db_path': './cbm_defaults.db',
-                        'merch_volume_curves': [
+                Example::
+
+                    {
+                        "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
+                        "classifiers": [
+                            {"id": 1, "name": "a"},
+                            {"id": 2, "name": "b"},
+                            {"id": 3, "name": "c"}
+                        ],
+                        "classifier_values": [
                             {
-                                'classifier_set': {
-                                    'type': 'name', 'values': ['a1','b2','c1']
-                                },
-                                'components': [
-                                    {
-                                    'species_id': 1,
-                                    'age_volume_pairs': [(age0, vol0),
-                                                         (age1, vol0),
-                                                         (ageN, volN)]
+                                "id": 1,
+                                "classifier_id": 1,
+                                "value": "a1",
+                                "description": "a1"
+                            },
+                            {
+                                "id": 2,
+                                "classifier_id": 2,
+                                "value": "b2",
+                                "description": "b2"
+                            },
+                            {
+                                "id": 3,
+                                "classifier_id": 3,
+                                "value": "c1",
+                                "description": "c1"
+                            }
+                        ],
+                        "merch_volume_to_biomass": {
+                            'db_path': './cbm_defaults.db',
+                            'merch_volume_curves': [
+                                {
+                                    'classifier_set': {
+                                        'type': 'name',
+                                        'values': ['a1','b2','c1']
                                     },
-                                    {
-                                    'species_id': 2,
-                                    'age_volume_pairs': [(age0, vol0),
-                                                         (age1, vol0),
-                                                         (ageN, volN)]
-                                    }
-                                ]
+                                    'components': [
+                                        {
+                                        'species_id': 1,
+                                        'age_volume_pairs': [(age0, vol0),
+                                                             (age1, vol0),
+                                                             (ageN, volN)]
+                                        },
+                                        {
+                                        'species_id': 2,
+                                        'age_volume_pairs': [(age0, vol0),
+                                                             (age1, vol0),
+                                                             (ageN, volN)]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "transitions": [
+                            {
+                                "id": 1,
+                                "classifier_set": {
+                                    'type': 'name', 'values': ['a1','b2','?']
+                                },
+                                "regeneration_delay": 0,
+                                "reset_age": 0
                             }
                         ]
-                    },
-                    "transitions": [
-                        {
-                            "id": 1,
-                            "classifier_set": {
-                                'type': 'name', 'values': ['a1','b2','?']
-                            },
-                            "regeneration_delay": 0,
-                            "reset_age": 0
-                        }
-                    ]
-                }
+                    }
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -465,19 +532,21 @@ class LibCBMWrapper(LibCBM_ctypes):
         """Advances CBM stand variables through a timestep based on the
         current simulation state.
 
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            state_variables {pandas.DataFrame} -- simulation variables which
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            state_variables (pandas.DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
                 function call.  See:
-                libcbm.model.cbm_variables.initialize_cbm_state_variables
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
-            parameters {object} -- Read-only parameters used in a CBM timestep.
-                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
-                a compatible definition.
+            parameters (object): Read-only parameters used in a CBM timestep.
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
+                for a compatible definition.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -508,11 +577,13 @@ class LibCBMWrapper(LibCBM_ctypes):
     def EndStep(self, state_variables):
         """Applies end-of-timestep changes to the CBM state
 
-        state_variables {pandas.DataFrame} -- simulation variables which
-            define all non-pool state in the CBM model.  This
-            function call will alter this variable with end-of-step changes.
-            See: libcbm.model.cbm_variables.initialize_cbm_state_variables
-            for a compatible definition
+        Args:
+            state_variables (pandas.DataFrame): simulation variables which
+                define all non-pool state in the CBM model.  This
+                function call will alter this variable with end-of-step
+                changes. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                for a compatible definition
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -534,21 +605,21 @@ class LibCBMWrapper(LibCBM_ctypes):
         """Initializes CBM state to values appropriate for after running
         spinup and before starting CBM stepping
 
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition.
+            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function for stands that have an afforestation pre-type
                 defined.
-            state_variables {pandas.DataFrame} -- simulation variables which
+            state_variables (pandas.DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  This
                 function call will alter this variable with CBM initial state
                 values. See:
-                libcbm.model.cbm_variables.initialize_cbm_state_variables for
-                a compatible definition
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                for a compatible definition.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -577,18 +648,18 @@ class LibCBMWrapper(LibCBM_ctypes):
     def AdvanceSpinupState(self, inventory, variables, parameters):
         """Advances spinup state variables through one spinup step.
 
-        Arguments:
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            variables {object} -- Spinup working variables.  Defines all
+                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  See:
-                libcbm.model.cbm_variables.initialize_spinup_variables for a
-                compatible definition
-            parameters {object} -- spinup parameters. See:
-                libcbm.model.cbm_variables.initialize_spinup_parameters for a
-                compatible definition
+                :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
+                for a compatible definition
+            parameters (object): spinup parameters. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_spinup_parameters`
+                for a compatible definition
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -597,7 +668,7 @@ class LibCBMWrapper(LibCBM_ctypes):
                 re-raised with an appropriate error message.
 
         Returns:
-            int -- The number of stands finished running the spinup routine
+            int: The number of stands finished running the spinup routine
             as of the end of this call.
         """
         if not self.handle:
@@ -639,16 +710,16 @@ class LibCBMWrapper(LibCBM_ctypes):
     def EndSpinupStep(self, pools, variables):
         """Applies end-of-timestep changes to the spinup state
 
-        Arguments:
-            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+        Args:
+            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are used to
                 compute a criteria for exiting the spinup routing.  They not
                 altered by this function.
-            variables {object} -- Spinup working variables.  Defines all
+            variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  Set to an
                 end-of-timestep state by this function. See:
-                libcbm.model.cbm_variables.initialize_spinup_variables for a
-                compatible definition
+                :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
+                for a compatible definition
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -671,28 +742,28 @@ class LibCBMWrapper(LibCBM_ctypes):
                                 state_variables):
         """Computes CBM merchantable growth as a bulk matrix operation.
 
-        Arguments:
-            growth_op {int} -- Handle for a block of matrices as allocated by
-                the AllocateOp function. Used to compute merch volume growth.
-            turnover operations.
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            growth_op (int): Handle for a block of matrices as allocated by
+                the :py:func:`AllocateOp` function. Used to compute merch
+                volume growth operations.
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of merch volume growth parameters
                 passed to library initialization, and to find a yield curve
                 associated with inventory classifier sets. Will not be
                 modified by this function. See:
-                libcbm.model.cbm_variables.initialize_inventory for a
-                compatible definition
-            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition.
+            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. Used by this function to compute a root
                 increment, and also to limit negative growth increments such
                 that a negative biomass pools are prevented.  This parameter
                 is not modified by this function.
-            state_variables {pandas.DataFrame} -- simulation variables which
+            state_variables (pandas.DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  This function
-                call will not alter this parameter.
-                libcbm.model.cbm_variables.initialize_cbm_state_variables for
-                a compatible definition
+                call will not alter this parameter. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                for a compatible definition
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -727,19 +798,20 @@ class LibCBMWrapper(LibCBM_ctypes):
         """Computes biomass turnovers and dead organic matter turnovers as
         bulk matrix operations.
 
-        Arguments:
-            biomass_turnover_op {int} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to compute biomass
-                turnover operations.
-            snag_turnover_op {[type]} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to compute dom
-                    (specifically snags) turnover operations.
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            biomass_turnover_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute biomass turnover operations.
+            snag_turnover_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute dom (specifically snags) turnover operations.
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of turnover parameters passed to
                 library initialization. Will not be modified by this
-                function. See: libcbm.model.cbm_variables.initialize_inventory
-                for a compatible definition
+                function. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -762,36 +834,32 @@ class LibCBMWrapper(LibCBM_ctypes):
 
     def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
                     inventory, parameters, historical_mean_annual_temp=False):
-        """Computes dead organic matter decay as bulk matrix operations.
+        """Prepares dead organic matter decay bulk matrix operations.
 
-        Arguments:
-            dom_decay_op {int} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to compute dom
-                decay operations.
-            slow_decay_op {int} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to compute slow
-                pool decay operations.
-            slow_mixing_op {[type]} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to compute slow
-                pool mixing operations.
-            inventory {object} -- Data comprised of classifier sets
+        Args:
+            dom_decay_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute dom decay operations.
+            slow_decay_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute slow pool decay operations.
+            slow_mixing_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute slow pool mixing operations.
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of decay parameters passed to library
                 initialization. Will not be modified by this
-                function. See: libcbm.model.cbm_variables.initialize_inventory
+                function. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
-            parameters {object} -- Read-only parameters used to optionally set
-                explicit mean annual temp for the decay function.
-                See: libcbm.model.cbm_variables.initialize_cbm_parameters for
-                a compatible definition.
-
-        Keyword Arguments:
-            historical_mean_annual_temp {bool} -- If set to true, the
-                historical default mean annual temperature is used. This
-                is intended for spinup.  If explicit mean annual temperature
+            parameters (object): [description]
+            historical_mean_annual_temp (bool, optional): If set to true, the
+                historical default mean annual temperature is used. This is
+                intended for spinup.  If explicit mean annual temperature
                 is provided via the parameters argument, this parameter will
                 be ignored, and the explicit mean annual temp will be used.
-                (default: {False})
+                Defaults to False.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -813,26 +881,50 @@ class LibCBMWrapper(LibCBM_ctypes):
             get_nullable_ndarray(p.mean_annual_temp))
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
-
-    def GetDisturbanceOps(self, disturbance_op, inventory,
-                          parameters):
         """Sets up CBM disturbance matrices as a bulk matrix operation.
 
         Arguments:
             disturbance_op {int} -- Handle for a block of matrices as
-                allocated by the AllocateOp function. Used to disturbance
-                flows.
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute disturbance event pool flows.
             inventory {object} -- Data comprised of classifier sets
+                and cbm inventory data. Used by this function to find correct
+                parameters from the set of disturbance parameters passed to
+                library initialization. Will not be modified by this function.
+                See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                for a compatible definition
+            parameters {object} -- Read-only parameters used to set
+                disturbance type id to fetch the appropriate disturbance
+                matrix. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
+                for a compatible definition.
+
+        Raises:
+            AssertionError: raised if the Initialize method was not called
+                prior to this method.
+            RuntimeError: if an error is detected in libCBM, it will be
+                re-raised with an appropriate error message.
+        """
+    def GetDisturbanceOps(self, disturbance_op, inventory,
+                          parameters):
+        """Sets up CBM disturbance matrices as a bulk matrix operations.
+
+        Args:
+            disturbance_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute disturbance event pool flows.
+            inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of disturbance parameters passed to
                 library initialization. Will not be modified by this function.
                 See: libcbm.model.cbm_variables.initialize_inventory
                 for a compatible definition
-            parameters {object} -- Read-only parameters used to set
+            parameters (object): Read-only parameters used to set
                 disturbance type id to fetch the appropriate disturbance
                 matrix. See:
-                libcbm.model.cbm_variables.initialize_cbm_parameters for
-                a compatible definition.
+                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
+                for a compatible definition.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
