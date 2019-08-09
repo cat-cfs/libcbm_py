@@ -6,6 +6,13 @@ class LibCBM_Matrix(ctypes.Structure):
     """Wrapper for low level C/C++ LibCBM structure of the same name.
     Used to pass a 2 dimensional numpy matrix or single valued array as raw
     float64 memory to LibCBM.
+
+    Args:
+    matrix (numpy.ndarray): a 2 dimensional numpy array, or single value
+
+    Raises:
+        ValueError: matrix must have either 2 dimensions or be a scalar
+        ValueError: matrix must be C_CONTIGUOUS and of type np.double
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),
@@ -33,6 +40,13 @@ class LibCBM_Matrix_Int(ctypes.Structure):
     """Wrapper for low level C/C++ LibCBM structure of the same name.
     Used to pass a 2 dimensional numpy matrix or single valued array as raw
     int32 memory to LibCBM.
+
+    Args:
+    matrix (numpy.ndarray): a 2 dimensional numpy array, or single value
+
+    Raises:
+        ValueError: matrix must have either 2 dimensions or be a scalar
+        ValueError: matrix must be C_CONTIGUOUS and of type np.int32
     """
     _fields_ = [('rows', ctypes.c_ssize_t),
                 ('cols', ctypes.c_ssize_t),

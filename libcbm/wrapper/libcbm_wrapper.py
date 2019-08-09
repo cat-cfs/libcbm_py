@@ -15,6 +15,7 @@ def unpack_ndarrays(variables):
     """Convert and return a set of variables as a types.SimpleNamespace whose
     members are only ndarray.
     Supports 2 cases:
+
         1: the specified variables are already stored in a SimpleNamespace
         whose properties are one of pd.Series,pd.DataFrame,or np.ndarray.
         For each property in the namespace, convert to an ndarray if
@@ -22,8 +23,8 @@ def unpack_ndarrays(variables):
         2: the specified variables are the columns of a pandas.DataFrame.
         Return a reference to each column's underlying numpy.ndarray storage
 
-    Arguments:
-        variables {SimpleNamespace or pd.DataFrame} -- The set of variables to
+    Args:
+        variables (SimpleNamespace, pd.DataFrame): The set of variables to
         unpack.
 
     Raises:
@@ -51,12 +52,12 @@ def get_ndarray(a):
     from a pandas.DataFrame or pandas.Series.  If None is specified, None is
     returned.
 
-    Arguments:
-        a {None, ndarray, pandas.DataFrame, or pandas.Series} -- data to
-        potentially convert to ndarray
+    Args:
+        a (None, ndarray, pandas.DataFrame, or pandas.Series): data to
+            potentially convert to ndarray
 
     Returns:
-        ndarray, or None - an ndarray
+        ndarray, or None: an ndarray
     """
     if a is None:
         return None
@@ -73,18 +74,16 @@ def get_nullable_ndarray(a, type=ctypes.c_double):
     """helper method for wrapper parameters that can be specified either as
     null pointers or pointers to numpy memory
 
-    Arguments:
-        a {array_like} or {None} -- array to convert to pointer, if None is
-        specified None is returned.
-
-    Keyword Arguments:
-        type {object} -- type supported by ctypes.POINTER
-        (default: {ctypes.c_double})
+    Args:
+        a (numpy.ndarray, None) -- array to convert to pointer, if None is
+            specified None is returned.
+        type (object, optional): type supported by ctypes.POINTER. Defaults
+            to ctypes.c_double.
 
     Returns:
-        None or ctypes.POINTER -- if the specified argument is None, None is
-        returned, otherwise the argument is converted to a C_CONTIGUOUS
-        pointer to the underlying ndarray data.
+        None or ctypes.POINTER: if the specified argument is None, None is
+            returned, otherwise the argument is converted to a C_CONTIGUOUS
+            pointer to the underlying ndarray data.
     """
     if a is None:
         return None
@@ -111,18 +110,20 @@ class LibCBMWrapper(LibCBM_ctypes):
         """Initialize libcbm with pools, and flux indicators
 
         Arguments:
-            config {str} -- a json formatted string containing configuration
+            config (str): a json formatted string containing configuration
             for libcbm pools and flux definitions.
 
             The number of pools, and flux indicators defined here, corresponds
             to other data dimensions used during the lifetime of this instance:
+
                 1. The number of pools here defines the number of columns in
                    the pool value matrix used by several other libCBM functions
                 2. The number of flux_indicators here defines the number of
                    columns in the flux indicator matrix in the
                    ComputeFlux method.
 
-            Example:
+            Example::
+
                 {
                     "pools": [
                         {"id": 1, "index": 0, "name": "pool_1"},
@@ -150,6 +151,7 @@ class LibCBMWrapper(LibCBM_ctypes):
                 }
 
             Pool/Flux Indicators configuration rules:
+
                 1. ids may be any integer, but are constrained to be unique
                    within the set of pools.
                 2. indexes must be the ordered set of integers from 0 to
@@ -159,7 +161,7 @@ class LibCBMWrapper(LibCBM_ctypes):
 
         Raises:
             RuntimeError: if an error is detected in libCBM, it will be
-            re-raised with an appropriate error message.
+                re-raised with an appropriate error message.
         """
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
 

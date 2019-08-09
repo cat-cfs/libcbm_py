@@ -6,17 +6,16 @@ from types import SimpleNamespace
 
 
 class CBM:
-    def __init__(self, dll, config):
-        """Creates a new instance of the CBM model with the specified
-        LibCBM wrapper instance. The wrapper instance is initialized
-        with model parameters and configuration.
+    """The CBM model.
 
-        Args:
-            dll (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an instance
-                of LibCBMWrapper.
-            config (dict): configuration dictionary. See
-                :class:`libcbm.configuration.cbmconfig` for documentation.
-        """
+    Args:
+        dll (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an instance
+            of LibCBMWrapper.
+        config (dict): configuration dictionary. See
+            :py:mod:`libcbm.configuration.cbmconfig` for documentation.
+    """
+    def __init__(self, dll, config):
+
         self.dll = dll
         self.config = config
 
