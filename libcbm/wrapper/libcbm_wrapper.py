@@ -31,7 +31,7 @@ def unpack_ndarrays(variables):
         ValueError: the type of the specified argument was not supported
 
     Returns:
-        SimpleNamespace -- a SimpleNamespace whose properties are ndarray.
+        types.SimpleNamespace: a SimpleNamespace whose properties are ndarray.
     """
     properties = {}
     if isinstance(variables, SimpleNamespace):
@@ -57,7 +57,8 @@ def get_ndarray(a):
             potentially convert to ndarray
 
     Returns:
-        ndarray, or None: an ndarray
+        ndarray, or None: the specified ndarray, the ndarray storage of a
+            specified pandas object, or None
     """
     if a is None:
         return None
@@ -71,19 +72,19 @@ def get_ndarray(a):
 
 
 def get_nullable_ndarray(a, type=ctypes.c_double):
-    """helper method for wrapper parameters that can be specified either as
+    """Helper method for wrapper parameters that can be specified either as
     null pointers or pointers to numpy memory
 
     Args:
-        a (numpy.ndarray, None) -- array to convert to pointer, if None is
+        a (numpy.ndarray, None): array to convert to pointer, if None is
             specified None is returned.
         type (object, optional): type supported by ctypes.POINTER. Defaults
             to ctypes.c_double.
 
     Returns:
         None or ctypes.POINTER: if the specified argument is None, None is
-            returned, otherwise the argument is converted to a C_CONTIGUOUS
-            pointer to the underlying ndarray data.
+            returned, otherwise the argument is converted to a pointer to
+            the underlying ndarray data.
     """
     if a is None:
         return None
@@ -625,7 +626,7 @@ class LibCBMWrapper(LibCBM_ctypes):
         n_finished = self._dll.LibCBM_AdvanceSpinupState(
             ctypes.byref(self.err), self.handle, n,
             spatial_unit, return_interval, min_rotations, max_rotations,
-            i.age, i.delay, v.slow_pools, i.historic_disturbance_type,
+            i.age, i.delay, v.slow_pools, i.historical_disturbance_type,
             i.last_pass_disturbance_type, i.afforestation_pre_type_id,
             v.spinup_state, v.disturbance_type, v.rotation, v.step,
             v.last_rotation_slow_C, v.enabled)
