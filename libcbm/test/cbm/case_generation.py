@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 
 
 def get_classifier_value_name(id):

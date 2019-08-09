@@ -3,7 +3,7 @@
 
 import sqlite3
 import pandas as pd
-import libcbm.configuration.cbm_defaults_queries as queries
+import libcbm.model.cbm.cbm_defaults_queries as queries
 
 
 class CBMDefaultsReference:

@@ -1,5 +1,5 @@
 import sqlite3
-from libcbm.configuration import cbm_defaults_queries
+from libcbm.model.cbm import cbm_defaults_queries
 
 
 def load_cbm_parameters(sqlitePath):
@@ -90,7 +90,7 @@ def load_cbm_pools(sqlitePath):
         return result
 
 
-def load_flux_indicators(sqlitePath):
+def load_cbm_flux_indicators(sqlitePath):
     """Loads cbm flux indicator information from a cbm_defaults database
     into the format expected by the libcbm compiled library.
 

@@ -6,12 +6,13 @@
 import numpy as np
 import pandas as pd
 
-from libcbm.model import cbm_factory
-from libcbm.model import cbm_variables
+
 from libcbm.model import model_factory
-from libcbm.configuration import cbmconfig
-from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
-from libcbm.test import case_generation
+from libcbm.model.cbm import cbm_factory
+from libcbm.model.cbm import cbm_variables
+from libcbm.model.cbm import cbm_config
+from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.test.cbm import case_generation
 
 
 def get_test_case_classifier_factory(cases, classifier_name):
@@ -32,9 +33,9 @@ def get_test_case_classifier_factory(cases, classifier_name):
         Returns:
             dict: classifier configuration
         """
-        classifiers_config = cbmconfig.classifier_config([
-            cbmconfig.classifier(classifier_name, [
-                cbmconfig.classifier_value(
+        classifiers_config = cbm_config.classifier_config([
+            cbm_config.classifier(classifier_name, [
+                cbm_config.classifier_value(
                     case_generation.get_classifier_value_name(c["id"]))
                 for c in cases
                 ])
@@ -76,13 +77,13 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
                     "age_volume_pairs": component["age_volume_pairs"]
                 })
 
-            curve = cbmconfig.merch_volume_curve(
+            curve = cbm_config.merch_volume_curve(
                 classifier_set=classifier_set,
                 merch_volumes=merch_volumes)
             curves.append(curve)
 
         merch_volume_to_biomass_config = \
-            cbmconfig.merch_volume_to_biomass_config(db_path, curves)
+            cbm_config.merch_volume_to_biomass_config(db_path, curves)
         return merch_volume_to_biomass_config
 
     return create_merch_volume_config

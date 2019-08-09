@@ -18,7 +18,9 @@ def load_cbm3_python(branch="master"):
     Returns:
         str: the directory where cbm3_python is cloned
     """
-    cbm3_python_dir = os.path.abspath(os.path.join(".", "cbm3_python_git"))
+    local_dir = os.path.dirname(os.path.realpath(__file__))
+    cbm3_python_dir = os.path.abspath(
+        os.path.join(local_dir, "cbm3_python_git"))
     if not os.path.exists(cbm3_python_dir):
         git.Repo.clone_from(
             'https://github.com/cat-cfs/cbm3_python.git', cbm3_python_dir,

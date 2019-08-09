@@ -1,10 +1,10 @@
 import os
-from libcbm.test.cbm3support import cbm3_python_helper
+from libcbm.test.cbm.cbm3support import cbm3_python_helper
 cbm3_python_helper.load_cbm3_python()
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python.cbm3data import cbm3_results
-from libcbm.test import casegeneration
+from libcbm.test.cbm import casegeneration
 
 
 def get_unfccc_land_class_id_ref():
@@ -112,7 +112,11 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, n_steps,
     Returns:
         str: The path to the generated CBM-CFS3 project.
     """
-    sit_plugin_path = sit_helper.load_standard_import_tool_plugin()
+
+    local_dir = os.path.dirname(os.path.realpath(__file__))
+    sit_plugin_path = sit_helper.load_standard_import_tool_plugin(
+        os.path.join(local_dir, "StandardImportToolPlugin")
+    )
 
     if not cbm3_project_path:
         cbm3_project_path = get_project_path(toolbox_path, name)

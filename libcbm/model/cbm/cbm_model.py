@@ -12,7 +12,7 @@ class CBM:
         dll (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an instance
             of LibCBMWrapper.
         config (dict): configuration dictionary. See
-            :py:mod:`libcbm.configuration.cbmconfig` for documentation.
+            :py:mod:`cbm_config` for documentation.
     """
     def __init__(self, dll, config):
 
