@@ -86,32 +86,7 @@ def choose_random_yield_func(func_factories=[
             get_expCurve_func]):
     return np.random.choice(func_factories, 1)[0]()
 
-"""create a list of test cases for comparing CBM-CFS3 versus libCBM.
 
-Arguments:
-    random_seed {int} -- a random seed for all random functions within
-        the test generator
-    num_cases {int} -- the number of random cases (ie. number of stands
-        to generate)
-    db_path {str} -- path to a cbm_defaults database
-    n_steps {int} -- the number of timesteps to simulate
-    max_disturbances {int} -- the maximum number of disturbances that
-        can occur on randomly generated stand scenarios
-    max_components {int} -- the maximum number of growth curve component
-        that can occur on a randomly generated stand
-    n_growth_digits {int} -- included since CBM3 has a rounding to the
-        second decimal place for growth curves
-    age_interval {int} -- the number of years between growth curve values
-    growth_curve_len {int} -- the number of growth curve values
-
-Keyword Arguments:
-    growth_only {bool} -- if set to True, stands will only be forested
-        initially (default: {False})
-
-Returns:
-    list -- a list of parameters which can be run as stand level
-    simulations by both libCBM and by CBM-CFS3
-"""
 def generate_scenarios(random_seed, num_cases, db_path, n_steps,
                        max_disturbances, max_components, n_growth_digits,
                        age_interval, growth_curve_len, growth_only=False):

@@ -9,19 +9,12 @@ from libcbm.wrapper.libcbm_error import LibCBM_Error
 
 class LibCBM_ctypes():
     """Wrapper for the low level functions in the libcbm C/C++ library
+
+    Args:
+        dll_path (str): path to the compiled LibCBM dll on Windows,
+        or compiled LibCBM .so file for Linux
     """
-
     def __init__(self, dll_path):
-        """Initializes the underlying LibCBM library, storing the allocated
-        handle in this instance.
-
-        Arguments:
-            dll_path {str} -- path to the compiled LibCBM dll on Windows,
-            or compiled LibCBM .so file for Linux
-
-        Returns:
-            None
-        """
         self.handle = False
 
         cwd = os.getcwd()

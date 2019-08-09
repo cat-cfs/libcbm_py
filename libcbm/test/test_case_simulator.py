@@ -11,31 +11,31 @@ from libcbm.model import cbm_variables
 from libcbm.model import model_factory
 from libcbm.configuration import cbmconfig
 from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
-from libcbm.test import casegeneration
+from libcbm.test import case_generation
 
 
 def get_test_case_classifier_factory(cases, classifier_name):
     """Create a function for translating test cases into LibCBM classifiers
     configuration
 
-    Arguments:
-        cases {list} -- a list of dictionary objects specifying test cases
-        classifier_name {str} -- the single classifier name used by the test
+    Args:
+        cases (list): a list of dictionary objects specifying test cases
+        classifier_name (str): the single classifier name used by the test
             case simulator
 
     Returns:
-        [func] -- a function that will return classifier configuration
+        func: a function that will return classifier configuration
     """
     def create_classifiers():
         """translates test cases into LibCBM classifier configuration
 
         Returns:
-            dict -- classifier configuration
+            dict: classifier configuration
         """
         classifiers_config = cbmconfig.classifier_config([
             cbmconfig.classifier(classifier_name, [
                 cbmconfig.classifier_value(
-                    casegeneration.get_classifier_value_name(c["id"]))
+                    case_generation.get_classifier_value_name(c["id"]))
                 for c in cases
                 ])
             ])
@@ -47,27 +47,27 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
     """Creates a factory function for transforming test case data into
         merchantable volume configuration input for libcbm.
 
-    Arguments:
-        cases {list} -- a list of dictionary objects specifying test cases
-        db_path {str} -- path to a cbm_defaults database (which contains
+    Args:
+        cases (list): a list of dictionary objects specifying test cases
+        db_path (str): path to a cbm_defaults database (which contains
             merchantable volume to biomass conversion parameters)
-        cbm_defaults_ref {CBMDefaultsReference} -- class used to convert
+        cbm_defaults_ref (CBMDefaultsReference): class used to convert
             species names into species ids for libcbm consumption
 
     Returns:
-        func -- a factory function which produces libcbm merch volume config
+        func: a factory function which produces libcbm merch volume config
     """
     def create_merch_volume_config():
         """translates test case data into merchantable volume
            configuration input for libcbm.
 
         Returns:
-            dict -- merch volume config
+            dict: merch volume config
         """
         curves = []
         for c in cases:
             classifier_set = [
-                casegeneration.get_classifier_value_name(c["id"])]
+                case_generation.get_classifier_value_name(c["id"])]
             merch_volumes = []
             for component in c["components"]:
                 merch_volumes.append({
@@ -91,7 +91,8 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
 def get_disturbances(cases, ref):
     """Transform test cases into dictionary storage for disturbance events
 
-    Returns a dictionary of the form:
+    Returns a dictionary of the form::
+
         {
             case_index_0:
             {
@@ -108,9 +109,9 @@ def get_disturbances(cases, ref):
     result, and any case that specifies more than one event on a single
     timestep will result in a ValueError
 
-    Arguments:
-        cases {list} -- a list of dictionary objects specifying test cases
-        ref {CBMDefaultsReference} -- class used to convert a disturbance name
+    Args:
+        cases (list): a list of dictionary objects specifying test cases
+        ref (CBMDefaultsReference): class used to convert a disturbance name
             string into a disturbance type id
 
     Raises:
@@ -118,7 +119,16 @@ def get_disturbances(cases, ref):
             case on a given timestep
 
     Returns:
-        dict -- a nested dictionary of disturbance type ids by time step:
+        dict: a nested dictionary of disturbance type ids by time step.
+            For example the result for case id 5 having disturbance type 3
+            on timestep 10 would look like::
+
+                {
+                    5: {
+                        10: 3
+                    }
+                }
+
     """
     disturbances = {}
     for i_c, c in enumerate(cases):
@@ -140,17 +150,17 @@ def get_disturbances(cases, ref):
 def initialize_inventory(cbm, cases, classifier_name, ref):
     """create a CBM inventory based on the specified test cases
 
-    Arguments:
-        cbm {libcbm.model.CBM} -- instance of CBM, used here to fetch
+    Args:
+        cbm (libcbm.model.CBM): instance of CBM, used here to fetch
             classifier value ids from configuration
-        cases {list} -- list of dict defining CBM test cases
-        classifier_name {str} -- name of the single classifier used by the
+        cases (list): list of dict defining CBM test cases
+        classifier_name (str): name of the single classifier used by the
             test cases
-        ref {CBMDefaultsReference} -- reference for transforming string names
+        ref (CBMDefaultsReference): reference for transforming string names
 
     Returns:
-        object -- an object which defines a valid inventory for
-        libcbm.model.CBM functions
+        object: an object which defines a valid inventory for
+            :py:class:`libcbm.model.cbm.CBM` functions
     """
 
     n_stands = len(cases)
@@ -158,7 +168,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         classifier_name: np.array([
             cbm.get_classifier_value_id(
                 classifier_name,
-                casegeneration.get_classifier_value_name(c["id"])
+                case_generation.get_classifier_value_name(c["id"])
             )
             for c in cases], dtype=np.int32)
     })
@@ -211,20 +221,18 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
 def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     """Run CBM simulation test cases with libcbm
 
-    Arguments:
-        db_path {str} -- path to a cbm_defaults database
-        dll_path {str} -- path to the libcbm compiled library
-        cases {list} -- list of test cases in the format created by
-            libcbm.test.casegeneration.generate_scenarios
-        n_steps {int} -- the number of timesteps to run for every test case
-
-    Keyword Arguments:
-        spinup_debug {bool} -- if specified, and True extra spinup debugging
-            information is generated and returned (causes performance drop)
-            (default: {False})
+    Args:
+        db_path (str): path to a cbm_defaults database
+        dll_path (str): path to the libcbm compiled library
+        cases (list): list of test cases in the format created by
+            :py:func:`libcbm.test.casegeneration.generate_scenarios`
+        n_steps (int): the number of timesteps to run for every test case
+        spinup_debug (bool, optional): if specified, and True extra spinup
+            debugging information is generated and returned (causes
+            performance drop). Defaults to False.
 
     Returns:
-        dict -- dictionary containing the following keys/values:
+        dict: dictionary containing the following keys/values:
             - pools: pd.DataFrame of pool results by case,timestep
             - flux:  pd.DataFrame of flux results by case,timestep
             - state_variable_result: pd.DataFrame of state variable

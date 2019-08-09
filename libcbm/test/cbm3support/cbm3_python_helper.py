@@ -33,4 +33,3 @@ def load_cbm3_python(branch="master"):
         sys.path.append(os.path.abspath(cbm3_python_dir))
 
     return cbm3_python_dir
-

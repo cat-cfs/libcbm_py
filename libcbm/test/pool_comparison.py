@@ -6,7 +6,7 @@ def get_libcbm_pools():
     """Gets the names of all libcbm pools as a list
 
     Returns:
-        list -- all libcbm pool names
+        list: all libcbm pool names
     """
     return get_libcbm_biomass_pools() + get_libcbm_dom_pools()
 
@@ -15,7 +15,7 @@ def get_cbm3_pools():
     """Gets the names of all CBM-CFS3 pools as a list
 
     Returns:
-        list -- all CBM-CFS3 pool names
+        list: all CBM-CFS3 pool names
     """
     return get_cbm3_biomass_pools() + get_cbm3_dom_pools()
 
@@ -24,7 +24,7 @@ def get_cbm3_biomass_pools():
     """Gets the names of all CBM-CFS3 biomass pools as a list
 
     Returns:
-        list -- all libcbm biomass pool names
+        list: all libcbm biomass pool names
     """
     return [
         'Softwood Merchantable', 'Softwood Foliage', 'Softwood Other',
@@ -37,7 +37,7 @@ def get_cbm3_dom_pools():
     """Gets the names of all CBM-CFS3 dom pools as a list
 
     Returns:
-        list -- all libcbm CBM-CFS3 dom pool names
+        list: all libcbm CBM-CFS3 dom pool names
     """
     return [
         'Aboveground Very Fast DOM', 'Belowground Very Fast DOM',
@@ -50,7 +50,7 @@ def get_libcbm_biomass_pools():
     """Gets the names of all libcbm biomass pools as a list
 
     Returns:
-        list -- all libcbm libcbm biomass pool names
+        list: all libcbm libcbm biomass pool names
     """
     return [
         'SoftwoodMerch', 'SoftwoodFoliage', 'SoftwoodOther',
@@ -63,7 +63,7 @@ def get_libcbm_dom_pools():
     """Gets the names of all libcbm dom pools as a list
 
     Returns:
-        list -- all libcbm libcbm dom pool names
+        list: all libcbm libcbm dom pool names
     """
     return [
         'AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil',
@@ -77,14 +77,14 @@ def get_pool_map(name):
     Assumes the pools are ordered.
 
     Arguments:
-        name {str} -- either "all" for a map of all pools, or "biomass"
-        for a map of all biomass pools
+        name (str): one of "all" for a map of all pools, or "biomass"
+            for a map of all biomass pools
 
     Raises:
         ValueError: the name parameter was not supported
 
     Returns:
-        OrderedDict -- mapping of cbm_pools to libcbm_pools
+        collections.OrderedDict: mapping of CBM-CFS3 pools to libcbm pools
     """
     if name == "all":
         return collections.OrderedDict(
@@ -102,27 +102,31 @@ def join_pools(libCBM_pools, cbm3_pools, comparison):
     LibCBM pool results.
 
     Arguments:
-        libCBM_pools {pandas.DataFrame} -- dataframe whose values are libcbm
+        libCBM_pools (pandas.DataFrame): dataframe whose values are libcbm
             simulation results. Contains columns:
-                -"identifier"
-                -"timestep"
-                -all libcbm pool names
-        cbm3_pools {pandas.DataFrame} -- dataframe whose values are CBM-CFS3
+
+                - "identifier"
+                - "timestep"
+                - all libcbm pool names
+        cbm3_pools (pandas.DataFrame): dataframe whose values are CBM-CFS3
             simulation results. Contains columns:
-                -"identifier"
-                -"Timestep"
-                -all cbm-cfs3 pool names
-        comparison {str} -- one of:
+
+                - "identifier"
+                - "Timestep"
+                - all cbm-cfs3 pool names
+        comparison (str): a string value that is one of:
+
             - "all" to include all pools in the resulting comparison
             - "biomass" to include only biomass pools in the resulting
               comparison
 
     Returns:
-        Tuple --
-            value1: dataframe which is the merge of the libcbm pools with
+        Tuple: A tuple containing comparison data:
+
+            - value1: dataframe which is the merge of the libcbm pools with
                     the CBM-CFS3 pools
-            value2: dataframe which is the comparison of the libcbm pools with
-                    the CBM-CFS3 pools
+            - value2: dataframe which is the comparison of the libcbm pools
+                with the CBM-CFS3 pools
     """
     pool_mapping = get_pool_map(comparison)
     libCBM_poolnames = list(pool_mapping.values())
