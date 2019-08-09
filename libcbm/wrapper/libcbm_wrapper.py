@@ -331,11 +331,11 @@ class LibCBMWrapper(LibCBM_ctypes):
 
             for op in ops:
                 for s in len(n_stands):
-                    M = get_matrix(op,s)
+                    M = op.get_matrix(s)
                     pools[s,:] = np.matmul(pools[s,:], M)
 
-        Where get_matrix is a function returning the matrix for the
-        op, stand index combination.
+        Where get_matrix is pseudocode for an internal function returning the
+        matrix for the op, stand index combination.
 
         Args:
             ops (ndarray): list of matrix block ids as allocated by the
@@ -347,8 +347,8 @@ class LibCBMWrapper(LibCBM_ctypes):
                 n_stands. If specified, enables or disables flows for each
                 stand, based on the value at each stand index. A value of 0
                 indicates a disabled stand index, and any other value is an
-                enabled stand index !0 is enabled. If None, all flows
-                are assumed to be enabled. Defaults to None.
+                enabled stand index. If None, all flows are assumed to be
+                enabled. Defaults to None.
 
         Raises:
             AssertionError: raised if the Initialize method was not called
@@ -379,27 +379,26 @@ class LibCBMWrapper(LibCBM_ctypes):
         are tracked in the specified flux parameter, according to the
         flux_indicators configuration passed to the LibCBM initialize method.
 
-        Arguments:
-            ops {ndarray} -- list of matrix block ids as allocated by the
+        Args:
+            ops (ndarray): list of matrix block ids as allocated by the
                 AllocateOp function.
-            op_processes {ndarray} -- list of integers of length n_ops.
+            op_processes (ndarray): list of integers of length n_ops.
                 Ids referencing flux indicator process_id definition in the
-                LibCBM Initialize method.
-            pools {numpy.ndarray or pandas.DataFrame} -- matrix of shape
+                Initialize method.
+            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
-            flux {ndarray or pandas.DataFrame} -- matrix of shape n_stands
+            flux (ndarray or pandas.DataFrame): matrix of shape n_stands
                 by n_flux_indicators. The values in this matrix are updated
                 by this function according to the definition of flux
                 indicators in the configuration and the flows that occur in
                 the specified operations.
-
-        Keyword Arguments:
-            enabled {ndarray} -- optional int vector of length n stands. If
-                specified, enables or disables flows for each stand, based on
-                the value at each stand index. (0 is disabled, !0 is enabled)
-                If unspecified, all flows are assumed to be enabled.
-                (default: {None})
+            enabled ([type], optional): optional int vector of length
+                n_stands. If specified, enables or disables flows for each
+                stand, based on the value at each stand index. A value of 0
+                indicates a disabled stand index, and any other value is an
+                enabled stand index. If None, all flows are assumed to be
+                enabled. Defaults to None.
 
         Raises:
             AssertionError: raised if the Initialize method was not called

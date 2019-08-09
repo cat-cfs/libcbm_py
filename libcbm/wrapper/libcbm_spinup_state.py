@@ -15,16 +15,16 @@ class LibCBM_SpinupState:
         """gets the name of the enum field associated with the specified
         integer
 
-        Arguments:
-            x {int} -- an integer matching the value of one of the enum fields
+        Args:
+            x (int): an integer matching the value of one of the enum fields
 
         Raises:
             ValueError: raised when the specified value is not a defined enum
-            field
+                field
 
         Returns:
-            str -- the name of the enum field associated with the specified
-            integer
+            str: the name of the enum field associated with the specified
+                integer
         """
         if x == 0:
             return"HistoricalRotation"

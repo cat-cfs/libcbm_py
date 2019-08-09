@@ -231,11 +231,17 @@ def merch_volume_to_biomass_config(db_path, merch_volume_curves):
                             "components": [
                                 {
                                     "species_id": 1,
-                                    "age_volume_pairs": [(a1,v1),(a2,v2),...,(an,vn)]
+                                    "age_volume_pairs": [(a1,v1),
+                                                         (a2,v2),
+                                                         ...,
+                                                         (an,vn)]
                                 },
                                 {
                                     "species_id": 6,
-                                    "age_volume_pairs": [(a1,v1),(a2,v2),...,(an,vn)]
+                                    "age_volume_pairs": [(a1,v1),
+                                                         (a2,v2),
+                                                         ...,
+                                                         (an,vn)]
                                 },
                             ]
                         },
@@ -247,11 +253,17 @@ def merch_volume_to_biomass_config(db_path, merch_volume_curves):
                             "components": [
                                 {
                                     "species_id": 2,
-                                    "age_volume_pairs": [(a1,v1),(a2,v2),...,(an,vn)]
+                                    "age_volume_pairs": [(a1,v1),
+                                                         (a2,v2),
+                                                         ...,
+                                                         (an,vn)]
                                 },
                                 {
                                     "species_id": 65,
-                                    "age_volume_pairs": [(a1,v1),(a2,v2),...,(an,vn)]
+                                    "age_volume_pairs": [(a1,v1),
+                                                         (a2,v2),
+                                                         ...,
+                                                         (an,vn)]
                                 },
                             ]
                         }
