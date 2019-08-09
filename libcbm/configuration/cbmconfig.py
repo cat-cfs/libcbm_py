@@ -108,18 +108,18 @@ def classifier_config(classifiers):
                     {"id": j, "name": "cj"}
                 ],
                 "classifier_values": [
-                    {"id": 1, "classifier_id": 1, "name": "c1_v1", "description": "c1_v1"},
-                    {"id": 2, "classifier_id": 1, "name": "c1_v2", "description": "c1_v2"},
+                    {"id": 1, "classifier_id": 1, "name": "c1_v1", ...},
+                    {"id": 2, "classifier_id": 1, "name": "c1_v2", ...},
                     ...,
-                    {"id": n, "classifier_id": 1, "name": "c1_vn", "description": "c1_vn"},
-                    {"id": n+1, "classifier_id": 2, "name": "c2_v1", "description": "c2_v1"},
-                    {"id": n+2, "classifier_id": 2, "name": "c2_v2", "description": "c2_v2"},
+                    {"id": n, "classifier_id": 1, "name": "c1_vn", ...},
+                    {"id": n+1, "classifier_id": 2, "name": "c2_v1", ...},
+                    {"id": n+2, "classifier_id": 2, "name": "c2_v2", ...},
                     ...,
-                    {"id": n+k, "classifier_id": 2, "name": "c2_vk", "description": "c2_vk"},
-                    {"id": n+k+1, "classifier_id": j, "name": "cj_v1", "description": "cj_v1"},
-                    {"id": n+k+2, "classifier_id": j, "name": "cj_v2", "description": "cj_v2"},
+                    {"id": n+k, "classifier_id": 2, "name": "c2_vk", ...},
+                    {"id": n+k+1, "classifier_id": j, "name": "cj_v1", ...},
+                    {"id": n+k+2, "classifier_id": j, "name": "cj_v2", ...},
                     ...,
-                    {"id": n+k+p, "classifier_id": j, "name": "cj_vp", "description": "cj_vp"}
+                    {"id": n+k+p, "classifier_id": j, "name": "cj_vp", ...}
                 ]
                 }
     """
