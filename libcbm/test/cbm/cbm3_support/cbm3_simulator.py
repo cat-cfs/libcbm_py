@@ -4,7 +4,7 @@ cbm3_python_helper.load_cbm3_python()
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python.cbm3data import cbm3_results
-from libcbm.test.cbm import casegeneration
+from libcbm.test.cbm import case_generation
 
 
 def get_unfccc_land_class_id_ref():
@@ -148,7 +148,7 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, n_steps,
         classifier_set = [
             c["admin_boundary"],
             c["eco_boundary"],
-            casegeneration.get_classifier_value_name(c["id"]),
+            case_generation.get_classifier_value_name(c["id"]),
             species]
 
         if is_afforestation:

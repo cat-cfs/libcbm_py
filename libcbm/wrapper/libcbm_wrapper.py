@@ -1,6 +1,4 @@
 import ctypes
-import logging
-import sqlite3
 import os
 import numpy as np
 import pandas as pd
@@ -17,11 +15,11 @@ def unpack_ndarrays(variables):
     Supports 2 cases:
 
         1: the specified variables are already stored in a SimpleNamespace
-        whose properties are one of pd.Series,pd.DataFrame,or np.ndarray.
-        For each property in the namespace, convert to an ndarray if
-        necessary.
+           whose properties are one of pd.Series,pd.DataFrame,or np.ndarray.
+           For each property in the namespace, convert to an ndarray if
+           necessary.
         2: the specified variables are the columns of a pandas.DataFrame.
-        Return a reference to each column's underlying numpy.ndarray storage
+           Return a reference to each column's underlying numpy.ndarray storage
 
     Args:
         variables (SimpleNamespace, pd.DataFrame): The set of variables to
