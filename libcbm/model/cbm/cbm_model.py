@@ -192,7 +192,12 @@ class CBM:
                 for a compatible definition.
         """
 
-        flux *= 0.0
+        # zero the memory (simply using flux *= 0.0 caused a copy
+        # with a change in contiguity in some cases!)
+        if isinstance(flux, pd.DataFrame):
+            flux.values[:] = 0
+        else:
+            flux[:] = 0
 
         n_stands = pools.shape[0]
 
