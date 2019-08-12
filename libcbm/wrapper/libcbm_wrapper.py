@@ -14,74 +14,8 @@ class LibCBMWrapper():
     """Exposes low level ctypes wrapper to regular python, for the core libcbm
     functions.
     """
-
-    def Initialize(self, config):
-        """Initialize libcbm with pools, and flux indicators
-
-        Arguments:
-            config (str): a json formatted string containing configuration
-                for libcbm pools and flux definitions.
-
-                The number of pools, and flux indicators defined here,
-                corresponds to other data dimensions used during the lifetime
-                of this instance:
-
-                    1. The number of pools here defines the number of columns
-                       in the pool value matrix used by several other libCBM
-                       functions
-                    2. The number of flux_indicators here defines the number
-                       of columns in the flux indicator matrix in the
-                       ComputeFlux method.
-                    3. The number of pools here defines the number of rows,
-                       and the number of columns of all matrices allocated by
-                       the :py:func:`AllocateOp` function.
-
-
-                Example::
-
-                    {
-                        "pools": [
-                            {"id": 1, "index": 0, "name": "pool_1"},
-                            {"id": 2, "index": 1, "name": "pool_2"},
-                            ...
-                            {"id": n, "index": n-1, "name": "pool_n"}],
-
-                        "flux_indicators": [
-                            {
-                                "id": 1,
-                                "index": 0,
-                                "process_id": 1,
-                                "source_pools": [1, 2]
-                                "sink_pools": [3]
-                            },
-                            {
-                                "id": 2,
-                                "index": 1,
-                                "process_id": 1,
-                                "source_pools": [1, 2]
-                                "sink_pools": [3]
-                            },
-                            ...
-                        ]
-                    }
-
-                Pool/Flux Indicators configuration rules:
-
-                    1. ids may be any integer, but are constrained to be unique
-                       within the set of pools.
-                    2. indexes must be the ordered set of integers from 0 to
-                       n_pools - 1.
-                    3. For flux indicator source_pools and sink_pools, list
-                       values correspond to id values in the collection of
-                       pools
-
-        Returns:
-            libcbm.wrapper.libcbm_handle.LibCBMHandle: an initialized object
-                for calling low level C/C++ libcbm functions
-        """
-        p_config = ctypes.c_char_p(config.encode("UTF-8"))
-        self.handle = LibCBMHandle(p_config)
-        return self.handle
+    def __init__(self, handle):
+        self.handle = handle
 
     def AllocateOp(self, n):
         """Allocates storage for matrices, returning an id for the
@@ -284,5 +218,5 @@ class LibCBMWrapper():
         enabled = data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int)
 
         self.handle.call(
-            "LibCBM_ComputeFlux", ctypes.byref(self.handle.err), self.handle,
-            ops_p, op_process_p, n_ops, poolMat, fluxMat, enabled)
+            "LibCBM_ComputeFlux", ops_p, op_process_p, n_ops, poolMat,
+            fluxMat, enabled)

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 
-from libcbm.model import model_factory
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_config
@@ -148,6 +147,42 @@ def get_disturbances(cases, ref):
     return disturbances
 
 
+def get_classifier_lookup(cases, classifier_name):
+
+    classifiers_config = get_test_case_classifier_factory(
+        cases, classifier_name)()
+    # create an index for lookup of classifiers
+    classifier_id_lookup = {x["id"]: x for x
+                            in classifiers_config["classifiers"]}
+    classifier_lookup = {}
+    for cv in classifiers_config["classifier_values"]:
+        classifier_id = cv["classifier_id"]
+        classifier_name = classifier_id_lookup[classifier_id]["name"]
+        if classifier_name in classifier_lookup:
+            classifier_lookup[classifier_name][cv["value"]] = cv
+        else:
+            classifier_lookup[classifier_name] = {cv["value"]: cv}
+    return classifier_lookup
+
+
+def get_classifier_value_id(classifier_lookup, classifier_name,
+                            classifier_value_name):
+    """Get the classifier value id associated with the classifier_name,
+    classifier_value_name pair
+
+    Args:
+        classifier_lookup (dict): nested dictionary of classifiers
+        classifier (str): name of the classifier
+        classifier_value (str): name of the classifier value
+
+    Returns:
+        int: identifier for the classifier/classifier value
+    """
+    c = classifier_lookup[classifier_name]
+    cv = c[classifier_value_name]
+    return cv["id"]
+
+
 def initialize_inventory(cbm, cases, classifier_name, ref):
     """create a CBM inventory based on the specified test cases
 
@@ -163,11 +198,12 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         object: an object which defines a valid inventory for
             :py:class:`libcbm.model.cbm.CBM` functions
     """
-
+    classifier_lookup = get_classifier_lookup(cases, classifier_name)
     n_stands = len(cases)
     classifiers = pd.DataFrame({
         classifier_name: np.array([
-            cbm.get_classifier_value_id(
+            get_classifier_value_id(
+                classifier_lookup,
                 classifier_name,
                 case_generation.get_classifier_value_name(c["id"])
             )
@@ -247,9 +283,8 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     classifier_name = "identifier"
 
     cbm = cbm_factory.create(
-        model_factory=model_factory.create,
-        db_path=db_path,
         dll_path=dll_path,
+        db_path=db_path,
         merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
             cases, db_path, ref),
         classifiers_factory=get_test_case_classifier_factory(

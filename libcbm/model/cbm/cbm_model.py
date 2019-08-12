@@ -18,18 +18,6 @@ class CBM:
 
         self.compute_functions = compute_functions
         self.model_functions = model_functions
-        self.config = config
-
-        # create an index for lookup of classifiers
-        classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
-        self.classifier_lookup = {}
-        for cv in config["classifier_values"]:
-            classifier_id = cv["classifier_id"]
-            classifier_name = classifier_id_lookup[classifier_id]["name"]
-            if classifier_name in self.classifier_lookup:
-                self.classifier_lookup[classifier_name][cv["value"]] = cv
-            else:
-                self.classifier_lookup[classifier_name] = {cv["value"]: cv}
 
         self.opNames = [
             "growth",
@@ -50,21 +38,6 @@ class CBM:
             "slow_mixing": 2,
             "disturbance": 3
         }
-
-    def get_classifier_value_id(self, classifier_name, classifier_value_name):
-        """Get the classifier value id associated with the classifier_name,
-        classifier_value_name pair
-
-        Args:
-            classifier (str): name of the classifier
-            classifier_value (str): name of the classifier value
-
-        Returns:
-            int: identifier for the classifier/classifier value
-        """
-        c = self.classifier_lookup[classifier_name]
-        cv = c[classifier_value_name]
-        return cv["id"]
 
     def spinup(self, inventory, pools, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
@@ -99,13 +72,14 @@ class CBM:
 
         n_stands = pools.shape[0]
 
-        ops = {x: self.compute_functions.AllocateOp(n_stands)
+        ops = {
+            x: self.compute_functions.AllocateOp(n_stands)
             for x in self.opNames}
 
-        self.model_functions.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
-                                inventory)
+        self.model_functions.GetTurnoverOps(
+            ops["snag_turnover"], ops["biomass_turnover"], inventory)
 
-        self.dll.GetDecayOps(
+        self.model_functions.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
             inventory, parameters, historical_mean_annual_temp=True)
 
@@ -126,23 +100,23 @@ class CBM:
 
         while (True):
 
-            n_finished = self.dll.AdvanceSpinupState(
+            n_finished = self.model_functions.AdvanceSpinupState(
                 inventory, variables, parameters)
 
             if n_finished == n_stands:
                 break
 
-            self.dll.GetMerchVolumeGrowthOps(
+            self.model_functions.GetMerchVolumeGrowthOps(
                 ops["growth"], inventory, pools, variables)
 
-            self.dll.GetDisturbanceOps(
+            self.model_functions.GetDisturbanceOps(
                 ops["disturbance"], inventory, variables)
 
-            self.dll.ComputePools(
+            self.compute_functions.ComputePools(
                 [ops[x] for x in opSchedule], pools,
                 variables.enabled)
 
-            self.dll.EndSpinupStep(pools, variables)
+            self.model_functions.EndSpinupStep(pools, variables)
 
             if(debug):
                 debug_output = debug_output.append(pd.DataFrame(data={
@@ -160,7 +134,7 @@ class CBM:
             iteration = iteration + 1
 
         for x in self.opNames:
-            self.dll.FreeOp(ops[x])
+            self.compute_functions.FreeOp(ops[x])
         return debug_output
 
     def init(self, inventory, pools, state_variables):
@@ -184,7 +158,7 @@ class CBM:
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
         """
-        self.dll.InitializeLandState(
+        self.model_functions.InitializeLandState(
             inventory, pools, state_variables)
 
     def step(self, inventory, pools, flux, state_variables, parameters):
@@ -222,7 +196,9 @@ class CBM:
 
         n_stands = pools.shape[0]
 
-        ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
+        ops = {
+            x: self.compute_functions.AllocateOp(n_stands)
+            for x in self.opNames}
 
         annual_process_opSchedule = [
             "growth",
@@ -234,12 +210,13 @@ class CBM:
             "slow_mixing"
             ]
 
-        self.dll.AdvanceStandState(inventory, state_variables, parameters)
+        self.model_functions.AdvanceStandState(
+            inventory, state_variables, parameters)
 
-        self.dll.GetDisturbanceOps(
+        self.model_functions.GetDisturbanceOps(
             ops["disturbance"], inventory, parameters)
 
-        self.dll.ComputeFlux(
+        self.compute_functions.ComputeFlux(
             [ops["disturbance"]], [self.opProcesses["disturbance"]],
             pools, flux, enabled=None)
 
@@ -248,23 +225,23 @@ class CBM:
         # stands can be disturbed despite having all other C-dynamics processes
         # disabled (which happens in peatland)
 
-        self.dll.GetMerchVolumeGrowthOps(
+        self.model_functions.GetMerchVolumeGrowthOps(
             ops["growth"], inventory, pools, state_variables)
 
-        self.dll.GetTurnoverOps(
+        self.model_functions.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"],
             inventory)
 
-        self.dll.GetDecayOps(
+        self.model_functions.GetDecayOps(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
             inventory, parameters)
 
-        self.dll.ComputeFlux(
+        self.compute_functions.ComputeFlux(
             [ops[x] for x in annual_process_opSchedule],
             [self.opProcesses[x] for x in annual_process_opSchedule],
             pools, flux, state_variables.enabled)
 
-        self.dll.EndStep(state_variables)
+        self.model_functions.EndStep(state_variables)
 
         for x in self.opNames:
-            self.dll.FreeOp(ops[x])
+            self.compute_functions.FreeOp(ops[x])

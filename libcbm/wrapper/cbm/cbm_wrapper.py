@@ -1,5 +1,6 @@
 
 import ctypes
+import json
 import pandas as pd
 from libcbm.wrapper import data_helpers
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
@@ -16,87 +17,81 @@ class CBMWrapper(LibCBM_ctypes):
     Args:
         handle (libcbm.wrapper.libcbm_handle.LibCBMHandle): handle to the low
             level function library
-    """
-    def __init__(self, handle):
-        self.handle = handle
+        config (str): A json formatted string containing CBM
+            configuration.
 
-    def InitializeCBM(self, config):
-        """Initializes CBM-specific functionality within LibCBM
+            See :py:mod:`libcbm.configuration.cbm_defaults` for
+            construction of the "cbm_defaults" value, and
+            :py:mod:`libcbm.configuration.cbmconfig` for helper methods.
 
-        Args:
-            config (str): A json formatted string containing CBM
-                configuration.
+            Example::
 
-                See :py:mod:`libcbm.configuration.cbm_defaults` for
-                construction of the "cbm_defaults" value, and
-                :py:mod:`libcbm.configuration.cbmconfig` for helper methods.
-
-                Example::
-
-                    {
-                        "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
-                        "classifiers": [
-                            {"id": 1, "name": "a"},
-                            {"id": 2, "name": "b"},
-                            {"id": 3, "name": "c"}
-                        ],
-                        "classifier_values": [
-                            {
-                                "id": 1,
-                                "classifier_id": 1,
-                                "value": "a1",
-                                "description": "a1"
-                            },
-                            {
-                                "id": 2,
-                                "classifier_id": 2,
-                                "value": "b2",
-                                "description": "b2"
-                            },
-                            {
-                                "id": 3,
-                                "classifier_id": 3,
-                                "value": "c1",
-                                "description": "c1"
-                            }
-                        ],
-                        "merch_volume_to_biomass": {
-                            'db_path': './cbm_defaults.db',
-                            'merch_volume_curves': [
-                                {
-                                    'classifier_set': {
-                                        'type': 'name',
-                                        'values': ['a1','b2','c1']
-                                    },
-                                    'components': [
-                                        {
-                                        'species_id': 1,
-                                        'age_volume_pairs': [(age0, vol0),
-                                                             (age1, vol0),
-                                                             (ageN, volN)]
-                                        },
-                                        {
-                                        'species_id': 2,
-                                        'age_volume_pairs': [(age0, vol0),
-                                                             (age1, vol0),
-                                                             (ageN, volN)]
-                                        }
-                                    ]
-                                }
-                            ]
+                {
+                    "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
+                    "classifiers": [
+                        {"id": 1, "name": "a"},
+                        {"id": 2, "name": "b"},
+                        {"id": 3, "name": "c"}
+                    ],
+                    "classifier_values": [
+                        {
+                            "id": 1,
+                            "classifier_id": 1,
+                            "value": "a1",
+                            "description": "a1"
                         },
-                        "transitions": [
+                        {
+                            "id": 2,
+                            "classifier_id": 2,
+                            "value": "b2",
+                            "description": "b2"
+                        },
+                        {
+                            "id": 3,
+                            "classifier_id": 3,
+                            "value": "c1",
+                            "description": "c1"
+                        }
+                    ],
+                    "merch_volume_to_biomass": {
+                        'db_path': './cbm_defaults.db',
+                        'merch_volume_curves': [
                             {
-                                "id": 1,
-                                "classifier_set": {
-                                    'type': 'name', 'values': ['a1','b2','?']
+                                'classifier_set': {
+                                    'type': 'name',
+                                    'values': ['a1','b2','c1']
                                 },
-                                "regeneration_delay": 0,
-                                "reset_age": 0
+                                'components': [
+                                    {
+                                    'species_id': 1,
+                                    'age_volume_pairs': [(age0, vol0),
+                                                         (age1, vol0),
+                                                         (ageN, volN)]
+                                    },
+                                    {
+                                    'species_id': 2,
+                                    'age_volume_pairs': [(age0, vol0),
+                                                         (age1, vol0),
+                                                         (ageN, volN)]
+                                    }
+                                ]
                             }
                         ]
-                    }
-        """
+                    },
+                    "transitions": [
+                        {
+                            "id": 1,
+                            "classifier_set": {
+                                'type': 'name', 'values': ['a1','b2','?']
+                            },
+                            "regeneration_delay": 0,
+                            "reset_age": 0
+                        }
+                    ]
+                }
+    """
+    def __init__(self, handle, config):
+        self.handle = handle
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle.call("LibCBM_Initialize_CBM", p_config)
 
