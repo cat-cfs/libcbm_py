@@ -1,5 +1,6 @@
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm.cbm_model import CBM
+from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 import json
 
 
@@ -53,5 +54,7 @@ def create(dll_path, db_path, model_factory, merch_volume_to_biomass_factory,
         "classifier_values": classifiers_config["classifier_values"],
         "transitions": []
     }
-
+    config_string = json.dumps(config)
+    model_functions = CBMWrapper()
+    model_functions.InitializeCBM(config_string)
     return CBM(dll, config)

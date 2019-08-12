@@ -4,11 +4,21 @@ import pandas as pd
 from libcbm.wrapper import data_helpers
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
+from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
 
 
-class CBMWrapper():
-    def __init__(self, libcbm_wrapper):
-        self.libcbm_wrapper = libcbm_wrapper
+class CBMWrapper(LibCBM_ctypes):
+    """Exposes low level ctypes wrapper to regular python, for CBM
+    specific libcbm functions.
+
+    The base class is :py:class:`libcbm.wrapper.libcbm_ctypesLibCBM_ctypes`
+
+    Args:
+        handle (libcbm.wrapper.libcbm_handle.LibCBMHandle): handle to the low
+            level function library
+    """
+    def __init__(self, handle):
+        self.handle = handle
 
     def InitializeCBM(self, config):
         """Initializes CBM-specific functionality within LibCBM
@@ -86,23 +96,9 @@ class CBMWrapper():
                             }
                         ]
                     }
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
-
-        self._dll.LibCBM_Initialize_CBM(ctypes.byref(self.err), self.handle,
-                                        p_config)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call("LibCBM_Initialize_CBM", p_config)
 
     def AdvanceStandState(self, inventory, state_variables, parameters):
         """Advances CBM stand variables through a timestep based on the
@@ -123,16 +119,7 @@ class CBMWrapper():
                 See:
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
                 for a compatible definition.
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
         i = data_helpers.unpack_ndarrays(inventory)
         v = data_helpers.unpack_ndarrays(state_variables)
         p = data_helpers.unpack_ndarrays(parameters)
@@ -140,15 +127,12 @@ class CBMWrapper():
         n = i.classifiers.shape[0]
         classifiersMat = LibCBM_Matrix_Int(i.classifiers)
 
-        self._dll.LibCBM_AdvanceStandState(
-            ctypes.byref(self.err), self.handle, n, classifiersMat,
+        self.handle.call(
+            "LibCBM_AdvanceStandState", n, classifiersMat,
             i.spatial_unit, p.disturbance_type, p.transition_rule_id,
             v.last_disturbance_type, v.time_since_last_disturbance,
             v.time_since_land_class_change, v.growth_enabled, v.enabled,
             v.land_class, v.regeneration_delay, v.age)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
 
     def EndStep(self, state_variables):
         """Applies end-of-timestep changes to the CBM state

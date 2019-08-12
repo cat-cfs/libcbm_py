@@ -9,18 +9,16 @@ class CBM:
     """The CBM model.
 
     Args:
-        dll (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an instance
-            of LibCBMWrapper.
-        config (dict): configuration dictionary. See
-            :py:mod:`cbm_config` for documentation.
+        compute_functions (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an
+            instance of LibCBMWrapper.
+        model_functions (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper): an
+            instance of CBMWrapper
     """
-    def __init__(self, dll, config):
+    def __init__(self, compute_functions, model_functions):
 
-        self.dll = dll
+        self.compute_functions = compute_functions
+        self.model_functions = model_functions
         self.config = config
-
-        config_string = json.dumps(config)
-        dll.InitializeCBM(config_string)
 
         # create an index for lookup of classifiers
         classifier_id_lookup = {x["id"]: x for x in config["classifiers"]}
@@ -101,9 +99,10 @@ class CBM:
 
         n_stands = pools.shape[0]
 
-        ops = {x: self.dll.AllocateOp(n_stands) for x in self.opNames}
+        ops = {x: self.compute_functions.AllocateOp(n_stands)
+            for x in self.opNames}
 
-        self.dll.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
+        self.model_functions.GetTurnoverOps(ops["snag_turnover"], ops["biomass_turnover"],
                                 inventory)
 
         self.dll.GetDecayOps(
