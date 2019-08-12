@@ -1,7 +1,12 @@
-from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
+
 import ctypes
 import pandas as pd
 from libcbm.wrapper import data_helpers
+
+from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
+from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
+
 
 class CBMWrapper(LibCBMWrapper):
     def __init__(self):
@@ -362,10 +367,10 @@ class CBMWrapper(LibCBMWrapper):
                 v.last_disturbance_type, type=ctypes.c_int),
             data_helpers.get_nullable_ndarray(
                 v.time_since_last_disturbance, type=ctypes.c_int),
-                data_helpers.get_nullable_ndarray(
-                    v.growth_multiplier, type=ctypes.c_double),
-                data_helpers.get_nullable_ndarray(
-                    v.growth_enabled, type=ctypes.c_int))
+            data_helpers.get_nullable_ndarray(
+                v.growth_multiplier, type=ctypes.c_double),
+            data_helpers.get_nullable_ndarray(
+                v.growth_enabled, type=ctypes.c_int))
 
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
@@ -512,7 +517,8 @@ class CBMWrapper(LibCBMWrapper):
         if not self.handle:
             raise AssertionError("dll not initialized")
         spatial_unit = data_helpers.unpack_ndarrays(inventory).spatial_unit
-        disturbance_type = data_helpers.unpack_ndarrays(parameters).disturbance_type
+        disturbance_type = data_helpers.unpack_ndarrays(
+            parameters).disturbance_type
         n = spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
 
