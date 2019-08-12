@@ -144,12 +144,6 @@ class CBMWrapper(LibCBM_ctypes):
                 changes. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
         v = data_helpers.unpack_ndarrays(state_variables)
         n = v.age.shape[0]
@@ -176,11 +170,6 @@ class CBMWrapper(LibCBM_ctypes):
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition.
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
         i = data_helpers.unpack_ndarrays(inventory)
         v = data_helpers.unpack_ndarrays(state_variables)
@@ -235,16 +224,12 @@ class CBMWrapper(LibCBM_ctypes):
             spatial_unit = data_helpers.get_nullable_ndarray(
                 i.spatial_unit, type=ctypes.c_int)
 
-        n_finished = self._dll.LibCBM_AdvanceSpinupState(
-            ctypes.byref(self.err), self.handle, n,
-            spatial_unit, return_interval, min_rotations, max_rotations,
-            i.age, i.delay, v.slow_pools, i.historical_disturbance_type,
-            i.last_pass_disturbance_type, i.afforestation_pre_type_id,
-            v.spinup_state, v.disturbance_type, v.rotation, v.step,
-            v.last_rotation_slow_C, v.enabled)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        n_finished = self.handle.call(
+            "LibCBM_AdvanceSpinupState", n, spatial_unit, return_interval,
+            min_rotations, max_rotations, i.age, i.delay, v.slow_pools,
+            i.historical_disturbance_type, i.last_pass_disturbance_type,
+            i.afforestation_pre_type_id, v.spinup_state, v.disturbance_type,
+            v.rotation, v.step, v.last_rotation_slow_C, v.enabled)
 
         return n_finished
 
@@ -262,22 +247,13 @@ class CBMWrapper(LibCBM_ctypes):
                 :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
                 for a compatible definition
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         v = data_helpers.unpack_ndarrays(variables)
         n = v.age.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
-        self._dll.LibCBM_EndSpinupStep(
-            ctypes.byref(self.err), self.handle, n, v.spinup_state, poolMat,
+        self.handle.call(
+            "LibCBM_EndSpinupStep", n, v.spinup_state, poolMat,
             v.disturbance_type, v.age, v.slow_pools, v.growth_enabled)
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):
@@ -305,15 +281,7 @@ class CBMWrapper(LibCBM_ctypes):
                 call will not alter this parameter. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         n = pools.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
 
@@ -323,20 +291,19 @@ class CBMWrapper(LibCBM_ctypes):
             data_helpers.get_ndarray(i.classifiers))
         v = data_helpers.unpack_ndarrays(state_variables)
 
-        self._dll.LibCBM_GetMerchVolumeGrowthOps(
-            ctypes.byref(self.err), self.handle, opIds, n, classifiersMat,
-            poolMat, v.age, i.spatial_unit,
-            data_helpers.get_nullable_ndarray(
-                v.last_disturbance_type, type=ctypes.c_int),
-            data_helpers.get_nullable_ndarray(
-                v.time_since_last_disturbance, type=ctypes.c_int),
-            data_helpers.get_nullable_ndarray(
-                v.growth_multiplier, type=ctypes.c_double),
-            data_helpers.get_nullable_ndarray(
-                v.growth_enabled, type=ctypes.c_int))
+        last_disturbance_type = data_helpers.get_nullable_ndarray(
+            v.last_disturbance_type, type=ctypes.c_int)
+        time_since_last_disturbance = data_helpers.get_nullable_ndarray(
+            v.time_since_last_disturbance, type=ctypes.c_int)
+        growth_multiplier = data_helpers.get_nullable_ndarray(
+            v.growth_multiplier, type=ctypes.c_double)
+        growth_enabled = data_helpers.get_nullable_ndarray(
+            v.growth_enabled, type=ctypes.c_int)
 
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_GetMerchVolumeGrowthOps", opIds, n, classifiersMat,
+            poolMat, v.age, i.spatial_unit, last_disturbance_type,
+            time_since_last_disturbance, growth_multiplier, growth_enabled)
 
     def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
                        inventory):
@@ -357,25 +324,14 @@ class CBMWrapper(LibCBM_ctypes):
                 function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition.
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         i = data_helpers.unpack_ndarrays(inventory)
         n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (2))(
             *[biomass_turnover_op, snag_turnover_op])
 
-        self._dll.LibCBM_GetTurnoverOps(
-            ctypes.byref(self.err), self.handle, opIds, n, i.spatial_unit)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
 
     def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
                     inventory, parameters, historical_mean_annual_temp=False):
@@ -405,52 +361,20 @@ class CBMWrapper(LibCBM_ctypes):
                 is provided via the parameters argument, this parameter will
                 be ignored, and the explicit mean annual temp will be used.
                 Defaults to False.
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         i = data_helpers.unpack_ndarrays(inventory)
         p = data_helpers.unpack_ndarrays(parameters)
         n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
-        self._dll.LibCBM_GetDecayOps(
-            ctypes.byref(self.err), self.handle, opIds, n,
-            data_helpers.get_nullable_ndarray(i.spatial_unit, ctypes.c_int),
-            historical_mean_annual_temp,
-            data_helpers.get_nullable_ndarray(p.mean_annual_temp))
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
-        """Sets up CBM disturbance matrices as a bulk matrix operation.
+        spatial_unit = data_helpers.get_nullable_ndarray(
+            i.spatial_unit, ctypes.c_int)
+        mean_annual_temp = data_helpers.get_nullable_ndarray(
+            p.mean_annual_temp)
+        self.handle.call(
+            "LibCBM_GetDecayOps", opIds, n, spatial_unit,
+            historical_mean_annual_temp, mean_annual_temp)
 
-        Arguments:
-            disturbance_op {int} -- Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
-                compute disturbance event pool flows.
-            inventory {object} -- Data comprised of classifier sets
-                and cbm inventory data. Used by this function to find correct
-                parameters from the set of disturbance parameters passed to
-                library initialization. Will not be modified by this function.
-                See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
-                for a compatible definition
-            parameters {object} -- Read-only parameters used to set
-                disturbance type id to fetch the appropriate disturbance
-                matrix. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
-                for a compatible definition.
-
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
-        """
     def GetDisturbanceOps(self, disturbance_op, inventory,
                           parameters):
         """Sets up CBM disturbance matrices as a bulk matrix operations.
@@ -471,23 +395,13 @@ class CBMWrapper(LibCBM_ctypes):
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
                 for a compatible definition.
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         spatial_unit = data_helpers.unpack_ndarrays(inventory).spatial_unit
         disturbance_type = data_helpers.unpack_ndarrays(
             parameters).disturbance_type
         n = spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
 
-        self._dll.LibCBM_GetDisturbanceOps(
-            ctypes.byref(self.err), self.handle, opIds, n, spatial_unit,
+        self.handle.call(
+            "LibCBM_GetDisturbanceOps", opIds, n, spatial_unit,
             disturbance_type)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
