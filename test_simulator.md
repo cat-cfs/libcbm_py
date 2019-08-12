@@ -21,8 +21,8 @@ import pandas as pd
 ```
 
 ```python
-from libcbm.test import casegeneration
-from libcbm.test import test_case_simulator
+from libcbm.test.cbm import case_generation
+from libcbm.test.cbm import test_case_simulator
 ```
 
 ```python
@@ -83,7 +83,7 @@ state_variables = result["state_variable_result"]
 state_variables[['timestep', 'age', 'land_class', 'last_disturbance_type', 
                  'time_since_last_disturbance', 'time_since_land_class_change',
                  'growth_enabled', 'growth_multiplier', 'regeneration_delay',
-                 'disturbance_type', 'enabled']].groupby("timestep").sum().plot(figsize=(10,10))
+                 'enabled']].groupby("timestep").sum().plot(figsize=(10,10))
 ```
 
 ```python

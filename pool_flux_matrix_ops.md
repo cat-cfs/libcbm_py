@@ -15,15 +15,15 @@ jupyter:
 
 <!-- #region -->
 # LibCBM Pool, and Flux Matrix Operations #
-This notebook demonstrates LibCBM matrix functionaliy.  These functions can be used to inject flows into a LibCBM application directly from python.
+This notebook demonstrates LibCBM matrix functionality.  These functions can be used to inject flows into a LibCBM application directly from python.
 
 
 It also performs tests by running equivalent matrix operations using the numpy matmul function, and comparing the output.
 <!-- #endregion -->
 
 ```python
-from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
-from libcbm.configuration import cbm_defaults
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
+from libcbm.wrapper.libcbm_handle import LibCBMHandle
 ```
 
 ```python
@@ -37,8 +37,7 @@ import scipy.sparse
 ```python
 dllpath = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
 def load_dll(config):
-    dll = LibCBMWrapper(dllpath)
-    dll.Initialize(json.dumps(config))
+    dll = LibCBMWrapper(LibCBMHandle(dllpath, json.dumps(config)))
     return dll
 
 def create_pools(names):
@@ -56,7 +55,7 @@ def to_coordinate(matrix):
 
 ## ComputePools ##
 
-This demonstrates a one of the ComputePools core function of LibCBM.  
+This demonstrates the ComputePools core function of LibCBM.  
 
 
 Given a matrix of pool values (where the columns represent specific pool, and the rows represent land units) Perform an arbitrary number of recursive vector matrix products.
@@ -387,12 +386,4 @@ print("flux mean difference: {}".format((flux_expected-flux_test).mean()))
 print("flux summed difference: {}".format((flux_expected-flux_test).sum()))
 print("flux max difference: {}".format((flux_expected-flux_test).max()))
 print("flux allclose[rtol=1e-12, atol=1e-15]: {}".format(np.allclose(flux_expected,flux_test,rtol=1e-12, atol=1e-15)))
-```
-
-```python
-
-```
-
-```python
-
 ```
