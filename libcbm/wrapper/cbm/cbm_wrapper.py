@@ -2,15 +2,13 @@
 import ctypes
 import pandas as pd
 from libcbm.wrapper import data_helpers
-
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
-from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 
 
-class CBMWrapper(LibCBMWrapper):
-    def __init__(self):
-        pass
+class CBMWrapper():
+    def __init__(self, libcbm_wrapper):
+        self.libcbm_wrapper = libcbm_wrapper
 
     def InitializeCBM(self, config):
         """Initializes CBM-specific functionality within LibCBM
