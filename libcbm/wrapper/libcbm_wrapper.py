@@ -6,23 +6,14 @@ from types import SimpleNamespace
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
-from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
+from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.wrapper import data_helpers
 
 
-class LibCBMWrapper(LibCBM_ctypes):
-    """Exposes low level ctypes wrapper to regular python functions
+class LibCBMWrapper():
+    """Exposes low level ctypes wrapper to regular python, for the core libcbm
+    functions.
     """
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        """frees the allocated libcbm handle"""
-        if self.handle:
-            err = LibCBM_Error()
-            self._dll.LibCBM_Free(ctypes.byref(err), self.handle)
-            if err.Error != 0:
-                raise RuntimeError(err.getErrorMessage())
 
     def Initialize(self, config):
         """Initialize libcbm with pools, and flux indicators
@@ -87,16 +78,17 @@ class LibCBMWrapper(LibCBM_ctypes):
         Raises:
             RuntimeError: if an error is detected in libCBM, it will be
                 re-raised with an appropriate error message.
+
+        Returns:
+            libcbm.wrapper.libcbm_handle.LibCBMHandle: an initialized object
+                for calling low level C/C++ libcbm functions
         """
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
+        self.handle = LibCBMHandle(p_config)
 
-        self.handle = self._dll.LibCBM_Initialize(
-            ctypes.byref(self.err),  # error structure
-            p_config
-            )
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        if self.handle.err.Error != 0:
+            raise RuntimeError(self.handle.err.getErrorMessage())
+        return self.handle
 
     def AllocateOp(self, n):
         """Allocates storage for matrices, returning an id for the
@@ -116,16 +108,7 @@ class LibCBMWrapper(LibCBM_ctypes):
         Returns:
             int: the id for an allocated block of matrices
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
-        op_id = self._dll.LibCBM_Allocate_Op(
-            ctypes.byref(self.err),
-            self.handle, n)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
-
+        op_id = self.handle.call("LibCBM_Allocate_Op", n)
         return op_id
 
     def FreeOp(self, op_id):
@@ -134,21 +117,8 @@ class LibCBMWrapper(LibCBM_ctypes):
         Args:
             op_id (int): The id for an allocated block of matrices.
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
-        self._dll.LibCBM_Free_Op(
-            ctypes.byref(self.err),
-            self.handle, op_id)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call("LibCBM_Free_Op", op_id)
 
     def SetOp(self, op_id, matrices, matrix_index):
         """Assigns values to an allocated block of matrices.
@@ -220,23 +190,14 @@ class LibCBMWrapper(LibCBM_ctypes):
                 value is an index to a matrix in the specified list of matrices
                 provided to this function.
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         matrices_array = (LibCBM_Matrix * len(matrices))()
         for i, x in enumerate(matrices):
             matrices_array[i] = LibCBM_Matrix(x)
         matrices_p = ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
-        self._dll.LibCBM_SetOp(
-            ctypes.byref(self.err), self.handle, op_id, matrices_p,
-            len(matrices), matrix_index, matrix_index.shape[0])
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
+            matrix_index.shape[0])
 
     def ComputePools(self, ops, pools, enabled=None):
         """Computes flows between pool values for all stands.
@@ -267,27 +228,16 @@ class LibCBMWrapper(LibCBM_ctypes):
                 enabled stand index. If None, all flows are assumed to be
                 enabled. Defaults to None.
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
         n_ops = len(ops)
         p = data_helpers.get_ndarray(pools)
         poolMat = LibCBM_Matrix(p)
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
-        self._dll.LibCBM_ComputePools(
-            ctypes.byref(self.err), self.handle, ops_p, n_ops, poolMat,
+        self.handle.call(
+            "LibCBM_ComputePools", ops_p, n_ops, poolMat,
             data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int))
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
 
     def ComputeFlux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
@@ -318,12 +268,8 @@ class LibCBMWrapper(LibCBM_ctypes):
                 enabled. Defaults to None.
 
         Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
             ValueError: raised when parameters passed to this function are not
                 valid.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
         """
         if not self.handle:
             raise AssertionError("dll not initialized")
@@ -343,9 +289,7 @@ class LibCBMWrapper(LibCBM_ctypes):
             (ctypes.c_size_t*n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t))
         enabled = data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int)
-        self._dll.LibCBM_ComputeFlux(
-            ctypes.byref(self.err), self.handle, ops_p, op_process_p, n_ops,
-            poolMat, fluxMat, enabled)
 
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_ComputeFlux", ctypes.byref(self.handle.err), self.handle,
+            ops_p, op_process_p, n_ops, poolMat, fluxMat, enabled)

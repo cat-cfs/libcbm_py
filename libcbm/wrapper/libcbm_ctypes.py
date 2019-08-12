@@ -7,6 +7,7 @@ from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.cbm import cbm_ctypes
 
+
 class LibCBM_ctypes():
     """Wrapper for the core low level functions in the libcbm C/C++ library
 
