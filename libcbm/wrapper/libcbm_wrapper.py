@@ -75,19 +75,12 @@ class LibCBMWrapper():
                        values correspond to id values in the collection of
                        pools
 
-        Raises:
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
-
         Returns:
             libcbm.wrapper.libcbm_handle.LibCBMHandle: an initialized object
                 for calling low level C/C++ libcbm functions
         """
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle = LibCBMHandle(p_config)
-
-        if self.handle.err.Error != 0:
-            raise RuntimeError(self.handle.err.getErrorMessage())
         return self.handle
 
     def AllocateOp(self, n):

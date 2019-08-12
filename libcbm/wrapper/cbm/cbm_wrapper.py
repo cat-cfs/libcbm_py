@@ -151,15 +151,10 @@ class CBMWrapper(LibCBM_ctypes):
             RuntimeError: if an error is detected in libCBM, it will be
                 re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
         v = data_helpers.unpack_ndarrays(state_variables)
         n = v.age.shape[0]
-        self._dll.LibCBM_EndStep(
-            ctypes.byref(self.err), self.handle, n, v.age,
-            v.regeneration_delay, v.enabled)
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_EndStep", n, v.age, v.regeneration_delay, v.enabled)
 
     def InitializeLandState(self, inventory, pools, state_variables):
         """Initializes CBM state to values appropriate for after running
@@ -187,23 +182,17 @@ class CBMWrapper(LibCBM_ctypes):
             RuntimeError: if an error is detected in libCBM, it will be
                 re-raised with an appropriate error message.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
-
         i = data_helpers.unpack_ndarrays(inventory)
         v = data_helpers.unpack_ndarrays(state_variables)
         n = i.last_pass_disturbance_type.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
 
-        self._dll.LibCBM_InitializeLandState(
-            ctypes.byref(self.err), self.handle, n,
-            i.last_pass_disturbance_type, i.delay, i.age, i.spatial_unit,
-            i.afforestation_pre_type_id, poolMat, v.last_disturbance_type,
-            v.time_since_last_disturbance, v.time_since_land_class_change,
-            v.growth_enabled, v.enabled, v.land_class, v.age)
-
-        if self.err.Error != 0:
-            raise RuntimeError(self.err.getErrorMessage())
+        self.handle.call(
+            "LibCBM_InitializeLandState", n, i.last_pass_disturbance_type,
+            i.delay, i.age, i.spatial_unit, i.afforestation_pre_type_id,
+            poolMat, v.last_disturbance_type, v.time_since_last_disturbance,
+            v.time_since_land_class_change, v.growth_enabled, v.enabled,
+            v.land_class, v.age)
 
     def AdvanceSpinupState(self, inventory, variables, parameters):
         """Advances spinup state variables through one spinup step.
@@ -221,18 +210,10 @@ class CBMWrapper(LibCBM_ctypes):
                 :py:func:`libcbm.model.cbm_variables.initialize_spinup_parameters`
                 for a compatible definition
 
-        Raises:
-            AssertionError: raised if the Initialize method was not called
-                prior to this method.
-            RuntimeError: if an error is detected in libCBM, it will be
-                re-raised with an appropriate error message.
-
         Returns:
             int: The number of stands finished running the spinup routine
             as of the end of this call.
         """
-        if not self.handle:
-            raise AssertionError("dll not initialized")
 
         i = data_helpers.unpack_ndarrays(inventory)
         p = data_helpers.unpack_ndarrays(parameters)

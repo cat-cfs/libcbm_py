@@ -9,6 +9,8 @@ class LibCBMHandle(LibCBM_ctypes):
         self.err = LibCBM_Error()
         self.pointer = self._dll.LibCBM_Initialize(
             config, ctypes.byref(self.err))
+        if self.err.Error != 0:
+            raise RuntimeError(self.err.getErrorMessage())
 
     def __enter__(self):
         return self
