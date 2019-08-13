@@ -187,7 +187,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
     """create a CBM inventory based on the specified test cases
 
     Args:
-        cbm (libcbm.model.CBM): instance of CBM, used here to fetch
+        cbm (libcbm.model.cbm.CBM): instance of CBM, used here to fetch
             classifier value ids from configuration
         cases (list): list of dict defining CBM test cases
         classifier_name (str): name of the single classifier used by the

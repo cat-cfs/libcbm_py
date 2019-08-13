@@ -22,7 +22,7 @@ class CBMWrapper(LibCBM_ctypes):
 
             See :py:mod:`libcbm.model.cbm.cbm_defaults` for
             construction of the "cbm_defaults" value, and
-            :py:mod:`libcbm.model.cbm_config` for helper methods.
+            :py:mod:`libcbm.model.cbm.cbm_config` for helper methods.
 
             Example::
 
@@ -103,16 +103,16 @@ class CBMWrapper(LibCBM_ctypes):
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
                 See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
             state_variables (pandas.DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
                 function call.  See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
             parameters (object): Read-only parameters used in a CBM timestep.
                 See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_parameters`
                 for a compatible definition.
         """
         i = data_helpers.unpack_ndarrays(inventory)
@@ -137,7 +137,7 @@ class CBMWrapper(LibCBM_ctypes):
                 define all non-pool state in the CBM model.  This
                 function call will alter this variable with end-of-step
                 changes. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
         """
         v = data_helpers.unpack_ndarrays(state_variables)
@@ -152,7 +152,7 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                See: :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition.
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
@@ -162,7 +162,7 @@ class CBMWrapper(LibCBM_ctypes):
                 define all non-pool state in the CBM model.  This
                 function call will alter this variable with CBM initial state
                 values. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition.
 
         """
@@ -184,14 +184,14 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+                See: :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
             variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  See:
-                :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_variables`
                 for a compatible definition
             parameters (object): spinup parameters. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_spinup_parameters`
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
                 for a compatible definition
 
         Returns:
