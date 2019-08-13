@@ -142,7 +142,7 @@ def classifier_config(classifiers):
                     {"id": n+k+1, "classifier_id": j, "name": "cj_v1", ...},
                     {"id": n+k+2, "classifier_id": j, "name": "cj_v2", ...},
                     ...,
-                    {"id": n+k+p, "classifier_id": j, "name": "cj_vp", ...}
+                    {"id": n+k+i, "classifier_id": j, "name": "cj_vi", ...}
                 ]
                 }
     """

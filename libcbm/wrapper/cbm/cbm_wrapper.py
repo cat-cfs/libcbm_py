@@ -152,7 +152,8 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
+                See:
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition.
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
@@ -184,7 +185,8 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
-                See: :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
+                See:
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
             variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  See:
