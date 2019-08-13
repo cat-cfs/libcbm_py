@@ -10,6 +10,7 @@ import pandas as pd
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_config
+from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test.cbm import case_generation
 
@@ -284,7 +285,10 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
 
     cbm = cbm_factory.create(
         dll_path=dll_path,
-        db_path=db_path,
+        dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
+            db_path),
+        cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
+            db_path),
         merch_volume_to_biomass_factory=get_test_case_merch_volume_factory(
             cases, db_path, ref),
         classifiers_factory=get_test_case_classifier_factory(

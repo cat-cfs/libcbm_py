@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from libcbm.model.cbm import cbm_defaults_queries
 
@@ -41,6 +42,10 @@ def load_cbm_parameters(sqlitePath):
             "afforestation_pre_type"
             ]}
 
+    if not os.path.exists(sqlitePath):
+        # sqlite3.connect does not raise an error on no path
+        raise ValueError(
+            "specified path does not exist '{0}'".format(sqlitePath))
     with sqlite3.connect(sqlitePath) as conn:
         cursor = conn.cursor()
         for table, query in queries.items():
@@ -143,3 +148,41 @@ def load_cbm_flux_indicators(sqlitePath):
             result.append(flux_indicator)
             index += 1
         return result
+
+
+def get_cbm_parameters_factory(db_path):
+    """Get a function that formates CBM parameters for
+    :py:class:`libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper`
+    drawn from the specified database.
+
+    Args:
+        db_path (str): path to a cbm_defaults database
+
+    Returns:
+        func: a function that creates CBM parameters
+
+        Compatible with: :py:func:`libcbm.model.cbm.cbm_factory.create`
+    """
+    def factory():
+        return load_cbm_parameters(db_path)
+    return factory
+
+
+def get_libcbm_configuration_factory(db_path):
+    """Get a parameterless function that creates configuration for
+    :py:class:`libcbm.wrapper.libcbm_wrapper.LibCBMWrapper`
+
+    Args:
+        db_path (str): path to a cbm_defaults database
+
+    Returns:
+        func: a function that creates CBM configuration input for libcbm
+
+        Compatible with: :py:func:`libcbm.model.cbm.cbm_factory.create`
+    """
+    def factory():
+        return {
+            "pools": load_cbm_pools(db_path),
+            "flux_indicators": load_cbm_flux_indicators(db_path)
+        }
+    return factory
