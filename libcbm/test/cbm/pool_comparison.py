@@ -133,6 +133,7 @@ def join_pools(libCBM_pools, cbm3_pools, comparison):
     cbm3_poolnames = list(pool_mapping.keys())
     libCBM_pools = libCBM_pools[['identifier', 'timestep']+libCBM_poolnames]
     cbm3_pools = cbm3_pools.rename(columns={'TimeStep': 'timestep'})
+    cbm3_pools["identifier"] = pd.to_numeric(cbm3_pools["identifier"])
     cbm3_pools = cbm3_pools[['identifier', 'timestep']+cbm3_poolnames]
 
     # make column naming consistent
