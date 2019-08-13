@@ -12,7 +12,8 @@ class LibCBM_Matrix_Base(ctypes.Structure):
 
     Raises:
         ValueError: matrix must have either 2 dimensions or be a scalar
-        ValueError: matrix must be C_CONTIGUOUS and of the correct type
+        ValueError: matrix must be C_CONTIGUOUS
+        ValueError: matrix must be of the correct type
     """
     def __init__(self, matrix, matrix_np_type, matrix_c_type):
         if len(matrix.shape) == 1 and matrix.shape[0] == 1:
@@ -25,10 +26,15 @@ class LibCBM_Matrix_Base(ctypes.Structure):
             raise ValueError(
                 "matrix must have either 2 dimensions or be a single cell "
                 "matrix")
-        if not matrix.flags["C_CONTIGUOUS"] or \
-           not matrix.dtype == matrix_np_type:
+        if not matrix.flags["C_CONTIGUOUS"]:
             raise ValueError(
-                "matrix must be c contiguous and of type np.double")
+                "matrix must be C_CONTIGUOUS.")
+        if not matrix.dtype == matrix_np_type:
+            raise ValueError(
+                "matrix must be of type {0}. Got {1}".format(
+                    matrix_np_type,
+                    matrix.dtype
+                ))
         self.values = matrix.ctypes.data_as(ctypes.POINTER(matrix_c_type))
 
 
