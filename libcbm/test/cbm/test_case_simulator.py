@@ -210,9 +210,9 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
             for c in cases], dtype=np.int32)
     })
 
-    historic_disturbance_type = np.array(
+    historical_disturbance_type = np.array(
         [
-            ref.get_disturbance_type_id(c["historic_disturbance"])
+            ref.get_disturbance_type_id(c["historical_disturbance"])
             for c in cases],
         dtype=np.int32)
 
@@ -248,7 +248,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
             "spatial_unit": spatial_units,
             "afforestation_pre_type_id": afforestation_pre_type_id,
             "land_class": land_class,
-            "historic_disturbance_type": historic_disturbance_type,
+            "historical_disturbance_type": historical_disturbance_type,
             "last_pass_disturbance_type": last_pass_disturbance_type,
             "delay": np.array([c["delay"] for c in cases], dtype=np.int32)
         }))

@@ -202,7 +202,7 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
         delay = 0
         afforestation_pre_type = None
         last_pass_disturbance = fire_type
-        historic_disturbance = fire_type
+        historical_disturbance = fire_type
         unfccc_land_class = "UNFCCC_FL_R_FL"
         if not growth_only:
             if creation_disturbance in [fire_type, harvest_type]:
@@ -240,7 +240,7 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
             "unfccc_land_class": unfccc_land_class,
             "admin_boundary": spu[0],
             "eco_boundary": spu[1],
-            "historic_disturbance": historic_disturbance,
+            "historical_disturbance": historical_disturbance,
             "last_pass_disturbance": last_pass_disturbance,
             "components": components,
             "events": disturbance_events})

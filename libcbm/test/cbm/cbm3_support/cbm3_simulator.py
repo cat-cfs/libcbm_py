@@ -167,7 +167,7 @@ def import_cbm3_project(name, cases, age_interval, num_age_classes, n_steps,
         sit_config.add_inventory(
             classifier_set=classifier_set, area=c["area"], age=c["age"],
             unfccc_land_class=unfccc_land_class,
-            delay=c["delay"], historic_disturbance=c["historic_disturbance"],
+            delay=c["delay"], historic_disturbance=c["historical_disturbance"],
             last_pass_disturbance=c["last_pass_disturbance"])
         for component in c["components"]:
             sit_config.add_yield(
