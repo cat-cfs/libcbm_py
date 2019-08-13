@@ -12,7 +12,7 @@ class CBMWrapper(LibCBM_ctypes):
     """Exposes low level ctypes wrapper to regular python, for CBM
     specific libcbm functions.
 
-    The base class is :py:class:`libcbm.wrapper.libcbm_ctypesLibCBM_ctypes`
+    The base class is :py:class:`libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes`
 
     Args:
         handle (libcbm.wrapper.libcbm_handle.LibCBMHandle): handle to the low
