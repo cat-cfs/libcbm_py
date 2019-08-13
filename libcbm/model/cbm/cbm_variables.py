@@ -49,7 +49,7 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
     ts = timestep_data.copy()
     ts.insert(loc=0, column="timestep", value=timestep)
     ts.insert(loc=0, column="identifier", value=list(range(1, ts.shape[0]+1)))
-    if simulation_result is None:
+    if simulation_result is None or simulation_result.shape[0] == 0:
         simulation_result = ts
     else:
         simulation_result = simulation_result.append(ts)
@@ -287,15 +287,15 @@ def initialize_inventory(classifiers, inventory):
                 inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
     i.classifiers = classifiers
-    i.age = inventory.age.to_numpy()
-    i.spatial_unit = inventory.spatial_unit.to_numpy()
+    i.age = inventory.age.to_numpy(dtype=np.int32)
+    i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
     i.afforestation_pre_type_id = \
-        inventory.afforestation_pre_type_id.to_numpy()
-    i.land_class = inventory.land_class.to_numpy()
+        inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32)
+    i.land_class = inventory.land_class.to_numpy(dtype=np.int32)
     i.historical_disturbance_type = \
-        inventory.historic_disturbance_type.to_numpy()
+        inventory.historical_disturbance_type.to_numpy(dtype=np.int32)
     i.last_pass_disturbance_type = \
-        inventory.last_pass_disturbance_type.to_numpy()
-    i.delay = inventory.delay.to_numpy()
+        inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32)
+    i.delay = inventory.delay.to_numpy(dtype=np.int32)
 
     return i
