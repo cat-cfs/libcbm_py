@@ -158,6 +158,26 @@ class CBM:
                 :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
                 for a compatible definition
         """
+
+        # the following line is tricky, and needs some more thought:
+        # 1. defining the landclass as FL_FL is not problematic for regular
+        #    forest cases.
+        # 2. defining the landclass as a non forest landclass is not
+        #    problematic for afforestation, and using a forested landclass
+        #    is problematic.  This is handled by libcbm, in that an error is
+        #    thrown if a forested land class is used with an afforestation
+        #    pre-type.
+        # 3. using a deforestation disturbance for
+        #    inventory.last_pass_disturbance_type type should overwrite the
+        #    state variable landclass since each deforestation disturbance
+        #    type is explicitly associated with a transitional land class.
+        #    This means that inventory.last_pass_disturbance_type along with
+        #    inventory.delay indicates the correct value for
+        #    state_variables.land_class at CBM startup, and it can potentially
+        #    contradict the value of inventory.land_class. libcbm does not
+        #    attempt to throw an error if this situation is detected.
+        state_variables.land_class = inventory.land_class
+
         self.model_functions.InitializeLandState(
             inventory, pools, state_variables)
 
