@@ -10,6 +10,13 @@ def classifier_value(value, description=""):
 
     Returns:
         dict: a dictionary formatted for libcbm.
+
+            Example return value::
+
+                {
+                    "value": "c1_v1",
+                    "description": "c1_v1"
+                }
     """
     return {
         "value": value,
@@ -24,7 +31,7 @@ def classifier(name, values):
         name (str): the name of the classifier
         values (dict): The classifier values that compose this classifier.
             Use classifier values of the format returned by:
-            `libcbm.config.cbmconfig.classifier_value`
+            :py:func:`classifier_value`
 
     Returns:
         dict: A dictionary with the following keys:
@@ -32,6 +39,19 @@ def classifier(name, values):
             - "classifier": The classifier
             - "classifier_values": The list of classifier value dictionaries
                 associated with the classifier
+
+            Example return value::
+
+                {
+                    "classifier": {"name": "c1"},
+                    "classifier_values": [
+                        {
+                            "value": "c1_v1",
+                            "description": "c1_v1"
+                        },
+                        ...
+                    ]
+                }
     """
     return {
         "classifier": {"name": name},
@@ -89,6 +109,9 @@ def classifier_config(classifiers):
             - j is the number of classifiers,
             - n,k,i are the number of classifier values for each
             corresponding classifier
+
+            The dictionaries composing this argument can be created by the
+            :py:func:`classifier_value`, and :py:func:`classifier` functions
 
     Returns:
         dict: A dictionary with the following keys
@@ -212,13 +235,13 @@ def merch_volume_to_biomass_config(db_path, merch_volume_curves):
     Args:
         db_path (str): path to a cbm_defaults database
         merch_volume_curves (list): a list of dictionaries in the same format
-            as the return value of `libcbm.config.cbmconfig.merch_volume_curve`
+            as the return value of :py:func:`merch_volume_curve`
 
     Returns:
         dict: A dictionary containing configuration for merchantable volume
-            growth in the CBM model
+              growth in the CBM model
 
-            For example::
+              For example::
 
                 {
                     "db_path": "cbm_defaults.db"

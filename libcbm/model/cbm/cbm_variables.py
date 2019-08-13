@@ -118,7 +118,8 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     per-stand basis.
 
     If a scalar value is provided to any of the optional parameters, that
-    value will be promoted (see: `promote_scalar`) in the resulting vector.
+    value will be promoted (see: :py:func:`promote_scalar`) in the resulting
+    vector.
 
     Args:
         n_stands (int): The length of each of the resulting variables

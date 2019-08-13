@@ -13,7 +13,7 @@ class LibCBM_ctypes():
 
     Args:
         dll_path (str): path to the compiled LibCBM dll on Windows,
-        or compiled LibCBM .so file for Linux
+            or compiled LibCBM .so file for Linux
     """
     def __init__(self, dll_path):
         self.handle = False

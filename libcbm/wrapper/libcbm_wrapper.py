@@ -14,8 +14,8 @@ class LibCBMWrapper():
     """Exposes low level ctypes wrapper to regular python, for the core
     libcbm functions.
 
-    Args (libcbm.wrapper.libcbm_handle.LibCBMHandle): handle for the
-    underlying dll/so compiled library
+        Args (:py:class:`libcbm.wrapper.libcbm_handle.LibCBMHandle`): handle
+            for the underlying dll/so compiled library
     """
     def __init__(self, handle):
         self.handle = handle

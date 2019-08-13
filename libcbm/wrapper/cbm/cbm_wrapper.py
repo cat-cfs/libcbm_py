@@ -20,9 +20,9 @@ class CBMWrapper(LibCBM_ctypes):
         config (str): A json formatted string containing CBM
             configuration.
 
-            See :py:mod:`libcbm.configuration.cbm_defaults` for
+            See :py:mod:`libcbm.model.cbm.cbm_defaults` for
             construction of the "cbm_defaults" value, and
-            :py:mod:`libcbm.configuration.cbmconfig` for helper methods.
+            :py:mod:`libcbm.model.cbm_config` for helper methods.
 
             Example::
 
@@ -382,7 +382,7 @@ class CBMWrapper(LibCBM_ctypes):
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of disturbance parameters passed to
                 library initialization. Will not be modified by this function.
-                See: libcbm.model.cbm_variables.initialize_inventory
+                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
             parameters (object): Read-only parameters used to set
                 disturbance type id to fetch the appropriate disturbance

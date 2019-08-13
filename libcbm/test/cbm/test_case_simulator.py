@@ -262,7 +262,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
         db_path (str): path to a cbm_defaults database
         dll_path (str): path to the libcbm compiled library
         cases (list): list of test cases in the format created by
-            :py:func:`libcbm.test.casegeneration.generate_scenarios`
+            :py:func:`libcbm.test.case_generation.generate_scenarios`
         n_steps (int): the number of timesteps to run for every test case
         spinup_debug (bool, optional): if specified, and True extra spinup
             debugging information is generated and returned (causes
