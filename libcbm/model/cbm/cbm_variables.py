@@ -47,12 +47,13 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
             data appended
     """
     ts = timestep_data.copy()
-    ts.reset_index()  # adds a column "index"
     ts.insert(loc=0, column="timestep", value=timestep)
+    ts.insert(loc=0, column="identifier", value=list(range(0,ts.shape[0])))
     if simulation_result is None:
         simulation_result = ts
     else:
         simulation_result = simulation_result.append(ts)
+    simulation_result.reset_index(drop=True)
     return simulation_result
 
 
@@ -234,7 +235,7 @@ def initialize_cbm_state_variables(n_stands):
     Returns:
         pandas.DataFrame: a dataframe containing the CBM state variables.
     """
-    return pd.DataFrame({
+    state_variables = pd.DataFrame({
         "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
         "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
         "time_since_land_class_change": np.zeros(n_stands, dtype=np.int32),
@@ -245,6 +246,8 @@ def initialize_cbm_state_variables(n_stands):
         "growth_multiplier": np.ones(n_stands, dtype=np.float),
         "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
     })
+
+    return state_variables
 
 
 def initialize_inventory(classifiers, inventory):
@@ -294,4 +297,5 @@ def initialize_inventory(classifiers, inventory):
     i.last_pass_disturbance_type = \
         inventory.last_pass_disturbance_type.to_numpy()
     i.delay = inventory.delay.to_numpy()
+
     return i
