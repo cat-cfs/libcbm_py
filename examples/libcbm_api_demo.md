@@ -21,6 +21,11 @@ import pandas as pd
 ```
 
 ```python
+#helpers for integrating this notebook with libcbm
+import notebook_startup
+```
+
+```python
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
@@ -31,8 +36,9 @@ from libcbm.model.cbm import cbm_variables
 ```
 
 ```python
-dllpath = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
-dbpath = 'C:\dev\cbm_defaults\cbm_defaults.db'
+settings = notebook_startup.load_settings()
+dllpath = settings["libcbm_path"]
+dbpath = settings["cbm_defaults_db_path"]
 
 ```
 

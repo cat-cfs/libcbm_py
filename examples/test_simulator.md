@@ -21,13 +21,18 @@ import pandas as pd
 ```
 
 ```python
+import notebook_startup
+```
+
+```python
 from libcbm.test.cbm import case_generation
 from libcbm.test.cbm import test_case_simulator
 ```
 
 ```python
-cbm_defaults_db_path = 'C:\dev\cbm_defaults\cbm_defaults.db'
-libcbm_path =  r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
+settings = notebook_startup.load_settings()
+cbm_defaults_db_path = settings["cbm_defaults_db_path"]
+libcbm_path = settings["libcbm_path"]
 ```
 
 ```python
@@ -40,7 +45,7 @@ case = {
     "unfccc_land_class": "UNFCCC_FL_R_FL",
     "admin_boundary": "British Columbia",
     "eco_boundary": "Pacific Maritime",
-    "historic_disturbance": "Wildfire",
+    "historical_disturbance": "Wildfire",
     "last_pass_disturbance": "Wildfire",
     "components": [
         {

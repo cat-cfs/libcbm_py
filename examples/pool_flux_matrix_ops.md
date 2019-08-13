@@ -22,20 +22,27 @@ It also performs tests by running equivalent matrix operations using the numpy m
 <!-- #endregion -->
 
 ```python
+import os, json
+import numpy as np
+import scipy.sparse
+```
+```python
+#helpers for integrating this notebook with libcbm
+import notebook_startup
+```
+
+```python
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 ```
 
 ```python
-import os, json
-import numpy as np
-import scipy.sparse
+settings = notebook_startup.load_settings()
+dllpath = settings["libcbm_path"]
 ```
 
-
-
 ```python
-dllpath = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
+
 def load_dll(config):
     dll = LibCBMWrapper(LibCBMHandle(dllpath, json.dumps(config)))
     return dll

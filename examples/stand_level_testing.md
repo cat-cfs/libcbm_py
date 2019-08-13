@@ -13,15 +13,7 @@ jupyter:
     name: python3
 ---
 
-# LibCBM versus CBM-CFS3 growth testing #
-This notebook is a automated test of the growth curve implementation in CBM-CFS3 versus that in LibCBM.  The objective is to ensure that LibCBM results match the established CBM-CFS3 model very closely. 
-
-The script automatically generates randomized merchantable volume growth curves in various configurations
- * a random number of merchantable volume curve components, which can result in purely softwood, purely hardwood or mixed stands
- * random spatial unit (which is associated with biomass conversion parameters)
- * one of several random age/volume curve generators with varying amplitudes and start points (impulse, ramp, step, and exp curve)
- 
-It then compares the results and sorts them by largest different for plotting.
+# LibCBM versus CBM-CFS3 Stand level testing
 
 ```python
 import os, json, math
@@ -31,56 +23,59 @@ import pandas as pd
 ```
 
 ```python
+#helpers for integrating this notebook with libcbm
+import notebook_startup
+```
+
+libCBM related imports
+
+
+```python
 from libcbm.test.cbm import case_generation
 from libcbm.test.cbm.cbm3_support import cbm3_simulator
 from libcbm.test.cbm import test_case_simulator
 from libcbm.test.cbm import pool_comparison
 ```
 
-
-variables and paths needed to run the tests
-
 ```python
-age_interval=5
-num_age_classes = 40 #required by cbm3
-n_steps = 250
-cbm3_exe_path = r"M:\CBM Tools and Development\Builds\CBMBuilds\20190530_growth_increment_fix"
-toolbox_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3"
-archive_index_db_path = r"C:\Program Files (x86)\Operational-Scale CBM-CFS3\Admin\DBs\ArchiveIndex_Beta_Install.mdb"
-
-cbm_defaults_db_path = 'C:\dev\cbm_defaults\cbm_defaults.db'
-libcbm_path = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
+settings = notebook_startup.load_settings()
+cbm3_exe_path = settings["cbm3_exe_path"]
+toolbox_path = settings["toolbox_path"]
+archive_index_db_path = settings["archive_index_db_path"]
+cbm_defaults_db_path = settings["cbm_defaults_db_path"]
+libcbm_path = settings["libcbm_path"]
 ```
 
-generate randomized growth curve test cases
+```python
+age_interval = 5
+num_age_classes = 40 #required by cbm3
+n_steps = 250
+```
+
+generate random test cases
 
 ```python
 cases = case_generation.generate_scenarios(
-    random_seed = 2,
+    random_seed = 1,
     num_cases = 5,
     db_path = cbm_defaults_db_path,
-    n_steps=n_steps,
-    max_disturbances = 0,
+    n_steps = n_steps,
+    max_disturbances = 3,
     max_components = 1,
     n_growth_digits = 2,
     age_interval=age_interval,
-    growth_curve_len=age_interval*num_age_classes,
-    growth_only=True)
+    growth_curve_len=age_interval * num_age_classes)
 
 ```
 
-run the test cases on libCBM
-
 ```python
-libcbm_result = test_case_simulator.run_test_cases(
-    dll_path=libcbm_path, db_path=cbm_defaults_db_path, cases=cases, n_steps=n_steps)
+libcbm_result = test_case_simulator.run_test_cases(cbm_defaults_db_path, libcbm_path, cases, n_steps, spinup_debug=False)
 ```
 
-run test cases on cbm-cfs3. uses [StandardImportToolPlugin](https://github.com/cat-cfs/StandardImportToolPlugin) and [cbm3-python](https://github.com/cat-cfs/cbm3_python) to automate cbm-cfs3 functionality
-
 ```python
+
 project_path = cbm3_simulator.import_cbm3_project(
-    name="growth_curve_testing",
+    name="stand_level_testing",
     cases=cases,
     age_interval=age_interval,
     num_age_classes=num_age_classes,
@@ -97,13 +92,9 @@ cbm3_results_path = cbm3_simulator.run_cbm3(
 cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 ```
 
-join the results for plotting
-
 ```python
-pools_merged, pool_diffs = pool_comparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "biomass")
+pools_merged, pool_diffs = pool_comparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "all")
 ```
-
-plot the worst 20 differences
 
 ```python
 pool_diffs_totals = pool_diffs.drop(columns="timestep")
@@ -130,16 +121,58 @@ def plot_diff(id):
         .plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
 ```
 
-plot a few of the worst cases for debugging
+```python
+plot_diff(4)
+plot_diff(5)
+
+```
+
+Spinup debug
+
 
 ```python
-plot_diff(2)
-plot_diff(3)
+cases[7]
+```
+
+```python
+
+
+if "spinup_debug" in libcbm_result:
+    libCBM_spinup_debug = libcbm_result["spinup_debug"]
+    libCBM_spinup_debug[libCBM_spinup_debug["index"]==7].groupby("iteration").sum().plot(figsize=(10,10))
+```
+
+```python
 
 ```
 
 ```python
-bio_pools
+libcbm_pools = libcbm_result["pools"]
+```
+
+```python
+libcbm_pools[libcbm_pools["identifier"]=="8"][["timestep","SoftwoodMerch","HardwoodMerch"]].groupby("timestep").sum().plot()
+```
+
+```python
+cbm3_pools = cbm3_result["pools"]
+```
+
+```python
+cbm3_pools[cbm3_pools["identifier"]=="8"] \
+    [["TimeStep","Softwood Merchantable","Hardwood Merchantable"]] \
+    .groupby("TimeStep").sum().plot()
+```
+
+```python
+libcbm_state_variables = libcbm_result["state_variable_result"]
+```
+
+```python
+libcbm_state_variables[libcbm_state_variables["identifier"]=='8']
+```
+
+```python
 
 ```
 
