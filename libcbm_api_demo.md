@@ -21,16 +21,19 @@ import pandas as pd
 ```
 
 ```python
-from libcbm.wrapper.libcbmwrapper import LibCBMWrapper
-from libcbm.configuration import cbmconfig
-from libcbm.configuration import cbm_defaults
-from libcbm.configuration.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.wrapper.libcbm_handle import LibCBMHandle
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
+from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
+from libcbm.model.cbm import cbm_config
+from libcbm.model.cbm import cbm_defaults
+from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.model.cbm import cbm_variables
 ```
 
 ```python
 dllpath = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
 dbpath = 'C:\dev\cbm_defaults\cbm_defaults.db'
-dll = LibCBMWrapper(dllpath)
+
 ```
 
 ```python
@@ -38,18 +41,18 @@ dll = LibCBMWrapper(dllpath)
 
 ref = CBMDefaultsReference(dbpath)
 #create a single classifier/classifier value for the single growth curve
-classifiers_config = cbmconfig.classifier_config([
-    cbmconfig.classifier("growth_curve", [
-        cbmconfig.classifier_value("growth_curve1")
+classifiers_config = cbm_config.classifier_config([
+    cbm_config.classifier("growth_curve", [
+        cbm_config.classifier_value("growth_curve1")
     ])
 ])
 
 
 transitions_config = []
 
-merch_volume_to_biomass_config = cbmconfig.merch_volume_to_biomass_config(
+merch_volume_to_biomass_config = cbm_config.merch_volume_to_biomass_config(
     dbpath, [
-        cbmconfig.merch_volume_curve(
+        cbm_config.merch_volume_curve(
             classifier_set = ['growth_curve1'], 
             merch_volumes = [
                 {
@@ -82,21 +85,23 @@ merch_volume_to_biomass_config = cbmconfig.merch_volume_to_biomass_config(
 
 ```python
 pooldef = cbm_defaults.load_cbm_pools(dbpath)
-dll.Initialize(json.dumps(
+handle_config = json.dumps(
         {
             "pools": pooldef,
-            "flux_indicators": cbm_defaults.load_flux_indicators(dbpath)
-        }))
+            "flux_indicators": cbm_defaults.load_cbm_flux_indicators(dbpath)
+        })
+libcbm_handle = LibCBMHandle(dllpath,handle_config)
 
+libcbm_wrapper = LibCBMWrapper(libcbm_handle)
 
-cbm_config = {
+cbm_config = json.dumps({
         "cbm_defaults": cbm_defaults.load_cbm_parameters(dbpath),
         "merch_volume_to_biomass": merch_volume_to_biomass_config,
         "classifiers": classifiers_config["classifiers"],
         "classifier_values": classifiers_config["classifier_values"],
         "transitions": []
-    }
-dll.InitializeCBM(json.dumps(cbm_config))
+    })
+cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config)
 
 ```
 
@@ -104,12 +109,23 @@ dll.InitializeCBM(json.dumps(cbm_config))
 
 
 ```python
-nstands = 1
-age = np.array([0],dtype=np.int32)
-classifiers = np.array([1], dtype=np.int32)
-spatial_units = np.array([42],dtype=np.int32)
-pools = np.zeros((1,len(pooldef)))
-pools[:,0] = 1.0
+classifiers = pd.DataFrame({"growth_curve": np.ones(1, dtype=np.int32)})
+inventory = pd.DataFrame({
+    "age": [0],
+    "spatial_unit": [42],
+    "afforestation_pre_type_id": [0],
+    "land_class": [1],
+    "historical_disturbance_type": [0],
+    "last_pass_disturbance_type": [0],
+    "delay": [0],
+})
+
+inventory = cbm_variables.initialize_inventory(classifiers, inventory)
+n_stands = inventory.age.shape[0]
+state = cbm_variables.initialize_cbm_state_variables(n_stands)
+#ensure growth is enabled
+state.growth_enabled = 1
+pools = cbm_variables.initialize_pools(n_stands, ref.get_pools())
 
 ```
 
@@ -123,30 +139,21 @@ This includes:
 
 ```python
 
-op = dll.AllocateOp(nstands)
+op = libcbm_wrapper.AllocateOp(n_stands)
 
-result = pd.DataFrame()
+result = None
 for i in range(0, 200):
-    dll.GetMerchVolumeGrowthOps(
-        op, 
-        classifiers=classifiers,
-        pools=pools,
-        ages=age,
-        spatial_units=spatial_units,
-        last_dist_type=None,
-        time_since_last_dist=None,
-        growth_multipliers=None,
-        growth_enabled=True)
+    cbm_wrapper.GetMerchVolumeGrowthOps(
+        op, inventory, pools, state)
      
     # note the duplication of op here, CBM applies the growth operation 2 times per timestep
     # so this is for consistency
-    dll.ComputePools([op, op], pools)
+    libcbm_wrapper.ComputePools([op, op], pools)
+   
+
+    result = cbm_variables.append_simulation_result(result, pools, i+1) 
     
-    iteration_result = pd.DataFrame({x["name"]: pools[:,x["index"]] for x in pooldef})
-    iteration_result.reset_index(level=0, inplace=True)
-    result = result.append(iteration_result)
-    
-    age += 1
+    state.age += 1
     
 result = result.reset_index(drop=True)
 ```
