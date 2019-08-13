@@ -1,67 +1,85 @@
 Welcome to libcbm's documentation!
 ==================================
 
-.. automodule:: libcbm.configuration.cbmconfig
+this is documentation
+
+.. automodule:: libcbm.model.cbm.cbm_defaults_queries
+    :members:
+
+.. automodule:: libcbm.model.cbm.cbm_config
+    :members:
+
+.. autoclass:: libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference
+    :members:
+
+.. automodule:: libcbm.model.cbm.cbm_defaults
+    :members:
+
+.. automodule:: libcbm.model.cbm.cbm_factory
+    :members:
+
+.. autoclass:: libcbm.model.cbm.cbm_model.CBM
     :members:
     
-.. automodule:: libcbm.configuration.cbm_defaults_queries
+.. automodule:: libcbm.model.cbm.cbm_variables
     :members:
 
-.. automodule:: libcbm.configuration.cbm_defaults_reference
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_python_helper
     :members:
 
-.. autoclass:: libcbm.configuration.cbm_defaults_reference.CBMDefaultsReference
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_simulator
     :members:
 
-.. automodule:: libcbm.configuration.cbm_defaults
+.. automodule:: libcbm.test.cbm.case_generation
     :members:
 
-.. automodule:: libcbm.model.cbm_factory
+.. automodule:: libcbm.test.cbm.pool_comparison
     :members:
 
-.. automodule:: libcbm.model.cbm_variables
+.. automodule:: libcbm.test.cbm.test_case_simulator
     :members:
 
-.. autoclass:: libcbm.model.cbm.CBM
+
+.. automodule:: libcbm.wrapper.cbm.cbm_ctypes
     :members:
 
-.. automodule:: libcbm.model.model_factory
+.. autoclass:: libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper
     :members:
 
-.. automodule:: libcbm.test.casegeneration
+.. autoclass:: libcbm.wrapper.cbm.libcbm_spinup_state.LibCBM_SpinupState
     :members:
 
-.. automodule:: libcbm.test.poolcomparison
-    :members:
-
-.. automodule:: libcbm.test.test_case_simulator
+.. automodule:: libcbm.wrapper.data_helpers
     :members:
 
 .. autoclass:: libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes
     :members:
-
+    
 .. autoclass:: libcbm.wrapper.libcbm_error.LibCBM_Error
     :members:
 
+.. autoclass:: libcbm.wrapper.libcbm_handle.LibCBMHandle
+    :members:
+
+
+.. autoclass:: libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base
+    :members:
+    
 .. autoclass:: libcbm.wrapper.libcbm_matrix.LibCBM_Matrix
     :members:
 
 .. autoclass:: libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Int
     :members:
 
-.. autoclass:: libcbm.wrapper.libcbm_spinup_state.LibCBM_SpinupState
-    :members:
-
 .. autoclass:: libcbm.wrapper.libcbm_wrapper.LibCBMWrapper
     :members:
 
-.. automodule:: libcbm.wrapper.libcbm_wrapper
-    :members:
-    
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
+   
+   intro
 
 Indices and tables
 ==================
