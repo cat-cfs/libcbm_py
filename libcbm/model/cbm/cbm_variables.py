@@ -48,7 +48,7 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
     """
     ts = timestep_data.copy()
     ts.insert(loc=0, column="timestep", value=timestep)
-    ts.insert(loc=0, column="identifier", value=list(range(0,ts.shape[0])))
+    ts.insert(loc=0, column="identifier", value=list(range(1, ts.shape[0]+1)))
     if simulation_result is None:
         simulation_result = ts
     else:
