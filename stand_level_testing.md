@@ -27,10 +27,10 @@ libCBM related imports
 
 
 ```python
-from libcbm.test import casegeneration
-from libcbm.test.cbm3support import cbm3_simulator
-from libcbm.test import test_case_simulator
-from libcbm.test import poolcomparison
+from libcbm.test.cbm import case_generation
+from libcbm.test.cbm.cbm3_support import cbm3_simulator
+from libcbm.test.cbm import test_case_simulator
+from libcbm.test.cbm import pool_comparison
 ```
 
 ```python
@@ -48,7 +48,7 @@ libcbm_path = r'C:\dev\LibCBM\LibCBM_Build\build\LibCBM\Release\LibCBM.dll'
 generate random test cases
 
 ```python
-cases = casegeneration.generate_scenarios(
+cases = case_generation.generate_scenarios(
     random_seed = 1,
     num_cases = 5,
     db_path = cbm_defaults_db_path,
@@ -72,13 +72,12 @@ project_path = cbm3_simulator.import_cbm3_project(
     cases=cases,
     age_interval=age_interval,
     num_age_classes=num_age_classes,
-    nsteps=n_steps,
-    cbm_exe_path=cbm3_exe_path,
+    n_steps=n_steps,
     toolbox_path=toolbox_path,
     archive_index_db_path=archive_index_db_path)
 
 cbm3_results_path = cbm3_simulator.run_cbm3(
-    aidb_path=archive_index_db_path, 
+    archive_index_db_path=archive_index_db_path, 
     project_path=project_path,
     toolbox_path=toolbox_path,
     cbm_exe_path=cbm3_exe_path)
@@ -91,7 +90,7 @@ cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 ```
 
 ```python
-pools_merged, pool_diffs = poolcomparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "all")
+pools_merged, pool_diffs = pool_comparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "all")
 ```
 
 ```python
@@ -106,23 +105,23 @@ pool_diffs_totals \
 ```python
 def plot_diff(id):
     markers = ["o","v","^","<",">","1","2","3","4","8","s","p","P","*","h","H","+","x","X","D","d"]
-    bio_pools = pools_merged[pools_merged["identifier"]==casegeneration.get_classifier_value_name(id)]
+    bio_pools = pools_merged[pools_merged["identifier"]==id]
     bio_pools = bio_pools.drop(columns="identifier")
     bio_pools = bio_pools.groupby("timestep").sum()
-    ax = bio_pools.plot(figsize=(12,10), title=casegeneration.get_classifier_value_name(id))
+    ax = bio_pools.plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
     for i, line in enumerate(ax.get_lines()):
         line.set_marker(markers[i%len(markers)])
     ax.legend(ax.get_lines(), bio_pools.columns, loc='best')
-    bio_diffs = pool_diffs[pool_diffs["identifier"]==casegeneration.get_classifier_value_name(id)]
-    bio_diffs.drop(columns="identifier")
+    bio_diffs = pool_diffs[pool_diffs["identifier"]==id]
+    bio_diffs = bio_diffs.drop(columns="identifier")
     bio_diffs.groupby("timestep").sum() \
-        .plot(figsize=(12,10), title=casegeneration.get_classifier_value_name(id))
+        .plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
 ```
 
 ```python
 plot_diff(4)
-#plot_diff(117)
-#plot_diff(193)
+plot_diff(5)
+
 ```
 
 Spinup debug
