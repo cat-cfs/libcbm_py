@@ -1,5 +1,6 @@
 import pandas as pd
 import collections
+from libcbm.test.cbm import result_comparison
 
 
 def get_libcbm_flux_disturbance_cols():
@@ -239,3 +240,9 @@ def get_cbm3_annual_process_flux(cbm3_flux):
     return flux
 
 
+def get_merged_annual_process_flux(cbm3_flux, libcbm_flux):
+    merged_pools = result_comparison.merge_result(
+        get_cbm3_annual_process_flux(cbm3_flux),
+        libcbm_flux,
+        get_libcbm_flux_annual_process_cols())
+    return merged_pools

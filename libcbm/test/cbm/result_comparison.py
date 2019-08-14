@@ -96,7 +96,7 @@ def diff_result(merged, value_cols):
     Args:
         merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
             by: :py:func:`merge_result`.
-        value_cols (list): The list of string names for the values in the pair
+       value_cols (list): The list of string names for the values in the pair
             of specified dataframes.
 
     Returns:
