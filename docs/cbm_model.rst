@@ -5,18 +5,20 @@ LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.  See: :r
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 
-The LibCBM implementation of the CBM model is designed with externalized
-model state.
+The LibCBM implementation of the CBM model is designed all model state is
+user defined and passed to the CBM functions.
 
-This also means that consumers of the CBM class allocate and have full
+This means that consumers of the CBM class allocate and have full
 control and access to all CBM variables between calls to CBM functions.
 
-This goes hand in hand with externalized model stepping which allows user
-control of stepping through CBM time.
-
-With the above externalizations CBM provides a powerful API for integrating
-other processes or feedbacks to work with or inform the CBM model on a
+CBM provides a step function which allows caller control of stepping
+through CBM time, whereas in CBM-CFS3 stepping is an internal process
+that does not offer the ability to interact with other processes on a
 time step basis.
+
+With the above features CBM provides a powerful API for integrating or
+informing other processes or feedbacks to work with or inform the CBM model
+as it simulates Carbon dynamics.
 
 All CBM variables are allocated using standard Pandas data frames or numpy
 ndarrays, and many functions support either.
