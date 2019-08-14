@@ -48,10 +48,12 @@ def get_libcbm_flux_disturbance_cols():
 
 
 def get_libcbm_flux_annual_process_cols():
-    """[summary]
+    """Returns the ordered set of names for LibCBM columns involved in
+    annual process fluxes.
 
     Returns:
-        [type]: [description]
+        list: a list of strings which are the ordered LibCBM flux indicator
+        columns involved in annual process fluxes.
     """
     return [
         'DecayDOMCO2Emission',
@@ -156,22 +158,41 @@ def get_cbm3_disturbance_flux(cbm3_flux):
     """Returns disturbance flux from a query result of CBM3 flux indicators.
 
     Also performs the following table changes to make it easy to join and
-    compare with to the libcbm result.
+    compare with to the libcbm result:
 
         - rename "TimeStep" to "timestep"
         - convert the "identifier" column to numeric from string
         - rename the columns according to the :py:func:`zip` of
-        :py:func`get_cbm3_flux_disturbance_cols` to
+            :py:func:`get_cbm3_flux_disturbance_cols` to
+            :py:func:`get_libcbm_flux_disturbance_cols`
+        - negate the values for the following columns due to a quirk in
+            CBM-CFS3 flux indicator results:
+            - 'MerchToAir'
+            - 'FolToAir'
+            - 'OthToAir'
+            - 'CoarseToAir'
+            - 'FineToAir'
 
     Args:
         cbm3_flux (pandas.DataFrame): The CBM-CFS3 disturbance flux
 
     Returns:
-        pandas.DataFrame: a filtered and altered copy of the input
+        pandas.DataFrame: a filtered and altered copy of the input containing
+            only disturbance fluxes.
     """
+
+    # in CBM3 a default disturbance type of 0 indicates annual process
+    # in tblFluxIndicators rows by convention.
     flux = cbm3_flux.loc[cbm3_flux["DefaultDistTypeID"] != 0].copy()
     flux = flux.rename(columns={'TimeStep': 'timestep'})
     flux["identifier"] = pd.to_numeric(flux["identifier"])
+
+    # account for a CBM-CFS3 quirk where the following fluxes are negated
+    # in the tblFluxIndicators results.
+    biomass_to_air_cols = [
+        'MerchToAir', 'FolToAir', 'OthToAir', 'CoarseToAir', 'FineToAir']
+    for b in biomass_to_air_cols:
+        flux[b] = flux[b] * -1.0
 
     disturbance_flux_mapping = collections.OrderedDict(
         zip(
@@ -182,7 +203,45 @@ def get_cbm3_disturbance_flux(cbm3_flux):
     return flux
 
 
-def join_disturbance_flux(cbm3_disturbance_flux):
+def get_cbm3_annual_process_flux(cbm3_flux):
+    """Returns annual process flux from a query result of CBM3 flux
+    indicators.
 
-    cbm3_flux = cbm3_flux.rename(columns={'TimeStep': 'timestep'})
-    cbm3_flux["identifier"] = pd.to_numeric(cbm3_flux["identifier"])
+    Also performs the following table changes to make it easy to join and
+    compare with to the libcbm result:
+
+        - rename "TimeStep" to "timestep"
+        - convert the "identifier" column to numeric from string
+        - rename the columns according to the :py:func:`zip` of
+            :py:func:`get_cbm3_flux_disturbance_cols` to
+            :py:func:`get_libcbm_flux_annual_process_cols`
+
+    Args:
+        cbm3_flux (pandas.DataFrame): The CBM-CFS3 flux indicator result
+
+    Returns:
+        pandas.DataFrame: a filtered and altered copy of the input containing
+            only annual process fluxes.
+    """
+
+    # in CBM3 a default disturbance type of 0 indicates annual process
+    # in tblFluxIndicators rows by convention.
+    flux = cbm3_flux.loc[cbm3_flux["DefaultDistTypeID"] == 0].copy()
+    flux = flux.rename(columns={'TimeStep': 'timestep'})
+    flux["identifier"] = pd.to_numeric(flux["identifier"])
+
+    disturbance_flux_mapping = collections.OrderedDict(
+        zip(
+            get_cbm3_flux_annual_process_cols(),
+            get_libcbm_flux_annual_process_cols()))
+
+    flux = flux.rename(columns=disturbance_flux_mapping)
+    return flux
+
+
+def join_flux_result(cbm3_flux, libcbm_flux):
+    disturbance_flux_join = libcbm_flux.merge(
+        cbm3_flux,
+        left_on=['identifier', 'timestep'],
+        right_on=['identifier', 'timestep'],
+        suffixes=("_libCBM", "_cbm3"))
