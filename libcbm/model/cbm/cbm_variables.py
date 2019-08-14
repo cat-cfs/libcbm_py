@@ -4,34 +4,6 @@ from types import SimpleNamespace
 from libcbm import data_helpers
 
 
-def append_simulation_result(simulation_result, timestep_data, timestep):
-    """Append the specified timestep data to a simulation result spanning
-    multiple time steps
-
-    Args:
-        simulation_result (pandas.DataFrame): a dataframe storing the
-            simulation results.  If this parameter is None a new dataframe
-            will be created with the single timestep as the contents.
-        timestep_data (pandas.DataFrame): a dataframe storing a single
-            timestep result
-        timestep (int): an integer which will be added to the data appended
-            to the larger simulation result in the "timestep" column
-
-    Returns:
-        pandas.DataFrame: The simulation result with the specified timestep
-            data appended
-    """
-    ts = timestep_data.copy()
-    ts.insert(loc=0, column="timestep", value=timestep)
-    ts.insert(loc=0, column="identifier", value=list(range(1, ts.shape[0]+1)))
-    if simulation_result is None or simulation_result.shape[0] == 0:
-        simulation_result = ts
-    else:
-        simulation_result = simulation_result.append(ts)
-    simulation_result.reset_index(drop=True)
-    return simulation_result
-
-
 def initialize_pools(n_stands, pool_codes):
     """Create a dataframe for storing CBM pools
 

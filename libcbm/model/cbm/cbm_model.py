@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import os
 from types import SimpleNamespace
+from libcbm import data_helpers
 
 
 class CBM:
@@ -94,8 +95,6 @@ class CBM:
             "disturbance"
             ]
         debug_output = None
-        if(debug):
-            debug_output = pd.DataFrame()
         iteration = 0
 
         while (True):
@@ -119,17 +118,19 @@ class CBM:
             self.model_functions.EndSpinupStep(pools, variables)
 
             if(debug):
-                debug_output = debug_output.append(pd.DataFrame(data={
-                    "index": list(range(n_stands)),
-                    "iteration": iteration,
-                    "age": variables.age,
-                    "slow_pools": variables.slowPools,
-                    "spinup_state": variables.spinup_state,
-                    "rotation": variables.rotation,
-                    "last_rotation_c": variables.lastRotationSlowC,
-                    "step": variables.step,
-                    "disturbance_type": variables.disturbance_type
-                    }))
+                debug_output = data_helpers.append_simulation_result(
+                    debug_output,
+                    pd.DataFrame(
+                        data={
+                            "age": variables.age,
+                            "slow_pools": variables.slowPools,
+                            "spinup_state": variables.spinup_state,
+                            "rotation": variables.rotation,
+                            "last_rotation_c": variables.lastRotationSlowC,
+                            "step": variables.step,
+                            "disturbance_type": variables.disturbance_type
+                        }),
+                    iteration)
 
             iteration = iteration + 1
 

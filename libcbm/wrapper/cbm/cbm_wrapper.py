@@ -2,7 +2,7 @@
 import ctypes
 import json
 import pandas as pd
-from libcbm.wrapper import data_helpers
+from libcbm import data_helpers
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
