@@ -34,7 +34,7 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         from libcbm.model.cbm import cbm_config
 
         db_path = "cbm_defaults.db"
-        dll_path="LibCBM.dll"
+        dll_path = "LibCBM.dll"
 
         classifiers = lambda : cbm_config.classifier_config([
             cbm_config.classifier(

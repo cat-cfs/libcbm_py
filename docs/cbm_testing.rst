@@ -1,3 +1,5 @@
+.. _cbm-testing:
+
 CBM testing
 ===========================
 
@@ -29,13 +31,6 @@ The testing approach is:
 
     - compare pool, flux, and state variables for each case and time step combination
 
-
-.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_python_helper
-    :members:
-
-.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_simulator
-    :members:
-
 .. automodule:: libcbm.test.cbm.case_generation
     :members:
 
@@ -43,6 +38,15 @@ The testing approach is:
     :members:
 
 .. automodule:: libcbm.test.cbm.test_case_simulator
+    :members:
+
+CBM-CFS3 support
+----------------
+
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_python_helper
+    :members:
+
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_simulator
     :members:
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107

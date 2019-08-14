@@ -1,7 +1,6 @@
 LibCBM core functionality
 ===========================
 
-
 .. automodule:: libcbm.wrapper.data_helpers
     :members:
 
@@ -13,7 +12,6 @@ LibCBM core functionality
 
 .. autoclass:: libcbm.wrapper.libcbm_handle.LibCBMHandle
     :members:
-
 
 .. autoclass:: libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base
     :members:
