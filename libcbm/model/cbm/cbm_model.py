@@ -148,8 +148,9 @@ class CBM:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
             pools (pandas.DataFrame or numpy.ndarray): -- CBM pools of
-                dimension n_stands by n_pools. Initialized with spinup carbon
-                values by this function.  Column order is important. See:
+                dimension n_stands by n_pools. Pool values are set by this
+                function for the case of pre-afforestation soil types.
+                Column order is important. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_pools` for a
                 compatible definition
             state_variables (pandas.DataFrame): -- Simulation variables which
@@ -196,9 +197,9 @@ class CBM:
                 :py:func:`libcbm.model.cbm_variables.initialize_pools` for a
                 compatible definition
             flux (pandas.DataFrame or numpy.ndarray): CBM flux values of
-                dimension n_stands by n_flux_indicators. Initialized with
-                spinup carbon values by this function.  Column order is
-                important. See:
+                dimension n_stands by n_flux_indicators. Set with the flux
+                indicator values for pool flows that occur in this timestep.
+                Column order is important. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_flux` for a
                 compatible definition.
             state_variables (pandas.DataFrame): simulation variables which
