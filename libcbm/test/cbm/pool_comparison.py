@@ -72,88 +72,28 @@ def get_libcbm_dom_pools():
         'SoftwoodBranchSnag', 'HardwoodStemSnag', 'HardwoodBranchSnag']
 
 
-def get_pool_map(name):
-    """Returns a mapping between libcbm poolnames and cbm-cfs3 poolnames.
-    Assumes the pools are ordered.
+def prepare_cbm3_pools(cbm3_pools):
+    """Readies a cbm3 pools query result for joining with a LibCBM pools
+    result.
 
-    Arguments:
-        name (str): one of "all" for a map of all pools, or "biomass"
-            for a map of all biomass pools
+    Also performs the following table changes to make it easy to join and
+    compare with to the libcbm result:
 
-    Raises:
-        ValueError: the name parameter was not supported
+        - rename "TimeStep" to "timestep"
+        - convert the "identifier" column to numeric from string
+        - rename the columns from cbm3 pool names to libcbm pool names
 
-    Returns:
-        collections.OrderedDict: mapping of CBM-CFS3 pools to libcbm pools
-    """
-    if name == "all":
-        return collections.OrderedDict(
-            zip(get_cbm3_pools(), get_libcbm_pools()))
-    elif name == "biomass":
-        return collections.OrderedDict(
-            zip(get_cbm3_biomass_pools(), get_libcbm_biomass_pools()))
-    else:
-        raise ValueError(
-                "unknown comparison name, expected 'all' or 'biomass'")
-
-
-def join_pools(libCBM_pools, cbm3_pools, comparison):
-    """Produce 2 dataframes used to compare CBM-CFS3 pool results versus
-    LibCBM pool results.
-
-    Arguments:
-        libCBM_pools (pandas.DataFrame): dataframe whose values are libcbm
-            simulation results. Contains columns:
-
-                - "identifier"
-                - "timestep"
-                - all libcbm pool names
-        cbm3_pools (pandas.DataFrame): dataframe whose values are CBM-CFS3
-            simulation results. Contains columns:
-
-                - "identifier"
-                - "Timestep"
-                - all cbm-cfs3 pool names
-        comparison (str): a string value that is one of:
-
-            - "all" to include all pools in the resulting comparison
-            - "biomass" to include only biomass pools in the resulting
-              comparison
+    Args:
+        cbm3_pools (pandas.DataFrame): The CBM-CFS3 pool indicator result
 
     Returns:
-        Tuple: A tuple containing comparison data:
-
-            - value1: dataframe which is the merge of the libcbm pools with
-                    the CBM-CFS3 pools
-            - value2: dataframe which is the comparison of the libcbm pools
-                with the CBM-CFS3 pools
+        pandas.DataFrame: a copy of the input dataFrame ready to join with
+            libcbm pool results.
     """
-    pool_mapping = get_pool_map(comparison)
-    libCBM_poolnames = list(pool_mapping.values())
-    cbm3_poolnames = list(pool_mapping.keys())
-    libCBM_pools = libCBM_pools[['identifier', 'timestep']+libCBM_poolnames]
-    cbm3_pools = cbm3_pools.rename(columns={'TimeStep': 'timestep'})
-    cbm3_pools["identifier"] = pd.to_numeric(cbm3_pools["identifier"])
-    cbm3_pools = cbm3_pools[['identifier', 'timestep']+cbm3_poolnames]
-
-    # make column naming consistent
-    cbm3_pools = cbm3_pools.rename(columns=pool_mapping)
-
-    merged = libCBM_pools.merge(
-            cbm3_pools,
-            left_on=['identifier', 'timestep'],
-            right_on=['identifier', 'timestep'],
-            suffixes=("_libCBM", "_cbm3"))
-
-    # compute diffs row-by-row
-    diffs = pd.DataFrame()
-    diffs["identifier"] = merged["identifier"]
-    diffs["timestep"] = merged["timestep"]
-    diffs["abs_total_diff"] = 0
-    for pool in libCBM_poolnames:
-        l = "{}_libCBM".format(pool)
-        r = "{}_cbm3".format(pool)
-        diffs[pool] = (merged[l] - merged[r])
-        diffs["abs_total_diff"] += diffs[pool].abs()
-
-    return merged, diffs
+    result = cbm3_pools.copy()
+    result = result.rename(columns={'TimeStep': 'timestep'})
+    result["identifier"] = pd.to_numeric(result["identifier"])
+    pool_map = collections.OrderedDict(
+        zip(get_cbm3_pools(), get_libcbm_pools()))
+    result = result.rename(columns=pool_map)
+    return result
