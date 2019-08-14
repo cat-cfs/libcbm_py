@@ -250,7 +250,8 @@ def get_cbm3_results(cbm3_results_db_path):
     cbm3_pool_result = cbm3_results.load_pool_indicators(
         cbm3_results_db_path, classifier_set_grouping=True)
     cbm3_flux_result = cbm3_results.load_flux_indicators(
-        cbm3_results_db_path, classifier_set_grouping=True)
+        cbm3_results_db_path, classifier_set_grouping=True,
+        disturbance_type_grouping=True)
     cbm3_age_indicators_result = cbm3_results.load_age_indicators(
         cbm3_results_db_path, classifier_set_grouping=True,
         land_class_grouping=True)
