@@ -24,13 +24,14 @@ def values_for_identifier(values, identifier):
     """Get values for an identifier associated with a particular test case.
 
     Args:
-        values ([type]): [description]
+        values (pandas.DataFrame): [description]
         identifier ([type]): [description]
 
     Returns:
         [type]: [description]
     """
-    values = values[values["identifier"]==id]
+    values = values.copy()
+    values = values[values["identifier"] == id]
     values = values.drop(columns="identifier")
     return values.groupby("timestep").sum()
 
@@ -55,11 +56,10 @@ def summarize_diffs_by_identifier(diffs, result_limit=20):
         .head(result_limit)
 
 
-def join_result(cbm3_result, libcbm_result, value_cols):
-    """Produce a join and difference table for CBM-CFS3 values versus
-    LibCBM values.
+def merge_result(cbm3_result, libcbm_result, value_cols):
+    """Produce a merge table for CBM-CFS3 values versus LibCBM values.
 
-    The pair of pandas dataframe parameters have the following columns:
+    The pair of pandas dataframes have the following columns:
 
         - "identifier": the identifier for the a set of timeseries values in
             the DataFrame
@@ -74,12 +74,9 @@ def join_result(cbm3_result, libcbm_result, value_cols):
             of specified dataframes.
 
     Returns:
-        Tuple: A tuple containing comparison data:
+        pandas.DataFrame: dataframe which is the merge of the libcbm value
+            with the CBM-CFS3 value by timestep, identifier
 
-        - value1: dataframe which is the merge of the libcbm value with
-            the CBM-CFS3 value by timestep, identifier
-        - value2: dataframe which is the comparison of the libcbm values
-            with the CBM-CFS3 values by timestep, identifier
     """
 
     libcbm_result = libcbm_result[['identifier', 'timestep']+value_cols]
@@ -90,6 +87,22 @@ def join_result(cbm3_result, libcbm_result, value_cols):
         right_on=['identifier', 'timestep'],
         suffixes=("_libCBM", "_cbm3"))
 
+    return merged
+
+
+def diff_result(merged, value_cols):
+    """Produce a diff table for a merged of CBM-CFS3 values versus LibCBM values.
+
+    Args:
+        merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
+            by: :py:func:`merge_result`.
+        value_cols (list): The list of string names for the values in the pair
+            of specified dataframes.
+
+    Returns:
+        pandas.DataFrame: dataframe which is the comparison of the libcbm
+            values with the CBM-CFS3 values by timestep, identifier
+    """
     diffs = pd.DataFrame()
     diffs["identifier"] = merged["identifier"]
     diffs["timestep"] = merged["timestep"]
@@ -99,4 +112,4 @@ def join_result(cbm3_result, libcbm_result, value_cols):
         r = "{}_cbm3".format(flux)
         diffs[flux] = (merged[l] - merged[r])
         diffs["abs_total_diff"] += diffs[flux].abs()
-    return merged, diffs
+    return diffs
