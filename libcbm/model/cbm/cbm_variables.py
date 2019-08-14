@@ -138,6 +138,10 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
         object: Returns an object with properties to access each of the
             spinup parameters
     """
+
+    # favouring SimpleNamespace over pd.DataFrame here because these are
+    # potentially null variables, and DataFrame does not support null columns
+
     parameters = SimpleNamespace()
     parameters.return_interval = promote_scalar(
         return_interval, n_stands, dtype=np.int32)
@@ -161,6 +165,8 @@ def initialize_spinup_variables(n_stands):
         object: an object with properties to access working variables
             needed by the spinup routine.
     """
+    # favouring SimpleNamespace over pd.DataFrame here because these are
+    # potentially null variables, and DataFrame does not support null columns
 
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
@@ -213,6 +219,9 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
         object: an object with properties for each cbm parameter used by
             the cbm step function.
     """
+
+    # favouring SimpleNamespace over pd.DataFrame here because these are
+    # potentially null variables, and DataFrame does not support null columns
     parameters = SimpleNamespace()
     parameters.disturbance_type = promote_scalar(
         disturbance_type, n_stands, dtype=np.int32)
@@ -252,7 +261,8 @@ def initialize_cbm_state_variables(n_stands):
 
 
 def initialize_inventory(classifiers, inventory):
-    """Creates inventory input for :class:`libcbm.model.cbm.CBM` functions
+    """Creates inventory input for :class:`libcbm.model.cbm.cbm_model.CBM`
+    functions
 
     Args:
         classifiers (pandas.DataFrame): dataframe of inventory classifier

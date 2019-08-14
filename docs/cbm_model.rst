@@ -1,10 +1,22 @@
-CBM implementation in LibCBM
-==================================
+CBM in LibCBM
+=============
 
 LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.  See: :ref:`cbm-testing`.
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 
+Usage
+-----
+
+A CBM instance can be initialized by using a composed factory method.
+
+
+
+.. automodule:: libcbm.model.cbm.cbm_factory
+    :members:
+
+The CBM class
+-------------
 The LibCBM implementation of the CBM model is designed all model state is
 user defined and passed to the CBM functions.
 
@@ -40,5 +52,3 @@ An instance of the CBM model can be created with the
 .. autoclass:: libcbm.model.cbm.cbm_model.CBM
     :members:
 
-.. automodule:: libcbm.model.cbm.cbm_factory
-    :members:
