@@ -1,8 +1,7 @@
-LibCBM core functionality
-===========================
+.. _libcbm-core-functions:
 
-.. automodule:: libcbm.wrapper.data_helpers
-    :members:
+LibCBM core functionality
+=========================
 
 .. autoclass:: libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes
     :members:

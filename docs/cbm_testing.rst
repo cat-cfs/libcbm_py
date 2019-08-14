@@ -1,5 +1,6 @@
 .. _cbm-testing:
 
+
 CBM testing
 ===========================
 
@@ -8,9 +9,6 @@ CBM-CFS3_ model, it is written with rigorous testing methods for comparing
 CBM-CFS3 results for numerically similar Carbon dynamics and identical
 stand-state variables.  LibCBM supports fully automated simulation of test
 cases with CBM-CFS3 and side-by-side comparison with LibCBM results.
-
-LibCBM uses cbm3_python_ and StandardImportToolPlugin_ for automation of the
-CBM-CFS3 toolbox to execute test cases.
 
 The testing approach is:
 
@@ -31,23 +29,57 @@ The testing approach is:
 
     - compare pool, flux, and state variables for each case and time step combination
 
+
+Test case generator
+-------------------
+
+The functions in :py:mod:`libcbm.test.cbm.case_generation` support the
+creation of randomized test cases for simulating with both LibCBM and
+CBM-CFS3.
+
 .. automodule:: libcbm.test.cbm.case_generation
     :members:
 
-.. automodule:: libcbm.test.cbm.pool_comparison
-    :members:
+
+Test case simulator
+-------------------
+
+The functions in :py:mod:`libcbm.test.cbm.test_case_simulator` simulate the
+randomized test cases produced by :py:mod:`libcbm.test.cbm.case_generation`
+using LibCBM.
 
 .. automodule:: libcbm.test.cbm.test_case_simulator
     :members:
 
+
 CBM-CFS3 support
 ----------------
+
+The functions in :py:mod:`libcbm.test.cbm.cbm3_support.cbm3_simulator`
+simulate the randomized test cases produced by
+:py:mod:`libcbm.test.cbm.case_generation` using CBM-CFS3.
+
+Simulating with CBM-CFS3 requires cbm3_python_ and StandardImportToolPlugin_
+for automation of the CBM-CFS3 toolbox to execute test cases.
 
 .. automodule:: libcbm.test.cbm.cbm3_support.cbm3_python_helper
     :members:
 
 .. automodule:: libcbm.test.cbm.cbm3_support.cbm3_simulator
     :members:
+
+
+Pool comparison
+---------------
+
+The functions in :py:mod:`libcbm.test.cbm.cbm3_support.pool_comparison`
+support the pool by pool comparison of test case simulation results run by
+LibCBM versus CBM-CFS3.
+
+.. automodule:: libcbm.test.cbm.pool_comparison
+    :members:
+
+
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 .. _cbm3_python: https://github.com/cat-cfs/cbm3_python

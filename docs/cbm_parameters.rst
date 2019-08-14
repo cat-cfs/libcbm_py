@@ -1,8 +1,8 @@
-CBM configuration
-================================
+.. _cbm-parameters:
 
-.. automodule:: libcbm.model.cbm.cbm_defaults_queries
-    :members:
+CBM Parameters
+==============
+
 
 .. automodule:: libcbm.model.cbm.cbm_config
     :members:
@@ -11,4 +11,7 @@ CBM configuration
     :members:
 
 .. automodule:: libcbm.model.cbm.cbm_defaults
+    :members:
+
+.. automodule:: libcbm.model.cbm.cbm_defaults_queries
     :members:

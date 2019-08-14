@@ -1,5 +1,7 @@
-CBM in LibCBM
-=============
+.. _cbm-model:
+
+CBM
+===
 
 LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.  See: :ref:`cbm-testing`.
 

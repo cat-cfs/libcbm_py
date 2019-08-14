@@ -1,3 +1,5 @@
+.. _cbm-core-functions:
+
 CBM core functionality
 ======================
 
