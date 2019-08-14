@@ -13,6 +13,7 @@ from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.test.cbm import case_generation
+from libcbm import data_helpers
 
 
 def get_test_case_classifier_factory(cases, classifier_name):
@@ -328,10 +329,10 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     flux_result = None
     state_variable_result = None
 
-    pool_result = cbm_variables.append_simulation_result(
+    pool_result = data_helpers.append_simulation_result(
         pool_result, pools, 0)
 
-    state_variable_result = cbm_variables.append_simulation_result(
+    state_variable_result = data_helpers.append_simulation_result(
         state_variable_result, cbm_state, 0)
 
     disturbances = get_disturbances(cases, ref)
@@ -340,7 +341,7 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     for t in range(1, n_steps+1):
 
         # clear the disturbance events for this timestep
-        cbm_params.disturbance_type *= 0
+        cbm_params.disturbance_type[:] = 0
 
         # fetch the disturbance events for each index for this timestep
         for k, v in disturbances.items():
@@ -351,11 +352,11 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
             inventory=inventory, pools=pools, flux=flux,
             state_variables=cbm_state, parameters=cbm_params)
 
-        pool_result = cbm_variables.append_simulation_result(
+        pool_result = data_helpers.append_simulation_result(
             pool_result, pools, t)
-        flux_result = cbm_variables.append_simulation_result(
+        flux_result = data_helpers.append_simulation_result(
             flux_result, flux, t)
-        state_variable_result = cbm_variables.append_simulation_result(
+        state_variable_result = data_helpers.append_simulation_result(
             state_variable_result, cbm_state, t)
 
     return {
