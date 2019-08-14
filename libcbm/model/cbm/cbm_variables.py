@@ -1,32 +1,7 @@
 import pandas as pd
 import numpy as np
 from types import SimpleNamespace
-
-
-def promote_scalar(value, size, dtype):
-    """If the specified value is scalar promote it to a numpy array filled
-    with the scalar value, and otherwise return the value.  This is purely
-    a helper function to allow scalar parameters for certain vector
-    functions
-
-    Args:
-        value (numpy.ndarray, number, or None): value to promote
-        size (int): the length of the resulting vector if promotion
-            occurs
-        dtype (object): object used to define the type of the resulting
-            vector if promotion occurs
-
-
-    Returns:
-        ndarray or None: returns either the original value, a promoted
-            scalar or None depending on the specified values
-    """
-    if value is None:
-        return None
-    elif isinstance(value, np.ndarray):
-        return value
-    else:
-        return np.ones(size, dtype=dtype) * value
+from libcbm import data_helpers
 
 
 def append_simulation_result(simulation_result, timestep_data, timestep):
@@ -143,13 +118,13 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     # potentially null variables, and DataFrame does not support null columns
 
     parameters = SimpleNamespace()
-    parameters.return_interval = promote_scalar(
+    parameters.return_interval = data_helpers.promote_scalar(
         return_interval, n_stands, dtype=np.int32)
-    parameters.min_rotations = promote_scalar(
+    parameters.min_rotations = data_helpers.promote_scalar(
         min_rotations, n_stands, dtype=np.int32)
-    parameters.max_rotations = promote_scalar(
+    parameters.max_rotations = data_helpers.promote_scalar(
         max_rotations, n_stands, dtype=np.int32)
-    parameters.mean_annual_temp = promote_scalar(
+    parameters.mean_annual_temp = data_helpers.promote_scalar(
         mean_annual_temp, n_stands, dtype=np.float)
     return parameters
 
@@ -223,11 +198,11 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
     # favouring SimpleNamespace over pd.DataFrame here because these are
     # potentially null variables, and DataFrame does not support null columns
     parameters = SimpleNamespace()
-    parameters.disturbance_type = promote_scalar(
+    parameters.disturbance_type = data_helpers.promote_scalar(
         disturbance_type, n_stands, dtype=np.int32)
-    parameters.transition_rule_id = promote_scalar(
+    parameters.transition_rule_id = data_helpers.promote_scalar(
         transition_id, n_stands, dtype=np.int32)
-    parameters.mean_annual_temp = promote_scalar(
+    parameters.mean_annual_temp = data_helpers.promote_scalar(
         mean_annual_temp, n_stands, dtype=np.float)
     return parameters
 

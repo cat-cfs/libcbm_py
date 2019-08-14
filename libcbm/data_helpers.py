@@ -84,3 +84,29 @@ def get_nullable_ndarray(a, type=ctypes.c_double):
     else:
         result = get_ndarray(a).ctypes.data_as(ctypes.POINTER(type))
         return result
+
+
+def promote_scalar(value, size, dtype):
+    """If the specified value is scalar promote it to a numpy array filled
+    with the scalar value, and otherwise return the value.  This is purely
+    a helper function to allow scalar parameters for certain vector
+    functions
+
+    Args:
+        value (numpy.ndarray, number, or None): value to promote
+        size (int): the length of the resulting vector if promotion
+            occurs
+        dtype (object): object used to define the type of the resulting
+            vector if promotion occurs
+
+
+    Returns:
+        ndarray or None: returns either the original value, a promoted
+            scalar or None depending on the specified values
+    """
+    if value is None:
+        return None
+    elif isinstance(value, np.ndarray):
+        return value
+    else:
+        return np.ones(size, dtype=dtype) * value
