@@ -26,10 +26,10 @@ The CBM class consists of 3 methods for simulating Carbon dynamics
     - spinup: used to initialize Carbon pools
         :py:func:`libcbm.model.cbm.cbm_model.CBM.spinup`
     - init: used to initialize CBM state variables
-        :py:func:`libcbm.model.cbm.cbm_model.CBM.spinup`
+        :py:func:`libcbm.model.cbm.cbm_model.CBM.init`
     - step: advances CBM state and pools through 1 time step and
         summarizes fluxes
-        :py:func:`libcbm.model.cbm.cbm_model.CBM.spinup`
+        :py:func:`libcbm.model.cbm.cbm_model.CBM.step`
 
 An instance of the CBM model can be created with the
 :py:func:`libcbm.model.cbm.cbm_factory` function.
