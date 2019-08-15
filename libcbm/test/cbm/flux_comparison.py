@@ -241,8 +241,38 @@ def get_cbm3_annual_process_flux(cbm3_flux):
 
 
 def get_merged_annual_process_flux(cbm3_flux, libcbm_flux):
-    merged_pools = result_comparison.merge_result(
+    """Produces a merge of the annual process cbm3 and libcbm flux results
+
+    Args:
+        cbm3_flux (pandas.DataFrame): cbm3 pool results as produced by:
+            :py:func:`libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results`
+        libcbm_flux (pandas.DataFrame): libcbm pool results as produced by:
+            :py:func:`libcbm.test.cbm.test_case_simulator.run_test_cases`
+
+    Returns:
+        pandas.DataFrame: merged comparison of CBM3 versus libcbm for analysis
+    """
+    merged_flux = result_comparison.merge_result(
         get_cbm3_annual_process_flux(cbm3_flux),
         libcbm_flux,
         get_libcbm_flux_annual_process_cols())
-    return merged_pools
+    return merged_flux
+
+
+def get_merged_disturbance_flux(cbm3_flux, libcbm_flux):
+    """Produces a merge of the cbm3 and libcbm disturbance flux results
+
+    Args:
+        cbm3_flux (pandas.DataFrame): cbm3 pool results as produced by:
+            :py:func:`libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results`
+        libcbm_flux (pandas.DataFrame): libcbm pool results as produced by:
+            :py:func:`libcbm.test.cbm.test_case_simulator.run_test_cases`
+
+    Returns:
+        pandas.DataFrame: merged comparison of CBM3 versus libcbm for analysis
+    """
+    merged_flux = result_comparison.merge_result(
+        get_cbm3_disturbance_flux(cbm3_flux),
+        libcbm_flux,
+        get_libcbm_flux_disturbance_cols())
+    return merged_flux
