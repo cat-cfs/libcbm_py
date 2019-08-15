@@ -120,6 +120,22 @@ def diff_result(merged):
 
 def get_summarized_diff_plot(merged, max_results, x_label, y_label,
                              **plot_kwargs):
+    """Produce a plot of libcbm vs cbm3 merged results including all test
+    cases.  Passes any additional key word args to the pandas.DataFrame.plot
+    function.
+
+    Args:
+        merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
+            by: :py:func:`merge_result`.
+        max_results (int): The maximum number of difference summaries to plot.
+            None for unlimited.
+        x_label (str): The label on the x axis of the resulting plot
+        y_label (str): The label on the y axis of the resulting plot
+
+    Returns:
+        matplotlib.AxesSubplot or np.array: the return value of
+            pandas.DataFrame.plot
+    """
     diff = diff_result(merged)
     summarized_diff = summarize_diffs_by_identifier(
         diff, max_results)
@@ -133,7 +149,18 @@ def get_summarized_diff_plot(merged, max_results, x_label, y_label,
 
 def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
                                   **plot_kwargs):
+    """[summary]
 
+    Args:
+        identifier ([type]): [description]
+        merged ([type]): [description]
+        diff ([type]): [description]
+        x_label ([type]): [description]
+        y_label ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     markers = ["o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P",
                "*", "h", "H", "+", "x", "X", "D", "d"]
     subset = merged[merged["identifier"] == identifier].copy()
