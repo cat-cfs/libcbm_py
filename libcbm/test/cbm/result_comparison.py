@@ -149,17 +149,21 @@ def get_summarized_diff_plot(merged, max_results, x_label, y_label,
 
 def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
                                   **plot_kwargs):
-    """[summary]
+    """Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
+    for a single test case.
 
     Args:
-        identifier ([type]): [description]
-        merged ([type]): [description]
-        diff ([type]): [description]
-        x_label ([type]): [description]
-        y_label ([type]): [description]
+        identifier (int): The test case id
+        merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
+            by: :py:func:`merge_result`.
+        diff (bool): if true return differences from the merge, and otherwise
+            return the raw merged values
+        x_label (str): The label on the x axis of the resulting plot
+        y_label (str): The label on the y axis of the resulting plot
 
     Returns:
-        [type]: [description]
+        matplotlib.AxesSubplot or np.array: the return value of
+            pandas.DataFrame.plot
     """
     markers = ["o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P",
                "*", "h", "H", "+", "x", "X", "D", "d"]
@@ -183,6 +187,24 @@ def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
 def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
                                                timesteps, y_label,
                                                **plot_kwargs):
+    """Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
+    for a single test case where the X Axis are the indicators, and a values
+    are generated for each timestep.
+
+    Args:
+        identifier (int): The test case id
+        merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
+            by: :py:func:`merge_result`.
+        diff (bool): if true return differences from the merge, and otherwise
+            return the raw merged values
+        timesteps (list): a list of timesteps to plot for the indicators,
+            specifying None will plot all timesteps.
+        y_label (str): The label on the y axis of the resulting plot
+
+    Returns:
+        matplotlib.AxesSubplot or np.array: the return value of
+            pandas.DataFrame.plot
+    """
     subset = merged[merged["identifier"] == identifier].copy()
     if(timesteps):
         subset = subset[subset["timestep"].isin(timesteps)]
