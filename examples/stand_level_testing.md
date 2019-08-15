@@ -35,6 +35,8 @@ from libcbm.test.cbm import case_generation
 from libcbm.test.cbm.cbm3_support import cbm3_simulator
 from libcbm.test.cbm import test_case_simulator
 from libcbm.test.cbm import pool_comparison
+from libcbm.test.cbm import flux_comparison
+from libcbm.test.cbm import result_comparison
 ```
 
 ```python
@@ -93,89 +95,128 @@ cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 ```
 
 ```python
-pools_merged, pool_diffs = pool_comparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "all")
+merged_dom = pool_comparison.get_merged_pools(cbm3_result["pools"], libcbm_result["pools"], "dom")
+merged_bio = pool_comparison.get_merged_pools(cbm3_result["pools"], libcbm_result["pools"], "biomass")
 ```
 
 ```python
-pool_diffs_totals = pool_diffs.drop(columns="timestep")
-pool_diffs_totals \
-    .groupby("identifier").sum() \
-    .sort_values("abs_total_diff", ascending=False) \
-    .head(20) \
-    .plot(figsize=(15,10), kind="bar")
+result_comparison.get_summarized_diff_plot(
+    merged=merged_bio,
+    max_results=20,
+    x_label="test case identifer",
+    y_label="summed pool differences [tonnes C/ha]",
+    title="Libcbm versus CBM3 Biomass: sum of libcbm minus CBM3 for all timesteps",
+    figsize=(15,10),
+    kind="bar")
+result_comparison.get_summarized_diff_plot(
+    merged=merged_dom,
+    max_results=20,
+    x_label="test case identifer",
+    y_label="summed pool differences [tonnes C/ha]",
+    title="Libcbm versus CBM3 DOM: sum of libcbm minus CBM3 for all timesteps",
+    figsize=(15,10),
+    kind="bar")
 ```
 
 ```python
-def plot_diff(id):
-    markers = ["o","v","^","<",">","1","2","3","4","8","s","p","P","*","h","H","+","x","X","D","d"]
-    bio_pools = pools_merged[pools_merged["identifier"]==id]
-    bio_pools = bio_pools.drop(columns="identifier")
-    bio_pools = bio_pools.groupby("timestep").sum()
-    ax = bio_pools.plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
-    for i, line in enumerate(ax.get_lines()):
-        line.set_marker(markers[i%len(markers)])
-    ax.legend(ax.get_lines(), bio_pools.columns, loc='best')
-    bio_diffs = pool_diffs[pool_diffs["identifier"]==id]
-    bio_diffs = bio_diffs.drop(columns="identifier")
-    bio_diffs.groupby("timestep").sum() \
-        .plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
-```
-
-```python
-plot_diff(4)
-plot_diff(5)
-
-```
-
-Spinup debug
-
-
-```python
-cases[7]
+merged_disturbance_flux = flux_comparison.get_merged_disturbance_flux(cbm3_result["flux"], libcbm_result["flux"])
+merged_annual_process_flux = flux_comparison.get_merged_annual_process_flux(cbm3_result["flux"], libcbm_result["flux"])
 ```
 
 ```python
 
-
-if "spinup_debug" in libcbm_result:
-    libCBM_spinup_debug = libcbm_result["spinup_debug"]
-    libCBM_spinup_debug[libCBM_spinup_debug["index"]==7].groupby("iteration").sum().plot(figsize=(10,10))
+result_comparison.get_summarized_diff_plot(
+    merged=merged_annual_process_flux,
+    max_results=20,
+    x_label="test case identifer",
+    y_label="summed flux differences [tonnes C/ha yr ^ -1]",
+    title="Libcbm versus CBM3 Annual process fluxes: sum of libcbm minus CBM3 for all timesteps",
+    figsize=(15,10),
+    kind="bar")
+result_comparison.get_summarized_diff_plot(
+    merged=merged_disturbance_flux,
+    max_results=20,
+    x_label="test case identifer",
+    y_label="summed flux differences [tonnes C/ha yr ^ -1]",
+    title="Libcbm versus CBM3 disturbance fluxes: sum of libcbm minus CBM3 for all timesteps",
+    figsize=(15,10),
+    kind="bar")
 ```
 
 ```python
-
-```
-
-```python
-libcbm_pools = libcbm_result["pools"]
-```
-
-```python
-libcbm_pools[libcbm_pools["identifier"]=="8"][["timestep","SoftwoodMerch","HardwoodMerch"]].groupby("timestep").sum().plot()
-```
-
-```python
-cbm3_pools = cbm3_result["pools"]
-```
-
-```python
-cbm3_pools[cbm3_pools["identifier"]=="8"] \
-    [["TimeStep","Softwood Merchantable","Hardwood Merchantable"]] \
-    .groupby("TimeStep").sum().plot()
-```
-
-```python
-libcbm_state_variables = libcbm_result["state_variable_result"]
-```
-
-```python
-libcbm_state_variables[libcbm_state_variables["identifier"]=='8']
-```
-
-```python
+test_case_identifier = 1
 
 ```
 
 ```python
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_bio,
+        diff=False,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_bio,
+        diff=True,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_dom,
+        diff=False,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_dom,
+        diff=True,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+```
 
+```python
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_annual_process_flux,
+        diff=False,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+result_comparison.get_test_case_comparison_plot(
+        identifier=test_case_identifier,
+        merged=merged_annual_process_flux,
+        diff=True,
+        x_label="time step",
+        y_label="pool value [tonnes C/ha]",
+        figsize=(15,10)
+    )
+```
+
+```python
+result_comparison.get_test_case_comparison_by_indicator_plot(
+    identifier=test_case_identifier,
+    merged=merged_disturbance_flux,
+    diff=False,
+    timesteps=None,
+    y_label="",
+    kind="bar",
+    figsize=(15,10))
+result_comparison.get_test_case_comparison_by_indicator_plot(
+    identifier=test_case_identifier,
+    merged=merged_disturbance_flux,
+    diff=True,
+    timesteps=None,
+    y_label="",
+    kind="bar",
+    figsize=(15,10))
 ```
