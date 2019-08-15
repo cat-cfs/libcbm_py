@@ -36,13 +36,13 @@ def values_for_identifier(values, identifier):
     return values.groupby("timestep").sum()
 
 
-def summarize_diffs_by_identifier(diffs, result_limit=20):
+def summarize_diffs_by_identifier(diffs, result_limit=None):
     """Sort and summarize a diff result returned by :py:func:`join_result`
 
     Args:
         diffs (pandas.DataFrame): a dataframe containing comparisons
         result_limit (int, optional): The number of rows in the result.
-            Defaults to 20.
+            If set to None all rows are returned. Defaults to None.
 
     Returns:
         pandas.DataFrame: a summary of a difference dataframe sorted
@@ -50,10 +50,12 @@ def summarize_diffs_by_identifier(diffs, result_limit=20):
     """
     diffs = diffs.copy()
     diffs = diffs.drop(columns="timestep")
-    return diffs \
+    result = diffs \
         .groupby("identifier").sum() \
-        .sort_values("abs_total_diff", ascending=False) \
-        .head(result_limit)
+        .sort_values("abs_total_diff", ascending=False)
+    if result_limit:
+        result = result.head(result_limit)
+    return result
 
 
 def merge_result(cbm3_result, libcbm_result, value_cols):
@@ -90,14 +92,12 @@ def merge_result(cbm3_result, libcbm_result, value_cols):
     return merged
 
 
-def diff_result(merged, value_cols):
-    """Produce a diff table for a merged of CBM-CFS3 values versus LibCBM values.
+def diff_result(merged):
+    """Produce a diff table for a merge of CBM-CFS3 values versus LibCBM values.
 
     Args:
         merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
             by: :py:func:`merge_result`.
-       value_cols (list): The list of string names for the values in the pair
-            of specified dataframes.
 
     Returns:
         pandas.DataFrame: dataframe which is the comparison of the libcbm
@@ -107,9 +107,64 @@ def diff_result(merged, value_cols):
     diffs["identifier"] = merged["identifier"]
     diffs["timestep"] = merged["timestep"]
     diffs["abs_total_diff"] = 0
+    all_col = list(merged.columns)
+    value_cols = [x for x in all_col if x.endswith("_cbm3")]
+    value_cols = [x[:-(len("_cbm3"))] for x in value_cols]
     for flux in value_cols:
         l = "{}_libCBM".format(flux)
         r = "{}_cbm3".format(flux)
         diffs[flux] = (merged[l] - merged[r])
         diffs["abs_total_diff"] += diffs[flux].abs()
     return diffs
+
+
+def get_summarized_diff_plot(merged, max_results, x_label, y_label,
+                             **plot_kwargs):
+    diff = diff_result(merged)
+    summarized_diff = summarize_diffs_by_identifier(
+        diff, max_results)
+    ax = summarized_diff.plot(
+        **plot_kwargs)
+    ax.set(
+        xlabel=x_label,
+        ylabel=y_label)
+    return ax
+
+
+def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
+                                  **plot_kwargs):
+
+    markers = ["o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P",
+               "*", "h", "H", "+", "x", "X", "D", "d"]
+    subset = merged[merged["identifier"] == identifier].copy()
+    if diff:
+        subset = diff_result(subset)
+    subset = subset.drop(columns="identifier")
+    subset = subset.groupby("timestep").sum()
+
+    ax = subset.plot(
+        **plot_kwargs)
+    ax.set(
+        xlabel=x_label,
+        ylabel=y_label)
+    for i, line in enumerate(ax.get_lines()):
+        line.set_marker(markers[i % len(markers)])
+    ax.legend(ax.get_lines(), subset.columns, loc='best')
+    return ax
+
+
+def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
+                                               timesteps, y_label,
+                                               **plot_kwargs):
+    subset = merged[merged["identifier"] == identifier].copy()
+    if(timesteps):
+        subset = subset[subset["timestep"].isin(timesteps)]
+    if diff:
+        subset = diff_result(subset)
+    subset = subset.drop(columns="identifier")
+    subset = subset.groupby("timestep").sum()
+    subset = subset.T
+    ax = subset.plot(**plot_kwargs)
+    ax.set(
+        ylabel=y_label)
+    return ax
