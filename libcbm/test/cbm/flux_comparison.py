@@ -276,24 +276,3 @@ def get_merged_disturbance_flux(cbm3_flux, libcbm_flux):
         libcbm_flux,
         get_libcbm_flux_disturbance_cols())
     return merged_flux
-
-
-def get_summarized_diff_plot(merged_flux, max_results, **plot_kwargs):
-    return result_comparison.get_summarized_diff_plot(
-        merged=merged_flux,
-        max_results=max_results,
-        x_label="test case identifer",
-        y_label="summed flux differences [tonnes C/ha yr ^ -1]",
-        **plot_kwargs)
-
-
-def get_test_case_comparison_plot(identifier, merged_flux, diff,
-                                  **plot_kwargs):
-    return result_comparison.get_test_case_comparison_plot(
-        identifier=identifier,
-        merged=merged_flux,
-        diff=diff,
-        x_label="time step",
-        y_label="flux value [tonnes C/ha yr ^ -1]",
-        **plot_kwargs
-    )

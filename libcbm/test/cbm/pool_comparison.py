@@ -155,25 +155,3 @@ def get_merged_pools(cbm3_pools, libcbm_pools, pools_included="all"):
         libcbm_pools,
         list(pool_map.values()))
     return merged_pools
-
-
-def get_summarized_diff_plot(merged_pools, max_results, **plot_kwargs):
-    return result_comparison.get_summarized_diff_plot(
-        merged=merged_pools,
-        max_results=max_results,
-        x_label="test case identifer",
-        y_label="summed pool differences [tonnes C/ha]",
-        **plot_kwargs)
-
-
-def get_test_case_comparison_plot(identifier, merged_pools, diff,
-                                  **plot_kwargs):
-
-    return result_comparison.get_test_case_comparison_plot(
-        identifier=identifier,
-        merged=merged_pools,
-        diff=diff,
-        x_label="time step",
-        y_label="pool value [tonnes C/ha]",
-        **plot_kwargs
-    )
