@@ -362,6 +362,6 @@ def run_test_cases(db_path, dll_path, cases, n_steps, spinup_debug=False):
     return {
         "pools": pool_result,
         "flux": flux_result,
-        "state_variable_result": state_variable_result,
+        "state": state_variable_result,
         "spinup_debug": spinup_debug_output
     }
