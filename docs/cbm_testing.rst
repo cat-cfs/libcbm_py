@@ -79,6 +79,23 @@ LibCBM versus CBM-CFS3.
 .. automodule:: libcbm.test.cbm.pool_comparison
     :members:
 
+Flux comparison
+---------------
+
+.. automodule:: libcbm.test.cbm.flux_comparison
+    :members:
+
+State comparison
+----------------
+
+.. automodule:: libcbm.test.cbm.state_comparison
+    :members:
+
+Comparison Support Functions
+----------------------------
+
+.. automodule:: libcbm.test.cbm.result_comparison
+    :members:
 
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
