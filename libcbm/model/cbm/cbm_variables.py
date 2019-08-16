@@ -113,7 +113,7 @@ def initialize_spinup_variables(n_stands):
             needed by the spinup routine.
     """
     # favouring SimpleNamespace over pd.DataFrame here because these are
-    # potentially null variables, and DataFrame does not support null columns
+    # null variables, and DataFrame does not support null columns
 
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
