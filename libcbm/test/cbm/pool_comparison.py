@@ -109,7 +109,7 @@ def prepare_cbm3_pools(cbm3_pools, pool_map):
     result.
 
     Also performs the following table changes to make it easy to join and
-    compare with to the libcbm result:
+    compare with the libcbm result:
 
         - rename "TimeStep" to "timestep"
         - convert the "identifier" column to numeric from string
@@ -138,10 +138,6 @@ def get_merged_pools(cbm3_pools, libcbm_pools, pools_included="all"):
             :py:func:`libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results`
         libcbm_pools (pandas.DataFrame): libcbm pool results as produced by:
             :py:func:`libcbm.test.cbm.test_case_simulator.run_test_cases`
-        name (str): one of:
-            - "all" for a map of all pools
-            - "biomass" for a map of all biomass pools
-            - "dom" for a map of all dead organic matter pools
         pools_included (str, optional): one of:
 
                 - "all" to merge all pools

@@ -1,8 +1,8 @@
 LibCBM
 ======
 
-LibCBM is a next generation version of the CBM-CFS3 model.  It also has useful functions for
-developing CBM-like models.
+LibCBM is a next generation version of the CBM-CFS3 model.  It also has useful
+functions for extending CBM, or developing new CBM-like models.
 
 Key Features
 ------------

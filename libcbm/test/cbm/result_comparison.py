@@ -124,6 +124,7 @@ def get_summarized_diff_plot(merged, max_results, x_label, y_label,
     cases.  Passes any additional key word args to the pandas.DataFrame.plot
     function.
 
+
     Args:
         merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
             by: :py:func:`merge_result`.
