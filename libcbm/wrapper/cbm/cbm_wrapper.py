@@ -143,7 +143,9 @@ class CBMWrapper(LibCBM_ctypes):
         v = data_helpers.unpack_ndarrays(state_variables)
         n = v.age.shape[0]
         self.handle.call(
-            "LibCBM_EndStep", n, v.age, v.regeneration_delay, v.enabled)
+            "LibCBM_EndStep", n, v.age, v.regeneration_delay,
+            v.time_since_last_disturbance,
+            v.time_since_land_class_change, v.enabled)
 
     def InitializeLandState(self, inventory, pools, state_variables):
         """Initializes CBM state to values appropriate for after running
