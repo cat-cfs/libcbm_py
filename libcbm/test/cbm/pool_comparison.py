@@ -76,13 +76,17 @@ def get_libcbm_dom_pools():
 def get_pool_map(name):
     """Returns a mapping between libcbm poolnames and cbm-cfs3 poolnames.
     Assumes the pools are ordered.
+
     Arguments:
         name (str): one of:
+
             - "all" for a map of all pools
             - "biomass" for a map of all biomass pools
             - "dom" for a map of all dead organic matter pools
+
     Raises:
         ValueError: the name parameter was not supported
+
     Returns:
         collections.OrderedDict: mapping of CBM-CFS3 pools to libcbm pools
     """
