@@ -104,7 +104,7 @@ merged_state = state_comparison.get_merged_state(cbm3_result["state"], libcbm_re
 result_comparison.get_summarized_diff_plot(
     merged=merged_state, max_results=20, figsize=(15,10), kind="bar",
     x_label="test case identifer",
-    y_label="summed pool differences [tonnes C/ha]",
+    y_label="summed state variable differences",
     title="Libcbm versus CBM3 Age and landclass: sum of libcbm minus CBM3 for all timesteps")
 ```
 
@@ -148,7 +148,7 @@ result_comparison.get_summarized_diff_plot(
 ```
 
 ```python
-test_case_identifier = 2
+test_case_identifier =3
 ```
 
 ```python
@@ -205,8 +205,11 @@ if n_disturbance_fluxes > 0:
 result_comparison.get_test_case_comparison_plot(
     identifier=test_case_identifier, merged=merged_state, diff=False,
     x_label="time step", y_label="difference", figsize=(15,10))
+result_comparison.get_test_case_comparison_plot(
+    identifier=test_case_identifier, merged=merged_state, diff=True,
+    x_label="time step", y_label="difference", figsize=(15,10))
 ```
 
 ```python
-merged_state[merged_state["identifier"]==test_case_identifier]
+merged_state[merged_state["identifier"]==3]
 ```

@@ -239,7 +239,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
     afforestation_pre_type_id = np.array(
         afforestation_pre_type_ids, dtype=np.int32)
 
-    land_class = np.ones(n_stands, dtype=np.int32)
+    land_class = np.zeros(n_stands, dtype=np.int32)
     land_class[afforestation_pre_type_id > 0] = \
         ref.get_land_class_id("UNFCCC_CL_R_CL")
 

@@ -198,7 +198,7 @@ def initialize_cbm_state_variables(n_stands):
         "time_since_land_class_change": np.ones(n_stands, dtype=np.int32) * -1,
         "growth_enabled": np.zeros(n_stands, dtype=np.int32),
         "enabled": np.ones(n_stands, dtype=np.int32),
-        "land_class": np.ones(n_stands, dtype=np.int32),
+        "land_class": np.zeros(n_stands, dtype=np.int32),
         "age": np.zeros(n_stands, dtype=np.int32),
         "growth_multiplier": np.ones(n_stands, dtype=np.float),
         "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
