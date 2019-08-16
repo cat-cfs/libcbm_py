@@ -195,7 +195,7 @@ def initialize_cbm_state_variables(n_stands):
     state_variables = pd.DataFrame({
         "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
         "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
-        "time_since_land_class_change": np.zeros(n_stands, dtype=np.int32),
+        "time_since_land_class_change": np.ones(n_stands, dtype=np.int32) * -1,
         "growth_enabled": np.zeros(n_stands, dtype=np.int32),
         "enabled": np.ones(n_stands, dtype=np.int32),
         "land_class": np.ones(n_stands, dtype=np.int32),
