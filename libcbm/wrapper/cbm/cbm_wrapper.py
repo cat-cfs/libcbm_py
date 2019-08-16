@@ -236,8 +236,9 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are used to
-                compute a criteria for exiting the spinup routing.  They not
-                altered by this function.
+                compute a criteria for exiting the spinup routing.  The
+                biomass pools are also zeroed for historical and last pass
+                disturbances.
             variables (object): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  Set to an
                 end-of-timestep state by this function. See:
@@ -249,8 +250,8 @@ class CBMWrapper(LibCBM_ctypes):
         n = v.age.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
         self.handle.call(
-            "LibCBM_EndSpinupStep", n, v.spinup_state, poolMat,
-            v.disturbance_type, v.age, v.slow_pools, v.growth_enabled)
+            "LibCBM_EndSpinupStep", n, v.spinup_state, v.disturbance_type,
+            poolMat, v.age, v.slow_pools, v.growth_enabled)
 
     def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
                                 state_variables):

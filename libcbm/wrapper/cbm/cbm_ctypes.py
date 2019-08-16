@@ -142,10 +142,10 @@ def initialize_CBM_ctypes(dll):
         ctypes.c_size_t,  # n stands
         # spinup state code (length n)
         ndpointer(ctypes.c_uint, flags="C_CONTIGUOUS"),
-        # pools (n stands by n pools)
-        LibCBM_Matrix,
         # disturbance_type (length n)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+        # pools (n stands by n pools)
+        LibCBM_Matrix,
         # age (length n stands, return value)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # sum of slow pools (length n stands, return value)

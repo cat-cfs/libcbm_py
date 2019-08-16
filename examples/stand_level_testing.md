@@ -105,7 +105,7 @@ result_comparison.get_summarized_diff_plot(
     merged=merged_state, max_results=20, figsize=(15,10), kind="bar",
     x_label="test case identifer",
     y_label="summed pool differences [tonnes C/ha]",
-    title="Libcbm versus CBM3 Biomass: sum of libcbm minus CBM3 for all timesteps")
+    title="Libcbm versus CBM3 Age and landclass: sum of libcbm minus CBM3 for all timesteps")
 ```
 
 ```python
@@ -209,8 +209,4 @@ result_comparison.get_test_case_comparison_plot(
 
 ```python
 merged_state[merged_state["identifier"]==test_case_identifier]
-```
-
-```python
-
 ```
