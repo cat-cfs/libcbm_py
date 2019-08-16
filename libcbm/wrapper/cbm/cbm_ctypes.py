@@ -58,6 +58,10 @@ def initialize_CBM_ctypes(dll):
         ctypes.c_void_p,
         # n stands
         ctypes.c_size_t,
+        # enabled
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+        # growth enabled
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # age
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # regeneration_delay
@@ -65,8 +69,6 @@ def initialize_CBM_ctypes(dll):
         # time_since_last_disturbance
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # time_since_land_class_change
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
-        # enabled
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
         )
 
