@@ -86,6 +86,21 @@ class LibCBMHandle(LibCBM_ctypes):
                 raise RuntimeError(err.getErrorMessage())
 
     def call(self, func_name, *args):
+        """Call a libcbm C/C++ function.  The specified args are passed
+        as the arguments to the named function.
+
+
+        Args:
+            func_name (str): The name of the libcbm function
+
+        Raises:
+            RuntimeError: if an error is detected in the low level library
+                it is re-raised here.
+
+        Returns:
+            variant: returns the value returned by the specified low level
+                function.
+        """
         func = getattr(self._dll, func_name)
         args = (ctypes.byref(self.err), self.pointer) + args
         result = func(*args)
