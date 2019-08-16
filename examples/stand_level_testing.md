@@ -36,6 +36,7 @@ from libcbm.test.cbm.cbm3_support import cbm3_simulator
 from libcbm.test.cbm import test_case_simulator
 from libcbm.test.cbm import pool_comparison
 from libcbm.test.cbm import flux_comparison
+from libcbm.test.cbm import state_comparison
 from libcbm.test.cbm import result_comparison
 ```
 
@@ -95,6 +96,19 @@ cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 ```
 
 ```python
+merged_state = state_comparison.get_merged_state(cbm3_result["state"], libcbm_result["state"])
+
+```
+
+```python
+result_comparison.get_summarized_diff_plot(
+    merged=merged_state, max_results=20, figsize=(15,10), kind="bar",
+    x_label="test case identifer",
+    y_label="summed pool differences [tonnes C/ha]",
+    title="Libcbm versus CBM3 Biomass: sum of libcbm minus CBM3 for all timesteps")
+```
+
+```python
 merged_dom = pool_comparison.get_merged_pools(cbm3_result["pools"], libcbm_result["pools"], "dom")
 merged_bio = pool_comparison.get_merged_pools(cbm3_result["pools"], libcbm_result["pools"], "biomass")
 ```
@@ -134,7 +148,7 @@ result_comparison.get_summarized_diff_plot(
 ```
 
 ```python
-test_case_identifier = 3
+test_case_identifier = 2
 ```
 
 ```python
@@ -173,13 +187,28 @@ result_comparison.get_test_case_comparison_plot(
 ```
 
 ```python
-result_comparison.get_test_case_comparison_by_indicator_plot(
-    identifier=test_case_identifier, merged=merged_disturbance_flux,
-    diff=False, timesteps=None, y_label="", kind="bar", figsize=(15,10))
+n_disturbance_fluxes = len(merged_disturbance_flux[merged_disturbance_flux["identifier"]==test_case_identifier])
+if n_disturbance_fluxes > 0:
+    
+    result_comparison.get_test_case_comparison_by_indicator_plot(
+        identifier=test_case_identifier, merged=merged_disturbance_flux,
+        diff=False, timesteps=None, y_label="", kind="bar", figsize=(15,10))
 
-result_comparison.get_test_case_comparison_by_indicator_plot(
-    identifier=test_case_identifier, merged=merged_disturbance_flux,
-    diff=True, timesteps=None, y_label="", kind="bar", figsize=(15,10))
+    result_comparison.get_test_case_comparison_by_indicator_plot(
+        identifier=test_case_identifier, merged=merged_disturbance_flux,
+        diff=True, timesteps=None, y_label="", kind="bar", figsize=(15,10))
+
+
+```
+
+```python
+result_comparison.get_test_case_comparison_plot(
+    identifier=test_case_identifier, merged=merged_state, diff=False,
+    x_label="time step", y_label="difference", figsize=(15,10))
+```
+
+```python
+merged_state[merged_state["identifier"]==test_case_identifier]
 ```
 
 ```python
