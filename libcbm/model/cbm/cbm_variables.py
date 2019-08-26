@@ -211,6 +211,32 @@ def initialize_inventory(classifiers, inventory):
     """Creates inventory input for :class:`libcbm.model.cbm.cbm_model.CBM`
     functions
 
+
+
+    Example Inventory table:
+
+    ====  =============  ==========================  ===========  =============================  ============================
+     age   spatial_unit   afforestation_pre_type_id   land_class   historical_disturbance_type    last_pass_disturbance_type
+    ====  =============  ==========================  ===========  =============================  ============================
+     0      1               1                           1          -1                               -1
+     1      10              -1                          0           1                               1
+     10     42              -1                          0           1                               5
+    ====  =============  ==========================  ===========  =============================  ============================
+
+    Example classifiers table:
+
+    =============  =============  =============
+     classifier_1   classifier_2   classifier_3
+    =============  =============  =============
+     a1             b1             c2
+     a1             b2             c3
+     a2             b2             c3
+    =============  =============  =============
+
+    Each row in both of the above tables corresponds to a CBM stand, and
+    therefore both tables must have the same number of rows.  The number of
+    columns in the classifiers table is equal to the number of classifiers.
+
     Args:
         classifiers (pandas.DataFrame): dataframe of inventory classifier
             sets. Column names are the name of the classifiers, and values
