@@ -3,6 +3,8 @@
 LibCBM core functionality
 =========================
 
+The libcbm core functions are pool and flux functions that are generally useful for CBM-like models.
+
 .. autoclass:: libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes
     :members:
 
