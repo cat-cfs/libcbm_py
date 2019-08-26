@@ -130,7 +130,6 @@ def get_disturbances(cases, ref):
                         10: 3
                     }
                 }
-
     """
     disturbances = {}
     for i_c, c in enumerate(cases):
@@ -149,40 +148,27 @@ def get_disturbances(cases, ref):
     return disturbances
 
 
-def get_classifier_lookup(cases, classifier_name):
-
-    classifiers_config = get_test_case_classifier_factory(
-        cases, classifier_name)()
-    # create an index for lookup of classifiers
-    classifier_id_lookup = {x["id"]: x for x
-                            in classifiers_config["classifiers"]}
-    classifier_lookup = {}
-    for cv in classifiers_config["classifier_values"]:
-        classifier_id = cv["classifier_id"]
-        classifier_name = classifier_id_lookup[classifier_id]["name"]
-        if classifier_name in classifier_lookup:
-            classifier_lookup[classifier_name][cv["value"]] = cv
-        else:
-            classifier_lookup[classifier_name] = {cv["value"]: cv}
-    return classifier_lookup
-
-
-def get_classifier_value_id(classifier_lookup, classifier_name,
-                            classifier_value_name):
-    """Get the classifier value id associated with the classifier_name,
-    classifier_value_name pair
+def get_classifier_value_lookup(cases, classifier_name):
+    """Creates a dictionary index for fetching classifier ids by their
+    corresponding classifier value names from the specified test
+    cases.
 
     Args:
-        classifier_lookup (dict): nested dictionary of classifiers
-        classifier (str): name of the classifier
-        classifier_value (str): name of the classifier value
+        cases (list): list of dict defining CBM test cases
+        classifier_name (str): name of the single classifier used by the
+            test cases
 
     Returns:
-        int: identifier for the classifier/classifier value
+        dict: a dictionary of classifier value (key) to classifier value id
+            (value)
     """
-    c = classifier_lookup[classifier_name]
-    cv = c[classifier_value_name]
-    return cv["id"]
+    classifiers_config = get_test_case_classifier_factory(
+        cases, classifier_name)()
+
+    classifier_value_lookup = {}
+    for cv in classifiers_config["classifier_values"]:
+        classifier_value_lookup[cv["value"]] = cv["id"]
+    return classifier_value_lookup
 
 
 def initialize_inventory(cbm, cases, classifier_name, ref):
@@ -200,15 +186,12 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         object: an object which defines a valid inventory for
             :py:class:`libcbm.model.cbm.CBM` functions
     """
-    classifier_lookup = get_classifier_lookup(cases, classifier_name)
+    classifier_lookup = get_classifier_value_lookup(cases, classifier_name)
     n_stands = len(cases)
     classifiers = pd.DataFrame({
         classifier_name: np.array([
-            get_classifier_value_id(
-                classifier_lookup,
-                classifier_name,
-                case_generation.get_classifier_value_name(c["id"])
-            )
+            classifier_lookup[
+                case_generation.get_classifier_value_name(c["id"])]
             for c in cases], dtype=np.int32)
     })
 
