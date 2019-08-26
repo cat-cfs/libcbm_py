@@ -9,7 +9,8 @@ import libcbm.model.cbm.cbm_defaults_queries as queries
 class CBMDefaultsReference:
 
     def __init__(self, sqlite_path, locale_code="en-CA"):
-        """Creates a reference to information stored in a cbm_defaults database.
+        """Creates a reference to the localized name and id relationships
+        stored in a cbm_defaults database.
 
         Args:
             sqlite_path (str): path to a cbm_defaults sqlite database.

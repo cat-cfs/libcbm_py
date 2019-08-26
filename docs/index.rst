@@ -40,8 +40,7 @@ Code Documentation
    :caption: Contents:
 
    cbm_model
-   cbm_variables
-   cbm_parameters
+   cbm_input_and_variables
    cbm_testing
    cbm_core_functions
    libcbm_core_functions
