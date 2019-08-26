@@ -32,6 +32,9 @@ Running the notebooks in /examples Also have additional requirements:
  - jupytext
 
 
+Code Documentation
+------------------
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
