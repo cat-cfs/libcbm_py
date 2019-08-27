@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from libcbm.input.sit import sit_format
 
@@ -6,8 +7,10 @@ from libcbm.input.sit import sit_format
 def unpack_column(table, column_description):
     data = table.iloc[:, column_description["index"]]
     if "type" in column_description:
-        data = data.as_type(column_description["type"])
-
+        data = data.astype(column_description["type"])
+    if "min_value" in column_description:
+        if len(data[data > column_description["min_value"]]):
+            raise ValueError("")
     return data
 
 
@@ -74,3 +77,24 @@ def parse_classifiers(classifiers_table):
             "description": classifier_aggregates.iloc[i, :]["description"],
             "classifier_values": list(agg_values[:])
         })
+
+
+def parse_inventory(inventory_table, classifiers, classifier_values):
+    inventory = unpack_table(
+        inventory_table,
+        sit_format.get_inventory_format(
+            classifiers.name,
+            len(inventory_table.columns)))
+
+    # validate the classifier values in the inventory table
+    for row in classifiers.itertuples():
+        a = inventory[row.name].unique()
+        b = classifier_values[
+            classifier_values["classifier_id"] == row.id]["name"].unique()
+        diff = np.setdiff1d(a, b)
+        if len(diff) > 0:
+            raise ValueError(
+                "Undefined classifier values detected: "
+                f"classifier: '{row.name}', values: {diff}")
+
+    return inventory
