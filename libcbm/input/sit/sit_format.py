@@ -199,6 +199,21 @@ def get_transition_rules_format(classifier_names, n_columns):
 
 
 def get_inventory_format(classifier_names, n_columns):
+    """Gets a description of the SIT inventory columns as a list of
+    dictionaries
+
+    Args:
+        classifier_names (int): a list of the names of classifiers
+            n_columns (int): the number of columns in inventory data.  This
+            is required because the format has a varying number of optional
+            columns.
+
+    Raises:
+        ValueError: The number of columns was incorrect
+
+    Returns:
+        list: a list of dictionaries describing the SIT inventory columns
+    """
     n_classifiers = len(classifier_names)
 
     classifier_set = [
@@ -212,20 +227,27 @@ def get_inventory_format(classifier_names, n_columns):
         {"name": "land_class_id", "index": n_classifiers + 4}]
 
     if n_columns > n_classifiers + 6:
-        if n_columns == 6:
-            raise ValueError(
-                "Invalid number of columns: both historical and last pass "
-                "disturbance types must be defined.")
         inventory.extend([
             {"name": "historical_disturbance_type",
              "index": n_classifiers + 5},
             {"name": "last_pass_disturbance_type",
              "index": n_classifiers + 6}])
-
+    if n_columns == n_classifiers + 6:
+        raise ValueError(
+            "Invalid number of columns: both historical and last pass "
+            "disturbance types must be defined.")
+    if n_columns < n_classifiers + 5:
+        raise ValueError(
+            f"With {n_classifiers} classifiers, SIT inventory should have "
+            f"at least {n_classifiers + 5} columns.")
     if n_columns == n_classifiers + 8:
         inventory.append({
             "name": "spatial_reference", "index": n_classifiers + 7,
             "type": np.int})
+    if n_columns > n_classifiers + 8:
+        raise ValueError(
+            f"With {n_classifiers} classifiers, SIT inventory should have "
+            f"at most {n_classifiers + 8} columns.")
 
     return classifier_set + inventory
 

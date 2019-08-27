@@ -27,6 +27,22 @@ class SITFormatTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_format.get_transition_rules_format(mock_classifier_names, 17)
 
+    def test_get_inventory_format_value_error(self):
+        mock_classifier_names = ["a", "b", "c"]
+        with self.assertRaises(ValueError):
+            sit_format.get_inventory_format(
+                mock_classifier_names, len(mock_classifier_names)+6)
+        with self.assertRaises(ValueError):
+            sit_format.get_inventory_format(mock_classifier_names, 4)
+        with self.assertRaises(ValueError):
+            sit_format.get_inventory_format(
+                mock_classifier_names, len(mock_classifier_names)+9)
+
+    def test_get_disturbance_event_format_value_error(self):
+        mock_classifier_names = ["a", "b", "c"]
+        with self.assertRaises(ValueError):
+            sit_format.get_disturbance_event_format(mock_classifier_names, 1)
+
     def test_basic_formats(self):
         """Checks that all returned formats have sequential indexes and the
         basic name/index properties in all dictionaries
@@ -43,7 +59,7 @@ class SITFormatTest(unittest.TestCase):
                 len(sit_format.get_age_eligibility_columns(n_classifiers)) +
                 4),
             sit_format.get_inventory_format(
-                mock_classifier_names, n_classifiers + 6),
+                mock_classifier_names, n_classifiers + 7),
             sit_format.get_disturbance_event_format(
                 mock_classifier_names, n_classifiers +
                 len(sit_format.get_disturbance_eligibility_columns(
