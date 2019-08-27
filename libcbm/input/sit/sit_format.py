@@ -7,36 +7,64 @@ classifier_keyword = "_CLASSIFIER"
 def get_classifier_format(n_columns):
     """Gets a list of dictionaries describing the CBM SIT classifier columns
 
+    Args:
+        n_columns (int): the number of columns in an sit classifiers formatted
+            table
+
+    Raises:
+        ValueError: raised if the number of columns is less than the minimum
+            required.
+
     Returns:
-        list: a list of dictionaries that describe the CBM SIT classifier
-            columns
+        list: a list of dictionaries describing the CBM SIT classifier columns
     """
     classifier_format = [
         {"name": "id", "index": 0},
         {"name": "name", "index": 1},
         {"name": "description", "index": 2},
-        # {"name": "classifier_aggregates", "column_range": [3, -1]}
     ]
 
     if n_columns < 3:
         raise ValueError(
             "specified number of columns invalid.  Expected at least 3.")
+    elif n_columns > 4:
+        classifier_format.extend([{
+            "name": "aggregate_value_{}".format(i-2), "index": i
+        } for i in range(3, n_columns)])
     return classifier_format
 
 
-def get_disturbance_type_format():
+def get_disturbance_type_format(n_columns):
     """Gets a list of dictionaries describing the CBM SIT disturbance type
     columns
+
+    Args:
+        n_columns (int): The number of columns in a SIT disturbance types
+            formatted table.
+
+    Raises:
+        ValueError: n_columns is less than the minimum required number of
+            columns for the SIT disturbance type format.
+        ValueError: n_columns is more than the required number of columns for
+            the sit disturbance type format.
 
     Returns:
         list: a list of dictionaries that describe the CBM SIT disturbance
             type columns
     """
-    return [
+    disturbance_type_format = [
         {"name": "id", "index": 0},
         {"name": "name", "index": 1},
-        {"name": "description", "index": 2, "required": False},
     ]
+    if n_columns < 2:
+        raise ValueError(
+            "specified number of columns invalid.  Expected at least 2.")
+    elif n_columns == 3:
+        disturbance_type_format.append({"name": "description", "index": 2})
+    else:
+        raise ValueError(
+            "specified number of columns invalid.  Expected at most 3.")
+    return disturbance_type_format
 
 
 def get_age_class_format():
@@ -55,8 +83,17 @@ def get_age_class_format():
 def get_yield_format(classifier_names, n_columns):
     """Gets a list of dictionaries describing the CBM SIT age class columns
 
+    Args:
+        classifier_names (list): a list of strings which are the names of the
+            classifiers
+        n_columns (int): The number of columns in a SIT yield formatted table.
+
+    Raises:
+        ValueError: the specified number of columns is less than the minimum
+            number of columns for a valid SIT yield formatted table
+
     Returns:
-        list: a list of dictionaries that describe the  CBM SIT age class
+        list: a list of dictionaries that describe the  CBM SIT yield table
             columns
     """
     n_classifiers = len(classifier_names)
@@ -64,9 +101,16 @@ def get_yield_format(classifier_names, n_columns):
         {"name": c, "index": i} for i, c in enumerate(classifier_names)]
     leading_species_col = [{
         "name": "leading_species", "index": n_classifiers}]
-    volumes = [{
-        "name": "volumes", "column_range": [n_classifiers + 1, -1],
-        "min_value": 0, "type": np.float}]
+    vol_index = n_classifiers + 1
+    if n_columns < vol_index + 1:
+        # in SIT vol_index is the 0th age volume, so at least 2 volumes need
+        # to be here for anything to happen in CBM
+        raise ValueError(
+            "at least {0} columns are required".format(vol_index + 1))
+    volumes = [
+        {"name": "v{}".format(i), "index": i, "min_value": 0, "type": np.float}
+        for i in range(vol_index, n_columns)]
+
     return classifier_values + leading_species_col + volumes
 
 
@@ -79,8 +123,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     Args:
         classifier_names (int): a list of the names of classifiers
         n_columns (int): the number of columns in transition rules data.
-        This is used to detect whether or not a spatial identifier is included
-        in the data.
+            This is used to detect whether or not a spatial identifier is
+            included in the data.
 
     Raises:
         ValueError: n_columns was not valid for the sit transitions format
