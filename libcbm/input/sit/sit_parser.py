@@ -4,8 +4,8 @@ from libcbm.input.sit import sit_format
 
 
 def unpack_column(table, column_description):
-    data = table[:, column_description["index"]]
-    if "type" in column_description["type"]:
+    data = table.iloc[:, column_description["index"]]
+    if "type" in column_description:
         data = data.as_type(column_description["type"])
 
     return data
@@ -24,10 +24,53 @@ def parse_age_classes(age_class_table):
         age_class_table, sit_format.get_age_class_format())
 
 
+def parse_disturbance_types(disturbance_types_table):
+    return unpack_table(
+        disturbance_types_table,
+        sit_format.get_disturbance_type_format(
+            len(disturbance_types_table.columns)))
+
+
 def parse_classifiers(classifiers_table):
-    classifiers_format = sit_format.get_age_class_format(
+
+    classifier_keyword = "_CLASSIFIER"
+    classifiers_format = sit_format.get_classifier_format(
         len(classifiers_table.columns))
     unpacked = unpack_table(
         classifiers_table, classifiers_format
     )
+    classifiers = unpacked \
+        .loc[unpacked["name"] == classifier_keyword]
+    classifiers = pd.DataFrame(
+        data={
+            "id": classifiers.id,
+            # for classifiers, the 3rd column is used for the name
+            "name": classifiers.description},
+        columns=["id", "name"])
 
+    # filter out rows that have the _classifier keyword and also
+    # any rows that have a value on the 3rd or greater column.
+    # This is the set of classifier values.
+    classifier_values = unpacked \
+        .loc[pd.isnull(unpacked.iloc[:, 3:]).all(axis=1) &
+             (unpacked["name"] != classifier_keyword)]
+
+    classifier_values = pd.DataFrame({
+        "classifier_id": classifier_values.id,
+        "name": classifier_values.name,
+        "description": classifier_values.description
+    })
+
+    aggregate_values = []
+    classifier_aggregates = unpacked.loc[
+        ~pd.isnull(unpacked.iloc[:, 3:]).all(axis=1)]
+    for i in range(0, classifier_aggregates.shape[0]):
+
+        agg_values = classifier_aggregates.iloc[i, 3:]
+        agg_values = agg_values[~pd.isnull(agg_values)]
+        aggregate_values.append({
+            "classifier_id": classifier_aggregates.iloc[i, :]["id"],
+            "name": classifier_aggregates.iloc[i, :]["name"],
+            "description": classifier_aggregates.iloc[i, :]["description"],
+            "classifier_values": list(agg_values[:])
+        })

@@ -1,9 +1,6 @@
 import numpy as np
 
 
-classifier_keyword = "_CLASSIFIER"
-
-
 def get_classifier_format(n_columns):
     """Gets a list of dictionaries describing the CBM SIT classifier columns
 
@@ -27,7 +24,7 @@ def get_classifier_format(n_columns):
     if n_columns < 3:
         raise ValueError(
             "specified number of columns invalid.  Expected at least 3.")
-    elif n_columns > 4:
+    elif n_columns >= 4:
         classifier_format.extend([{
             "name": "aggregate_value_{}".format(i-2), "index": i
         } for i in range(3, n_columns)])
