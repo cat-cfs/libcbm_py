@@ -1,3 +1,6 @@
+import numpy as np
+
+
 classifier_keyword = "_CLASSIFIER"
 
 
@@ -21,7 +24,7 @@ def get_disturbance_type_format():
 def get_age_class_format():
     return [
         {"name": "id", "index": 0},
-        {"name": "size", "index": 1, "type": "int"},
+        {"name": "size", "index": 1, "type": np.int},
     ]
 
 
@@ -33,7 +36,7 @@ def get_yield_format(classifier_names):
         "name": "leading_species", "index": n_classifiers}]
     volumes = [{
         "name": "volumes", "column_range": [n_classifiers+1, -1],
-        "min_value": 0, "type": "double"}]
+        "min_value": 0, "type": np.float}]
     return classifier_values + leading_species_col + volumes
 
 
@@ -73,15 +76,15 @@ def get_transition_rules_format(classifier_names, n_columns):
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
         {"name": "regeneration_delay", "index": regeneration_delay_index,
-            "min_value": 0, "type": "double"},
+            "min_value": 0, "type": np.float},
         {"name": "reset_age", "index": regeneration_delay_index + 1,
-            "min_value": -1, "type": "int"},
+            "min_value": -1, "type": np.int},
         {"name": "percent", "index": regeneration_delay_index + 2,
-            "min_value": 0, "max_value": 100, "type": "int"},
+            "min_value": 0, "max_value": 100, "type": np.int},
     ]
     spatial_reference = [
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
-            "type": "int"}
+            "type": np.int}
     ]
     result = []
     result.extend(classifier_set)  # source classifier set
@@ -96,3 +99,79 @@ def get_transition_rules_format(classifier_names, n_columns):
         return result
     else:
         raise ValueError("incorrect number of columns in transition rules")
+
+
+def get_inventory_format(classifier_names, n_columns):
+    n_classifiers = len(classifier_names)
+
+    classifier_set = [
+        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+
+    inventory = [
+        {"name": "using_age_class", "index": n_classifiers},
+        {"name": "age", "index": n_classifiers + 1, "min_value": 0},
+        {"name": "area", "index": n_classifiers + 2, "min_value": 0},
+        {"name": "delay", "index": n_classifiers + 3, "min_value": 0},
+        {"name": "land_class_id", "index": n_classifiers + 4}]
+
+    if n_columns > n_classifiers + 6:
+        if n_columns == 6:
+            raise ValueError(
+                "Invalid number of columns: both historical and last pass "
+                "disturbance types must be defined.")
+        inventory.extend([
+            {"name": "historical_disturbance_type",
+             "index": n_classifiers + 5},
+            {"name": "last_pass_disturbance_type",
+             "index": n_classifiers + 6}])
+
+    if n_columns == n_classifiers + 8:
+        inventory.append({
+            "name": "spatial_reference", "index": n_classifiers + 7,
+            "type": np.int})
+
+    return classifier_set + inventory
+
+
+def get_disturbance_event_format(classifier_names, n_columns):
+
+    n_classifiers = len(classifier_names)
+
+    classifier_set = [
+        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+
+    disturbance_age_eligibility = [
+        {"name": "using_age_class", "index": n_classifiers},
+        {"name": "min_softwood", "index": n_classifiers + 1},
+        {"name": "max_softwood", "index": n_classifiers + 2},
+        {"name": "min_hardwood", "index": n_classifiers + 3},
+        {"name": "max_hardwood", "index": n_classifiers + 4}
+    ]
+
+    n_age_fields = len(disturbance_age_eligibility)
+    index = n_classifiers + n_age_fields
+    disturbance_eligibility = [
+        {"name": "MinYearsSinceDist", "index": index + 0, "type": np.float},
+        {"name": "MaxYearsSinceDist", "index": index + 1, "type": np.float},
+        {"name": "LastDistTypeID", "index": index + 2, "type": np.float},
+        {"name": "MinTotBiomassC", "index": index + 3, "type": np.float},
+        {"name": "MaxTotBiomassC", "index": index + 4, "type": np.float},
+        {"name": "MinSWMerchBiomassC", "index": index + 5, "type": np.float},
+        {"name": "MaxSWMerchBiomassC", "index": index + 6, "type": np.float},
+        {"name": "MinHWMerchBiomassC", "index": index + 7, "type": np.float},
+        {"name": "MaxHWMerchBiomassC", "index": index + 8, "type": np.float},
+        {"name": "MinTotalStemSnagC", "index": index + 9, "type": np.float},
+        {"name": "MaxTotalStemSnagC", "index": index + 10, "type": np.float},
+        {"name": "MinSWStemSnagC", "index": index + 11, "type": np.float},
+        {"name": "MaxSWStemSnagC", "index": index + 12, "type": np.float},
+        {"name": "MinHWStemSnagC", "index": index + 13, "type": np.float},
+        {"name": "MaxHWStemSnagC", "index": index + 14, "type": np.float},
+        {"name": "MinTotalStemSnagMerchC", "index": index + 15, "type": np.float},
+        {"name": "MaxTotalStemSnagMerchC", "index": index + 16, "type": np.float},
+        {"name": "MinSWMerchStemSnagC", "index": index + 17, "type": np.float},
+        {"name": "MaxSWMerchStemSnagC", "index": index + 18, "type": np.float},
+        {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": np.float},
+        {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": np.float}
+    ]
+
+    event_target = []
