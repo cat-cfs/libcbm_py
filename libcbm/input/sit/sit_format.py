@@ -61,7 +61,7 @@ def get_disturbance_type_format(n_columns):
             "specified number of columns invalid.  Expected at least 2.")
     elif n_columns == 3:
         disturbance_type_format.append({"name": "description", "index": 2})
-    else:
+    elif n_columns > 3:
         raise ValueError(
             "specified number of columns invalid.  Expected at most 3.")
     return disturbance_type_format
@@ -114,6 +114,27 @@ def get_yield_format(classifier_names, n_columns):
     return classifier_values + leading_species_col + volumes
 
 
+def get_age_eligibility_columns(base_index):
+    """gets the columns for age eligibility which appear in SIT events and
+    SIT transition.  The index of the columns is offset using the specified
+    base.
+
+    Args:
+        base_index (index): the index of the first age eligibility columns
+
+    Returns:
+        list: a list of dictionaries describing the SIT age eligibility
+            columns
+    """
+    return [
+        {"name": "using_age_class", "index": base_index},
+        {"name": "min_softwood", "index": base_index + 1},
+        {"name": "max_softwood", "index": base_index + 2},
+        {"name": "min_hardwood", "index": base_index + 3},
+        {"name": "max_hardwood", "index": base_index + 4}
+    ]
+
+
 def get_transition_rules_format(classifier_names, n_columns):
     """Generate a list of dictionaries describing each column in the SIT
     format transition rules.  The format is dynamic and changes based on the
@@ -133,15 +154,9 @@ def get_transition_rules_format(classifier_names, n_columns):
         list: a list of dictionaries describing the SIT transition rule columns
     """
     n_classifiers = len(classifier_names)
-    classifier_set = [
+    classifier_set_src = [
         {"name": c, "index": i} for i, c in enumerate(classifier_names)]
-    age_eligibility = [
-        {"name": "using_age_class", "index": n_classifiers},
-        {"name": "min_softwood", "index": n_classifiers + 1},
-        {"name": "max_softwood", "index": n_classifiers + 2},
-        {"name": "min_hardwood", "index": n_classifiers + 3},
-        {"name": "max_hardwood", "index": n_classifiers + 4}
-    ]
+    age_eligibility = get_age_eligibility_columns(n_classifiers)
     disturbance_type = [{
         "name": "disturbance_type",
         "index": n_classifiers+5}]
@@ -159,11 +174,14 @@ def get_transition_rules_format(classifier_names, n_columns):
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
             "type": np.int}
     ]
+    classifier_set_dest = [
+        {"name": c, "index": i + n_classifiers + len(age_eligibility) + 1}
+        for i, c in enumerate(classifier_names)]
     result = []
-    result.extend(classifier_set)  # source classifier set
+    result.extend(classifier_set_src)  # source classifier set
     result.extend(age_eligibility)
     result.extend(disturbance_type)
-    result.extend(classifier_set)  # destination classifier set
+    result.extend(classifier_set_dest)  # destination classifier set
     result.extend(post_transition)
     if n_columns < len(result):
         raise ValueError(
@@ -212,24 +230,19 @@ def get_inventory_format(classifier_names, n_columns):
     return classifier_set + inventory
 
 
-def get_disturbance_event_format(classifier_names, n_columns):
+def get_disturbance_eligibility_columns(index):
+    """gets the columns for disturbance eligibility which appear in SIT
+    events.  The index of the columns is offset using the specified
+    base.
 
-    n_classifiers = len(classifier_names)
+    Args:
+        base_index (index): the index of the first eligibility column
 
-    classifier_set = [
-        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
-
-    disturbance_age_eligibility = [
-        {"name": "using_age_class", "index": n_classifiers},
-        {"name": "min_softwood", "index": n_classifiers + 1},
-        {"name": "max_softwood", "index": n_classifiers + 2},
-        {"name": "min_hardwood", "index": n_classifiers + 3},
-        {"name": "max_hardwood", "index": n_classifiers + 4}
-    ]
-
-    n_age_fields = len(disturbance_age_eligibility)
-    index = n_classifiers + n_age_fields
-    disturbance_eligibility = [
+    Returns:
+        list: a list of dictionaries describing the SIT disturbance
+            eligibility columns
+    """
+    return [
         {"name": "MinYearsSinceDist", "index": index + 0, "type": np.float},
         {"name": "MaxYearsSinceDist", "index": index + 1, "type": np.float},
         {"name": "LastDistTypeID", "index": index + 2, "type": np.float},
@@ -254,6 +267,20 @@ def get_disturbance_event_format(classifier_names, n_columns):
         {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": np.float},
         {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": np.float}
     ]
+
+
+def get_disturbance_event_format(classifier_names, n_columns):
+
+    n_classifiers = len(classifier_names)
+
+    classifier_set = [
+        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+
+    disturbance_age_eligibility = get_age_eligibility_columns(n_classifiers)
+
+    n_age_fields = len(disturbance_age_eligibility)
+    disturbance_eligibility = get_disturbance_eligibility_columns(
+        n_classifiers + n_age_fields)
     n_eligibility_fields = len(disturbance_eligibility)
     index = n_classifiers + n_age_fields + n_eligibility_fields
     event_target = [
