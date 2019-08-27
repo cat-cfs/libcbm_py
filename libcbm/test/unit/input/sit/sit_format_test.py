@@ -41,7 +41,11 @@ class SITFormatTest(unittest.TestCase):
     def test_get_disturbance_event_format_value_error(self):
         mock_classifier_names = ["a", "b", "c"]
         with self.assertRaises(ValueError):
-            sit_format.get_disturbance_event_format(mock_classifier_names, 1)
+            sit_format.get_disturbance_event_format(
+                mock_classifier_names, 3+5+21+5)
+        with self.assertRaises(ValueError):
+            sit_format.get_disturbance_event_format(
+                mock_classifier_names, 3+5+21+8)
 
     def test_basic_formats(self):
         """Checks that all returned formats have sequential indexes and the

@@ -317,7 +317,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
     if n_columns < index + 6:
         raise ValueError(
             "specified number of columns invalid.  Expected at least "
-            "{}".format(len(index + 6)))
+            "{}".format(index + 6))
     if n_columns == index + 7:
         event_target.append(
             {"name": "spatial", "index": index + 6}
@@ -325,6 +325,6 @@ def get_disturbance_event_format(classifier_names, n_columns):
     if n_columns > index + 7:
         raise ValueError(
             "specified number of columns invalid.  Expected at most "
-            "{}".format(len(index + 7)))
+            "{}".format(index + 7))
     return classifier_set + disturbance_age_eligibility + \
         disturbance_eligibility + event_target
