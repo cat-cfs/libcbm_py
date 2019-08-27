@@ -8,6 +8,25 @@ class SITFormatTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_format.get_classifier_format(2)
 
+    def test_get_disturbance_type_format_value_error(self):
+        with self.assertRaises(ValueError):
+            sit_format.get_disturbance_type_format(1)
+
+        with self.assertRaises(ValueError):
+            sit_format.get_disturbance_type_format(4)
+
+    def test_get_yield_format_value_error(self):
+        mock_classifier_names = ["a", "b", "c"]
+        with self.assertRaises(ValueError):
+            sit_format.get_yield_format(mock_classifier_names, 1)
+
+    def test_get_transition_rules_format_value_error(self):
+        mock_classifier_names = ["a", "b", "c"]
+        with self.assertRaises(ValueError):
+            sit_format.get_transition_rules_format(mock_classifier_names, 1)
+        with self.assertRaises(ValueError):
+            sit_format.get_transition_rules_format(mock_classifier_names, 17)
+
     def test_basic_formats(self):
         """Checks that all returned formats have sequential indexes and the
         basic name/index properties in all dictionaries
