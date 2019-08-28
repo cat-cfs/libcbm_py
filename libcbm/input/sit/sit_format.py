@@ -50,8 +50,8 @@ def get_disturbance_type_format(n_columns):
             type columns
     """
     disturbance_type_format = [
-        {"name": "id", "index": 0},
-        {"name": "name", "index": 1},
+        {"name": "id", "index": 0, "type": np.str},
+        {"name": "name", "index": 1, "type": np.str},
     ]
     if n_columns < 2:
         raise ValueError(
@@ -226,9 +226,9 @@ def get_inventory_format(classifier_names, n_columns):
     if n_columns > n_classifiers + 6:
         inventory.extend([
             {"name": "historical_disturbance_type",
-             "index": n_classifiers + 5},
+             "index": n_classifiers + 5, "type": np.str},
             {"name": "last_pass_disturbance_type",
-             "index": n_classifiers + 6}])
+             "index": n_classifiers + 6, "type": np.str}])
     if n_columns == n_classifiers + 6:
         raise ValueError(
             "Invalid number of columns: both historical and last pass "
