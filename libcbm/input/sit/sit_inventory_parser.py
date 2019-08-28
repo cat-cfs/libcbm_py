@@ -68,7 +68,8 @@ def expand_age_class_inventory(inventory, age_classes):
     expanded_age_classes = pd.DataFrame()
 
     undefined_age_class_name = np.setdiff1d(
-        inventory.age.astype(str).unique(),
+        inventory.loc[
+            inventory.using_age_class == True].age.astype(str).unique(),
         age_classes.name.unique())
     if len(undefined_age_class_name) > 0:
         raise ValueError(
@@ -85,23 +86,24 @@ def expand_age_class_inventory(inventory, age_classes):
                 "age": range(row.start_year, row.start_year + row.size),
                 "size": row.size}))
 
-        non_using_age_class_rows = inventory.loc[
-            inventory.using_age_class == False]
-        using_age_class_rows = inventory.loc[
-            inventory.using_age_class == True]
-        if "spatial_reference" in using_age_class_rows:
-            if (using_age_class_rows.spatial_reference >= 0).any():
-                raise ValueError(
-                    "using_age_class=true and spatial reference may not be "
-                    "used together")
-        using_age_class_rows.age = using_age_class_rows.age.astype(np.str)
-        age_class_merge = using_age_class_rows.merge(
-            expanded_age_classes, left_on="age", right_on="name")
-        age_class_merge.age_x = age_class_merge.age_y.copy()
+    non_using_age_class_rows = inventory.loc[~inventory.using_age_class]
+    using_age_class_rows = inventory.loc[inventory.using_age_class].copy()
 
-        age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
-        age_class_merge = age_class_merge.drop(
-            columns=["age_y","size","name"])
-        inventory = non_using_age_class_rows.append(age_class_merge)
+    if "spatial_reference" in using_age_class_rows:
+        if (using_age_class_rows.spatial_reference >= 0).any():
+            raise ValueError(
+                "using_age_class=true and spatial reference may not be "
+                "used together")
+    using_age_class_rows.age = using_age_class_rows.age.astype(np.str)
 
-        return inventory
+    age_class_merge = using_age_class_rows.merge(
+        expanded_age_classes, left_on="age", right_on="name")
+
+    age_class_merge.age_x = age_class_merge.age_y.copy()
+    age_class_merge.area = (age_class_merge.area / age_class_merge.size)
+    age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
+    age_class_merge = age_class_merge.drop(
+        columns=["age_y", "size", "name"])
+    result = non_using_age_class_rows.append(age_class_merge)
+
+    return result
