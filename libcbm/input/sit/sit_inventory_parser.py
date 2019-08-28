@@ -4,7 +4,8 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def parse_inventory(inventory_table, classifiers, classifier_values):
+def parse_inventory(inventory_table, classifiers, classifier_values,
+                    disturbance_types, age_classes):
     inventory = sit_parser.unpack_table(
         inventory_table,
         sit_format.get_inventory_format(

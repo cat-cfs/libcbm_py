@@ -32,16 +32,3 @@ def unpack_table(table, column_descriptions, table_name):
     return pd.DataFrame(columns=cols, data=data)
 
 
-def parse_age_classes(age_class_table):
-    return unpack_table(
-        age_class_table, sit_format.get_age_class_format(),
-        "age classes")
-
-
-def parse_disturbance_types(disturbance_types_table):
-    return unpack_table(
-        disturbance_types_table,
-        sit_format.get_disturbance_type_format(
-            len(disturbance_types_table.columns)),
-        "disturbance types")
-

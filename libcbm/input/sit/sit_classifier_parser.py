@@ -29,7 +29,7 @@ def parse_classifiers(classifiers_table):
         raise ValueError(
             "The following classifier names appear more than one time:"
             f"{duplicated_classifier_names}")
-    # filter out rows that have the _classifier keyword and also
+    # filter out rows that have the _CLASSIFIER keyword and also
     # any rows that have a value on the 3rd or greater column.
     # This is the set of classifier values.
     classifier_values = unpacked \
