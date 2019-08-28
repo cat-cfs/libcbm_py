@@ -41,4 +41,4 @@ def parse_age_classes(age_class_table):
                 "end_year": start_year + row.size - 1
             })
 
-    return result
+    return pd.DataFrame(result, columns=["name", "size", "start_year", "end_year"])
