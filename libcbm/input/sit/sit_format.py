@@ -217,8 +217,10 @@ def get_inventory_format(classifier_names, n_columns):
         {"name": c, "index": i} for i, c in enumerate(classifier_names)]
 
     inventory = [
-        {"name": "using_age_class", "index": n_classifiers},
-        {"name": "age", "index": n_classifiers + 1, "min_value": 0},
+        {"name": "using_age_class", "index": n_classifiers, "type": np.str},
+        # age can be a string (for "using_age_class" support, so no min value
+        # is specified)
+        {"name": "age", "index": n_classifiers + 1},
         {"name": "area", "index": n_classifiers + 2, "min_value": 0},
         {"name": "delay", "index": n_classifiers + 3, "min_value": 0},
         {"name": "land_class_id", "index": n_classifiers + 4}]
