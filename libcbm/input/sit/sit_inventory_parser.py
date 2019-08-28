@@ -24,4 +24,35 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff}")
 
+    # if the historical/last pass disturbances are specified substitute them
+    # according to the specified disturbance type parameters
+    if "historical_disturbance_type" in {inventory.columns}:
+        # first of all, validate
+        undefined_historic = np.setdiff1d(
+            inventory.historical_disturbance_type.unique(),
+            disturbance_types.id.unique())
+
+        undefined_lastpass = np.setdiff1d(
+            inventory.last_pass_disturbance_type.unique(),
+            disturbance_types.id.unique())
+        if len(undefined_historic) > 0:
+            raise ValueError(
+                "Undefined disturbance type ids (as defined in sit "
+                f"disturbance types) detected: {undefined_historic}"
+            )
+        if len(undefined_lastpass) > 0:
+            raise ValueError(
+                "Undefined disturbance type ids (as defined in sit "
+                f"disturbance types) detected: {undefined_lastpass}"
+            )
+
+        historic_join = inventory.merge(
+            disturbance_types, left_on="historical_disturbance_type",
+            right_on="id")
+        last_pass_join = inventory.merge(
+            disturbance_types, left_on="historical_disturbance_type",
+            right_on="id")
+        inventory.historical_disturbance_type = historic_join.name
+        inventory.last_pass_disturbance_type = last_pass_join.name
+
     return inventory
