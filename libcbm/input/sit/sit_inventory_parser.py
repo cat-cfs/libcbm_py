@@ -26,7 +26,7 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
 
     # if the historical/last pass disturbances are specified substitute them
     # according to the specified disturbance type parameters
-    if "historical_disturbance_type" in {inventory.columns}:
+    if "historical_disturbance_type" in inventory:
         # first of all, validate
         undefined_historic = np.setdiff1d(
             inventory.historical_disturbance_type.unique(),
@@ -55,4 +55,53 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
         inventory.historical_disturbance_type = historic_join.name
         inventory.last_pass_disturbance_type = last_pass_join.name
 
+    inventory.using_age_class = inventory.using_age_class.map(
+        sit_parser.get_parse_bool_func("inventory", "using_age_class"))
+
+    if (inventory.using_age_class == True).any():
+        inventory = expand_age_class_inventory(inventory, age_classes)
+
     return inventory
+
+
+def expand_age_class_inventory(inventory, age_classes):
+    expanded_age_classes = pd.DataFrame()
+
+    undefined_age_class_name = np.setdiff1d(
+        inventory.age.astype(str).unique(),
+        age_classes.name.unique())
+    if len(undefined_age_class_name) > 0:
+        raise ValueError(
+            "Undefined age class ids (as defined in sit "
+            f"age classes) detected: {undefined_age_class_name}"
+        )
+    for i, row in enumerate(age_classes.itertuples()):
+        if i == 0:
+            continue
+
+        expanded_age_classes = expanded_age_classes.append(
+            pd.DataFrame({
+                "name": row.name,
+                "age": range(row.start_year, row.start_year + row.size),
+                "size": row.size}))
+
+        non_using_age_class_rows = inventory.loc[
+            inventory.using_age_class == False]
+        using_age_class_rows = inventory.loc[
+            inventory.using_age_class == True]
+        if "spatial_reference" in using_age_class_rows:
+            if (using_age_class_rows.spatial_reference >= 0).any():
+                raise ValueError(
+                    "using_age_class=true and spatial reference may not be "
+                    "used together")
+        using_age_class_rows.age = using_age_class_rows.age.astype(np.str)
+        age_class_merge = using_age_class_rows.merge(
+            expanded_age_classes, left_on="age", right_on="name")
+        age_class_merge.age_x = age_class_merge.age_y.copy()
+
+        age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
+        age_class_merge = age_class_merge.drop(
+            columns=["age_y","size","name"])
+        inventory = non_using_age_class_rows.append(age_class_merge)
+
+        return inventory
