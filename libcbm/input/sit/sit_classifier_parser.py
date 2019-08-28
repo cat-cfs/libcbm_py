@@ -4,11 +4,33 @@ from libcbm.input.sit import sit_parser
 
 
 def get_classifier_keyword():
+    """gets the _CLASSIFIER keyword using the SIT_Classifiers format.
+
+    Returns:
+        str: _CLASSIFIER
+    """
     return "_CLASSIFIER"
 
 
 def parse_classifiers(classifiers_table):
+    """parse SIT_Classifiers formatted data
 
+    Args:
+        classifiers_table (pandas.DataFrame): a dataFrame in sit classifiers
+            format.
+
+    Raises:
+        ValueError: duplicated names detected, or other validation error
+            occurred
+
+    Returns:
+        tuple:
+
+            - classifiers - a validated table of classifiers
+            - classifier_values - a validated table of classifier values
+            - aggregate_values - a dictionary describing aggregate values
+
+    """
     classifiers_format = sit_format.get_classifier_format(
         len(classifiers_table.columns))
     unpacked = sit_parser.unpack_table(
@@ -41,6 +63,18 @@ def parse_classifiers(classifiers_table):
         "name": classifier_values.name,
         "description": classifier_values.description
     })
+
+    duplicate_classifier_values = classifier_values.groupby(
+        ["classifier_id", "name"]).size()
+    duplicate_classifier_values = [
+        {"classifier_id": x[0], "classifier_value": x[1]}
+        for x in list(
+            duplicate_classifier_values[
+                duplicate_classifier_values > 1].index)]
+    if len(duplicate_classifier_values) > 0:
+        raise ValueError(
+            "The following classifier values are duplicated for the specified "
+            f"classifier ids: {duplicate_classifier_values}")
 
     aggregate_values = []
     classifier_aggregates = unpacked.loc[
