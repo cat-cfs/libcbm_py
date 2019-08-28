@@ -77,13 +77,14 @@ def expand_age_class_inventory(inventory, age_classes):
             f"age classes) detected: {undefined_age_class_name}"
         )
     for i, row in enumerate(age_classes.itertuples()):
-        if i == 0:
-            continue
+
+        age_range = range(row.start_year, row.start_year + row.size) \
+            if row.size > 0 else [0]
 
         expanded_age_classes = expanded_age_classes.append(
             pd.DataFrame({
                 "name": row.name,
-                "age": range(row.start_year, row.start_year + row.size),
+                "age": age_range,
                 "size": row.size}))
 
     non_using_age_class_rows = inventory.loc[~inventory.using_age_class]
@@ -100,8 +101,8 @@ def expand_age_class_inventory(inventory, age_classes):
         expanded_age_classes, left_on="age", right_on="name")
 
     age_class_merge.age_x = (age_class_merge.age_y)
-    print(age_class_merge)
-    age_class_merge.area = (age_class_merge.area / age_class_merge["size"])
+    age_class_merge.loc[age_class_merge["size"] > 0, "area"] \
+        /= age_class_merge["size"][age_class_merge["size"] > 0]
 
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
