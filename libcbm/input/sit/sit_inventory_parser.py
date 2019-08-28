@@ -58,7 +58,7 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
     inventory.using_age_class = inventory.using_age_class.map(
         sit_parser.get_parse_bool_func("inventory", "using_age_class"))
 
-    if (inventory.using_age_class == True).any():
+    if inventory.using_age_class.any():
         inventory = expand_age_class_inventory(inventory, age_classes)
 
     return inventory
@@ -69,7 +69,7 @@ def expand_age_class_inventory(inventory, age_classes):
 
     undefined_age_class_name = np.setdiff1d(
         inventory.loc[
-            inventory.using_age_class == True].age.astype(str).unique(),
+            inventory.using_age_class].age.astype(str).unique(),
         age_classes.name.unique())
     if len(undefined_age_class_name) > 0:
         raise ValueError(
@@ -99,11 +99,14 @@ def expand_age_class_inventory(inventory, age_classes):
     age_class_merge = using_age_class_rows.merge(
         expanded_age_classes, left_on="age", right_on="name")
 
-    age_class_merge.age_x = age_class_merge.age_y.copy()
-    age_class_merge.area = (age_class_merge.area / age_class_merge.size)
+    age_class_merge.age_x = (age_class_merge.age_y)
+    print(age_class_merge)
+    age_class_merge.area = (age_class_merge.area / age_class_merge["size"])
+
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
         columns=["age_y", "size", "name"])
-    result = non_using_age_class_rows.append(age_class_merge)
+    result = non_using_age_class_rows.append(age_class_merge) \
+        .reset_index(drop=True)
 
     return result
