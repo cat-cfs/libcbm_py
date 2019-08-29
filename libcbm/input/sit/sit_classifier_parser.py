@@ -109,4 +109,17 @@ def parse_classifiers(classifiers_table):
         else:
             unique_agg_set.add((classifier_id, name))
 
-    return classifiers, classifier_values, aggregate_values, unique_agg_value_set
+    for classifier_id in classifier_values.classifier_id.unique():
+        classifier_id_values_set = set(
+            classifier_values[
+                classifier_values.classifier_id == classifier_id].name)
+        aggregate_values_set = set(
+            [x[1] for x in unique_agg_value_set if x[0] == classifier_id])
+        if not aggregate_values_set.issubset(classifier_id_values_set):
+            missing_aggregate_values = aggregate_values_set.difference(
+                classifier_id_values_set)
+            raise ValueError(
+                "The following aggregate values that are not defined as "
+                f"classifier values in the classifier with id {classifier_id} "
+                f"were found: {missing_aggregate_values}.")
+    return classifiers, classifier_values, aggregate_values
