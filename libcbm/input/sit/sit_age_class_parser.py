@@ -78,5 +78,12 @@ def parse_age_classes(age_class_table):
                 "end_year": start_year + row.size - 1
             })
 
-    return pd.DataFrame(
+    age_classes = pd.DataFrame(
         result, columns=["name", "size", "start_year", "end_year"])
+
+    duplicates = age_classes.groupby("name").size()
+    duplicates = list(duplicates[duplicates > 1].index)
+    if len(duplicates) > 0:
+        raise ValueError(
+            f"duplicate names detected in age classes {duplicates}")
+    return age_classes
