@@ -89,4 +89,24 @@ def parse_classifiers(classifiers_table):
             "description": classifier_aggregates.iloc[i, :]["description"],
             "classifier_values": list(agg_values[:])
         })
-    return classifiers, classifier_values, aggregate_values
+
+    unique_agg_set = set()
+    unique_agg_value_set = set()
+    for agg in aggregate_values:
+        classifier_id = agg["classifier_id"]
+        name = agg["name"]
+        agg_values = agg["classifier_values"]
+        if len(agg_values) > len(set(agg_values)):
+            raise ValueError(
+                "duplicate classifier values detected in aggregate with "
+                f"classifier_id: {classifier_id}, name {name}")
+        for classifier_value in agg_values:
+            unique_agg_value_set.add((classifier_id, classifier_value))
+        if (classifier_id, name) in unique_agg_set:
+            raise ValueError(
+                "duplicate classifier aggregate detected: "
+                f"classifier_id: {classifier_id}, name {name}")
+        else:
+            unique_agg_set.add((classifier_id, name))
+
+    return classifiers, classifier_values, aggregate_values, unique_agg_value_set
