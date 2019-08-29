@@ -34,3 +34,22 @@ class SITAgeClassParserTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_age_class_parser.parse_age_classes(
                 pd.DataFrame([(0, 0), (1, 1), (1, 1)]))
+
+    def test_generate_sit_age_classes(self):
+        """checks the output of the test_generate_sit_age_classes helper method
+        """
+        for class_size, n_classes in [(1, 5), (2, 10), (10, 20)]:
+            n = len(range(1, n_classes, class_size))
+            result = sit_age_class_parser.generate_sit_age_classes(
+                class_size, n_classes)
+            self.assertEqual(
+                list(result.iloc[:, 0]), list(range(0, n + 1)))
+            self.assertEqual(
+                list(result.iloc[:, 1]), [0]+[class_size] * n)
+
+    def test_generate_sit_age_classes_zero_or_less_errors(self):
+        """checks that errors are raise on invalid input
+        """
+        for a, b in [(0, 5), (-1, 10), (10, -20), (10, 0)]:
+            with self.assertRaises(ValueError):
+                sit_age_class_parser.generate_sit_age_classes(a, b)

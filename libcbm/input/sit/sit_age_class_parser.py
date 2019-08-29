@@ -3,12 +3,13 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def generate_sit_age_classes(age_interval, num_values):
-    """generate a valid SIT_ageclass input table
+def generate_sit_age_classes(age_interval, max_age):
+    """generate a valid SIT_ageclass input table.  This is a helper method
+    to create input for :py:func:`parse_age_classes`
 
     Args:
         age_interval (int): the number of years between age classes
-        num_values (int): the number of age classes (including the 0th)
+        max_age (int): the maximum age
 
     Returns:
         pandas.DataFrame: a table of valid SIT_AgeClasses based on the
@@ -24,9 +25,15 @@ def generate_sit_age_classes(age_interval, num_values):
         4  4  2
         5  5  2
     """
-    length = len(range(1, num_values, age_interval))
-    data   = [(0, 0)]
-    data  += [(i+1, age_interval) for i in range(length)]
+
+    if age_interval <= 0:
+        raise ValueError("age_interval must be > 0")
+    if max_age <= 0:
+        raise ValueError("max_age must be > 0")
+
+    length = len(range(1, max_age, age_interval))
+    data = [(0, 0)]
+    data += [(i + 1, age_interval) for i in range(length)]
     return pd.DataFrame(data)
 
 
@@ -44,6 +51,8 @@ def parse_age_classes(age_class_table):
 
     Raises:
         ValueError: the first, and only the first row must have a 0 value
+        ValueError: duplicate values in the first column of the specified
+            table were detected
 
     Returns:
         pandas.DataFrame: a dataframe describing the age classes.
