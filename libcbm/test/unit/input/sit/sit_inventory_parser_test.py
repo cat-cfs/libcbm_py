@@ -97,8 +97,8 @@ class SITInventoryParserTest(unittest.TestCase):
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse_inventory(
-                    inventory_table, classifiers, classifier_values, disturbance_types, None)
-
+                    inventory_table, classifiers, classifier_values,
+                    disturbance_types, None)
 
     def test_missing_disturbance_type_id_raises_exception(self):
         """checks that an error is raised if a disturbance type id is

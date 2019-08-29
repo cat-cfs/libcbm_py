@@ -6,12 +6,12 @@ from libcbm.input.sit import sit_parser
 
 def parse_inventory(inventory_table, classifiers, classifier_values,
                     disturbance_types, age_classes):
-    inventory = sit_parser.unpack_table(
-        inventory_table,
-        sit_format.get_inventory_format(
+    inventory_format = sit_format.get_inventory_format(
             classifiers.name,
-            len(inventory_table.columns)),
-        "inventory")
+            len(inventory_table.columns))
+
+    inventory = sit_parser.unpack_table(
+        inventory_table, inventory_format, "inventory")
 
     # validate the classifier values in the inventory table
     for row in classifiers.itertuples():
@@ -57,6 +57,17 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
 
     inventory.using_age_class = inventory.using_age_class.map(
         sit_parser.get_parse_bool_func("inventory", "using_age_class"))
+
+    # for rows where using_age_class is false, a type of integer and min value
+    # of 0 is enforced
+    age_column_format = [
+        x for x in inventory_format if x["name"] == "age"][0].copy()
+    age_column_format["type"] = np.int32
+    age_column_format["min_value"] = 0
+
+    sit_parser.unpack_column(
+        inventory.loc[~inventory.using_age_class],
+        age_column_format, "inventory")
 
     if inventory.using_age_class.any():
         inventory = expand_age_class_inventory(inventory, age_classes)
