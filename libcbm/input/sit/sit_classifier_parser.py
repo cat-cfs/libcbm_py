@@ -12,8 +12,8 @@ def get_classifier_keyword():
     return "_CLASSIFIER"
 
 
-def parse_classifiers(classifiers_table):
-    """parse SIT_Classifiers formatted data
+def parse(classifiers_table):
+    """parse SIT_Classifiers formatted data.
 
     Args:
         classifiers_table (pandas.DataFrame): a dataFrame in sit classifiers
@@ -22,6 +22,57 @@ def parse_classifiers(classifiers_table):
     Raises:
         ValueError: duplicated names detected, or other validation error
             occurred
+
+    Example Input:
+
+        ==   ===========  ===========  ===  ===
+        0     1           2            3    4
+        ==   ===========  ===========  ===  ===
+        1    _CLASSIFIER  classifier1  NaN  NaN
+        1    a            a            NaN  NaN
+        1    b            b            NaN  NaN
+        1    agg1         agg1         a    b
+        1    agg2         agg2         a    b
+        2    _CLASSIFIER  classifier2  NaN  NaN
+        2    a            a            NaN  NaN
+        2    agg1         agg1         a    NaN
+        ==   ===========  ===========  ===  ===
+
+    Output based on Example input:
+
+        Classifiers:
+
+            ===  ===========
+            id   name
+            ===  ===========
+            1    classifier1
+            2    classifier2
+            ===  ===========
+
+        Classifier Values:
+
+            ==============  =====  ============
+            classifier_id   name   description
+            ==============  =====  ============
+             1               a      a
+             1               b      b
+             2               a      a
+            ==============  =====  ============
+
+        Classifier Aggregates::
+
+            [{'classifier_id': 1,
+              'name': 'agg1',
+              'description': 'agg2',
+              'classifier_values': ['a', 'b']},
+             {'classifier_id': 1,
+              'name': 'agg2',
+              'description': 'agg2',
+              'classifier_values': ['a', 'b']},
+             {'classifier_id': 2,
+              'name': 'agg1',
+              'description': 'agg1',
+              'classifier_values': ['a']}]
 
     Returns:
         tuple:

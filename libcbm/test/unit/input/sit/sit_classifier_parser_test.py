@@ -22,7 +22,7 @@ class SITClassifierParserTest(unittest.TestCase):
                 (2, "agg1", "agg1", "a", np.nan)])
 
         with self.assertRaises(ValueError):
-            sit_classifier_parser.parse_classifiers(sit_classifiers_table)
+            sit_classifier_parser.parse(sit_classifiers_table)
 
     def test_duplicate_classifier_value_name_value_error(self):
         """checks that an error is raise if any 2 classifier value names are
@@ -39,7 +39,7 @@ class SITClassifierParserTest(unittest.TestCase):
                 (2, "a", "a", np.nan, np.nan),
                 (2, "agg1", "agg1", "a", np.nan)])
         with self.assertRaises(ValueError):
-            sit_classifier_parser.parse_classifiers(sit_classifiers_table)
+            sit_classifier_parser.parse(sit_classifiers_table)
 
     def test_classifier_aggregate_validation_errors(self):
         """checks that the function validates classifier aggregates
@@ -47,7 +47,7 @@ class SITClassifierParserTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             # no two aggregates can have the same name
-            sit_classifier_parser.parse_classifiers(
+            sit_classifier_parser.parse(
                 pd.DataFrame(data=[
                     ("1", "_CLASSIFIER", "classifier1", np.nan, np.nan),
                     (1, "a", "a", np.nan, np.nan),
@@ -61,7 +61,7 @@ class SITClassifierParserTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             # error when a value in the aggregate is not a defined classifier
             # value name for the classifier
-            sit_classifier_parser.parse_classifiers(
+            sit_classifier_parser.parse(
                 pd.DataFrame(data=[
                     ("1", "_CLASSIFIER", "classifier1", np.nan, np.nan),
                     (1, "a", "a", np.nan, np.nan),
@@ -74,7 +74,7 @@ class SITClassifierParserTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             # error when a value in the aggregate is duplicated
-            sit_classifier_parser.parse_classifiers(
+            sit_classifier_parser.parse(
                 pd.DataFrame(data=[
                     ("1", "_CLASSIFIER", "classifier1", np.nan, np.nan),
                     (1, "DUPLICATE", "a", np.nan, np.nan),
@@ -103,7 +103,7 @@ class SITClassifierParserTest(unittest.TestCase):
                 (2, "agg1", "agg1", "a", np.nan)])
 
         with self.assertRaises(ValueError):
-            sit_classifier_parser.parse_classifiers(sit_classifiers_table)
+            sit_classifier_parser.parse(sit_classifiers_table)
 
     def test_expected_result(self):
         """checks if an error is raise with multiple classifiers defined for a
@@ -123,7 +123,7 @@ class SITClassifierParserTest(unittest.TestCase):
                 (2, "agg1", "agg1", "a", np.nan)])
 
         classifiers, classifier_values, classifier_aggregates = \
-            sit_classifier_parser.parse_classifiers(sit_classifiers_table)
+            sit_classifier_parser.parse(sit_classifiers_table)
 
         self.assertTrue(list(classifiers.id) == [1, 2])
         self.assertTrue(list(classifiers.name) == ["classifier1", "classifier2"])

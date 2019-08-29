@@ -10,7 +10,7 @@ class SITAgeClassParserTest(unittest.TestCase):
         error
         """
         with self.assertRaises(ValueError):
-            sit_age_class_parser.parse_age_classes(
+            sit_age_class_parser.parse(
                 pd.DataFrame([(0, 1), (1, 1)]))
 
     def test_zero_size_error(self):
@@ -18,21 +18,21 @@ class SITAgeClassParserTest(unittest.TestCase):
         in error
         """
         with self.assertRaises(ValueError):
-            sit_age_class_parser.parse_age_classes(
+            sit_age_class_parser.parse(
                 pd.DataFrame([(0, 0), (1, 0)]))
 
     def test_non_numeric_size_error(self):
         """Check that a non numeric value for the size column results in error
         """
         with self.assertRaises(ValueError):
-            sit_age_class_parser.parse_age_classes(
+            sit_age_class_parser.parse(
                 pd.DataFrame([(0, 0), (1, "a")]))
 
     def test_duplicate_id_error(self):
         """Check that a duplicate value for the id column results in error
         """
         with self.assertRaises(ValueError):
-            sit_age_class_parser.parse_age_classes(
+            sit_age_class_parser.parse(
                 pd.DataFrame([(0, 0), (1, 1), (1, 1)]))
 
     def test_generate_sit_age_classes(self):

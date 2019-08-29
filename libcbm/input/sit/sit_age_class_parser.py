@@ -37,7 +37,7 @@ def generate_sit_age_classes(age_interval, max_age):
     return pd.DataFrame(data)
 
 
-def parse_age_classes(age_class_table):
+def parse(age_class_table):
     """Parse the sit age class table format into a table of age classes with
     fields:
 
@@ -53,6 +53,43 @@ def parse_age_classes(age_class_table):
         ValueError: the first, and only the first row must have a 0 value
         ValueError: duplicate values in the first column of the specified
             table were detected
+
+    Example:
+
+        Input:
+
+            ======  ====
+             0       1
+            ======  ====
+            age_0    0
+            age_1    10
+            age_2    10
+            age_3    10
+            age_4    10
+            age_5    10
+            age_6    10
+            age_7    10
+            age_8    10
+            age_9    10
+            ======  ====
+
+        Output:
+
+            ======  ===========  ===========  =========
+            name    class_size   start_year   end_year
+            ======  ===========  ===========  =========
+            age_0    0              0           0
+            age_1    10             1           10
+            age_2    10             11          20
+            age_3    10             21          30
+            age_4    10             31          40
+            age_5    10             41          50
+            age_6    10             51          60
+            age_7    10             61          70
+            age_8    10             71          80
+            age_9    10             81          90
+            ======  ===========  ===========  =========
+
 
     Returns:
         pandas.DataFrame: a dataframe describing the age classes.

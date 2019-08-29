@@ -54,7 +54,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
         classifiers, classifier_values = self.get_mock_classifiers()
         age_classes = self.get_mock_age_classes()
-        result = sit_inventory_parser.parse_inventory(
+        result = sit_inventory_parser.parse(
             inventory_table, classifiers, classifier_values, None, age_classes,
             self.get_mock_land_classes())
         self.assertTrue(result.shape[0] == len(inventory_table) + 1)
@@ -72,7 +72,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
         classifiers, classifier_values = self.get_mock_classifiers()
         age_classes = self.get_mock_age_classes()
-        result = sit_inventory_parser.parse_inventory(
+        result = sit_inventory_parser.parse(
             inventory_table, classifiers, classifier_values, None,
             age_classes, self.get_mock_land_classes())
         self.assertTrue(result.shape[0] == len(inventory_table))
@@ -101,7 +101,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
-                sit_inventory_parser.parse_inventory(
+                sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, None, self.get_mock_land_classes())
 
@@ -116,7 +116,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
-                sit_inventory_parser.parse_inventory(
+                sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, None, self.get_mock_land_classes())
 
@@ -131,7 +131,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
-                sit_inventory_parser.parse_inventory(
+                sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, None, self.get_mock_land_classes())
 
@@ -146,7 +146,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
-                sit_inventory_parser.parse_inventory(
+                sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, None, self.get_mock_land_classes())
 
@@ -161,7 +161,7 @@ class SITInventoryParserTest(unittest.TestCase):
 
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
-                sit_inventory_parser.parse_inventory(
+                sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, age_classes,
                     self.get_mock_land_classes())

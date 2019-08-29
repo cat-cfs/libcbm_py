@@ -3,12 +3,35 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def parse_disturbance_types(disturbance_types_table):
-    """Parse an SIT formatted disturbance type table
+def parse(disturbance_types_table):
+    """Parse and validate a SIT formatted disturbance type table
 
     Args:
         disturbance_types_table (pandas.DataFrame): a table in SIT
             disturbance type format
+
+    Example:
+
+        Input:
+
+            ========  =========
+              0         1
+            ========  =========
+            distid1   fire
+            distid2   clearcut
+            distid3   clearcut
+            ========  =========
+
+        Output:
+
+            ========  =========
+             id         name
+            ========  =========
+            distid1   fire
+            distid2   clearcut
+            distid3   clearcut
+            ========  =========
+
 
     Raises:
         ValueError: duplicate ids detected in disturbance data.
