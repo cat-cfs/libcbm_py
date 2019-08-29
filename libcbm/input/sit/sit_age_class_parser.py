@@ -35,7 +35,7 @@ def parse_age_classes(age_class_table):
     fields:
 
         - name
-        - size
+        - class_size
         - start_year
         - end_year
 
@@ -54,14 +54,14 @@ def parse_age_classes(age_class_table):
 
     result = []
     for i, row in enumerate(table.itertuples()):
-        size = row.size
+        size = row.class_size
         if i == 0:
             if size != 0:
                 raise ValueError(
                     "First age class row expected to have 0 size")
             result.append({
                 "name": row.id,
-                "size": 0,
+                "class_size": 0,
                 "start_year": 0,
                 "end_year": 0
             })
@@ -73,13 +73,13 @@ def parse_age_classes(age_class_table):
                     "first one must have size > 0")
             result.append({
                 "name": row.id,
-                "size": row.size,
+                "class_size": row.class_size,
                 "start_year": start_year,
-                "end_year": start_year + row.size - 1
+                "end_year": start_year + row.class_size - 1
             })
 
     age_classes = pd.DataFrame(
-        result, columns=["name", "size", "start_year", "end_year"])
+        result, columns=["name", "class_size", "start_year", "end_year"])
 
     duplicates = age_classes.groupby("name").size()
     duplicates = list(duplicates[duplicates > 1].index)

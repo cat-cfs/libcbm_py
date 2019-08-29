@@ -73,7 +73,7 @@ def get_age_class_format():
     """
     return [
         {"name": "id", "index": 0},
-        {"name": "size", "index": 1, "type": np.int},
+        {"name": "class_size", "index": 1, "type": np.int},
     ]
 
 
