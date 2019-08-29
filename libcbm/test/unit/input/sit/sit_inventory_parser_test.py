@@ -165,3 +165,9 @@ class SITInventoryParserTest(unittest.TestCase):
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, age_classes,
                     self.get_mock_land_classes())
+
+    def test_duplicate_spatial_reference_raises_error(self):
+        """Checks that any duplicate spatial reference values in the inventory
+        table triggers an error
+        """
+        self.fail()
