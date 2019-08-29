@@ -201,7 +201,7 @@ def get_inventory_format(classifier_names, n_columns):
 
     Args:
         classifier_names (int): a list of the names of classifiers
-            n_columns (int): the number of columns in inventory data.  This
+        n_columns (int): the number of columns in inventory data.  This
             is required because the format has a varying number of optional
             columns.
 
@@ -293,7 +293,22 @@ def get_disturbance_eligibility_columns(index):
 
 
 def get_disturbance_event_format(classifier_names, n_columns):
+    """Gets a list of column description dictionaries describing the SIT
+    disturbance event format
 
+    Args:
+        classifier_names (int): a list of the names of classifiers
+        n_columns (int): the number of columns in disturbance data.  This
+            is required because the format has a varying number of optional
+            columns.
+
+    Raises:
+        ValueError: specified number of columns is invalid
+
+    Returns:
+        list: a list of dictionaries describing the SIT disturbance events
+            table columns
+    """
     n_classifiers = len(classifier_names)
 
     classifier_set = [

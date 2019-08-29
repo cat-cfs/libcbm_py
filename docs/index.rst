@@ -12,6 +12,7 @@ Key Features
  - CBM-CFS3 results comparison/test functions. See: :ref:`cbm-testing`
  - General purpose matrix-based pool/flux compute methods. See: :ref:`libcbm-core-functions`
  - Example jupyter notebooks including CBM-CFS3 testing (see /examples)
+ - Full support for the CBM-CFS3 standard import tool format
 
 Requirements
 ------------
@@ -41,6 +42,7 @@ Code Documentation
 
    cbm_model
    cbm_input_and_variables
+   cbm_sit
    cbm_testing
    cbm_core_functions
    libcbm_core_functions

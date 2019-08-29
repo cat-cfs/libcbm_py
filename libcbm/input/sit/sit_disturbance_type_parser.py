@@ -4,6 +4,19 @@ from libcbm.input.sit import sit_parser
 
 
 def parse_disturbance_types(disturbance_types_table):
+    """Parse an SIT formatted disturbance type table
+
+    Args:
+        disturbance_types_table (pandas.DataFrame): a table in SIT
+            disturbance type format
+
+    Raises:
+        ValueError: duplicate ids detected in disturbance data.
+
+    Returns:
+        pandas.DataFrame: a validated copy of the input table with
+            standardized colmun names
+    """
     result = sit_parser.unpack_table(
         disturbance_types_table,
         sit_format.get_disturbance_type_format(
