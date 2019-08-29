@@ -72,7 +72,7 @@ def get_age_class_format():
             columns
     """
     return [
-        {"name": "id", "index": 0},
+        {"name": "id", "index": 0, "type": np.str},
         {"name": "class_size", "index": 1, "type": np.int},
     ]
 
