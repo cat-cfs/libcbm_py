@@ -13,10 +13,20 @@ def generate_sit_age_classes(age_interval, num_values):
     Returns:
         pandas.DataFrame: a table of valid SIT_AgeClasses based on the
             parameters
+
+    Examples:
+        >>> generate_sit_age_classes(2, 10)
+           0  1
+        0  0  0
+        1  1  2
+        2  2  2
+        3  3  2
+        4  4  2
+        5  5  2
     """
-    data = [("0", 0)]
-    for i, _ in enumerate(range(1, num_values, age_interval)):
-        data.append((str(i+1), age_interval))
+    length = len(range(1, num_values, age_interval))
+    data   = [(0, 0)]
+    data  += [(i+1, age_interval) for i in range(length)]
     return pd.DataFrame(data)
 
 
