@@ -158,3 +158,4 @@ def get_map_land_class_func(land_classes, on_error):
         except KeyError:
             on_error(id)
             return None
+    return map_land_class
