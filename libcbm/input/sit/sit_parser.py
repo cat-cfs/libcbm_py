@@ -8,7 +8,12 @@ def unpack_column(table, column_description, table_name):
     data = table.iloc[:, column_description["index"]]
     col_name = column_description["name"]
     if "type" in column_description:
-        data = data.astype(column_description["type"])
+        try:
+            data = data.astype(column_description['type'])
+        except ValueError:
+            raise ValueError(
+                f"{table_name} table, column: '{col_name}' contains values "
+                f"that cannot be converted to: '{column_description['type']}'")
     if "min_value" in column_description:
         min_value = column_description["min_value"]
         if len(data[data < min_value]):

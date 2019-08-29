@@ -16,7 +16,7 @@ def get_classifier_format(n_columns):
         list: a list of dictionaries describing the CBM SIT classifier columns
     """
     classifier_format = [
-        {"name": "id", "index": 0},
+        {"name": "id", "index": 0, "type": np.int},
         {"name": "name", "index": 1},
         {"name": "description", "index": 2},
     ]
