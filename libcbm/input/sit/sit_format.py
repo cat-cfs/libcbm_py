@@ -225,7 +225,7 @@ def get_inventory_format(classifier_names, n_columns):
          "type": np.float},
         {"name": "delay", "index": n_classifiers + 3, "min_value": 0,
          "type": np.int},
-        {"name": "land_class_id", "index": n_classifiers + 4}]
+        {"name": "land_class", "index": n_classifiers + 4}]
 
     if n_columns > n_classifiers + 6:
         inventory.extend([
