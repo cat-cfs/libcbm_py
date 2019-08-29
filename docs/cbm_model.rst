@@ -19,8 +19,13 @@ A CBM instance can be initialized by using a composed factory method.
 
 The CBM class
 -------------
-The LibCBM implementation of the CBM model is designed all model state is
-user defined and passed to the CBM functions.
+
+The CBM class is a set of functions that run the CBM model including spinup,
+variable initialization and model stepping.  It replicates the Carbon dynamics
+and stand state of the CBM-CFS3 model.
+
+All model state and variables are user defined and passed to the CBM class
+functions.
 
 This means that consumers of the CBM class allocate and have full
 control and access to all CBM variables between calls to CBM functions.
