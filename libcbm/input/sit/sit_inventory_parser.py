@@ -5,7 +5,7 @@ from libcbm.input.sit import sit_parser
 
 
 def parse_inventory(inventory_table, classifiers, classifier_values,
-                    disturbance_types, age_classes):
+                    disturbance_types, age_classes, land_classes):
     inventory_format = sit_format.get_inventory_format(
             classifiers.name,
             len(inventory_table.columns))
@@ -23,6 +23,14 @@ def parse_inventory(inventory_table, classifiers, classifier_values,
             raise ValueError(
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff}")
+
+    undefined_land_classes = set()
+    inventory.land_class = inventory.land_class.apply(
+        get_map_land_class_func(land_classes, undefined_land_classes.add))
+    if len(undefined_land_classes) > 0:
+        raise ValueError(
+            "inventory land_class column contains undefined land class ids: "
+            f"{undefined_land_classes}")
 
     # if the historical/last pass disturbances are specified substitute them
     # according to the specified disturbance type parameters
@@ -122,3 +130,31 @@ def expand_age_class_inventory(inventory, age_classes):
         .reset_index(drop=True)
 
     return result
+
+
+def get_map_land_class_func(land_classes, on_error):
+    """Returns a function for mapping land class to land class id.
+
+    Args:
+        land_classes (dict): a dictionary of landclass id (int, key)
+            to land class value (str, value)
+        on_error (func): a function of a single parameter, if the
+            specified id is not found call this function with that id
+
+    Returns:
+        str, or None: the mapped value if it exists or None
+    """
+    def map_land_class(id):
+        """function for mapping land class to land class id.
+
+        Args:
+            id (int): land class id
+
+        Returns:
+            str, or None: the mapped value if it exists or None
+        """
+        try:
+            return land_classes[id]
+        except KeyError:
+            on_error(id)
+            return None
