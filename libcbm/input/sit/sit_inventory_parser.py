@@ -76,7 +76,7 @@ def expand_age_class_inventory(inventory, age_classes):
             "Undefined age class ids (as defined in sit "
             f"age classes) detected: {undefined_age_class_name}"
         )
-    for i, row in enumerate(age_classes.itertuples()):
+    for row in age_classes.itertuples():
 
         age_range = range(row.start_year, row.start_year + row.size) \
             if row.size > 0 else [0]
