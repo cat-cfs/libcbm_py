@@ -104,22 +104,58 @@ class SITInventoryParserTest(unittest.TestCase):
         """checks that an error is raised if a disturbance type id is
         not defined in sit disturbance types metadata
         """
-        self.assertTrue(False)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        disturbance_types = self.get_mock_disturbance_types()
+        for data in [("b", "a", "F", 0, 0, 0, 0, "dist1", "MISSING"),
+                     ("b", "a", "F", 0, 0, 0, 0, "MISSING", "dist2")]:
+
+            inventory_table = pd.DataFrame([data])
+            with self.assertRaises(ValueError):
+                sit_inventory_parser.parse_inventory(
+                    inventory_table, classifiers, classifier_values,
+                    disturbance_types, None)
 
     def test_missing_classifier_values_raise_exception(self):
         """checks that an error is raised when a classifier value is not
         defined in sit classifiers metadata.
         """
-        self.assertTrue(False)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        disturbance_types = self.get_mock_disturbance_types()
+        for data in [("MISSING", "a", "F", 0, 0, 0, 0),
+                     ("b", "MISSING", "F", 0, 0, 0, 0)]:
+
+            inventory_table = pd.DataFrame([data])
+            with self.assertRaises(ValueError):
+                sit_inventory_parser.parse_inventory(
+                    inventory_table, classifiers, classifier_values,
+                    disturbance_types, None)
 
     def test_undefined_land_class_id_raises_exception(self):
         """raised if a value in the "land_class_id" column is not a valid land
         class id
         """
-        self.assertTrue(False)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        disturbance_types = self.get_mock_disturbance_types()
+        for data in [("a", "a", "F", 0, 0, 0, "MISSING"),
+                     ("b", "a", "F", 0, 0, 0, -1)]:
+
+            inventory_table = pd.DataFrame([data])
+            with self.assertRaises(ValueError):
+                sit_inventory_parser.parse_inventory(
+                    inventory_table, classifiers, classifier_values,
+                    disturbance_types, None)
 
     def test_spatial_reference_mixed_with_using_age_class(self):
         """checks that an error is raised when a row has both non-negative
         spatial reference value and a True "using_age_class" value
         """
-        self.assertTrue(False)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        disturbance_types = self.get_mock_disturbance_types()
+        age_classes = self.get_mock_age_classes()
+        for data in [("b", "a", True, 1, 0, 0, 0, "dist1", "dist1", 1)]:
+
+            inventory_table = pd.DataFrame([data])
+            with self.assertRaises(ValueError):
+                sit_inventory_parser.parse_inventory(
+                    inventory_table, classifiers, classifier_values,
+                    disturbance_types, age_classes)
