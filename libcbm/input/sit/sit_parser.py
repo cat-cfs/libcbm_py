@@ -15,12 +15,16 @@ def unpack_column(table, column_description, table_name):
                 f"{table_name} table, column: '{col_name}' contains values "
                 f"that cannot be converted to: '{column_description['type']}'")
     if "min_value" in column_description:
+        if "type" not in column_description:
+            raise ValueError("type required with min_value")
         min_value = column_description["min_value"]
         if len(data[data < min_value]):
             raise ValueError(
                 f"{table_name} table, column: '{col_name}' contains values "
                 f"less than the minimum allowed value: {min_value}")
     if "max_value" in column_description:
+        if "type" not in column_description:
+            raise ValueError("type required with max_value")
         max_value = column_description["max_value"]
         if len(data[data > max_value]):
             raise ValueError(

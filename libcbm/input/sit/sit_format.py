@@ -221,8 +221,10 @@ def get_inventory_format(classifier_names, n_columns):
         # age can be a string (for "using_age_class" support, so no min value
         # is specified)
         {"name": "age", "index": n_classifiers + 1},
-        {"name": "area", "index": n_classifiers + 2, "min_value": 0},
-        {"name": "delay", "index": n_classifiers + 3, "min_value": 0},
+        {"name": "area", "index": n_classifiers + 2, "min_value": 0,
+         "type": np.float},
+        {"name": "delay", "index": n_classifiers + 3, "min_value": 0,
+         "type": np.int},
         {"name": "land_class_id", "index": n_classifiers + 4}]
 
     if n_columns > n_classifiers + 6:
