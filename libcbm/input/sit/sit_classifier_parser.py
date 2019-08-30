@@ -11,6 +11,10 @@ def get_classifier_keyword():
     """
     return "_CLASSIFIER"
 
+def get_wildcard_keyword():
+    """Gets the classifier value wildcard keyword of the SIT format
+    """
+    return "?"
 
 def parse(classifiers_table):
     """parse SIT_Classifiers formatted data.
