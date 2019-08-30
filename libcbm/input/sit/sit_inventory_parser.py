@@ -38,13 +38,13 @@ def parse(inventory_table, classifiers, classifier_values,
 
             SIT_Inventory:
 
-                ===  ===  ======  =======  ===  ===  ===  =======  =======  ===
-                0    1    2       3        4    5    6    7         8        9
-                ===  ===  ======  =======  ===  ===  ===  =======  =======  ===
-                b    a    True    age_2    1    1    1    distid1  distid2  -1
-                a    a    False   100      1    0    0    distid2  distid1   0
-                a    a    -1      4        1    0    0    distid1  distid1  -1
-                ===  ===  ======  =======  ===  ===  ===  =======  =======  ===
+                ===  ===  ======  =======  ===  ===  ===  =====  =====  ===
+                0    1    2       3        4    5    6    7       8      9
+                ===  ===  ======  =======  ===  ===  ===  =====  =====  ===
+                b    a    True    age_2    1    1    1    dist1  dist2  -1
+                a    a    False   100      1    0    0    dist2  dist1   0
+                a    a    -1      4        1    0    0    dist1  dist1  -1
+                ===  ===  ======  =======  ===  ===  ===  =====  =====  ===
 
             classifiers parameter:
 
@@ -60,20 +60,20 @@ def parse(inventory_table, classifiers, classifier_values,
                 ==============  =====  ============
                 classifier_id   name   description
                 ==============  =====  ============
-                1               a      a
-                1               b      b
-                2               a      a
+                 1               a      a
+                 1               b      b
+                 2               a      a
                 ==============  =====  ============
 
-            disturbance_types parameter :
+            disturbance_types parameter:
 
-                ========  =========
+                ======  =========
                 id         name
-                ========  =========
-                distid1   fire
-                distid2   clearcut
-                distid3   clearcut
-                ========  =========
+                ======  =========
+                dist1    fire
+                dist2    clearcut
+                dist3    clearcut
+                ======  =========
 
             age_classes parameter:
 
@@ -94,26 +94,26 @@ def parse(inventory_table, classifiers, classifier_values,
 
             land_classes parameter::
 
-                land_classes = {0: "land_class_1", 1: "land_class_2"}
+                land_classes = {0: "lc_1", 1: "lc_2"}
 
         Output: (abbreviated column names)
 
-            ==  ===    =====  ====  =====  ==============  =========  =========  ====
-            c1  c2     age    area  delay   land_class     hist_dist  last_dist  sref
-            ==  ===    =====  ====  =====  ==============  =========  =========  ====
-            a    a      100   1.0    0      land_class_1    fire       fire        0
-            a    a      4     1.0    0      land_class_1    clearcut   clearcut   -1
-            b    a      11    0.1    1      land_class_2    fire       fire       -1
-            b    a      12    0.1    1      land_class_2    fire       fire       -1
-            b    a      13    0.1    1      land_class_2    fire       fire       -1
-            b    a      14    0.1    1      land_class_2    fire       fire       -1
-            b    a      15    0.1    1      land_class_2    fire       fire       -1
-            b    a      16    0.1    1      land_class_2    fire       fire       -1
-            b    a      17    0.1    1      land_class_2    fire       fire       -1
-            b    a      18    0.1    1      land_class_2    fire       fire       -1
-            b    a      19    0.1    1      land_class_2    fire       fire       -1
-            b    a      20    0.1    1      land_class_2    fire       fire       -1
-            ==  ===    =====  ====  =====  ==============  =========  =========  ====
+            ==  ===    =====  ====  =====  =====  =========  =========  =====
+            c1  c2     age    area  delay   lc    hist_dist  last_dist  s_ref
+            ==  ===    =====  ====  =====  =====  =========  =========  =====
+            a    a      100   1.0    0      lc_1    fire       fire        0
+            a    a      4     1.0    0      lc_1    clearcut   clearcut   -1
+            b    a      11    0.1    1      lc_2    fire       fire       -1
+            b    a      12    0.1    1      lc_2    fire       fire       -1
+            b    a      13    0.1    1      lc_2    fire       fire       -1
+            b    a      14    0.1    1      lc_2    fire       fire       -1
+            b    a      15    0.1    1      lc_2    fire       fire       -1
+            b    a      16    0.1    1      lc_2    fire       fire       -1
+            b    a      17    0.1    1      lc_2    fire       fire       -1
+            b    a      18    0.1    1      lc_2    fire       fire       -1
+            b    a      19    0.1    1      lc_2    fire       fire       -1
+            b    a      20    0.1    1      lc_2    fire       fire       -1
+            ==  ===    =====  ====  =====  =====  =========  =========  =====
 
             The actual output column names for this example would be are:
 

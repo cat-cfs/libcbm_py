@@ -1,4 +1,3 @@
-
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
