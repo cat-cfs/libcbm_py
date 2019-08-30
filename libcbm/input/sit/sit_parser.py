@@ -1,8 +1,4 @@
 import pandas as pd
-import numpy as np
-
-from libcbm.input.sit import sit_format
-
 
 def unpack_column(table, column_description, table_name):
     data = table.iloc[:, column_description["index"]]
@@ -54,9 +50,9 @@ def try_get_int(s):
     """
     try:
         i = int(s)
-        return (i, True)
+        return i, True
     except ValueError:
-        return (None, False)
+        return None, False
 
 
 def get_parse_bool_func(table_name, colname):
