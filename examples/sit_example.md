@@ -33,6 +33,7 @@ from libcbm.input.sit import sit_age_class_parser
 from libcbm.input.sit import sit_inventory_parser
 from libcbm.input.sit import sit_yield_parser
 from libcbm.input.sit import sit_disturbance_event_parser
+from libcbm.input.sit import sit_transition_rule_parser
 ```
 
 ```python
@@ -125,7 +126,7 @@ inventory = sit_inventory_parser.parse(
 ```
 
 ```python
-
+species_map = {"sp1": "sp1"}
 ```
 
 ```python
@@ -135,7 +136,7 @@ yield_table = pd.DataFrame([
 ```
 
 ```python
-sit_yield_parser.parse(yield_table, classifiers, classifier_values)
+sit_yield_parser.parse(yield_table, classifiers, classifier_values, age_classes, species_map)
 ```
 
 ```python
@@ -152,15 +153,37 @@ disturbance_event_table
 ```
 
 ```python
-sit_disturbance_event_parser.parse(disturbance_event_table, classifiers, classifier_values, classifier_aggregates, disturbance_types, age_classes)
+disturbance_events = sit_disturbance_event_parser.parse(
+    disturbance_event_table, classifiers, classifier_values,
+    classifier_aggregates, disturbance_types, age_classes)
+
 ```
 
 ```python
-
+disturbance_events
 ```
 
 ```python
+list(disturbance_events)
+```
 
+```python
+transition = {"classifier_set_src": ["a","?"],
+              "age_eligibility": ["False", -1,-1,-1,-1],
+              "disturbance_type": ["dist1"],
+              "classifier_set_dest": ["b","?"],
+              "post_transition": [0,-1,100]}
+transition_table = pd.DataFrame([
+    transition["classifier_set_src"] + transition["age_eligibility"] + 
+    transition["disturbance_type"] + transition["classifier_set_dest"] +
+    transition["post_transition"]
+])
+transition_table
+```
+
+```python
+sit_transition_rule_parser.parse(transition_table, classifiers, classifier_values,
+    classifier_aggregates, disturbance_types, age_classes)
 ```
 
 ```python
