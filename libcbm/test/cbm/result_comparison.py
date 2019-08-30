@@ -1,41 +1,6 @@
 import pandas as pd
 
 
-def diff_for_identifier(diffs, identifier):
-    """Get differences for all timesteps for a particular identifier.
-
-    Args:
-        diffs (pandas.DataFrame): a dataframe containing comparisons.
-            See: :py:func:`join_result`
-        identifier (int): an integer identifier correspsonding to a
-            specific test case
-
-    Returns:
-        (pandas.DataFrame): differences for all timesteps
-            for a particular identifier.
-    """
-    diffs = diffs.copy()
-    diffs = diffs[diffs["identifier"] == id]
-    diffs = diffs.drop(columns="identifier")
-    return diffs.groupby("timestep").sum()
-
-
-def values_for_identifier(values, identifier):
-    """Get values for an identifier associated with a particular test case.
-
-    Args:
-        values (pandas.DataFrame): [description]
-        identifier ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    values = values.copy()
-    values = values[values["identifier"] == id]
-    values = values.drop(columns="identifier")
-    return values.groupby("timestep").sum()
-
-
 def summarize_diffs_by_identifier(diffs, result_limit=None):
     """Sort and summarize a diff result returned by :py:func:`join_result`
 
