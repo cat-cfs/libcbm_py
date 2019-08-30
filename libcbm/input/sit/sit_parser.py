@@ -53,7 +53,7 @@ def _list_duplicates(seq):
 
 
 def unpack_table(table, column_descriptions, table_name):
-    cols = {[x["name"] for x in column_descriptions]}
+    cols = [x["name"] for x in column_descriptions]
     duplicates = _list_duplicates(cols)
     if duplicates:
         # this could potentially happen if a classifier is named the same
