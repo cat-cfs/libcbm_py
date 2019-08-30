@@ -125,10 +125,10 @@ def get_age_eligibility_columns(base_index):
     """
     return [
         {"name": "using_age_class", "index": base_index},
-        {"name": "min_softwood", "index": base_index + 1},
-        {"name": "max_softwood", "index": base_index + 2},
-        {"name": "min_hardwood", "index": base_index + 3},
-        {"name": "max_hardwood", "index": base_index + 4}
+        {"name": "min_softwood_age", "index": base_index + 1, "type": np.int},
+        {"name": "max_softwood_age", "index": base_index + 2, "type": np.int},
+        {"name": "min_hardwood_age", "index": base_index + 3, "type": np.int},
+        {"name": "max_hardwood_age", "index": base_index + 4, "type": np.int}
     ]
 
 
@@ -161,7 +161,7 @@ def get_transition_rules_format(classifier_names, n_columns):
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
         {"name": "regeneration_delay", "index": regeneration_delay_index,
-         "min_value": 0, "type": np.float},
+         "min_value": 0, "type": np.int},
         {"name": "reset_age", "index": regeneration_delay_index + 1,
          "min_value": -1, "type": np.int},
         {"name": "percent", "index": regeneration_delay_index + 2,
@@ -328,9 +328,11 @@ def get_disturbance_event_format(classifier_names, n_columns):
          "min_value": 0, "max_value": 1},
         {"name": "sort_type", "index": index + 1},
         {"name": "target_type", "index": index + 2},
-        {"name": "target", "index": index + 3, "type": np.float},
+        {"name": "target", "index": index + 3, "type": np.float,
+         "min_value": 0},
         {"name": "disturbance_type", "index": index + 4},
-        {"name": "disturbance_year", "index": index + 5, "type": np.int},
+        {"name": "disturbance_year", "index": index + 5, "type": np.int,
+         "min_value": 1},
     ]
     if n_columns < index + 6:
         raise ValueError(
@@ -338,7 +340,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
             "{}".format(index + 6))
     if n_columns == index + 7:
         event_target.append(
-            {"name": "spatial", "index": index + 6}
+            {"name": "spatial", "index": index + 6, "type": np.int}
         )
     if n_columns > index + 7:
         raise ValueError(
