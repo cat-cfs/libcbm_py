@@ -289,17 +289,17 @@ def get_map_land_class_func(land_classes, on_error):
     Returns:
         str, or None: the mapped value if it exists or None
     """
-    def map_land_class(id):
+    def map_land_class(land_class_id):
         """function for mapping land class to land class id.
 
         Args:
-            id (int): land class id
+            land_class_id (int): land class id
 
         Returns:
             str, or None: the mapped value if it exists or None
         """
         try:
-            return land_classes[id]
+            return land_classes[land_class_id]
         except KeyError:
             on_error(id)
             return None
