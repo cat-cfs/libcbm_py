@@ -1,6 +1,7 @@
 import pandas as pd
 
 
+
 def summarize_diffs_by_identifier(diffs, result_limit=None):
     """Sort and summarize a diff result returned by :py:func:`join_result`
 
@@ -172,7 +173,7 @@ def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
             pandas.DataFrame.plot
     """
     subset = merged[merged["identifier"] == identifier].copy()
-    if(timesteps):
+    if timesteps:
         subset = subset[subset["timestep"].isin(timesteps)]
     if diff:
         subset = diff_result(subset)
@@ -180,6 +181,5 @@ def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
     subset = subset.groupby("timestep").sum()
     subset = subset.T
     ax = subset.plot(**plot_kwargs)
-    ax.set(
-        ylabel=y_label)
+    ax.set(ylabel=y_label)
     return ax

@@ -3,13 +3,13 @@ import sqlite3
 from libcbm.model.cbm import cbm_defaults_queries
 
 
-def load_cbm_parameters(sqlitePath):
+def load_cbm_parameters(sqlite_path):
     """Loads cbm default parameters into configuration dictionary format.
     Used for initializing CBM functionality in LibCBM via the InitializeCBM
     function.
 
     Args:
-        sqlitePath (str): Path to a CBM parameters database as formatted
+        sqlite_path (str): Path to a CBM parameters database as formatted
             like: https://github.com/cat-cfs/cbm_defaults
 
     Raises:
@@ -42,11 +42,11 @@ def load_cbm_parameters(sqlitePath):
             "afforestation_pre_type"
             ]}
 
-    if not os.path.exists(sqlitePath):
+    if not os.path.exists(sqlite_path):
         # sqlite3.connect does not raise an error on no path
         raise ValueError(
-            "specified path does not exist '{0}'".format(sqlitePath))
-    with sqlite3.connect(sqlitePath) as conn:
+            "specified path does not exist '{0}'".format(sqlite_path))
+    with sqlite3.connect(sqlite_path) as conn:
         cursor = conn.cursor()
         for table, query in queries.items():
             cursor.execute(query)
@@ -65,12 +65,12 @@ def load_cbm_parameters(sqlitePath):
     return result
 
 
-def load_cbm_pools(sqlitePath):
+def load_cbm_pools(sqlite_path):
     """Loads cbm pool information from a cbm_defaults database into the
     format expected by the libcbm compiled library.
 
     Args:
-        sqlitePath (str): path to a cbm_defaults database
+        sqlite_path (str): path to a cbm_defaults database
 
     Returns:
         list: list of dictionaries describing CBM pools
@@ -85,7 +85,7 @@ def load_cbm_pools(sqlitePath):
                 ]
     """
     result = []
-    with sqlite3.connect(sqlitePath) as conn:
+    with sqlite3.connect(sqlite_path) as conn:
         cursor = conn.cursor()
         index = 0
         query = cbm_defaults_queries.get_query("pools.sql")
@@ -95,7 +95,7 @@ def load_cbm_pools(sqlitePath):
         return result
 
 
-def load_cbm_flux_indicators(sqlitePath):
+def load_cbm_flux_indicators(sqlite_path):
     """Loads cbm flux indicator information from a cbm_defaults database
     into the format expected by the libcbm compiled library.
 
@@ -103,7 +103,7 @@ def load_cbm_flux_indicators(sqlitePath):
     pools for a given process to return as model output.
 
     Args:
-        sqlitePath (str): path to a cbm_defaults database
+        sqlite_path (str): path to a cbm_defaults database
 
     Returns:
         list: list of dictionaries describing CBM flux indicators.
@@ -125,7 +125,7 @@ def load_cbm_flux_indicators(sqlitePath):
         "flux_indicator_source.sql")
     flux_indicator_sink_sql = cbm_defaults_queries.get_query(
         "flux_indicator_sink.sql")
-    with sqlite3.connect(sqlitePath) as conn:
+    with sqlite3.connect(sqlite_path) as conn:
         cursor = conn.cursor()
         index = 0
         flux_indicator_sql = cbm_defaults_queries.get_query(

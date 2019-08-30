@@ -1,10 +1,8 @@
-# methods for finding name/id associations in a CBM defaults
-# database
+# Methods for finding name/id associations in a CBM defaults
+# database.
 
 import sqlite3
-import pandas as pd
 import libcbm.model.cbm.cbm_defaults_queries as queries
-
 
 class CBMDefaultsReference:
 
