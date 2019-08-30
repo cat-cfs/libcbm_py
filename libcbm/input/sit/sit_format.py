@@ -161,18 +161,20 @@ def get_transition_rules_format(classifier_names, n_columns):
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
         {"name": "regeneration_delay", "index": regeneration_delay_index,
-            "min_value": 0, "type": np.float},
+         "min_value": 0, "type": np.float},
         {"name": "reset_age", "index": regeneration_delay_index + 1,
-            "min_value": -1, "type": np.int},
+         "min_value": -1, "type": np.int},
         {"name": "percent", "index": regeneration_delay_index + 2,
-            "min_value": 0, "max_value": 100, "type": np.int},
+         "min_value": 0, "max_value": 100, "type": np.int},
     ]
     spatial_reference = [
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
-            "type": np.int}
+         "type": np.int}
     ]
     classifier_set_dest = [
-        {"name": c, "index": i + n_classifiers + len(age_eligibility) + 1}
+        {
+            "name": f"{c}_tr",
+            "index": i + n_classifiers + len(age_eligibility) + 1}
         for i, c in enumerate(classifier_names)]
     result = []
     result.extend(classifier_set_src)  # source classifier set
@@ -282,9 +284,9 @@ def get_disturbance_eligibility_columns(index):
         {"name": "MinHWStemSnagC", "index": index + 13, "type": np.float},
         {"name": "MaxHWStemSnagC", "index": index + 14, "type": np.float},
         {"name": "MinTotalStemSnagMerchC", "index": index + 15,
-            "type": np.float},
+         "type": np.float},
         {"name": "MaxTotalStemSnagMerchC", "index": index + 16,
-            "type": np.float},
+         "type": np.float},
         {"name": "MinSWMerchStemSnagC", "index": index + 17, "type": np.float},
         {"name": "MaxSWMerchStemSnagC", "index": index + 18, "type": np.float},
         {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": np.float},
@@ -323,7 +325,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
     index = n_classifiers + n_age_fields + n_eligibility_fields
     event_target = [
         {"name": "efficiency", "index": index, "type": np.float,
-            "min_value": 0, "max_value": 1},
+         "min_value": 0, "max_value": 1},
         {"name": "sort_type", "index": index + 1},
         {"name": "target_type", "index": index + 2},
         {"name": "target", "index": index + 3, "type": np.float},
