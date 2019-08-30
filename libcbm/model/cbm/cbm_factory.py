@@ -21,7 +21,7 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         classifiers_factory (func): function that creates a valid classifier
             configuration for CBM (see:
             :py:func:`libcbm.model.cbm.cbm_config.classifier_config`)
-
+        transitions_factory: ???
 
     In the following example a CBM instance is built with a single growth
     curve, and classifier set.  The :py:mod:`libcbm.model.cbm.cbm_defaults`
@@ -63,7 +63,6 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
             merch_volume_to_biomass_factory=merch_volumes,
             classifiers_factory=classifiers)
 
-
     Returns:
         :py:class:`libcbm.model.cbm.CBM`: an initialized instance of the CBM
             model
@@ -73,8 +72,7 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
     libcbm_handle = LibCBMHandle(dll_path, configuration_string)
     libcbm_wrapper = LibCBMWrapper(libcbm_handle)
 
-    merch_volume_to_biomass_config = \
-        merch_volume_to_biomass_factory()
+    merch_volume_to_biomass_config = merch_volume_to_biomass_factory()
     classifiers_config = classifiers_factory()
     cbm_config = {
         "cbm_defaults": cbm_parameters_factory(),
