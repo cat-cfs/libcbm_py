@@ -7,7 +7,7 @@ def diff_for_identifier(diffs, identifier):
     Args:
         diffs (pandas.DataFrame): a dataframe containing comparisons.
             See: :py:func:`join_result`
-        identifier (int): an integer identifier correspsonding to a
+        identifier (int): an integer identifier corresponding to a
             specific test case
 
     Returns:
@@ -15,7 +15,7 @@ def diff_for_identifier(diffs, identifier):
             for a particular identifier.
     """
     diffs = diffs.copy()
-    diffs = diffs[diffs["identifier"] == id]
+    diffs = diffs[diffs["identifier"] == identifier]
     diffs = diffs.drop(columns="identifier")
     return diffs.groupby("timestep").sum()
 
@@ -31,7 +31,7 @@ def values_for_identifier(values, identifier):
         [type]: [description]
     """
     values = values.copy()
-    values = values[values["identifier"] == id]
+    values = values[values["identifier"] == identifier]
     values = values.drop(columns="identifier")
     return values.groupby("timestep").sum()
 
@@ -207,7 +207,7 @@ def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
             pandas.DataFrame.plot
     """
     subset = merged[merged["identifier"] == identifier].copy()
-    if(timesteps):
+    if timesteps:
         subset = subset[subset["timestep"].isin(timesteps)]
     if diff:
         subset = diff_result(subset)
@@ -215,6 +215,5 @@ def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
     subset = subset.groupby("timestep").sum()
     subset = subset.T
     ax = subset.plot(**plot_kwargs)
-    ax.set(
-        ylabel=y_label)
+    ax.set(ylabel=y_label)
     return ax
