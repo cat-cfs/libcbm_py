@@ -21,6 +21,12 @@ class SITYieldParserTest(unittest.TestCase):
         """
         self.fail()
 
+    def test_undefined_classifier_value_error(self):
+        """checks that the format has values that are either wildcards or
+        classifier sets drawn from the set of defined classifiers values
+        """
+        self.fail()
+
     def test_non_numeric_or_negative_volume_error(self):
         """checks that an error is raised if any volume is non-numeric or
         is a negative number.
