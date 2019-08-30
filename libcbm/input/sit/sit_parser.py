@@ -33,8 +33,32 @@ def unpack_column(table, column_description, table_name):
     return data
 
 
+def _list_duplicates(seq):
+    """
+    get the list of duplicate values in the specified sequence
+    https://stackoverflow.com/questions/9835762/how-do-i-find-the-duplicates-in-a-list-and-create-another-list-with-them
+
+    Args:
+        seq (iterable): a sequence of comparable values
+
+    Returns:
+        list: the list of values that appear at least 2 times in the input
+    """
+    seen = set()
+    seen_add = seen.add
+    # adds all elements it doesn't know yet to seen and all other to seen_twice
+    seen_twice = set(x for x in seq if x in seen or seen_add(x))
+    # turn the set into a list (as requested)
+    return list(seen_twice)
+
+
 def unpack_table(table, column_descriptions, table_name):
-    cols = [x["name"] for x in column_descriptions]
+    cols = {[x["name"] for x in column_descriptions]}
+    duplicates = _list_duplicates(cols)
+    if duplicates:
+        # this could potentially happen if a classifier is named the same
+        # thing as another column
+        raise ValueError(f"duplicate column names detected: {duplicates}")
     data = {
         x["name"]: unpack_column(table, x, table_name)
         for x in column_descriptions}
