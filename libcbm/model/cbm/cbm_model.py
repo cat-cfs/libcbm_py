@@ -20,7 +20,7 @@ class CBM:
         self.compute_functions = compute_functions
         self.model_functions = model_functions
 
-        self.opNames = [
+        self.op_names = [
             "growth",
             "snag_turnover",
             "biomass_turnover",
@@ -30,7 +30,7 @@ class CBM:
             "disturbance"
             ]
 
-        self.opProcesses = {
+        self.op_processes = {
             "growth": 1,
             "snag_turnover": 1,
             "biomass_turnover": 1,
@@ -75,7 +75,7 @@ class CBM:
 
         ops = {
             x: self.compute_functions.AllocateOp(n_stands)
-            for x in self.opNames}
+            for x in self.op_names}
 
         self.model_functions.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"], inventory)
@@ -134,7 +134,7 @@ class CBM:
 
             iteration = iteration + 1
 
-        for x in self.opNames:
+        for x in self.op_names:
             self.compute_functions.FreeOp(ops[x])
         return debug_output
 
@@ -227,9 +227,9 @@ class CBM:
 
         ops = {
             x: self.compute_functions.AllocateOp(n_stands)
-            for x in self.opNames}
+            for x in self.op_names}
 
-        annual_process_opSchedule = [
+        annual_process_op_schedule = [
             "growth",
             "snag_turnover",
             "biomass_turnover",
@@ -246,7 +246,7 @@ class CBM:
             ops["disturbance"], inventory, parameters)
 
         self.compute_functions.ComputeFlux(
-            [ops["disturbance"]], [self.opProcesses["disturbance"]],
+            [ops["disturbance"]], [self.op_processes["disturbance"]],
             pools, flux, enabled=None)
 
         # enabled = none on line above is due to a possible bug in CBM3. This
@@ -266,11 +266,11 @@ class CBM:
             inventory, parameters)
 
         self.compute_functions.ComputeFlux(
-            [ops[x] for x in annual_process_opSchedule],
-            [self.opProcesses[x] for x in annual_process_opSchedule],
+            [ops[x] for x in annual_process_op_schedule],
+            [self.op_processes[x] for x in annual_process_op_schedule],
             pools, flux, state_variables.enabled)
 
         self.model_functions.EndStep(state_variables)
 
-        for x in self.opNames:
+        for x in self.op_names:
             self.compute_functions.FreeOp(ops[x])
