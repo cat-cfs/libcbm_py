@@ -86,7 +86,8 @@ def get_parse_bool_func(table_name, colname):
         if isinstance(x, bool):
             return x
         elif isinstance(x, int):
-            return x != 0
+            # the sit format treats negatives as False for boolean fields
+            return x > 0
         else:
             str_x = str(x).lower()
             int_x, success = _try_get_int(str_x)
