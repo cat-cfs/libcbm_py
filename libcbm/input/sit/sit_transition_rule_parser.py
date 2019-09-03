@@ -10,17 +10,17 @@ def parse(transition_rules, classifiers, classifier_values,
     transition_rule_format = sit_format.get_transition_rules_format(
         classifiers.name, len(transition_rules.columns))
 
-    unpacked_transitions = sit_parser.unpack_table(
+    transitions = sit_parser.unpack_table(
         transition_rules, transition_rule_format, "yield")
 
     # check that each value in transition_rules events classifier sets is
     # defined in classifier values, classifier aggregates or is a wildcard
     for row in classifiers.itertuples():
-        source_classifiers = unpacked_transitions[row.name].unique()
+        source_classifiers = transitions[row.name].unique()
 
         # get the destination classifier
         tr_dest_fmt = sit_format.get_transition_rule_classifier_set_postfix()
-        dest_classifiers = unpacked_transitions[f"{row.name}{tr_dest_fmt}"]
+        dest_classifiers = transitions[f"{row.name}{tr_dest_fmt}"]
 
         defined_classifiers = classifier_values[
             classifier_values["classifier_id"] == row.id]["name"].unique()
@@ -50,22 +50,28 @@ def parse(transition_rules, classifiers, classifier_values,
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff_dest}")
 
-    # if age classes are used substitute the age critera based on the age
-    # class id, and raise an error if the id is not defined, and drop
-    # using_age_class from output
-    unpacked_transitions.using_age_class = \
-        unpacked_transitions.using_age_class.map(
-            sit_parser.get_parse_bool_func("transitions", "using_age_class"))
-    using_age_class_rows = unpacked_transitions.loc[
-        unpacked_transitions.using_age_class].copy()
+    parse_bool_func = sit_parser.get_parse_bool_func(
+        "transitions", "using_age_class")
+    transitions = substitute_using_age_class_rows(
+        transitions, parse_bool_func, age_classes)
 
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
+    differing_age_criteria = transitions.loc[
+        (transitions.min_softwood_age != transitions.min_hardwood_age) |
+        (transitions.max_softwood_age != transitions.max_hardwood_age)]
+    if len(differing_age_criteria) > 0:
+        raise ValueError(
+            "Values of column min_softwood_age must equal values of column "
+            "min_hardwood_age, and values of column max_softwood_age must "
+            "equal values of column max_hardwood_age since CBM defines only "
+            "a stand age and does not track hardwood and softwood age "
+            "seperately.")
 
-    # validate and subsitute disturbance type names from the SIT disturbance
+    # validate and subsitute disturbance type names versus the SIT disturbance
     # types
     undefined_disturbances = np.setdiff1d(
-        unpacked_transitions.disturbance_type.unique(),
+        transitions.disturbance_type.unique(),
         disturbance_types.id.unique()
     )
     if len(undefined_disturbances) > 0:
@@ -73,11 +79,66 @@ def parse(transition_rules, classifiers, classifier_values,
             "Undefined disturbance type ids (as defined in sit "
             f"disturbance types) detected: {undefined_disturbances}"
         )
-    disturbance_join = unpacked_transitions.merge(
+    disturbance_join = transitions.merge(
         disturbance_types, left_on="disturbance_type",
         right_on="id")
-    unpacked_transitions.disturbance_type = disturbance_join.name
+    transitions.disturbance_type = disturbance_join.name
 
     # translate criteria into a more useful format
 
-    return unpacked_transitions
+    return transitions
+
+
+def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
+    # if age classes are used substitute the age critera based on the age
+    # class id, and raise an error if the id is not defined, and drop
+    # using_age_class from output
+    rows.using_age_class = \
+        rows.using_age_class.map(parse_bool_func)
+    non_using_age_class_rows = rows.loc[
+        ~rows.using_age_class]
+    using_age_class_rows = rows.loc[
+        rows.using_age_class].copy()
+
+    for age_class_criteria_col in [
+          "min_softwood_age", "min_hardwood_age",
+          "max_softwood_age", "max_hardwood_age"]:
+        valid_age_classes = np.concatenate(
+            [age_classes.name.unique(), np.array(["-1"])])
+        undefined_age_classes = np.setdiff1d(
+            using_age_class_rows[age_class_criteria_col].astype(np.str).unique(),
+            valid_age_classes)
+        if len(undefined_age_classes) > 0:
+            raise ValueError(
+                f"In column {age_class_criteria_col}, the following age class "
+                f"identifiers: {undefined_age_classes} are not defined in SIT "
+                "age classes.")
+
+    age_class_start_year_map = {
+        x.name: x.start_year for x in age_classes.itertuples()}
+    age_class_end_year_map = {
+        x.name: x.end_year for x in age_classes.itertuples()}
+    using_age_class_rows.min_softwood_age = using_age_class_rows \
+        .min_softwood_age.astype(np.str).map(age_class_start_year_map)
+    using_age_class_rows.min_hardwood_age = using_age_class_rows \
+        .min_hardwood_age.astype(np.str).map(age_class_start_year_map)
+    using_age_class_rows.max_softwood_age = using_age_class_rows \
+        .max_softwood_age.astype(np.str).map(age_class_end_year_map)
+    using_age_class_rows.max_hardwood_age = using_age_class_rows \
+        .max_hardwood_age.astype(np.str).map(age_class_end_year_map)
+
+    # if the above mapping fails, it results in Nan values in the failed rows,
+    # this replaces those with -1
+    using_age_class_rows.min_softwood_age = \
+        using_age_class_rows.min_softwood_age.fillna(-1)
+    using_age_class_rows.min_hardwood_age = \
+        using_age_class_rows.min_hardwood_age.fillna(-1)
+    using_age_class_rows.max_softwood_age = \
+        using_age_class_rows.max_softwood_age.fillna(-1)
+    using_age_class_rows.max_hardwood_age = \
+        using_age_class_rows.max_hardwood_age.fillna(-1)
+
+    # return the final substituted rows
+    result = non_using_age_class_rows.append(using_age_class_rows) \
+        .reset_index(drop=True)
+    return result
