@@ -282,9 +282,9 @@ def get_disturbance_eligibility_columns(index):
             eligibility columns
     """
     return [
-        {"name": "MinYearsSinceDist", "index": index + 0, "type": np.float},
-        {"name": "MaxYearsSinceDist", "index": index + 1, "type": np.float},
-        {"name": "LastDistTypeID", "index": index + 2, "type": np.float},
+        {"name": "MinYearsSinceDist", "index": index + 0, "type": np.int},
+        {"name": "MaxYearsSinceDist", "index": index + 1, "type": np.int},
+        {"name": "LastDistTypeID", "index": index + 2, "type": np.int},
         {"name": "MinTotBiomassC", "index": index + 3, "type": np.float},
         {"name": "MaxTotBiomassC", "index": index + 4, "type": np.float},
         {"name": "MinSWMerchBiomassC", "index": index + 5, "type": np.float},
@@ -354,7 +354,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
             "{}".format(index + 6))
     if n_columns == index + 7:
         event_target.append(
-            {"name": "spatial", "index": index + 6, "type": np.int}
+            {"name": "spatial_reference", "index": index + 6, "type": np.int}
         )
     if n_columns > index + 7:
         raise ValueError(
