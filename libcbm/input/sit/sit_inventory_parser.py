@@ -115,7 +115,7 @@ def parse(inventory_table, classifiers, classifier_values,
             b    a      20    0.1    1      lc_2    fire       fire       -1
             ==  ===    =====  ====  =====  =====  =========  =========  =====
 
-            The actual output column names for this example would be are:
+            The actual output column names for this example are:
 
                 - classifier1
                 - classifier2
