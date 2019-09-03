@@ -23,8 +23,6 @@ def parse(disturbance_events, classifiers, classifier_values,
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
 
-    # translate criteria into a more useful format
-
     # validate sort type
 
     # validate target type

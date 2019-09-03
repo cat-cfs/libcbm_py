@@ -11,10 +11,12 @@ def get_classifier_keyword():
     """
     return "_CLASSIFIER"
 
+
 def get_wildcard_keyword():
     """Gets the classifier value wildcard keyword of the SIT format
     """
     return "?"
+
 
 def parse(classifiers_table):
     """parse SIT_Classifiers formatted data.
@@ -177,4 +179,5 @@ def parse(classifiers_table):
                 "The following aggregate values that are not defined as "
                 f"classifier values in the classifier with id {classifier_id} "
                 f"were found: {missing_aggregate_values}.")
+
     return classifiers, classifier_values, aggregate_values
