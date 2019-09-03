@@ -208,7 +208,8 @@ def parse(inventory_table, classifiers, classifier_values,
     inventory = inventory.reset_index(drop=True)
 
     if "spatial_reference" in inventory:
-        if inventory.spatial_reference.duplicated().any():
+        if inventory.spatial_reference[
+                inventory.spatial_reference > 0].duplicated().any():
             raise ValueError(
                 "duplicate value detected in spatial_reference column")
     return inventory
