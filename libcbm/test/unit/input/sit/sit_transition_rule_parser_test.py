@@ -131,7 +131,7 @@ class SITTransitionRuleParserTest(unittest.TestCase):
             "post_transition": [0, -1, 100]}
 
         cases = [
-            transition.copy(),transition.copy(),transition.copy(),
+            transition.copy(), transition.copy(), transition.copy(),
             transition.copy()]
 
         cases[0]["age_eligibility"] = [
@@ -212,7 +212,7 @@ class SITTransitionRuleParserTest(unittest.TestCase):
 
         cases = [transition.copy(), transition.copy()]
 
-        #percent > 100
+        # percent > 100
         cases[0]["post_transition"] = [0, -1, 1000]
         # percent < 0
         cases[1]["post_transition"] = [0, -1, -1]
@@ -263,4 +263,3 @@ class SITTransitionRuleParserTest(unittest.TestCase):
                 transition_table, classifiers, classifier_values,
                 aggregates, self.get_mock_disturbance_types(),
                 self.get_mock_age_classes())
-
