@@ -1,6 +1,15 @@
 import numpy as np
 
 
+def get_transition_rule_classifier_set_postfix():
+    """since transition rules contain 2 classifier sets (2 sets of columns)
+    duplicate names are a problem if the classifier names are used for both.
+    This function returns a postfix to append onto the second set of
+    classifiers to solve that issue.
+    """
+    return "_tr"
+
+
 def get_classifier_format(n_columns):
     """Gets a list of dictionaries describing the CBM SIT classifier columns
 
@@ -105,7 +114,11 @@ def get_yield_format(classifier_names, n_columns):
         raise ValueError(
             "at least {0} columns are required".format(vol_index + 1))
     volumes = [
-        {"name": "v{}".format(i), "index": i, "min_value": 0, "type": np.float}
+        {
+            "name": "v{}".format(i-vol_index),
+            "index": i,
+            "min_value": 0,
+            "type": np.float}
         for i in range(vol_index, n_columns)]
 
     return classifier_values + leading_species_col + volumes
@@ -125,10 +138,10 @@ def get_age_eligibility_columns(base_index):
     """
     return [
         {"name": "using_age_class", "index": base_index},
-        {"name": "min_softwood_age", "index": base_index + 1, "type": np.int},
-        {"name": "max_softwood_age", "index": base_index + 2, "type": np.int},
-        {"name": "min_hardwood_age", "index": base_index + 3, "type": np.int},
-        {"name": "max_hardwood_age", "index": base_index + 4, "type": np.int}
+        {"name": "min_softwood_age", "index": base_index + 1},
+        {"name": "max_softwood_age", "index": base_index + 2},
+        {"name": "min_hardwood_age", "index": base_index + 3},
+        {"name": "max_hardwood_age", "index": base_index + 4}
     ]
 
 
@@ -171,9 +184,10 @@ def get_transition_rules_format(classifier_names, n_columns):
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
          "type": np.int}
     ]
+    tr_cset_postfix = get_transition_rule_classifier_set_postfix()
     classifier_set_dest = [
         {
-            "name": f"{c}_tr",
+            "name": f"{c}{tr_cset_postfix}",
             "index": i + n_classifiers + len(age_eligibility) + 1}
         for i, c in enumerate(classifier_names)]
     result = []
