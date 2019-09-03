@@ -55,19 +55,6 @@ def parse(transition_rules, classifiers, classifier_values,
     transitions = sit_parser.substitute_using_age_class_rows(
         transitions, parse_bool_func, age_classes)
 
-    # check that all age criteria are identical between SW and HW (since CBM
-    # has only a stand age)
-    differing_age_criteria = transitions.loc[
-        (transitions.min_softwood_age != transitions.min_hardwood_age) |
-        (transitions.max_softwood_age != transitions.max_hardwood_age)]
-    if len(differing_age_criteria) > 0:
-        raise ValueError(
-            "Values of column min_softwood_age must equal values of column "
-            "min_hardwood_age, and values of column max_softwood_age must "
-            "equal values of column max_hardwood_age since CBM defines only "
-            "a stand age and does not track hardwood and softwood age "
-            "seperately.")
-
     # validate and subsitute disturbance type names versus the SIT disturbance
     # types
     undefined_disturbances = np.setdiff1d(
@@ -93,4 +80,3 @@ def parse(transition_rules, classifiers, classifier_values,
         columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"])
 
     return transitions
-

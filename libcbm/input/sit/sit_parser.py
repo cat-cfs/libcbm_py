@@ -104,11 +104,38 @@ def get_parse_bool_func(table_name, colname):
     return parse_bool
 
 
-
 def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
-    # if age classes are used substitute the age critera based on the age
-    # class id, and raise an error if the id is not defined, and drop
-    # using_age_class from output
+    """Substitute age class criteria values that appear in SIT transition
+    rules or disturbance events data into age values.
+
+    Checks that min softwood age equals min hardwood age and max softwood
+    age equals max hardwood age since CBM does not carry separate HW/SW ages.
+
+    Args:
+        rows (pandas.DataFrame): sit data containing columns that describe age
+            eligibility:
+
+            - using_age_class
+            - min_softwood_age
+            - min_hardwood_age
+            - max_softwood_age
+            - max_hardwood_age
+
+        parse_bool_func (func): a function that maps boolean-like values to
+            boolean.  Passed to the pandas.Series.map function for the
+            using_age_class column.
+        age_classes (pandas.DataFrame): [description]
+
+    Raises:
+        ValueError: values found in the age eligibility columns are not
+            defined identifiers in the specified age classes table.
+        ValueError: hardwood and softwood age criteria were not identical.
+
+    Returns:
+        pandas.DataFrame: the input table with age values criteria substituted
+            for age class criteria.
+    """
+
     rows.using_age_class = \
         rows.using_age_class.map(parse_bool_func)
     non_using_age_class_rows = rows.loc[
@@ -157,4 +184,18 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
     # return the final substituted rows
     result = non_using_age_class_rows.append(using_age_class_rows) \
         .reset_index(drop=True)
+
+    # check that all age criteria are identical between SW and HW (since CBM
+    # has only a stand age)
+    differing_age_criteria = result.loc[
+        (result.min_softwood_age != result.min_hardwood_age) |
+        (result.max_softwood_age != result.max_hardwood_age)]
+    if len(differing_age_criteria) > 0:
+        raise ValueError(
+            "Values of column min_softwood_age must equal values of column "
+            "min_hardwood_age, and values of column max_softwood_age must "
+            "equal values of column max_hardwood_age since CBM defines only "
+            "a stand age and does not track hardwood and softwood age "
+            "seperately.")
+
     return result
