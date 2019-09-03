@@ -84,7 +84,13 @@ def parse(transition_rules, classifiers, classifier_values,
         right_on="id")
     transitions.disturbance_type = disturbance_join.name
 
-    # translate criteria into a more useful format
+    transitions = transitions.rename(
+        columns={
+            "min_softwood_age": "min_age",
+            "max_softwood_age": "max_age"})
+
+    transitions = transitions.drop(
+        columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"])
 
     return transitions
 
