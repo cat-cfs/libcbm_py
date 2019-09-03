@@ -170,4 +170,17 @@ class SITInventoryParserTest(unittest.TestCase):
         """Checks that any duplicate spatial reference values in the inventory
         table triggers an error
         """
-        self.fail()
+        classifiers, classifier_values = self.get_mock_classifiers()
+        disturbance_types = self.get_mock_disturbance_types()
+        age_classes = self.get_mock_age_classes()
+
+        inventory_table = pd.DataFrame([
+            ("a", "a", False, 100, 1, 0, 0, "dist2", "dist1", 10000),
+            ("a", "a", "-1", 4, 1, 0, 0, "dist1", "dist1", 10000)])
+            # note the same identifier 10000 appears 2 times
+
+        with self.assertRaises(ValueError):
+            sit_inventory_parser.parse(
+                inventory_table, classifiers, classifier_values,
+                disturbance_types, age_classes,
+                self.get_mock_land_classes())

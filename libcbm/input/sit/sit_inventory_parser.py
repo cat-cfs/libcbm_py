@@ -206,6 +206,11 @@ def parse(inventory_table, classifiers, classifier_values,
 
     inventory = inventory.drop(columns=["using_age_class"])
     inventory = inventory.reset_index(drop=True)
+
+    if "spatial_reference" in inventory:
+        if inventory.spatial_reference.duplicated().any():
+            raise ValueError(
+                "duplicate value detected in spatial_reference column")
     return inventory
 
 
