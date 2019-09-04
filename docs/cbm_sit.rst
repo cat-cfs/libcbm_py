@@ -53,3 +53,12 @@ Transition Rules
 
 .. automodule:: libcbm.input.sit.sit_transition_rules_parser
     :members:
+
+General SIT methods
+-------------------
+
+.. automodule:: libcbm.input.sit.sit_parser
+    :members:
+
+.. automodule:: libcbm.input.sit.sit_format
+    :members:
