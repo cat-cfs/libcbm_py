@@ -155,8 +155,8 @@ def classifier_config(classifiers):
         values = c["classifier_values"]
         classifier["id"] = i + 1
         result["classifiers"].append(classifier)
-        for j, cv in enumerate(values):
-            cv["id"] = j + 1
+        for cv in values:
+            cv["id"] = len(result["classifier_values"]) + 1
             cv["classifier_id"] = classifier["id"]
             result["classifier_values"].append(cv)
     return result
