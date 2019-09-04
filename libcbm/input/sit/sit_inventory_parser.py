@@ -98,9 +98,9 @@ def parse(inventory_table, classifiers, classifier_values,
 
         Output: (abbreviated column names)
 
-            ==  ===    =====  ====  =====  =====  =========  =========  =====
-            c1  c2     age    area  delay   lc    hist_dist  last_dist  s_ref
-            ==  ===    =====  ====  =====  =====  =========  =========  =====
+            ==  ===    =====  ====  =====  =====  ==========  =========  =====
+            c1  c2     age    area  delay   lc    hist_dist   last_dist  s_ref
+            ==  ===    =====  ====  =====  =====  ==========  =========  =====
             a    a      100   1.0    0      lc_1    fire       fire        0
             a    a      4     1.0    0      lc_1    clearcut   clearcut   -1
             b    a      11    0.1    1      lc_2    fire       fire       -1
@@ -113,7 +113,7 @@ def parse(inventory_table, classifiers, classifier_values,
             b    a      18    0.1    1      lc_2    fire       fire       -1
             b    a      19    0.1    1      lc_2    fire       fire       -1
             b    a      20    0.1    1      lc_2    fire       fire       -1
-            ==  ===    =====  ====  =====  =====  =========  =========  =====
+            ==  ===    =====  ====  =====  =====  ==========  =========  =====
 
             The actual output column names for this example are:
 

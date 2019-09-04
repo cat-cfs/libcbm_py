@@ -51,7 +51,7 @@ Disturbance Events
 Transition Rules
 ------------------
 
-.. automodule:: libcbm.input.sit.sit_transition_rules_parser
+.. automodule:: libcbm.input.sit.sit_transition_rule_parser
     :members:
 
 General SIT methods
