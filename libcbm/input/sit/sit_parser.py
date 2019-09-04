@@ -3,6 +3,38 @@ import numpy as np
 
 
 def unpack_column(table, column_description, table_name):
+    """Validates a column in a pandas DataFrame
+
+    Args:
+        table ([type]): A table containing the column at the index specified
+            by column_description
+        column_description (dict): A dictionary with the following supported
+            keys:
+
+             - name: the name of the column, which is assigned to the column
+                     label to the result table returned by this function
+             - index: the zero based index of the column in the table's
+                      ordered columns
+             - type: (optional) the column will be converted (if necessary to
+                     this type) If the conversion is not possible for a value
+                     at any row, an error is raised.
+             - min_value: (optional) inclusive minimum value constraint.
+             - max_value: (optional) inclusive maximum value constraint.
+
+        table_name (str): the name of the table being processed, purely
+            for error feedback when an error occurs.
+
+    Raises:
+        ValueError: the values in the column were not convertable to the
+            specified column description type
+        ValueError: a min_value or max_value was specified without specifying
+            type in column description
+        ValueError: the min_value or max_value constraint was violated by the
+            value in the column.
+
+    Returns:
+        pandas.DataFrame: the resulting table
+    """
     data = table.iloc[:, column_description["index"]]
     col_name = column_description["name"]
     if "type" in column_description:
@@ -51,6 +83,23 @@ def _list_duplicates(seq):
 
 
 def unpack_table(table, column_descriptions, table_name):
+    """Validates and assigns column names to a column-ordered table using
+    the specified list of column descriptions. Any existing column labels
+    on the specified table are ignored.
+
+    Args:
+        table (pandas.DataFrame): a column ordered table to validate
+        column_descriptions (list): a list of dictionaries with describing the
+            columns. See :py:func:`unpack_column` for how this is used
+        table_name (str): the name of the table being processed, purely
+            for error feedback when an error occurs.
+
+    Raises:
+        ValueError: [description]
+
+    Returns:
+        [type]: [description]
+    """
     cols = [x["name"] for x in column_descriptions]
     duplicates = _list_duplicates(cols)
     if duplicates:
@@ -82,7 +131,30 @@ def _try_get_int(s):
 
 
 def get_parse_bool_func(table_name, colname):
+    """gets a boolean-like value to boolean parse function according to the
+    SIT specification.  The parameters are used to create a friendly error
+    message when a parse failure occurs.
+
+    Args:
+        table_name (str): Table name to be used in failure error message
+        colname (str): Column name to be used in failure error message
+
+    Returns:
+        func: a boolean-like value to bool parse function
+    """
     def parse_bool(x):
+        """Converts the specified value to a boolean according to SIT
+        specification, or raises an error.
+
+        Args:
+            x (varies): a value to convert to boolean
+
+        Raises:
+            ValueError: The specified value was not convertable to boolean
+
+        Returns:
+            boolean: The converted value
+        """
         if isinstance(x, bool):
             return x
         elif isinstance(x, int):
@@ -149,8 +221,10 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
           "max_softwood_age", "max_hardwood_age"]:
         valid_age_classes = np.concatenate(
             [age_classes.name.unique(), np.array(["-1"])])
+        age_class_ids = using_age_class_rows[
+            age_class_criteria_col].astype(np.str).unique()
         undefined_age_classes = np.setdiff1d(
-            using_age_class_rows[age_class_criteria_col].astype(np.str).unique(),
+            age_class_ids,
             valid_age_classes)
         if len(undefined_age_classes) > 0:
             raise ValueError(
