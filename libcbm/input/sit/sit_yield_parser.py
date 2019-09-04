@@ -25,7 +25,11 @@ def parse(yield_table, classifiers, classifier_values, age_classes,
     undefined_species = set(
         unpacked_table.leading_species.unique()).difference(species_map.keys())
     if undefined_species:
-        raise ValueError()
+        raise ValueError(
+            "the following values in the leading_species column were not "
+            f"present in the specified map: {undefined_species}")
+    unpacked_table.leading_species = unpacked_table.leading_species.map(
+        species_map)
 
     # check that the correct number of classifiers are present and check that
     # each value in yield table classifier sets is defined in classifier values
@@ -35,7 +39,7 @@ def parse(yield_table, classifiers, classifier_values, age_classes,
             classifier_values["classifier_id"] == row.id]["name"].unique()
         wildcard = np.array([sit_classifier_parser.get_wildcard_keyword()])
         valid_classifiers = np.concatenate(
-                [defined_classifier_values, wildcard])
+            [defined_classifier_values, wildcard])
 
         diff = np.setdiff1d(yield_classifiers, valid_classifiers)
         if len(diff) > 0:
