@@ -6,7 +6,40 @@ from libcbm.input.sit import sit_classifier_parser
 
 def parse(transition_rules, classifiers, classifier_values,
           classifier_aggregates, disturbance_types, age_classes):
+    """Parses and validates the CBM SIT transition rule format.
 
+    Args:
+        transition_rules (pandas.DataFrame): CBM SIT transition rule formatted
+            data.
+        classifiers (pandas.DataFrame): used to validate the classifier
+            set columns of the transition rule data. Use the return value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_values (pandas.DataFrame): used to validate the classifier
+            set columns of the transition rule data. Use the return value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_aggregates (pandas.DataFrame): used to validate the
+            classifier set columns of the transition rule data. Use the return
+            value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        disturbance_types (pandas.DataFrame): Used to validate the
+            disturbance_type column of the transition rule data. Use the return
+            value of:
+            :py:func:`libcbm.input.sit.sit_disturbance_types_parser.parse`
+        age_classes (pandas.DataFrame): used to validate the number of volume
+            columns.  Use the return value of:
+            :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+
+    Raises:
+        ValueError: undefined classifier values were found in the transition
+            rule classifier sets
+        ValueError: a grouped set of transition rules has a percent greater
+            than 100%.
+        ValueError: undefined disturbance types were found in the transition
+            rule disturbance_type column
+
+    Returns:
+        pandas.DataFrame: validated transition rules
+    """
     transition_rule_format = sit_format.get_transition_rules_format(
         classifiers.name, len(transition_rules.columns))
 
