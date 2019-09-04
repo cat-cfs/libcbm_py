@@ -5,6 +5,8 @@ from libcbm.input.sit import sit_format
 
 
 def get_sort_types():
+    """Gets the CBM standard import tool sorting id/name pairs as a dictionary
+    """
     return {
         1: "PROPORTION_OF_EVERY_RECORD",
         2: "MERCHCSORT_TOTAL",
@@ -20,6 +22,8 @@ def get_sort_types():
 
 
 def get_target_types():
+    """Gets the CBM standard import tool target type id/name pairs as a dictionary
+    """
     return {
         "A": "Area",
         "P": "Proportion",
@@ -28,7 +32,42 @@ def get_target_types():
 
 def parse(disturbance_events, classifiers, classifier_values,
           classifier_aggregates, disturbance_types, age_classes):
+    """Parses and validates the CBM SIT disturbance event format.
 
+    Args:
+        disturbance_events (pandas.DataFrame): CBM SIT disturbance events
+            formatted data.
+        classifiers (pandas.DataFrame): used to validate the classifier
+            set columns of the disturbance event data. Use the return value
+            of: :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_values (pandas.DataFrame): used to validate the classifier
+            set columns of the disturbance event data. Use the return value
+            of: :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_aggregates (pandas.DataFrame): used to validate the
+            classifier set columns of the disturbance event data. Use the
+            return value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        disturbance_types (pandas.DataFrame): Used to validate the
+            disturbance_type column of the disturbance event data. Use the
+            return value of:
+            :py:func:`libcbm.input.sit.sit_disturbance_types_parser.parse`
+        age_classes (pandas.DataFrame): used to validate and compute age
+            eligibility criteria in disturbance_events. Use the return value
+            of: :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+
+    Raises:
+        ValueError: undefined classifier values were found in the disturbance
+            event classifier sets
+        ValueError: undefined disturbance types were found in the disturbance
+            event disturbance_type column
+        ValueError: undefined sort types were found in the disturbance
+            event sort_type column. See :py:func:`get_sort_types`
+        ValueError: undefined target types were found in the disturbance
+            event target_type column. See :py:func:`get_target_types`
+
+    Returns:
+        pandas.DataFrame: the validated disturbance events
+    """
     disturbance_event_format = sit_format.get_disturbance_event_format(
           classifiers.name, len(disturbance_events.columns))
 
