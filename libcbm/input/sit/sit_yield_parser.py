@@ -6,7 +6,35 @@ from libcbm.input.sit import sit_classifier_parser
 
 def parse(yield_table, classifiers, classifier_values, age_classes,
           species_map):
+    """Parses and validates the CBM SIT growth and yield format.
 
+    Args:
+        yield_table (pandas.DataFrame): SIT formatted growth and yield data
+        classifiers (pandas.DataFrame): used to validate the classifier
+            set columns of the yield data. Use the return value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_values (pandas.DataFrame): used to validate the classifier
+            set columns of the yield data. Use the return value of:
+            :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        age_classes (pandas.DataFrame): used to validate the number of volume
+            columns.  Use the return value of:
+            :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        species_map (dict): A dictionary of species against which to validate
+            the "leading_species" column.  The value for each key will be
+            substituted into the output.
+
+    Raises:
+        ValueError: the specified data did not have the correct number of
+            columns according to the defined classifiers and age classes
+        ValueError: the leading_species column contained a value that was
+            not defined in the specified species map.
+        ValueError: Classifier sets were not valid according to the specified
+            classifiers and classifier_values.
+
+    Returns:
+        pandas.DataFrame: Validated sit input with standardized column names
+            and substituted species
+    """
     yield_format = sit_format.get_yield_format(
         classifiers.name, len(yield_table.columns))
 
