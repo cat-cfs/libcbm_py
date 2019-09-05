@@ -88,17 +88,20 @@ def get_merch_volumes(yield_table, classifiers, age_classes,
             ))
     return output
 
-def initialize_inventory(inventory, classifiers,
-                         classifier_values, cbm_defaults_ref):
+
+def initialize_inventory(inventory, classifiers, classifier_values,
+                         cbm_defaults_ref):
+
     classifier_config = get_classifiers(classifiers, classifier_values)
-    classifier_ids = [(x["id"],x["name"]) for x in classifier_config["classifiers"]]
+    classifier_ids = [
+        (x["id"], x["name"]) for x in classifier_config["classifiers"]]
     classifier_value_id_lookups = {}
 
     for identifier, name in classifier_ids:
         classifier_value_id_lookups[name] = {
             x["value"]: x["id"]
             for x in classifier_config["classifier_values"]
-            if x["classifier_id"]==identifier}
+            if x["classifier_id"] == identifier}
     classifiers_result = pd.DataFrame(
         data={
             name: inventory[name].map(classifier_value_id_lookups[name])
@@ -115,7 +118,7 @@ def initialize_inventory(inventory, classifiers,
             "delay": inventory.delay,
             "land_class": inventory.land_class.map(
                 cbm_defaults_ref.get_land_class_id),
-            "historical_disturbance_type": 1, # TODO: use "classifier mapping" to determine historic and last pass
+            "historical_disturbance_type": 1,  # TODO: use "classifier mapping" to determine historic and last pass
             "last_pass_disturbance_type": 1,
         })
     return classifiers_result, inventory_result
