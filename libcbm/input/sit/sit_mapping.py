@@ -12,6 +12,27 @@ class SITMapping():
         # 1. check for duplicate values in left values of user/default maps
         # 2. check for undefined values in right values of user/default maps
 
+
+    def get_species_map(self, classifiers, classifier_values):
+        merged_classifiers = classifiers.merge(
+            classifier_values, left_on="id", right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"])
+        species_map = {
+            x["user_species"]: x["default_species"]
+            for x in self.config["species"]["species_mapping"]}
+        species_classifier = self.config["species"]["species_classifier"]
+        species_values = merged_classifiers.loc[
+            merged_classifiers["name_classifier"] == species_classifier]
+        default_species_map = {
+            row["classifier_value"]: row["default_species"]
+            for _, row in pd.DataFrame({
+                "classifier_value": species_values["name_classifier_value"],
+                "default_species": species_values["description"].map(
+                    species_map)}).iterrows()
+        }
+        return default_species_map
+
+
     def _get_spatial_unit_joined_admin_eco(self, inventory, classifiers,
                                            classifier_values):
         merged_classifiers = classifiers.merge(
@@ -38,7 +59,7 @@ class SITMapping():
         for admin, eco in inventory[spu_classifier].map(default_spu_map):
             try:
                 output.append(
-                    self.cbm_defaults_ref.get_spatial_unit_id(admin,eco))
+                    self.cbm_defaults_ref.get_spatial_unit_id(admin, eco))
             except KeyError:
                 raise KeyError(
                     "The specified administrative/ecological boundary "
@@ -65,8 +86,7 @@ class SITMapping():
             for _, row in pd.DataFrame({
                 "classifier_value": admin_values["name_classifier_value"],
                 "default_admin_boundary": admin_values["description"].map(
-                    admin_map)}
-            ).iterrows()
+                    admin_map)}).iterrows()
         }
         eco_classifier = self.config["spatial_units"]["eco_classifier"]
         eco_values = merged_classifiers.loc[
