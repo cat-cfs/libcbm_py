@@ -29,7 +29,6 @@ def get_classifiers(classifiers, classifier_values):
         ))
 
     config = cbm_config.classifier_config(classifiers_config)
-    print(config)
     return config
 
 
@@ -88,9 +87,12 @@ def get_merch_volumes(yield_table, classifiers, age_classes,
             ))
     return output
 
+def initialize_inventory(inventory, classifiers,
+                         classifier_values, cbm_defaults_ref):
+    pass
 
 def initialize_cbm(db_path, dll_path, yield_table, classifiers,
-                   classifier_values, age_classes):
+                   classifier_values, age_classes, cbm_defaults_ref):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -109,8 +111,6 @@ def initialize_cbm(db_path, dll_path, yield_table, classifiers,
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
     """
-    cbm_defaults_ref = CBMDefaultsReference(db_path)
-
     cbm = cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(

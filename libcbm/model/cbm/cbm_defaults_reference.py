@@ -4,6 +4,7 @@
 import sqlite3
 import libcbm.model.cbm.cbm_defaults_queries as queries
 
+
 class CBMDefaultsReference:
 
     def __init__(self, sqlite_path, locale_code="en-CA"):
