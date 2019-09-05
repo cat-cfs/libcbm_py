@@ -270,7 +270,7 @@ def initialize_inventory(classifiers, inventory):
              "classifier sets: {c_sets}").format(
                 inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
-    i.classifiers = classifiers
+    i.classifiers = np.ascontiguousarray(classifiers).astype(np.int32)
     i.age = inventory.age.to_numpy(dtype=np.int32)
     i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
     i.afforestation_pre_type_id = \

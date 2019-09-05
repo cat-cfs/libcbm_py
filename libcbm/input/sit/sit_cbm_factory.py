@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
@@ -89,7 +90,36 @@ def get_merch_volumes(yield_table, classifiers, age_classes,
 
 def initialize_inventory(inventory, classifiers,
                          classifier_values, cbm_defaults_ref):
-    pass
+    classifier_config = get_classifiers(classifiers, classifier_values)
+    classifier_ids = [(x["id"],x["name"]) for x in classifier_config["classifiers"]]
+    classifier_value_id_lookups = {}
+
+    for identifier, name in classifier_ids:
+        classifier_value_id_lookups[name] = {
+            x["value"]: x["id"]
+            for x in classifier_config["classifier_values"]
+            if x["classifier_id"]==identifier}
+    classifiers_result = pd.DataFrame(
+        data={
+            name: inventory[name].map(classifier_value_id_lookups[name])
+            for name in list(classifiers.name)},
+        columns=list(classifiers.name))
+    classifiers_result = np.ascontiguousarray(
+        classifiers_result, dtype=np.int32)
+    inventory_result = pd.DataFrame(
+        data={
+            "age": inventory.age,
+            "spatial_unit": 42,  # TODO: use "classifier mapping" to determine spu
+            "afforestation_pre_type_id": 0,  # TODO: use "classifier mapping" to determine spu
+            "area": inventory.area,
+            "delay": inventory.delay,
+            "land_class": inventory.land_class.map(
+                cbm_defaults_ref.get_land_class_id),
+            "historical_disturbance_type": 1, # TODO: use "classifier mapping" to determine historic and last pass
+            "last_pass_disturbance_type": 1,
+        })
+    return classifiers_result, inventory_result
+
 
 def initialize_cbm(db_path, dll_path, yield_table, classifiers,
                    classifier_values, age_classes, cbm_defaults_ref):
