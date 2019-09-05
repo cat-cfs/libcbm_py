@@ -36,3 +36,45 @@ class SITMappingTest(unittest.TestCase):
         spu classifier mode
         """
         self.fail()
+
+    def undefined_classifier_error(self):
+        """checks that an error is raised when any mapping references a
+        non-existant classifier name
+        """
+        self.fail()
+
+    def test_undefined_user_admin_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of admin mapping
+        """
+        self.fail()
+
+    def test_undefined_user_eco_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of eco mapping
+        """
+        self.fail()
+
+    def test_undefined_user_spatial_unit_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of species mapping
+        """
+        self.fail()
+
+    def test_undefined_user_species_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of species mapping
+        """
+        self.fail()
+
+    def test_undefined_user_nonforest_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of nonforest mapping
+        """
+        self.fail()
+
+    def test_undefined_user_disturbance_type_error(self):
+        """checks that an error is raised when a disturbance type is
+        not present in the user value of disturbance type mapping
+        """
+        self.fail()
