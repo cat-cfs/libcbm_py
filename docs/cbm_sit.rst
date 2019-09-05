@@ -62,3 +62,6 @@ General SIT methods
 
 .. automodule:: libcbm.input.sit.sit_format
     :members:
+
+.. automodule:: libcbm.input.sit.sit_cbm_factory
+    :members:
