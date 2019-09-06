@@ -264,6 +264,44 @@ class SITMappingTest(unittest.TestCase):
             sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
 
+    def test_undefined_classifier_joined_admin_eco_error(self):
+        """checks that an error is raised when any mapping references a
+        non-existant classifier name
+        """
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "JoinedAdminEcoClassifier",
+                "spu_classifier": "NOT_DEFINED",
+                "spu_mapping": [
+                    {
+                        "user_spatial_unit": "a",
+                        "default_spatial_unit": {
+                            "admin_boundary": "British Columbia",
+                            "eco_boundary": "Montane Cordillera"
+                        }
+                    },
+                    {
+                        "user_spatial_unit": "b",
+                        "default_spatial_unit": {
+                            "admin_boundary": "Alberta",
+                            "eco_boundary": "Montane Cordillera"
+                        }
+                    }
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        with self.assertRaises(KeyError):
+            sit_mapping = SITMapping(mapping, ref)
+            result = sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
+
 
     def test_undefined_user_admin_error(self):
         """checks that an error is raised when a classifier description is
