@@ -182,3 +182,35 @@ class SITMapping():
     def get_nonforest_cover_ids(self, inventory, classifiers,
                                 classifier_values):
         pass
+
+
+    def get_disturbance_type_id(self, disturbance_type):
+        disturbance_type_map = {}
+        for item in self.config["disturbance_types"]:
+            user_dist_type = item["user_dist_type"]
+            default_dist_type = item["default_dist_type"]
+            if user_dist_type in disturbance_type_map:
+                raise ValueError(
+                    f"specified user_dist_type {user_dist_type} appears more "
+                    "than one time")
+            else:
+                dist_type_id = None
+                try:
+                    dist_type_id = \
+                        self.cbm_defaults_ref.get_disturbance_type_id(
+                            default_dist_type)
+                except KeyError:
+                    raise KeyError(
+                        "specified mapped default disturbance type not found:"
+                        f" {default_dist_type}")
+                disturbance_type_map[user_dist_type] = dist_type_id
+
+            def map_func(dist_type):
+                if dist_type in disturbance_type_map:
+                    return disturbance_type_map[dist_type]
+                else:
+                    raise KeyError(
+                        f"Specified disturbance type value {dist_type} not "
+                        "mapped.")
+
+            return disturbance_type.map(map_func)
