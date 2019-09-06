@@ -61,6 +61,8 @@ class CBMDefaultsReference:
         self.spatial_unit_by_admin_eco_names = {
             (x["admin_boundary_name"], x["eco_boundary_name"]): x
             for x in self.spatial_unit_ref}
+        self.spatial_unit_by_id = {
+            x["spatial_unit_id"]: x for x in self.spatial_unit_ref}
 
         self.afforestation_pre_type_ref = self.load_data(
             sqlite_path, self.afforestation_pre_type_query, locale_param)
@@ -170,6 +172,19 @@ class CBMDefaultsReference:
         """
         return self.spatial_unit_by_admin_eco_names[
             (admin_boundary_name, eco_boundary_name)]["spatial_unit_id"]
+
+    def get_spatial_unit(self, spatial_unit_id):
+        """Get a tuple of admin boundary name, eco boundary name for the
+        specified spatial unit id
+
+        Args:
+            spatial_unit_id (int): the spatial unit id
+
+        Returns:
+            tuple: a pair of strings admin_boundary_name, eco_boundary_name
+        """
+        result = self.spatial_unit_by_id[spatial_unit_id]
+        return result["admin_boundary_name"], result["eco_boundary_name"]
 
     def get_spatial_units(self):
         """Get name and id information for the spatial units defined in the
