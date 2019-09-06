@@ -32,7 +32,6 @@ class SITMapping():
         }
         return default_species_map
 
-
     def _get_spatial_unit_joined_admin_eco(self, inventory, classifiers,
                                            classifier_values):
         merged_classifiers = classifiers.merge(
@@ -132,3 +131,7 @@ class SITMapping():
         else:
             raise ValueError(
                 f"specified mapping_mode is not valid {mapping_mode}")
+
+    def get_nonforest_cover_ids(self, inventory, classifiers,
+                                classifier_values):
+        pass
