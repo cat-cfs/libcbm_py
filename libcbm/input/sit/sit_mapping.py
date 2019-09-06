@@ -54,10 +54,10 @@ class SITMapping():
         }
         return default_species_map
 
-    def _get_mapping_error_handling_function(self, map, error_fmt):
+    def _get_mapping_error_handling_function(self, sit_map, error_fmt):
         def get_mapped_value(value):
             try:
-                return map[value]
+                return sit_map[value]
             except KeyError:
                 raise KeyError(error_fmt.format(value))
         return get_mapped_value
@@ -136,7 +136,7 @@ class SITMapping():
                         eco_map,
                         error_fmt="specified classifier value description "
                                   "'{}' not found in ecological boundary map")
-            )}).iterrows()
+                )}).iterrows()
         }
 
         def spu_map_func(row):
@@ -183,14 +183,13 @@ class SITMapping():
                                 classifier_values):
         pass
 
-
     def get_disturbance_type_id(self, disturbance_type):
         disturbance_type_map = {}
         for item in self.config["disturbance_types"]:
             user_dist_type = item["user_dist_type"]
             default_dist_type = item["default_dist_type"]
             if user_dist_type in disturbance_type_map:
-                raise ValueError(
+                raise KeyError(
                     f"specified user_dist_type {user_dist_type} appears more "
                     "than one time")
             else:

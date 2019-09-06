@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from mock import Mock, call
+from mock import Mock
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 
@@ -53,11 +53,11 @@ class SITMappingTest(unittest.TestCase):
         ref.get_species_id.side_effect = mock_get_species_id
         with self.assertRaises(KeyError):
             sit_mapping = SITMapping(config, ref)
-            default_species_map = sit_mapping.get_species_map(
+            sit_mapping.get_species_map(
                 classifiers, classifier_values)
         self.assertTrue(ref.get_species_id.called)
 
-    def test_undefined_nonforest_type_error(self):
+    def test_undefined_default_nonforest_type_error(self):
         """Checks that an error is raised when the default mapping of
         non-forest type does not match a defined value in the defaults
         reference.
@@ -266,7 +266,6 @@ class SITMappingTest(unittest.TestCase):
                 inventory, classifiers, classifier_values)
         self.assertTrue(ref.get_spatial_unit_id.called)
 
-
     def test_undefined_classifier_separate_admin_eco_error(self):
         """checks that an error is raised when any mapping references a
         non-existant classifier name
@@ -440,7 +439,6 @@ class SITMappingTest(unittest.TestCase):
             sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
 
-
     def test_undefined_user_species_error(self):
         """checks that an error is raised when a classifier description is
         not present in the user value of species mapping
@@ -493,6 +491,33 @@ class SITMappingTest(unittest.TestCase):
     def test_undefined_user_disturbance_type_error(self):
         """checks that an error is raised when a disturbance type is
         not present in the user value of disturbance type mapping
+        """
+        config = {
+            "disturbance_types": [
+                {"user_dist_type": "fire", "default_dist_type": "Wildfire"}
+            ]
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        #todo: add mock default disturbance type method here
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_disturbance_type_id(
+                pd.Series(["not_fire"]))
+
+    def test_undefined_default_disturbance_type_error(self):
+        """checks that an error is raised when a default disturbance
+        type is not present in the disturbance type reference
+        """
+        self.fail()
+
+    def test_duplicated_user_disturbance_type_error(self):
+        """checks that an error is raised when a disturbance type is
+        duplicated in the sit json config
+        """
+        self.fail()
+
+    def test_get_disturbance_type_id_returns_expected_value(self):
+        """Checks the expected output of SITMapping.get_disturbance_type_id
         """
         self.fail()
 
