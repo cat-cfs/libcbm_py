@@ -302,12 +302,36 @@ class SITMappingTest(unittest.TestCase):
             result = sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
 
-
     def test_undefined_user_admin_error(self):
         """checks that an error is raised when a classifier description is
         not present in the user value of admin mapping
         """
-        self.fail()
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SeparateAdminEcoClassifiers",
+                "admin_classifier": "classifier1",
+                "eco_classifier": "classifier2",
+                "admin_mapping": [
+                    {"user_admin_boundary": "b",
+                     "default_admin_boundary": "Alberta"}
+                ],
+                "eco_mapping": [
+                    {"user_eco_boundary": "a",
+                     "default_eco_boundary": "Montane Cordillera"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        sit_mapping = SITMapping(mapping, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
 
     def test_undefined_user_eco_error(self):
         """checks that an error is raised when a classifier description is
@@ -363,7 +387,6 @@ class SITMappingTest(unittest.TestCase):
             sit_mapping = SITMapping(config, ref)
             sit_mapping.get_species_map(
                 classifiers, classifier_values)
-
 
     def test_undefined_user_nonforest_error(self):
         """checks that an error is raised when a classifier description is

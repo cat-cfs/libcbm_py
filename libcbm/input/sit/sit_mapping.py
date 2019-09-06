@@ -54,6 +54,14 @@ class SITMapping():
         }
         return default_species_map
 
+    def _get_mapping_error_handling_function(self, map, error_fmt):
+        def get_mapped_value(value):
+            try:
+                return map[value]
+            except KeyError:
+                raise KeyError(error_fmt.format(value))
+        return get_mapped_value
+
     def _get_spatial_unit_joined_admin_eco(self, inventory, classifiers,
                                            classifier_values):
         merged_classifiers = classifiers.merge(
@@ -72,7 +80,10 @@ class SITMapping():
             for _, row in pd.DataFrame({
                 "classifier_value": spu_values["name_classifier_value"],
                 "default_spatial_unit": spu_values["description"].map(
-                    spu_map)}
+                    self._get_mapping_error_handling_function(
+                        spu_map,
+                        error_fmt="specified classifier value description "
+                                  "'{}' not found in spatial unit map"))}
             ).iterrows()
         }
         output = []
@@ -101,12 +112,17 @@ class SITMapping():
         admin_classifier = self.config["spatial_units"]["admin_classifier"]
         admin_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == admin_classifier]
+
         default_admin_map = {
             row["classifier_value"]: row["default_admin_boundary"]
             for _, row in pd.DataFrame({
                 "classifier_value": admin_values["name_classifier_value"],
                 "default_admin_boundary": admin_values["description"].map(
-                    admin_map)}).iterrows()
+                    self._get_mapping_error_handling_function(
+                        admin_map,
+                        error_fmt="specified classifier value description "
+                                  "'{}' not found in admin boundary map"))
+                }).iterrows()
         }
         eco_classifier = self.config["spatial_units"]["eco_classifier"]
         eco_values = merged_classifiers.loc[
@@ -115,8 +131,12 @@ class SITMapping():
             row["classifier_value"]: row["default_eco_boundary"]
             for _, row in pd.DataFrame({
                 "classifier_value": eco_values["name_classifier_value"],
-                "default_eco_boundary": eco_values["description"].map(eco_map)}
-            ).iterrows()
+                "default_eco_boundary": eco_values["description"].map(
+                    self._get_mapping_error_handling_function(
+                        eco_map,
+                        error_fmt="specified classifier value description "
+                                  "'{}' not found in ecological boundary map")
+            )}).iterrows()
         }
 
         def spu_map_func(row):
