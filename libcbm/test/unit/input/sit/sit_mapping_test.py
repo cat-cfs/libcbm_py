@@ -29,7 +29,33 @@ class SITMappingTest(unittest.TestCase):
         """Checks that an error is raised when the default mapping of species
         does not match a defined value in the defaults reference.
         """
-        self.fail()
+        config = {
+            "species": {
+                "species_classifier": "classifier1",
+                "species_mapping": [
+                    {"user_species": "UNDEFINED", "default_species": "Spruce"},
+                    {"user_species": "b", "default_species": "Oak"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        def mock_get_species_id(species_name):
+            # simulates a key error raised when the specified value is not
+            # present.
+            raise KeyError()
+
+        ref.get_species_id.side_effect = mock_get_species_id
+        with self.assertRaises(KeyError):
+            sit_mapping = SITMapping(config, ref)
+            default_species_map = sit_mapping.get_species_map(
+                classifiers, classifier_values)
+        self.assertTrue(ref.get_species_id.called)
 
     def test_undefined_nonforest_type_error(self):
         """Checks that an error is raised when the default mapping of

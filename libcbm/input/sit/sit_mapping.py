@@ -17,9 +17,22 @@ class SITMapping():
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",
             suffixes=["_classifier", "_classifier_value"])
-        species_map = {
-            x["user_species"]: x["default_species"]
-            for x in self.config["species"]["species_mapping"]}
+        species_map = {}
+        for species_mapping in self.config["species"]["species_mapping"]:
+            user_species = species_mapping["user_species"]
+            default_species = species_mapping["default_species"]
+            if user_species in species_map:
+                raise ValueError(
+                    f"Specified user species {user_species} mapped multiple "
+                    "times.")
+            try:
+                self.cbm_defaults_ref.get_species_id(default_species)
+            except KeyError:
+                raise KeyError(
+                    f"mapped default species {default_species} not present in "
+                    "default values")
+            species_map[user_species] = default_species
+
         species_classifier = self.config["species"]["species_classifier"]
         species_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == species_classifier]
