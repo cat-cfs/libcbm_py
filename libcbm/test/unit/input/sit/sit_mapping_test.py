@@ -68,7 +68,28 @@ class SITMappingTest(unittest.TestCase):
         """Checks that an error is raised when the default mapping of spatial
         unit does not match a defined value in the defaults reference.
         """
-        self.fail()
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SingleDefaultSpatialUnit",
+                "default_spuid": 10
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_spatial_unit(spatial_unit_id):
+            raise KeyError
+
+        ref.get_spatial_unit.side_effect = mock_get_spatial_unit
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+        sit_mapping = SITMapping(mapping, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
+        self.assertTrue(ref.get_spatial_unit.called)
 
     def test_undefined_admin_eco_default_spatial_unit_error(self):
         """Checks that an error is raised when the default mapping of spatial
@@ -208,28 +229,7 @@ class SITMappingTest(unittest.TestCase):
         unit does not match a defined value in the defaults reference in
         spu classifier mode
         """
-        mapping = {
-            "spatial_units": {
-                "mapping_mode": "SingleDefaultSpatialUnit",
-                "default_spuid": 10
-            }
-        }
-        ref = Mock(spec=CBMDefaultsReference)
-
-        def mock_get_spatial_unit(spatial_unit_id):
-            raise KeyError
-
-        ref.get_spatial_unit.side_effect = mock_get_spatial_unit
-        classifiers, classifier_values = self.get_mock_classifiers()
-        inventory = pd.DataFrame({
-            "classifier1": ["a", "b"],
-            "classifier2": ["a", "a"],
-        })
-        sit_mapping = SITMapping(mapping, ref)
-        with self.assertRaises(KeyError):
-            sit_mapping.get_spatial_unit(
-                inventory, classifiers, classifier_values)
-        self.assertTrue(ref.get_spatial_unit.called)
+        self.fail()
 
     def test_undefined_classifier_separate_admin_eco_error(self):
         """checks that an error is raised when any mapping references a
@@ -312,7 +312,7 @@ class SITMappingTest(unittest.TestCase):
                 "admin_classifier": "classifier1",
                 "eco_classifier": "classifier2",
                 "admin_mapping": [
-                    {"user_admin_boundary": "b",
+                    {"user_admin_boundary": "missing",
                      "default_admin_boundary": "Alberta"}
                 ],
                 "eco_mapping": [
@@ -337,7 +337,34 @@ class SITMappingTest(unittest.TestCase):
         """checks that an error is raised when a classifier description is
         not present in the user value of eco mapping
         """
-        self.fail()
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SeparateAdminEcoClassifiers",
+                "admin_classifier": "classifier1",
+                "eco_classifier": "classifier2",
+                "admin_mapping": [
+                    {"user_admin_boundary": "a",
+                     "default_admin_boundary": "British Columbia"},
+                    {"user_admin_boundary": "b",
+                     "default_admin_boundary": "Alberta"}
+                ],
+                "eco_mapping": [
+                    {"user_eco_boundary": "missing",
+                     "default_eco_boundary": "Montane Cordillera"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        sit_mapping = SITMapping(mapping, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
 
     def test_undefined_user_spatial_unit_error(self):
         """checks that an error is raised when a classifier description is
