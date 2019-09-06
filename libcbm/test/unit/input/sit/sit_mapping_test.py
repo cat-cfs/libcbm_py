@@ -83,6 +83,7 @@ class SITMappingTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
+        self.assertTrue(ref.get_spatial_unit_id.called)
 
     def test_admin_eco_mapping_returns_expected_value(self):
         """Checks that an error is raised when the default mapping of spatial
@@ -164,7 +165,27 @@ class SITMappingTest(unittest.TestCase):
         """checks that an error is raised when a classifier description is
         not present in the user value of species mapping
         """
-        self.fail()
+        config = {
+            "species": {
+                "species_classifier": "classifier1",
+                "species_mapping": [
+                    {"user_species": "UNDEFINED", "default_species": "Spruce"},
+                    {"user_species": "b", "default_species": "Oak"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        with self.assertRaises(KeyError):
+            sit_mapping = SITMapping(config, ref)
+            default_species_map = sit_mapping.get_species_map(
+                classifiers, classifier_values)
+
 
     def test_undefined_user_nonforest_error(self):
         """checks that an error is raised when a classifier description is

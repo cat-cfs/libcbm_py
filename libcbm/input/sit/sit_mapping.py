@@ -23,12 +23,22 @@ class SITMapping():
         species_classifier = self.config["species"]["species_classifier"]
         species_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == species_classifier]
+
+        def get_default_species(species_classifier_value):
+            if species_classifier_value in species_map:
+                return species_map[species_classifier_value]
+            else:
+                raise KeyError(
+                    f"specified value '{species_classifier_value}' not found "
+                    "as key in map of species classifier description to cbm "
+                    "default species value.")
+
         default_species_map = {
             row["classifier_value"]: row["default_species"]
             for _, row in pd.DataFrame({
                 "classifier_value": species_values["name_classifier_value"],
                 "default_species": species_values["description"].map(
-                    species_map)}).iterrows()
+                    get_default_species)}).iterrows()
         }
         return default_species_map
 
