@@ -111,10 +111,57 @@ class SITMappingTest(unittest.TestCase):
                 inventory, classifiers, classifier_values)
         self.assertTrue(ref.get_spatial_unit_id.called)
 
+    def test_spatial_unit_mapping_returns_expected_value(self):
+        """checks that an expected value is returned when spatial unit
+        classifier mapping is used"""
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "JoinedAdminEcoClassifier",
+                "spu_classifier": "classifier1",
+                "spu_mapping": [
+                    {
+                        "user_spatial_unit": "a",
+                        "default_spatial_unit": {
+                            "admin_boundary": "British Columbia",
+                            "eco_boundary": "Montane Cordillera"
+                        }
+                    },
+                    {
+                        "user_spatial_unit": "b",
+                        "default_spatial_unit": {
+                            "admin_boundary": "Alberta",
+                            "eco_boundary": "Montane Cordillera"
+                        }
+                    }
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        def mock_get_spatial_unit_id(admin, eco):
+            # simulates a key error raised when the specified value is not
+            # present.
+            if admin == "British Columbia" and eco == "Montane Cordillera":
+                return 1000
+            elif admin == "Alberta" and eco == "Montane Cordillera":
+                return 2000
+            else:
+                raise ValueError
+
+        ref.get_spatial_unit_id.side_effect = mock_get_spatial_unit_id
+        sit_mapping = SITMapping(mapping, ref)
+        result = sit_mapping.get_spatial_unit(
+            inventory, classifiers, classifier_values)
+        self.assertTrue(list(result) == [1000, 2000])
+
     def test_admin_eco_mapping_returns_expected_value(self):
-        """Checks that an error is raised when the default mapping of spatial
-        unit does not match a defined value in the defaults reference in
-        separate admin/eco mode
+        """Checks that an expected value is returned when admin-eco
+        classifier mapping is used.
         """
         mapping = {
             "spatial_units": {
@@ -161,13 +208,62 @@ class SITMappingTest(unittest.TestCase):
         unit does not match a defined value in the defaults reference in
         spu classifier mode
         """
-        self.fail()
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SingleDefaultSpatialUnit",
+                "default_spuid": 10
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
 
-    def undefined_classifier_error(self):
+        def mock_get_spatial_unit(spatial_unit_id):
+            raise KeyError
+
+        ref.get_spatial_unit.side_effect = mock_get_spatial_unit
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+        sit_mapping = SITMapping(mapping, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
+        self.assertTrue(ref.get_spatial_unit.called)
+
+    def test_undefined_classifier_separate_admin_eco_error(self):
         """checks that an error is raised when any mapping references a
         non-existant classifier name
         """
-        self.fail()
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SeparateAdminEcoClassifiers",
+                "admin_classifier": "NOT DEFINED",
+                "eco_classifier": "classifier2",
+                "admin_mapping": [
+                    {"user_admin_boundary": "a",
+                     "default_admin_boundary": "British Columbia"},
+                    {"user_admin_boundary": "b",
+                     "default_admin_boundary": "Alberta"}
+                ],
+                "eco_mapping": [
+                    {"user_eco_boundary": "a",
+                     "default_eco_boundary": "Montane Cordillera"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        sit_mapping = SITMapping(mapping, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values)
+
 
     def test_undefined_user_admin_error(self):
         """checks that an error is raised when a classifier description is
@@ -216,7 +312,7 @@ class SITMappingTest(unittest.TestCase):
             "species": {
                 "species_classifier": "classifier1",
                 "species_mapping": [
-                    #note "a" is specified more than one time here
+                    # note "a" is specified more than one time here
                     {"user_species": "a", "default_species": "Spruce"},
                     {"user_species": "a", "default_species": "Oak"}
                 ]
@@ -243,7 +339,7 @@ class SITMappingTest(unittest.TestCase):
         """
         self.fail()
 
-    def test_invalid_mapping_mode_error(self):
+    def test_invalid_spatial_unit_mapping_mode_error(self):
         """checks that a non-supported mapping mode results in error
         """
         self.fail()

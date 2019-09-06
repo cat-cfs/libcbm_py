@@ -69,7 +69,6 @@ class SITMapping():
             merged_classifiers["name_classifier"] == spu_classifier]
         default_spu_map = {
             row["classifier_value"]: row["default_spatial_unit"]
-
             for _, row in pd.DataFrame({
                 "classifier_value": spu_values["name_classifier_value"],
                 "default_spatial_unit": spu_values["description"].map(
@@ -85,7 +84,7 @@ class SITMapping():
                 raise KeyError(
                     "The specified administrative/ecological boundary "
                     f"combination does not exist: '{admin}', '{eco}'")
-        pd.Series(output)
+        return pd.Series(output)
 
     def _get_spatial_unit_separate_admin_eco(self, inventory, classifiers,
                                              classifier_values):
@@ -137,11 +136,17 @@ class SITMapping():
             "default_eco_boundary": inventory[eco_classifier].map(
                 default_eco_map)}).apply(spu_map_func, axis=1)
 
-
     def get_spatial_unit(self, inventory, classifiers, classifier_values):
         mapping_mode = self.config["spatial_units"]["mapping_mode"]
         if mapping_mode == "SingleDefaultSpatialUnit":
             default_spuid = self.config["spatial_units"]["default_spuid"]
+            try:
+                self.cbm_defaults_ref.get_spatial_unit(default_spuid)
+            except KeyError:
+                raise KeyError(
+                    "specified spatial unit id not found in defaults: "
+                    f"{default_spuid}")
+
             data = np.ones(inventory.shape[0], dtype=np.int32)
             return pd.Series(data * default_spuid)
         elif mapping_mode == "SeparateAdminEcoClassifiers":
