@@ -12,7 +12,6 @@ class SITMapping():
         # 1. check for duplicate values in left values of user/default maps
         # 2. check for undefined values in right values of user/default maps
 
-
     def get_species_map(self, classifiers, classifier_values):
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",

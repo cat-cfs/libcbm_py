@@ -202,14 +202,32 @@ class SITMappingTest(unittest.TestCase):
         }
         ref = Mock(spec=CBMDefaultsReference)
         classifiers, classifier_values = self.get_mock_classifiers()
-        inventory = pd.DataFrame({
-            "classifier1": ["a", "b"],
-            "classifier2": ["a", "a"],
-        })
 
         with self.assertRaises(KeyError):
             sit_mapping = SITMapping(config, ref)
-            default_species_map = sit_mapping.get_species_map(
+            sit_mapping.get_species_map(
+                classifiers, classifier_values)
+
+    def test_duplicate_user_species_error(self):
+        """checks that an error is raised when a classifier description is
+        not present in the user value of species mapping
+        """
+        config = {
+            "species": {
+                "species_classifier": "classifier1",
+                "species_mapping": [
+                    #note "a" is specified more than one time here
+                    {"user_species": "a", "default_species": "Spruce"},
+                    {"user_species": "a", "default_species": "Oak"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+
+        with self.assertRaises(ValueError):
+            sit_mapping = SITMapping(config, ref)
+            sit_mapping.get_species_map(
                 classifiers, classifier_values)
 
 
