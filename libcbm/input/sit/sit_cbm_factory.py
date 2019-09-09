@@ -100,12 +100,12 @@ def initialize_inventory(inventory, classifiers, classifier_values,
         data={
             "age": inventory.age,
             "spatial_unit": 42,  # TODO: use "classifier mapping" to determine spu
-            "afforestation_pre_type_id": 0,  # TODO: use "classifier mapping" to determine spu
+            "afforestation_pre_type_id": 0,  # TODO: use "classifier mapping" to determine non-forest cover
             "area": inventory.area,
             "delay": inventory.delay,
             "land_class": inventory.land_class.map(
                 cbm_defaults_ref.get_land_class_id),
-            "historical_disturbance_type": 1,  # TODO: use "classifier mapping" to determine historic and last pass
+            "historical_disturbance_type": 1,  # TODO: use "disturbance type mapping" to determine historic and last pass
             "last_pass_disturbance_type": 1,
         })
     return classifiers_result, inventory_result

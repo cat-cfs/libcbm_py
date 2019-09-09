@@ -197,7 +197,94 @@ class SITMapping():
 
     def get_nonforest_cover_ids(self, inventory, classifiers,
                                 classifier_values):
-        pass
+        non_forest_map = {}
+        default_species = {
+            x["species_name"] for x in self.cbm_defaults_ref.get_species()}
+        default_non_forest = {
+            x["afforestation_pre_type_name"]: x["afforestation_pre_type_id"]
+            for x in self.cbm_defaults_ref.get_afforestation_pre_types()}
+
+        non_forest_in_species = len(
+            set(default_non_forest.keys())
+            .intersection([
+                x["default_species"]
+                for x in self.config["species"]["species_mapping"]])) > 0
+
+        non_forest_classifier = None
+        species_classifier = self.config["species"]["species_classifier"]
+        if non_forest_in_species:
+            non_forest_classifier = species_classifier
+            for item in self.config["species"]["species_mapping"]:
+                user_value = item["user_species"]
+                default_value = item["default_species"]
+                if default_value in default_species:
+                    non_forest_map[user_value] = -1
+                else:
+                    try:
+                        default_id = default_non_forest[default_value]
+                    except KeyError:
+                        raise KeyError(
+                            "specified default_nonforest_type is not a "
+                            f"defined default value {default_value}")
+                    non_forest_map[user_value] = default_id
+
+        if "nonforest" in self.config \
+                and not self.config["nonforest"] is None \
+                and len(self.config["nonforest"]) > 0:
+
+            non_forest_classifier = \
+                self.config["nonforest"]["nonforest_classifier"]
+            if non_forest_classifier == species_classifier:
+                raise ValueError(
+                    "single classifier may not be used as both non-forest "
+                    "classifier and species classifier")
+
+            if non_forest_in_species:
+                raise ValueError(
+                    "Nonforest values mapped in species classifier and "
+                    "non-forest classifier")
+            for item in self.config["nonforest"]["nonforest_mapping"]:
+                user_value = item["user_nonforest_type"]
+                default_value = item["default_nonforest_type"]
+                if user_value in non_forest_map:
+                    raise KeyError(
+                        "specified user_nonforest_type defined multiple times")
+                if default_value is not None:
+                    try:
+                        default_id = default_non_forest[default_value]
+                    except KeyError:
+                        raise KeyError(
+                            "specified default_nonforest_type is not a "
+                            f"defined default value {default_value}")
+                    non_forest_map[user_value] = default_id
+                else:
+                    non_forest_map[user_value] = -1
+
+        merged_classifiers = classifiers.merge(
+            classifier_values, left_on="id", right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"])
+
+        non_forest_classifier_values = merged_classifiers.loc[
+            merged_classifiers["name_classifier"] == non_forest_classifier]
+
+        default_nonforest_type_map = {
+            row["classifier_value"]: row["default_species"]
+            for _, row in pd.DataFrame({
+                "classifier_value":
+                    non_forest_classifier_values["name_classifier_value"],
+                "default_species":
+                    non_forest_classifier_values["description"].map(
+                        non_forest_map)}).iterrows()
+        }
+        undefined_values = np.setdiff1d(
+            inventory[non_forest_classifier].unique(),
+            list(non_forest_map.keys())
+        )
+        if len(undefined_values) > 0:
+            raise ValueError(
+                "Undefined non forest classifier values found in inventory "
+                f"{undefined_values}")
+        return inventory[non_forest_classifier].map(default_nonforest_type_map)
 
     def get_disturbance_type_id(self, disturbance_type):
         disturbance_type_map = {}
