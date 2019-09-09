@@ -3,7 +3,6 @@ import numpy as np
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
-from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -33,8 +32,7 @@ def get_classifiers(classifiers, classifier_values):
     return config
 
 
-def get_merch_volumes(yield_table, classifiers, age_classes,
-                      cbm_defaults_ref):
+def get_merch_volumes(yield_table, classifiers, age_classes):
     """Create merchantable volume input for initializing the CBM class
     based on CBM Standard import tool formatted data.
 
@@ -45,17 +43,11 @@ def get_merch_volumes(yield_table, classifiers, age_classes,
             of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
         age_classes (pandas.DataFrame): the parsed SIT age classes
             output of :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
-        cbm_defaults_ref (CBMDefaultsReference): instance of
-            :py:class:`libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference`
-            for fetching species information
 
     Returns:
         dict: configuration dictionary for CBM. See:
             :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
     """
-    default_species_map = {
-        x["species_name"]: x["species_id"]
-        for x in cbm_defaults_ref.get_species()}
 
     unique_classifier_sets = yield_table.groupby(
         list(classifiers.name)).size().reset_index()
@@ -70,14 +62,9 @@ def get_merch_volumes(yield_table, classifiers, age_classes,
             right_on=list(classifiers.name))
         merch_vols = []
         for _, match_row in match.iterrows():
-            sit_species = match_row["leading_species"]
-            if sit_species not in default_species_map:
-                raise ValueError(
-                    f"species {sit_species} not defined in default species "
-                    "map.")
             vols = match_row.iloc[len(classifiers)+1:]
             merch_vols.append({
-                "species_id": default_species_map[sit_species],
+                "species_id": match_row["leading_species"],
                 "age_volume_pairs": [
                     (ages[i], vols[i]) for i in range(len(vols))]
             })
@@ -125,7 +112,7 @@ def initialize_inventory(inventory, classifiers, classifier_values,
 
 
 def initialize_cbm(db_path, dll_path, yield_table, classifiers,
-                   classifier_values, age_classes, cbm_defaults_ref):
+                   classifier_values, age_classes):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -154,7 +141,7 @@ def initialize_cbm(db_path, dll_path, yield_table, classifiers,
             cbm_config.merch_volume_to_biomass_config(
                 db_path=db_path,
                 merch_volume_curves=get_merch_volumes(
-                    yield_table, classifiers, age_classes, cbm_defaults_ref)),
+                    yield_table, classifiers, age_classes)),
         classifiers_factory=lambda: get_classifiers(
             classifiers, classifier_values))
 
