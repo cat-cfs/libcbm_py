@@ -4,8 +4,7 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_classifier_parser
 
 
-def parse(yield_table, classifiers, classifier_values, age_classes,
-          species_map):
+def parse(yield_table, classifiers, classifier_values, age_classes):
     """Parses and validates the CBM SIT growth and yield format.
 
     Args:
@@ -19,9 +18,6 @@ def parse(yield_table, classifiers, classifier_values, age_classes,
         age_classes (pandas.DataFrame): used to validate the number of volume
             columns.  Use the return value of:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
-        species_map (dict): A dictionary of species against which to validate
-            the "leading_species" column.  The value for each key will be
-            substituted into the output.
 
     Raises:
         ValueError: the specified data did not have the correct number of
@@ -48,16 +44,6 @@ def parse(yield_table, classifiers, classifier_values, age_classes,
             f"expected {expected_column_count} columns. This is defined as "
             f"{len(classifiers) + 1} classifiers plus {len(age_classes)} "
             "age classes")
-
-    # check that the leading species column is mapped
-    undefined_species = set(
-        unpacked_table.leading_species.unique()).difference(species_map.keys())
-    if undefined_species:
-        raise ValueError(
-            "the following values in the leading_species column were not "
-            f"present in the specified map: {undefined_species}")
-    unpacked_table.leading_species = unpacked_table.leading_species.map(
-        species_map)
 
     # check that the correct number of classifiers are present and check that
     # each value in yield table classifier sets is defined in classifier values

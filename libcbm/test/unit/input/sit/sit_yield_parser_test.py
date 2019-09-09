@@ -31,9 +31,6 @@ class SITYieldParserTest(unittest.TestCase):
             columns=["name", "class_size", "start_year", "end_year"]
         )
 
-    def get_mock_species_mapping(self):
-        return {"sp1": "spruce"}
-
     def test_incorrect_number_of_volumes_error(self):
         """checks that the number of volumes is equal to the number of
         specified age classes
@@ -46,29 +43,13 @@ class SITYieldParserTest(unittest.TestCase):
                 ["a", "?", "sp1"] +
                 [x*15 for x in range(0, num_age_classes+1)]])
             sit_yield_parser.parse(
-                yield_table, classifiers, classifier_values, age_classes,
-                self.get_mock_species_mapping())
+                yield_table, classifiers, classifier_values, age_classes)
         with self.assertRaises(ValueError):
             yield_table = pd.DataFrame([
                 ["a", "?", "sp1"] +
                 [x*15 for x in range(0, num_age_classes-1)]])
             sit_yield_parser.parse(
-                yield_table, classifiers, classifier_values, age_classes,
-                self.get_mock_species_mapping())
-
-    def test_undefined_leading_species_value_error(self):
-        """checks if all values are mapped in the species map parameter
-        """
-        age_classes = self.get_mock_age_classes()
-        num_age_classes = len(age_classes)
-        classifiers, classifier_values = self.get_mock_classifiers()
-        with self.assertRaises(ValueError):
-            yield_table = pd.DataFrame([
-                ["a", "?", "UNDEFINED_IN_SPECIES_MAP"] +
-                [x*15 for x in range(0, num_age_classes)]])
-            sit_yield_parser.parse(
-                yield_table, classifiers, classifier_values, age_classes,
-                self.get_mock_species_mapping())
+                yield_table, classifiers, classifier_values, age_classes)
 
     def test_incorrect_number_of_classifiers_error(self):
         """checks that the format has the correct number of columns
@@ -83,8 +64,7 @@ class SITYieldParserTest(unittest.TestCase):
                     c_set +
                     [x*15 for x in range(0, num_age_classes)]])
                 sit_yield_parser.parse(
-                    yield_table, classifiers, classifier_values, age_classes,
-                    self.get_mock_species_mapping())
+                    yield_table, classifiers, classifier_values, age_classes)
 
     def test_undefined_classifier_value_error(self):
         """checks that the format has values that are either wildcards or
@@ -99,8 +79,7 @@ class SITYieldParserTest(unittest.TestCase):
                     c_set +
                     [x*15 for x in range(0, num_age_classes)]])
                 sit_yield_parser.parse(
-                    yield_table, classifiers, classifier_values, age_classes,
-                    self.get_mock_species_mapping())
+                    yield_table, classifiers, classifier_values, age_classes)
 
     def test_non_numeric_or_negative_volume_error(self):
         """checks that an error is raised if any volume is non-numeric or
@@ -118,5 +97,4 @@ class SITYieldParserTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 yield_table = pd.DataFrame([["a", "?", "sp1"] + vol])
                 sit_yield_parser.parse(
-                    yield_table, classifiers, classifier_values, age_classes,
-                    self.get_mock_species_mapping())
+                    yield_table, classifiers, classifier_values, age_classes)
