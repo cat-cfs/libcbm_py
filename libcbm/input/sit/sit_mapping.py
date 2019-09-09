@@ -62,13 +62,13 @@ class SITMapping():
         # check for values that are defined in the species series but not
         # defined in the default_species_map
         undefined_species = np.setdiff1d(
-            species.unique(), default_species_map.keys())
+            species.unique(), list(default_species_map.keys()))
         if len(undefined_species) > 0:
             raise ValueError(
                 "Undefined species classifiers (as defined in sit "
                 f"classifiers) detected: {undefined_species}"
             )
-        return default_species_map
+        return species.map(default_species_map)
 
     def _get_mapping_error_handling_function(self, sit_map, error_fmt):
         def get_mapped_value(value):
