@@ -5,7 +5,7 @@ from libcbm.input.sit import sit_parser
 
 
 def parse(inventory_table, classifiers, classifier_values,
-          disturbance_types, age_classes, land_classes):
+          disturbance_types, age_classes):
     """Parses and validates SIT formatted inventory data.  The inventory_table
     parameter is the primary data, and the other args act as validation
     metadata.
@@ -24,12 +24,9 @@ def parse(inventory_table, classifiers, classifier_values,
         age_classes (pandas.DataFrame): table of disturbance types as
             returned by the function:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
-        land_classes (dict): dictionary of land class id (key, int) to land
-            class name (value, str)
 
     Raises:
         ValueError: Undefined classifier values detected in inventory table
-        ValueError: Undefined land class ids detected in inventory table
         ValueError: Undefined disturbance types detected in inventory table
 
     Example:
@@ -149,12 +146,6 @@ def parse(inventory_table, classifiers, classifier_values,
                 f"classifier: '{row.name}', values: {diff}")
 
     undefined_land_classes = set()
-    inventory.land_class = inventory.land_class.apply(
-        get_map_land_class_func(land_classes, undefined_land_classes.add))
-    if len(undefined_land_classes) > 0:
-        raise ValueError(
-            "inventory land_class column contains undefined land class ids: "
-            f"{undefined_land_classes}")
 
     # if the historical/last pass disturbances are specified substitute them
     # according to the specified disturbance type parameters

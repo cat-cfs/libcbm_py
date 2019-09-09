@@ -40,8 +40,6 @@ class SITInventoryParserTest(unittest.TestCase):
             columns=["id", "name"]
         )
 
-    def get_mock_land_classes(self):
-        return {0: "landclass1"}
 
     def test_expected_result_with_using_non_zero_age_class(self):
         """Checks the age class expansion feature "using_age_class"
@@ -55,8 +53,7 @@ class SITInventoryParserTest(unittest.TestCase):
         classifiers, classifier_values = self.get_mock_classifiers()
         age_classes = self.get_mock_age_classes()
         result = sit_inventory_parser.parse(
-            inventory_table, classifiers, classifier_values, None, age_classes,
-            self.get_mock_land_classes())
+            inventory_table, classifiers, classifier_values, None, age_classes)
         self.assertTrue(result.shape[0] == len(inventory_table) + 1)
         self.assertTrue(result.area.sum() == 3)
         self.assertTrue(set(result.age) == {100, 4, 1, 2})
@@ -74,7 +71,7 @@ class SITInventoryParserTest(unittest.TestCase):
         age_classes = self.get_mock_age_classes()
         result = sit_inventory_parser.parse(
             inventory_table, classifiers, classifier_values, None,
-            age_classes, self.get_mock_land_classes())
+            age_classes)
         self.assertTrue(result.shape[0] == len(inventory_table))
         self.assertTrue(result.area.sum() == 3)
         self.assertTrue(set(result.age) == {100, 4, 0})
@@ -103,7 +100,7 @@ class SITInventoryParserTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
-                    disturbance_types, None, self.get_mock_land_classes())
+                    disturbance_types, None)
 
     def test_missing_disturbance_type_id_raises_exception(self):
         """checks that an error is raised if a disturbance type id is
@@ -118,7 +115,7 @@ class SITInventoryParserTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
-                    disturbance_types, None, self.get_mock_land_classes())
+                    disturbance_types, None)
 
     def test_missing_classifier_values_raise_exception(self):
         """checks that an error is raised when a classifier value is not
@@ -133,22 +130,8 @@ class SITInventoryParserTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
-                    disturbance_types, None, self.get_mock_land_classes())
+                    disturbance_types, None)
 
-    def test_undefined_land_class_id_raises_exception(self):
-        """raised if a value in the "land_class_id" column is not a valid land
-        class id
-        """
-        classifiers, classifier_values = self.get_mock_classifiers()
-        disturbance_types = self.get_mock_disturbance_types()
-        for data in [("a", "a", "F", 0, 0, 0, "MISSING"),
-                     ("b", "a", "F", 0, 0, 0, -1)]:
-
-            inventory_table = pd.DataFrame([data])
-            with self.assertRaises(ValueError):
-                sit_inventory_parser.parse(
-                    inventory_table, classifiers, classifier_values,
-                    disturbance_types, None, self.get_mock_land_classes())
 
     def test_spatial_reference_mixed_with_using_age_class(self):
         """checks that an error is raised when a row has both non-negative
@@ -163,8 +146,7 @@ class SITInventoryParserTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
-                    disturbance_types, age_classes,
-                    self.get_mock_land_classes())
+                    disturbance_types, age_classes)
 
     def test_duplicate_spatial_reference_raises_error(self):
         """Checks that any duplicate spatial reference values in the inventory
@@ -182,5 +164,4 @@ class SITInventoryParserTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_inventory_parser.parse(
                 inventory_table, classifiers, classifier_values,
-                disturbance_types, age_classes,
-                self.get_mock_land_classes())
+                disturbance_types, age_classes)
