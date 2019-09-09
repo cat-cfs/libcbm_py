@@ -100,7 +100,42 @@ class SITMappingTest(unittest.TestCase):
         non-forest type does not match a defined value in the defaults
         reference.
         """
-        self.fail()
+        config = {
+            "nonforest":
+            {
+                "nonforest_classifier": "classifier1",
+                "nonforest_mapping": [
+                    {"user_nonforest_type": "a",
+                     "default_nonforest_type": "missing"},
+                    {"user_nonforest_type": "b",
+                     "default_nonforest_type": None}
+                ]
+            },
+            "species": {
+                "species_classifier": "classifier2",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Spruce"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": "1"}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = None
+        with self.assertRaises(KeyError):
+            sit_mapping = SITMapping(config, ref)
+            sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
 
     def test_undefined_single_default_spatial_unit_error(self):
         """Checks that an error is raised when the default mapping of spatial
@@ -526,7 +561,40 @@ class SITMappingTest(unittest.TestCase):
         """checks that an error is raised when a classifier description is
         not present in the user value of nonforest mapping
         """
-        self.fail()
+        config = {
+            "nonforest":
+            {
+                "nonforest_classifier": "classifier1",
+                "nonforest_mapping": [
+                    {"user_nonforest_type": "b",
+                     "default_nonforest_type": None}
+                ]
+            },
+            "species": {
+                "species_classifier": "classifier2",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Spruce"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": "1"}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = None
+        with self.assertRaises(ValueError):
+            sit_mapping = SITMapping(config, ref)
+            sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
 
     def test_undefined_user_disturbance_type_error(self):
         """checks that an error is raised when a disturbance type is
@@ -628,3 +696,166 @@ class SITMappingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
+
+    def test_nonforest_classifier_and_species_nonforest_error(self):
+        """checks that an error is raised when a non-forest classifier is
+        defined, and non-forest values also appear in the species classifier.
+        """
+        config = {
+            "nonforest":
+            {
+                "nonforest_classifier": "classifier1",
+                "nonforest_mapping": [
+                    {"user_nonforest_type": "a",
+                     "default_nonforest_type": "Gleysolic"},
+                    {"user_nonforest_type": "b",
+                     "default_nonforest_type": None}
+                ]
+            },
+            "species": {
+                "species_classifier": "classifier2",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Gleysolic"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": "1"}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = lambda: []
+        with self.assertRaises(ValueError):
+            sit_mapping = SITMapping(config, ref)
+            sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
+
+    def test_same_nonforest_classifier_and_species_classifier_error(self):
+        """checks that an error is raised when a the the species classifier
+        maps to at least one non forest value and a non-forest classifier is
+        used
+        """
+        config = {
+            "nonforest":
+            {
+                "nonforest_classifier": "classifier1",
+                "nonforest_mapping": [
+                    {"user_nonforest_type": "a",
+                     "default_nonforest_type": "Gleysolic"},
+                    {"user_nonforest_type": "b",
+                     "default_nonforest_type": None}
+                ]
+            },
+            "species": {
+                "species_classifier": "classifier1",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Spruce"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": "1"}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = lambda: []
+        with self.assertRaises(ValueError):
+            sit_mapping = SITMapping(config, ref)
+            sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
+
+    def test_expected_result_with_species_nonforest_values(self):
+        """checks that an error is raised when a the the species classifier
+        maps to at least one non forest value and a non-forest classifier is
+        used
+        """
+        config = {
+            "species": {
+                "species_classifier": "classifier1",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Spruce"},
+                    {"user_species": "b",
+                     "default_species": "Gleysolic"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b", "a", "b"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": 1001}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = lambda: [
+            {"species_name": "Spruce"}
+        ]
+        sit_mapping = SITMapping(config, ref)
+        result = sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
+        self.assertTrue(list(result) == [-1, 1001, -1, 1001])
+
+    def test_expected_result_with_nonforest_classifier_values(self):
+        """checks that an error is raised when a the the species classifier
+        maps to at least one non forest value and a non-forest classifier is
+        used
+        """
+        config = {
+            "nonforest":
+            {
+                "nonforest_classifier": "classifier1",
+                "nonforest_mapping": [
+                    {"user_nonforest_type": "a",
+                     "default_nonforest_type": "Gleysolic"},
+                    {"user_nonforest_type": "b",
+                     "default_nonforest_type": None}
+                ]
+            },
+            "species": {
+                "species_classifier": "classifier2",
+                "species_mapping": [
+                    {"user_species": "a",
+                     "default_species": "Spruce"}
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b", "a", "b"]})
+
+        def mock_get_afforestation_pre_types():
+            return [
+                {"afforestation_pre_type_name": "Gleysolic",
+                 "afforestation_pre_type_id": 15}
+            ]
+        ref.get_afforestation_pre_types.side_effect = \
+            mock_get_afforestation_pre_types
+        ref.get_species.side_effect = lambda: [
+            {"species_name": "Spruce"}
+        ]
+        sit_mapping = SITMapping(config, ref)
+        result = sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values)
+        self.assertTrue(list(result) == [15, -1, 15, -1])

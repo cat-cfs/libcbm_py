@@ -177,7 +177,7 @@ class SITInventoryParserTest(unittest.TestCase):
         inventory_table = pd.DataFrame([
             ("a", "a", False, 100, 1, 0, 0, "dist2", "dist1", 10000),
             ("a", "a", "-1", 4, 1, 0, 0, "dist1", "dist1", 10000)])
-            # note the same identifier 10000 appears 2 times
+        # note the same identifier 10000 appears 2 times
 
         with self.assertRaises(ValueError):
             sit_inventory_parser.parse(

@@ -198,8 +198,7 @@ class SITMapping():
     def get_nonforest_cover_ids(self, inventory, classifiers,
                                 classifier_values):
         non_forest_map = {}
-        default_species = {
-            x["species_name"] for x in self.cbm_defaults_ref.get_species()}
+
         default_non_forest = {
             x["afforestation_pre_type_name"]: x["afforestation_pre_type_id"]
             for x in self.cbm_defaults_ref.get_afforestation_pre_types()}
@@ -213,6 +212,8 @@ class SITMapping():
         non_forest_classifier = None
         species_classifier = self.config["species"]["species_classifier"]
         if non_forest_in_species:
+            default_species = {
+                x["species_name"] for x in self.cbm_defaults_ref.get_species()}
             non_forest_classifier = species_classifier
             for item in self.config["species"]["species_mapping"]:
                 user_value = item["user_species"]
