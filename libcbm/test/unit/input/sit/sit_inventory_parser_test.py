@@ -40,7 +40,6 @@ class SITInventoryParserTest(unittest.TestCase):
             columns=["id", "name"]
         )
 
-
     def test_expected_result_with_using_non_zero_age_class(self):
         """Checks the age class expansion feature "using_age_class"
         """
@@ -131,7 +130,6 @@ class SITInventoryParserTest(unittest.TestCase):
                 sit_inventory_parser.parse(
                     inventory_table, classifiers, classifier_values,
                     disturbance_types, None)
-
 
     def test_spatial_reference_mixed_with_using_age_class(self):
         """checks that an error is raised when a row has both non-negative

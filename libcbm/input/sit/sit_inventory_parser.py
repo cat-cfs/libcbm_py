@@ -145,8 +145,6 @@ def parse(inventory_table, classifiers, classifier_values,
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff}")
 
-    undefined_land_classes = set()
-
     # if the historical/last pass disturbances are specified substitute them
     # according to the specified disturbance type parameters
     if "historical_disturbance_type" in inventory:
