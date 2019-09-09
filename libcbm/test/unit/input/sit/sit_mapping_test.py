@@ -498,23 +498,50 @@ class SITMappingTest(unittest.TestCase):
             ]
         }
         ref = Mock(spec=CBMDefaultsReference)
-        #todo: add mock default disturbance type method here
         sit_mapping = SITMapping(config, ref)
         with self.assertRaises(KeyError):
             sit_mapping.get_disturbance_type_id(
-                pd.Series(["not_fire"]))
+                pd.Series(["missing_value"]))
 
     def test_undefined_default_disturbance_type_error(self):
         """checks that an error is raised when a default disturbance
         type is not present in the disturbance type reference
         """
-        self.fail()
+        config = {
+            "disturbance_types": [
+                {"user_dist_type": "fire", "default_dist_type": "Wildfire"}
+            ]
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_disturbance_type_id(name):
+            raise KeyError()
+
+        ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_disturbance_type_id(
+                pd.Series(["fire"]))
+        self.assertTrue(ref.get_disturbance_type_id.called)
 
     def test_duplicated_user_disturbance_type_error(self):
         """checks that an error is raised when a disturbance type is
         duplicated in the sit json config
         """
-        self.fail()
+        config = {
+            "disturbance_types": [
+                {"user_dist_type": "duplicated",
+                 "default_dist_type": "Wildfire"},
+                {"user_dist_type": "duplicated",
+                 "default_dist_type": "Clearcut"}
+            ]
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(KeyError):
+            sit_mapping.get_disturbance_type_id(
+                pd.Series(["duplicated"]))
+
 
     def test_get_disturbance_type_id_returns_expected_value(self):
         """Checks the expected output of SITMapping.get_disturbance_type_id

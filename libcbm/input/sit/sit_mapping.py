@@ -204,12 +204,12 @@ class SITMapping():
                         f" {default_dist_type}")
                 disturbance_type_map[user_dist_type] = dist_type_id
 
-            def map_func(dist_type):
-                if dist_type in disturbance_type_map:
-                    return disturbance_type_map[dist_type]
-                else:
-                    raise KeyError(
-                        f"Specified disturbance type value {dist_type} not "
-                        "mapped.")
+        def map_func(dist_type):
+            if dist_type in disturbance_type_map:
+                return disturbance_type_map[dist_type]
+            else:
+                raise KeyError(
+                    f"Specified disturbance type value {dist_type} not "
+                    "mapped.")
 
-            return disturbance_type.map(map_func)
+        return disturbance_type.map(map_func)
