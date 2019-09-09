@@ -3,6 +3,7 @@ import numpy as np
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
+from libcbm.input.sit.sit_mapping import SITMapping
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -77,7 +78,7 @@ def get_merch_volumes(yield_table, classifiers, age_classes):
 
 
 def initialize_inventory(inventory, classifiers, classifier_values,
-                         cbm_defaults_ref):
+                         cbm_defaults_ref, mapping_config):
 
     classifier_config = get_classifiers(classifiers, classifier_values)
     classifier_ids = [
@@ -96,17 +97,25 @@ def initialize_inventory(inventory, classifiers, classifier_values,
         columns=list(classifiers.name))
     classifiers_result = np.ascontiguousarray(
         classifiers_result, dtype=np.int32)
+
+    sit_mapping = SITMapping(mapping_config, cbm_defaults_ref)
     inventory_result = pd.DataFrame(
         data={
             "age": inventory.age,
-            "spatial_unit": 42,  # TODO: use "classifier mapping" to determine spu
-            "afforestation_pre_type_id": 0,  # TODO: use "classifier mapping" to determine non-forest cover
+            "spatial_unit": sit_mapping.get_spatial_unit(
+                inventory, classifiers, classifier_values),
+            "afforestation_pre_type_id": sit_mapping.get_nonforest_cover_ids(
+                inventory, classifiers, classifier_values),
             "area": inventory.area,
             "delay": inventory.delay,
             "land_class": inventory.land_class.map(
                 cbm_defaults_ref.get_land_class_id),
-            "historical_disturbance_type": 1,  # TODO: use "disturbance type mapping" to determine historic and last pass
-            "last_pass_disturbance_type": 1,
+            "historical_disturbance_type":
+                sit_mapping.get_disturbance_type_id(
+                    inventory.historical_disturbance_type),
+            "last_pass_disturbance_type":
+                sit_mapping.get_disturbance_type_id(
+                    inventory.last_pass_disturbance_type),
         })
     return classifiers_result, inventory_result
 
