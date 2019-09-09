@@ -3,7 +3,6 @@ import numpy as np
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
-from libcbm.input.sit.sit_mapping import SITMapping
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -33,7 +32,8 @@ def get_classifiers(classifiers, classifier_values):
     return config
 
 
-def get_merch_volumes(yield_table, classifiers, age_classes):
+def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
+                      sit_mapping):
     """Create merchantable volume input for initializing the CBM class
     based on CBM Standard import tool formatted data.
 
@@ -44,6 +44,8 @@ def get_merch_volumes(yield_table, classifiers, age_classes):
             of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
         age_classes (pandas.DataFrame): the parsed SIT age classes
             output of :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): instance of
+            SITMapping used to validate species classifier and fetch species id
 
     Returns:
         dict: configuration dictionary for CBM. See:
@@ -56,6 +58,8 @@ def get_merch_volumes(yield_table, classifiers, age_classes):
     unique_classifier_sets = unique_classifier_sets.drop(columns=[0])
     ages = list(age_classes.end_year)
     output = []
+    yield_table.leading_species = sit_mapping.get_species(
+        yield_table.leading_species, classifiers, classifier_values)
     for _, row in unique_classifier_sets.iterrows():
         match = yield_table.merge(
             pd.DataFrame([row]),
@@ -78,7 +82,7 @@ def get_merch_volumes(yield_table, classifiers, age_classes):
 
 
 def initialize_inventory(inventory, classifiers, classifier_values,
-                         cbm_defaults_ref, mapping_config):
+                         sit_mapping):
 
     classifier_config = get_classifiers(classifiers, classifier_values)
     classifier_ids = [
@@ -98,7 +102,6 @@ def initialize_inventory(inventory, classifiers, classifier_values,
     classifiers_result = np.ascontiguousarray(
         classifiers_result, dtype=np.int32)
 
-    sit_mapping = SITMapping(mapping_config, cbm_defaults_ref)
     inventory_result = pd.DataFrame(
         data={
             "age": inventory.age,
@@ -108,8 +111,7 @@ def initialize_inventory(inventory, classifiers, classifier_values,
                 inventory, classifiers, classifier_values),
             "area": inventory.area,
             "delay": inventory.delay,
-            "land_class": inventory.land_class.map(
-                cbm_defaults_ref.get_land_class_id),
+            "land_class": sit_mapping.get_land_class_id(inventory.land_class),
             "historical_disturbance_type":
                 sit_mapping.get_disturbance_type_id(
                     inventory.historical_disturbance_type),
