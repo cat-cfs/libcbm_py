@@ -8,14 +8,14 @@ class SITMapping():
         self.config = config
         self.cbm_defaults_ref = cbm_defaults_ref
 
-        # validations:
-        # 1. check for duplicate values in left values of user/default maps
-        # 2. check for undefined values in right values of user/default maps
-
-    def get_species_map(self, classifiers, classifier_values):
+    def get_species(self, species, classifiers, classifier_values):
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",
             suffixes=["_classifier", "_classifier_value"])
+        afforestation_pre_types = {
+            x["afforestation_pre_type_name"]
+            for x in self.cbm_defaults_ref.get_afforestation_pre_types()}
+
         species_map = {}
         for species_mapping in self.config["species"]["species_mapping"]:
             user_species = species_mapping["user_species"]
@@ -24,13 +24,20 @@ class SITMapping():
                 raise ValueError(
                     f"Specified user species {user_species} mapped multiple "
                     "times.")
+            if default_species in afforestation_pre_types:
+                # since the species classifier can be mapped to nonforest
+                # cover types, but we are not interested in these for the
+                # purpose of this function, exclude this from the result,
+                # but don't raise an error here.
+                continue
             try:
-                self.cbm_defaults_ref.get_species_id(default_species)
+                species_id = self.cbm_defaults_ref.get_species_id(
+                    default_species)
             except KeyError:
                 raise KeyError(
                     f"mapped default species {default_species} not present in "
                     "default values")
-            species_map[user_species] = default_species
+            species_map[user_species] = species_id
 
         species_classifier = self.config["species"]["species_classifier"]
         species_values = merged_classifiers.loc[
@@ -52,6 +59,15 @@ class SITMapping():
                 "default_species": species_values["description"].map(
                     get_default_species)}).iterrows()
         }
+        # check for values that are defined in the species series but not
+        # defined in the default_species_map
+        undefined_species = np.setdiff1d(
+            species.unique(), default_species_map.keys())
+        if len(undefined_species) > 0:
+            raise ValueError(
+                "Undefined species classifiers (as defined in sit "
+                f"classifiers) detected: {undefined_species}"
+            )
         return default_species_map
 
     def _get_mapping_error_handling_function(self, sit_map, error_fmt):

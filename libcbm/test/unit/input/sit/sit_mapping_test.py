@@ -33,14 +33,14 @@ class SITMappingTest(unittest.TestCase):
             "species": {
                 "species_classifier": "classifier1",
                 "species_mapping": [
-                    {"user_species": "UNDEFINED", "default_species": "Spruce"},
+                    {"user_species": "a", "default_species": "Spruce"},
                     {"user_species": "b", "default_species": "Oak"}
                 ]
             }
         }
         ref = Mock(spec=CBMDefaultsReference)
         classifiers, classifier_values = self.get_mock_classifiers()
-        inventory = pd.DataFrame({
+        pd.DataFrame({
             "classifier1": ["a", "b"],
             "classifier2": ["a", "a"],
         })
@@ -49,12 +49,13 @@ class SITMappingTest(unittest.TestCase):
             # simulates a key error raised when the specified value is not
             # present.
             raise KeyError()
-
+        species = pd.Series(["a", "b"])
         ref.get_species_id.side_effect = mock_get_species_id
+        ref.get_afforestation_pre_types.side_effect = lambda: []
         with self.assertRaises(KeyError):
             sit_mapping = SITMapping(config, ref)
-            sit_mapping.get_species_map(
-                classifiers, classifier_values)
+            sit_mapping.get_species(
+                species, classifiers, classifier_values)
         self.assertTrue(ref.get_species_id.called)
 
     def test_undefined_default_nonforest_type_error(self):
@@ -334,7 +335,7 @@ class SITMappingTest(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             sit_mapping = SITMapping(mapping, ref)
-            result = sit_mapping.get_spatial_unit(
+            sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
 
     def test_undefined_user_admin_error(self):
@@ -403,7 +404,7 @@ class SITMappingTest(unittest.TestCase):
 
     def test_undefined_user_spatial_unit_error(self):
         """checks that an error is raised when a classifier description is
-        not present in the user value of species mapping
+        not present in the user value of spatial unit mapping
         """
         mapping = {
             "spatial_units": {
@@ -454,11 +455,12 @@ class SITMappingTest(unittest.TestCase):
         }
         ref = Mock(spec=CBMDefaultsReference)
         classifiers, classifier_values = self.get_mock_classifiers()
-
+        ref.get_afforestation_pre_types = lambda: []
+        species = pd.Series(["b", "b"])
         with self.assertRaises(KeyError):
             sit_mapping = SITMapping(config, ref)
-            sit_mapping.get_species_map(
-                classifiers, classifier_values)
+            sit_mapping.get_species(
+                species, classifiers, classifier_values)
 
     def test_duplicate_user_species_error(self):
         """checks that an error is raised when a classifier description is
@@ -476,11 +478,12 @@ class SITMappingTest(unittest.TestCase):
         }
         ref = Mock(spec=CBMDefaultsReference)
         classifiers, classifier_values = self.get_mock_classifiers()
-
+        ref.get_afforestation_pre_types = lambda: []
+        species = pd.Series(["a", "a"])
         with self.assertRaises(ValueError):
             sit_mapping = SITMapping(config, ref)
-            sit_mapping.get_species_map(
-                classifiers, classifier_values)
+            sit_mapping.get_species(
+                species, classifiers, classifier_values)
 
     def test_undefined_user_nonforest_error(self):
         """checks that an error is raised when a classifier description is
@@ -542,11 +545,31 @@ class SITMappingTest(unittest.TestCase):
             sit_mapping.get_disturbance_type_id(
                 pd.Series(["duplicated"]))
 
-
     def test_get_disturbance_type_id_returns_expected_value(self):
         """Checks the expected output of SITMapping.get_disturbance_type_id
         """
-        self.fail()
+        config = {
+            "disturbance_types": [
+                {"user_dist_type": "fire",
+                 "default_dist_type": "Wildfire"},
+                {"user_dist_type": "clearcut",
+                 "default_dist_type": "ClearCut"}
+            ]
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_disturbance_type_id(name):
+            if name == "Wildfire":
+                return 1
+            if name == "ClearCut":
+                return 2
+            raise ValueError()
+
+        ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
+        sit_mapping = SITMapping(config, ref)
+        result = sit_mapping.get_disturbance_type_id(
+                pd.Series(["fire"]+["clearcut"]))
+        self.assertTrue(list(result) == [1, 2])
 
     def test_invalid_spatial_unit_mapping_mode_error(self):
         """checks that a non-supported mapping mode results in error
@@ -568,4 +591,3 @@ class SITMappingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             sit_mapping.get_spatial_unit(
                 inventory, classifiers, classifier_values)
-
