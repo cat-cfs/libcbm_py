@@ -9,6 +9,30 @@ class SITMapping():
         self.cbm_defaults_ref = cbm_defaults_ref
 
     def get_species(self, species, classifiers, classifier_values):
+        """Get a series of CBM species ids based on the specified species
+        classifier values series and the SIT import tool classifier
+        configuration and mapping.
+
+        Args:
+            species (pandas.Series): A series of classifier values
+            classifiers (pandas.DataFrame): The Standard import tool
+                classifiers definition. Use the return value of:
+                :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+            classifier_values (pandas.DataFrame): The Standard import tool
+                classifier values definition. Use the return value of:
+                :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+
+        Raises:
+            ValueError: a species classifier is mapped more than one time
+                in mapping configuration
+            KeyError: species mapped to an undefined default species name
+            KeyError: a classifier value is not mapped to a default value
+            ValueError: a classifier value was not defined in the
+                classifier/classifier value metadata
+
+        Returns:
+            pandas.Series: a series of integer species ids
+        """
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",
             suffixes=["_classifier", "_classifier_value"])

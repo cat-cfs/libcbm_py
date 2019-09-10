@@ -813,7 +813,7 @@ class SITMappingTest(unittest.TestCase):
         ]
         sit_mapping = SITMapping(config, ref)
         result = sit_mapping.get_nonforest_cover_ids(
-                inventory, classifiers, classifier_values)
+            inventory, classifiers, classifier_values)
         self.assertTrue(list(result) == [-1, 1001, -1, 1001])
 
     def test_expected_result_with_nonforest_classifier_values(self):
