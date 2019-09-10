@@ -226,6 +226,20 @@ class CBMDefaultsReference:
         """
         return self.afforestation_pre_type_ref
 
+    def get_land_classes(self):
+        """Get all name and id information about every CBM land class.
+
+        Result is returned as a list of rows with keys:
+
+            - land_class_id
+            - code
+            - description
+
+        Returns:
+            list: list of rows with land class information information
+        """
+        return self.land_class_ref
+
     def get_land_class_id(self, land_class_code):
         """Get the land class id associated with the specified CBM land class
         code (where a code might be for example: UNFCCC_FL_R_FL)
