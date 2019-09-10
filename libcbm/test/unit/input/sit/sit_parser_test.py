@@ -1,6 +1,6 @@
+import unittest
 import pandas as pd
 import numpy as np
-import unittest
 from libcbm.input.sit import sit_parser
 
 

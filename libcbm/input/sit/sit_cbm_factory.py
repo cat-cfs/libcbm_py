@@ -155,7 +155,8 @@ def initialize_cbm(db_path, dll_path, yield_table, classifiers,
             cbm_config.merch_volume_to_biomass_config(
                 db_path=db_path,
                 merch_volume_curves=get_merch_volumes(
-                    yield_table, classifiers, age_classes, sit_mapping)),
+                    yield_table, classifiers, classifier_values,
+                    age_classes, sit_mapping)),
         classifiers_factory=lambda: get_classifiers(
             classifiers, classifier_values))
 
