@@ -31,7 +31,8 @@ class SITMapping():
                 classifier/classifier value metadata
 
         Returns:
-            pandas.Series: a series of integer species ids
+            pandas.Series: a series of integer species ids.  The length of
+                the series matches the length of the species parameter.
         """
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",
@@ -197,6 +198,30 @@ class SITMapping():
                 default_eco_map)}).apply(spu_map_func, axis=1)
 
     def get_spatial_unit(self, inventory, classifiers, classifier_values):
+        """Get a pandas.Series containing spatial unit ids based on SIT
+        Inventory, SIT classifiers and the mapping configuration.
+
+        Args:
+            inventory (pandas.DataFrame): The parsed and validated SIT
+                inventory.  Use the return value of:
+                :py:func:`libcbm.input.sit.sit_inventory_parser.parse`
+            classifiers (pandas.DataFrame): The Standard import tool
+                classifiers definition. Use the return value of:
+                :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+            classifier_values (pandas.DataFrame): The Standard import tool
+                classifier values definition. Use the return value of:
+                :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+
+        Raises:
+            KeyError: the configuration resulted in an undefined spatial unit
+                id.
+            ValueError: the mapping mode in SIT configuration is not valid
+
+        Returns:
+            pandas.Series: the spatial unit ids for the inventory.  The number
+                of values in the series is the same as the number of rows in
+                the specified inventory.
+        """
         mapping_mode = self.config["spatial_units"]["mapping_mode"]
         if mapping_mode == "SingleDefaultSpatialUnit":
             default_spuid = self.config["spatial_units"]["default_spuid"]
