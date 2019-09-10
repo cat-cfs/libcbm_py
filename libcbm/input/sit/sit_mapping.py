@@ -317,6 +317,15 @@ class SITMapping():
         non_forest_classifier_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == non_forest_classifier]
 
+        missing_map_entries = np.setdiff1d(
+            non_forest_classifier_values["description"].unique(),
+            list(non_forest_map.keys()))
+
+        if len(missing_map_entries) > 0:
+            raise ValueError(
+                "the following non forest classifier descriptions were not "
+                f"mapped to a default type: {missing_map_entries}")
+
         default_nonforest_type_map = {
             row["classifier_value"]: row["default_species"]
             for _, row in pd.DataFrame({
@@ -326,9 +335,10 @@ class SITMapping():
                     non_forest_classifier_values["description"].map(
                         non_forest_map)}).iterrows()
         }
+
         undefined_values = np.setdiff1d(
             inventory[non_forest_classifier].unique(),
-            list(non_forest_map.keys())
+            list(default_nonforest_type_map.keys())
         )
         if len(undefined_values) > 0:
             raise ValueError(
