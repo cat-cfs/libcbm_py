@@ -317,3 +317,6 @@ class SITMapping():
                     "mapped.")
 
         return disturbance_type.map(map_func)
+
+    def get_land_class_id(self, landclass):
+        raise NotImplementedError()

@@ -123,7 +123,7 @@ def initialize_inventory(inventory, classifiers, classifier_values,
 
 
 def initialize_cbm(db_path, dll_path, yield_table, classifiers,
-                   classifier_values, age_classes):
+                   classifier_values, age_classes, sit_mapping):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -138,6 +138,9 @@ def initialize_cbm(db_path, dll_path, yield_table, classifiers,
             output of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
         age_classes (pandas.DataFrame): the parsed SIT age classes
             output of :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): instance of
+            SITMapping used to validate species classifier and fetch species id
+            for merch volume curves
 
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
@@ -152,7 +155,7 @@ def initialize_cbm(db_path, dll_path, yield_table, classifiers,
             cbm_config.merch_volume_to_biomass_config(
                 db_path=db_path,
                 merch_volume_curves=get_merch_volumes(
-                    yield_table, classifiers, age_classes)),
+                    yield_table, classifiers, age_classes, sit_mapping)),
         classifiers_factory=lambda: get_classifiers(
             classifiers, classifier_values))
 
