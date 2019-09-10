@@ -337,6 +337,25 @@ class SITMapping():
         return inventory[non_forest_classifier].map(default_nonforest_type_map)
 
     def get_disturbance_type_id(self, disturbance_type):
+        """Gets disturbance type ids based on the specified series of
+        disturbance types, and the SIT mapping.  Used to encode any of:
+
+            - historical disturbance type column in sit inventory
+            - last pass disturbance type column in sit inventory
+            - disturbance type column in sit disturbance events
+            - disturbacne type column in sit transition rules
+
+        Args:
+            disturbance_type (pandas.Series): A series of disturbance types
+
+        Raises:
+            KeyError: disturbance type mapped more than one time in SIT mapping
+            KeyError: mapped default disturbance type not found in default data
+            KeyError: sit disturbance type code not mapped to default type
+
+        Returns:
+            pandas.Series: a series of disturbance type ids
+        """
         disturbance_type_map = {}
         for item in self.config["disturbance_types"]:
             user_dist_type = item["user_dist_type"]
@@ -368,6 +387,24 @@ class SITMapping():
         return disturbance_type.map(map_func)
 
     def get_land_class_id(self, land_class):
+        """Produces a validated series of land class ids.
+
+        Args:
+            land_class (pandas.Series): a series of string land class
+                codes or integer land class ids. If strings are specified
+                the id associated with the name is used, and if ids are
+                specified they are validated and a copy of the input is
+                returned.
+
+        Raises:
+            ValueError: at least one of the specified land class codes are
+                not associated with defined land class ids
+            ValueError: at least one of the specified land class ids is not
+                a defined land class ids
+
+        Returns:
+            pandas.Series: The series of landclass ids
+        """
         land_classes_by_code = {
             x["code"]: x["land_class_id"]
             for x in self.cbm_defaults_ref.get_land_classes()}
