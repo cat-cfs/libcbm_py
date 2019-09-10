@@ -673,7 +673,7 @@ class SITMappingTest(unittest.TestCase):
         ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
         sit_mapping = SITMapping(config, ref)
         result = sit_mapping.get_disturbance_type_id(
-                pd.Series(["fire"]+["clearcut"]))
+            pd.Series(["fire"]+["clearcut"]))
         self.assertTrue(list(result) == [1, 2])
 
     def test_invalid_spatial_unit_mapping_mode_error(self):
@@ -857,5 +857,79 @@ class SITMappingTest(unittest.TestCase):
         ]
         sit_mapping = SITMapping(config, ref)
         result = sit_mapping.get_nonforest_cover_ids(
-                inventory, classifiers, classifier_values)
+            inventory, classifiers, classifier_values)
         self.assertTrue(list(result) == [15, -1, 15, -1])
+
+    def test_get_landclass_undefined_code_error(self):
+        """checks that an error is raised if an undefined code is used in the
+        input
+        """
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_land_classes():
+            return [
+                {"code": "code1", "land_class_id": 100},
+                {"code": "code2", "land_class_id": 200}
+            ]
+
+        ref.get_land_classes.side_effect = mock_get_land_classes
+        config = {}
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(ValueError):
+            sit_mapping.get_land_class_id(
+                pd.Series(["code_missing"]))
+
+    def test_get_landclass_undefined_id_error(self):
+        """checks that an error is raised if an undefined id is used in the
+        input"""
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_land_classes():
+            return [
+                {"code": "code1", "land_class_id": 100},
+                {"code": "code2", "land_class_id": 200}
+            ]
+
+        ref.get_land_classes.side_effect = mock_get_land_classes
+        config = {}
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(ValueError):
+            sit_mapping.get_land_class_id(
+                pd.Series([7000]))
+
+    def test_get_landclass_id_expected_value(self):
+        """tests the expected return of get_land_class_id when a Series of
+        land class id integers are passed"""
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_land_classes():
+            return [
+                {"code": "code1", "land_class_id": 100},
+                {"code": "code2", "land_class_id": 200}
+            ]
+
+        ref.get_land_classes.side_effect = mock_get_land_classes
+        config = {}
+        sit_mapping = SITMapping(config, ref)
+        result = sit_mapping.get_land_class_id(
+            pd.Series([100, 200, 100]))
+        # for this case, a validated copy of the input series is returned
+        self.assertTrue(list(result) == [100, 200, 100])
+
+    def test_get_landclass_id_expected_value_with_code(self):
+        """tests the expected return of get_land_class_id when a Series of
+        land class code strings are passed"""
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_land_classes():
+            return [
+                {"code": "code1", "land_class_id": 1000},
+                {"code": "code2", "land_class_id": 2000}
+            ]
+
+        ref.get_land_classes.side_effect = mock_get_land_classes
+        config = {}
+        sit_mapping = SITMapping(config, ref)
+        result = sit_mapping.get_land_class_id(
+            pd.Series(["code1", "code2", "code1"]))
+        self.assertTrue(list(result) == [1000, 2000, 1000])

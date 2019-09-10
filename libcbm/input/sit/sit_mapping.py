@@ -323,9 +323,9 @@ class SITMapping():
             x["code"]: x["land_class_id"]
             for x in self.cbm_defaults_ref.get_land_classes()}
         land_class_id = {x for x in land_classes_by_code.values()}
-        if land_class.dtype != np.number:
+        if land_class.dtype == np.object:
             undefined_land_classes = np.setdiff1d(
-                land_class.unique(), land_classes_by_code.keys())
+                land_class.unique(), list(land_classes_by_code.keys()))
             if len(undefined_land_classes) > 0:
                 raise ValueError(
                     "the specified landclass values are undefined: "
@@ -333,7 +333,7 @@ class SITMapping():
             return land_class.map(land_classes_by_code)
         else:
             undefined_land_classes = np.setdiff1d(
-                land_class.unique(), land_class_id)
+                land_class.unique(), list(land_class_id))
             if len(undefined_land_classes) > 0:
                 raise ValueError(
                     "the specified landclass ids are undefined: "
