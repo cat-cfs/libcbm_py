@@ -82,7 +82,17 @@ def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
 
 
 def initialize_inventory(sit_data, sit_mapping):
+    """Converts SIT inventory data input for CBM
 
+    Args:
+        sit_data (object): return value of
+            :py:func:`libcbm.input.sit.sit_reader.read`
+        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): class for
+            fetching default parameters based on SIT mapping.
+
+    Returns:
+        tuple: classifiers, inventory pandas.DataFrame pair for CBM use
+    """
     classifier_config = get_classifiers(
         sit_data.classifiers, sit_data.classifier_values)
     classifier_ids = [
