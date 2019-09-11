@@ -94,13 +94,16 @@ def initialize_inventory(inventory, classifiers, classifier_values,
             x["value"]: x["id"]
             for x in classifier_config["classifier_values"]
             if x["classifier_id"] == identifier}
+
+    classifiers_data = np.column_stack([
+        inventory[name].map(classifier_value_id_lookups[name])
+        for name in list(classifiers.name)
+    ])
+
+    classifiers_data = np.ascontiguousarray(classifiers_data)
     classifiers_result = pd.DataFrame(
-        data={
-            name: inventory[name].map(classifier_value_id_lookups[name])
-            for name in list(classifiers.name)},
+        data=classifiers_data,
         columns=list(classifiers.name))
-    classifiers_result = np.ascontiguousarray(
-        classifiers_result, dtype=np.int32)
 
     inventory_result = pd.DataFrame(
         data={
