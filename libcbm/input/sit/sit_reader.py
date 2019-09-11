@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 from types import SimpleNamespace
 
@@ -32,7 +31,7 @@ def load_table(config, config_dir):
 
     Args:
         config (dict): [description]
-        config_dir ([type]): [description]
+        config_dir (str): directory containing the configuration
 
     Raises:
         NotImplementedError: [description]
@@ -47,6 +46,8 @@ def load_table(config, config_dir):
         os.chdir(config_dir)
         if load_type == "csv":
             path = os.path.abspath(os.path.relpath(load_params["path"]))
+            load_params = load_params.copy()
+            del load_params["path"]
             return pd.read_csv(
                 filepath_or_buffer=path,
                 **load_params)
@@ -57,25 +58,24 @@ def load_table(config, config_dir):
         os.chdir(cwd)
 
 
-def read(config_path):
-    with open(config_path, 'r') as config_file:
-        config = json.load(config_file)
-    config_dir = os.path.dirname(config_file)
-    import_config = config["import_config"]
+def read(config, config_dir):
 
-    sit_classifiers = load_table(import_config["classifiers"], config_dir)
+    sit_classifiers = load_table(config["classifiers"], config_dir)
     sit_disturbance_types = load_table(
-        import_config["disturbance_types"], config_dir)
-    sit_age_classes = load_table(import_config["age_classes"], config_dir)
-    sit_inventory = load_table(import_config["inventory"], config_dir)
-    sit_yield = load_table(import_config["yield"], config_dir)
-    sit_events = load_table(import_config["events"], config_dir) \
-        if import_config["events"] else None
-    sit_transitions = load_table(import_config["transitions"], config_dir)
+        config["disturbance_types"], config_dir)
+    sit_age_classes = load_table(config["age_classes"], config_dir)
+    sit_inventory = load_table(config["inventory"], config_dir)
+    sit_yield = load_table(config["yield"], config_dir)
+    sit_events = load_table(config["events"], config_dir) \
+        if config["events"] else None
+    sit_transitions = load_table(config["transitions"], config_dir) \
+        if config["transitions"] else None
 
-    return parse(
+    sit_data = parse(
         sit_classifiers, sit_disturbance_types, sit_age_classes,
         sit_inventory, sit_yield, sit_events, sit_transitions)
+
+    return sit_data
 
 
 def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
@@ -119,7 +119,7 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
     Returns:
         object: an object containing parsed and validated SIT dataset
     """
-    s = SimpleNamespace
+    s = SimpleNamespace()
     classifiers, classifier_values, classifier_aggregates = \
         sit_classifier_parser.parse(sit_classifiers)
     s.classifiers = classifiers
