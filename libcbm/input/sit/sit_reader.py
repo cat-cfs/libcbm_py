@@ -1,3 +1,8 @@
+import os
+import json
+import pandas as pd
+from types import SimpleNamespace
+
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit import sit_disturbance_type_parser
 from libcbm.input.sit import sit_age_class_parser
@@ -5,13 +10,72 @@ from libcbm.input.sit import sit_inventory_parser
 from libcbm.input.sit import sit_yield_parser
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_transition_rule_parser
-from libcbm.input.sit.sit_mapping import SITMapping
-from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
-from types import SimpleNamespace
 
 
-def read(config):
-    pass
+def load_table(config, config_dir):
+    """Load a table based on the specified configuration.  The config_dir
+    is used to compute absolute paths for file based tables.
+
+    Supports The following formats:
+
+        CSV:
+
+        Used pandas.read_csv to load and return a pandas.DataFrame.
+        With the exception of the "path" parameter, all parameters
+        are passed as literal keyword args to the pandas.read_csv
+        function.
+
+        Example::
+
+            {"type": "csv"
+             "params": {"path": "my_file.csv", sep="\\t"}
+
+    Args:
+        config (dict): [description]
+        config_dir ([type]): [description]
+
+    Raises:
+        NotImplementedError: [description]
+
+    Returns:
+        [type]: [description]
+    """
+    load_type = config["type"]
+    load_params = config["params"]
+    cwd = os.getcwd()
+    try:
+        os.chdir(config_dir)
+        if load_type == "csv":
+            path = os.path.abspath(os.path.relpath(load_params["path"]))
+            return pd.read_csv(
+                filepath_or_buffer=path,
+                **load_params)
+        else:
+            raise NotImplementedError(
+                f"The specified table type {load_type} is not supported.")
+    finally:
+        os.chdir(cwd)
+
+
+def read(config_path):
+    with open(config_path, 'r') as config_file:
+        config = json.load(config_file)
+    config_dir = os.path.dirname(config_file)
+    import_config = config["import_config"]
+
+    sit_classifiers = load_table(import_config["classifiers"], config_dir)
+    sit_disturbance_types = load_table(
+        import_config["disturbance_types"], config_dir)
+    sit_age_classes = load_table(import_config["age_classes"], config_dir)
+    sit_inventory = load_table(import_config["inventory"], config_dir)
+    sit_yield = load_table(import_config["yield"], config_dir)
+    sit_events = load_table(import_config["events"], config_dir) \
+        if import_config["events"] else None
+    sit_transitions = load_table(import_config["transitions"], config_dir)
+
+    return parse(
+        sit_classifiers, sit_disturbance_types, sit_age_classes,
+        sit_inventory, sit_yield, sit_events, sit_transitions)
 
 
 def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
