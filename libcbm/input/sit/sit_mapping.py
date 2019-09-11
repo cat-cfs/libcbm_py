@@ -310,6 +310,9 @@ class SITMapping():
                 else:
                     non_forest_map[user_value] = -1
 
+        if non_forest_classifier is None:
+            return pd.Series(np.ones(inventory.shape[0])*-1)
+
         merged_classifiers = classifiers.merge(
             classifier_values, left_on="id", right_on="classifier_id",
             suffixes=["_classifier", "_classifier_value"])
