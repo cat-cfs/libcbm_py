@@ -1,0 +1,50 @@
+{
+    "nonforest": {
+        "nonforest_classifier": "non forest type",
+        "nonforest_mapping": [
+            {
+                "user_nonforest_type": "gleysolic",
+                "default_nonforest_type": "Gleysolic"
+            },
+            {
+                "user_nonforest_type": "forest only",
+                "default_nonforest_type": null
+            }
+        ]
+    },
+    "species": {
+        "species_classifier": "species",
+        "species_mapping": [
+            {
+                "user_species": "spruce",
+                "default_species": "Spruce"
+            },
+            {
+                "user_species": "pine",
+                "default_species": "Pine"
+            },
+            {
+                "user_species": "oak",
+                "default_species": "Oak"
+            }
+        ]
+    },
+    "spatial_units": {
+        "mapping_mode": "SingleDefaultSpatialUnit",
+        "default_spuid": 42
+    },
+    "disturbance_types": [
+        {
+            "user_dist_type": "fire",
+            "default_dist_type": "Wildfire"
+        },
+        {
+            "user_dist_type": "clearcut",
+            "default_dist_type": "Clear-cut with slash-burn"
+        },
+        {
+            "user_dist_type": "deforestation",
+            "default_dist_type": "Deforestation"
+        }
+    ]
+}

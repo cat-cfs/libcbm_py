@@ -1,0 +1,4 @@
+species,non forest type,using_age_class,age,area,delay,landclass,historic_disturbance,last_pass_disturbance,spatial_reference
+sp,f,N,10,1,0,0,dist1,dist2,0
+pn,f,False,100,1,0,0,dist1,dist1,1
+sp,nf,-1,0,1,10,1,dist1,dist1,2

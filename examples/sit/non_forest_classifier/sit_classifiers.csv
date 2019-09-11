@@ -1,0 +1,11 @@
+classifier_id,name,description,a0,a1
+1,_CLASSIFIER,species,,
+1,sp,spruce,,
+1,pn,pine,,
+1,oak,oak,,
+1,softwoods,softwoods,sp,pn
+1,hardwoods,hardwoods,oak,
+2,_CLASSIFIER,non forest type,,
+2,nf,gleysolic,,
+2,f,forest only,,
+2,nonforested,nonforested,nf,
