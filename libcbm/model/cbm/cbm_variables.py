@@ -272,6 +272,7 @@ def initialize_inventory(classifiers, inventory):
     i = SimpleNamespace()
     i.classifiers = np.ascontiguousarray(classifiers).astype(np.int32)
     i.age = inventory.age.to_numpy(dtype=np.int32)
+    i.area = inventory.area.to_numpy(dtype=np.int32)
     i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
     i.afforestation_pre_type_id = \
         inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32)
@@ -282,4 +283,18 @@ def initialize_inventory(classifiers, inventory):
         inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32)
     i.delay = inventory.delay.to_numpy(dtype=np.int32)
 
+    return i
+
+
+def initialize_simulation_variables(classifiers, inventory, pool_codes,
+                                    flux_indicator_codes):
+    n_stands = inventory.shape[0]
+    i = SimpleNamespace()
+    i.pools = initialize_pools(n_stands, pool_codes)
+    i.flux_indicators = initialize_flux(n_stands, flux_indicator_codes)
+    i.params = initialize_cbm_parameters(n_stands)
+    i.state = initialize_cbm_state_variables(n_stands)
+    i.inventory = initialize_inventory(
+        classifiers=classifiers,
+        inventory=inventory)
     return i
