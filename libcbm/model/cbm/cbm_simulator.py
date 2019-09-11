@@ -1,7 +1,7 @@
 from libcbm.model.cbm import cbm_variables
 
 
-def simulate(cbm, n_steps, inventory, classifiers, pool_codes,
+def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
              flux_indicator_codes, pre_dynamics_func, reporting_func):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
@@ -10,10 +10,10 @@ def simulate(cbm, n_steps, inventory, classifiers, pool_codes,
     Args:
         cbm (libcbm.model.cbm.cbm_model.CBM): Instance of the CBM model
         n_steps (int): The number of CBM timesteps to run
-        inventory (pandas.DataFrame): CBM inventory which defines the initial
-            state of the simulation
         classifiers (pandas.DataFrame): CBM classifiers for each of the rows
             in the inventory
+        inventory (pandas.DataFrame): CBM inventory which defines the initial
+            state of the simulation
         pool_codes (list): a list of strings describing each of the CBM pools
         flux_indicator_codes ([type]): [description]
         pre_dynamics_func (function): A function which both accepts and
@@ -34,11 +34,11 @@ def simulate(cbm, n_steps, inventory, classifiers, pool_codes,
 
     cbm.spinup(
         cbm_vars.inventory, cbm_vars.pools, spinup_variables, spinup_params)
-    cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.cbm_state)
+    cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)
     for time_step in range(1, n_steps + 1):
         cbm_vars = pre_dynamics_func(cbm_vars)
         cbm.step(
             cbm_vars.inventory, cbm_vars.pools, cbm_vars.flux_indicators,
-            cbm_vars.cbm_state, cbm_vars.cbm_params)
+            cbm_vars.state, cbm_vars.params)
         reporting_func(time_step, cbm_vars)
