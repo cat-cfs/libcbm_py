@@ -8,7 +8,7 @@ description of this format.
 
 Note the SIT format is a no column header, ordered column format, so any column
 labels in DataFrames passed to SIT parse functions function will be ignored
-by this function.
+by the parsing functions here.
 
 .. _CBM-CFS3-Manual: http://www.cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf
 
@@ -54,8 +54,8 @@ Transition Rules
 .. automodule:: libcbm.input.sit.sit_transition_rule_parser
     :members:
 
-General SIT methods
--------------------
+The SIT Format
+--------------
 
 .. automodule:: libcbm.input.sit.sit_parser
     :members:
@@ -63,5 +63,19 @@ General SIT methods
 .. automodule:: libcbm.input.sit.sit_format
     :members:
 
+Simulating SIT input
+--------------------
+
 .. automodule:: libcbm.input.sit.sit_cbm_factory
+    :members:
+
+Reading SIT input
+-----------------
+
+.. automodule:: libcbm.input.sit.sit_reader
+    :members:
+
+SIT Mapping
+-----------
+.. automodule:: libcbm.input.sit.sit_mapping
     :members:

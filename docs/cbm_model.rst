@@ -59,3 +59,7 @@ An instance of the CBM model can be created with the
 .. autoclass:: libcbm.model.cbm.cbm_model.CBM
     :members:
 
+Simulator
+---------
+
+.. automodule:: libcbm.model.cbm.cbm_simulator
