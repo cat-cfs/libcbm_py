@@ -77,5 +77,6 @@ Reading SIT input
 
 SIT Mapping
 -----------
-.. automodule:: libcbm.input.sit.sit_mapping
+
+.. autoclass:: libcbm.input.sit.sit_mapping.SITMapping
     :members:
