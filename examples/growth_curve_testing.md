@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.1'
-      jupytext_version: 1.2.1
+      jupytext_version: 1.2.3
   kernelspec:
     display_name: Python 3
     language: python
@@ -40,6 +40,7 @@ from libcbm.test.cbm import case_generation
 from libcbm.test.cbm.cbm3_support import cbm3_simulator
 from libcbm.test.cbm import test_case_simulator
 from libcbm.test.cbm import pool_comparison
+from libcbm.test.cbm import result_comparison
 ```
 
 
@@ -109,40 +110,31 @@ cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 join the results for plotting
 
 ```python
-pools_merged, pool_diffs = pool_comparison.join_pools(libcbm_result["pools"], cbm3_result["pools"], "biomass")
+pools_merged = pool_comparison.get_merged_pools(cbm3_result["pools"], libcbm_result["pools"], "biomass")
 ```
 
 plot the worst 20 differences
 
 ```python
-pool_diffs_totals = pool_diffs.drop(columns="timestep")
-pool_diffs_totals \
-    .groupby("identifier").sum() \
-    .sort_values("abs_total_diff", ascending=False) \
-    .head(20) \
-    .plot(figsize=(15,10), kind="bar")
-```
+result_comparison.get_summarized_diff_plot(
+    merged=pools_merged, max_results=20, figsize=(15,10), kind="bar",
+    x_label="test case identifer",
+    y_label="summed pool differences [tonnes C/ha]",
+    title="Libcbm versus CBM3 Biomass: sum of libcbm minus CBM3 for all timesteps")
 
-```python
-def plot_diff(id):
-    markers = ["o","v","^","<",">","1","2","3","4","8","s","p","P","*","h","H","+","x","X","D","d"]
-    bio_pools = pools_merged[pools_merged["identifier"]==id]
-    bio_pools = bio_pools.drop(columns="identifier")
-    bio_pools = bio_pools.groupby("timestep").sum()
-    ax = bio_pools.plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
-    for i, line in enumerate(ax.get_lines()):
-        line.set_marker(markers[i%len(markers)])
-    ax.legend(ax.get_lines(), bio_pools.columns, loc='best')
-    bio_diffs = pool_diffs[pool_diffs["identifier"]==id]
-    bio_diffs = bio_diffs.drop(columns="identifier")
-    bio_diffs.groupby("timestep").sum() \
-        .plot(figsize=(15,12), title=case_generation.get_classifier_value_name(id))
 ```
 
 plot a few of the worst cases for debugging
 
 ```python
-plot_diff(2)
-plot_diff(3)
+result_comparison.get_test_case_comparison_plot(
+    identifier=2, merged=pools_merged, diff=False,
+    x_label="time step", y_label="pool value [tonnes C/ha]", figsize=(15,10))
+result_comparison.get_test_case_comparison_plot(
+    identifier=2, merged=pools_merged, diff=True,
+    x_label="time step", y_label="pool value [tonnes C/ha]", figsize=(15,10))
+```
+
+```python
 
 ```
