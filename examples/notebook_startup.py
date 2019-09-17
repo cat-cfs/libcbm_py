@@ -49,4 +49,7 @@ def load_settings():
     else:
         with open(local_settings_path) as local_settings_file:
             settings = json.load(local_settings_file)
+            keys = settings.keys()
+            for key in keys:
+                settings[key] = os.path.normpath(settings[key])
             return settings
