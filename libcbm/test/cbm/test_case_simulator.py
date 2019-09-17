@@ -230,6 +230,7 @@ def initialize_inventory(cbm, cases, classifier_name, ref):
         classifiers=classifiers,
         inventory=pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
+            "area": np.ones(n_stands),
             "spatial_unit": spatial_units,
             "afforestation_pre_type_id": afforestation_pre_type_id,
             "land_class": land_class,
