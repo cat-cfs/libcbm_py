@@ -17,6 +17,8 @@ jupyter:
 import pandas as pd
 import numpy as np
 import cProfile 
+import plotly.graph_objects as go 
+%matplotlib inline
 ```
 
 ```python
@@ -75,7 +77,7 @@ ref = CBMDefaultsReference(db_path)
 ```
 
 ```python
-n_stands = 9000
+n_stands = 1000
 
 pools = cbm_variables.initialize_pools(n_stands, ref.get_pools())
 flux_indicators = cbm_variables.initialize_flux(n_stands, ref.get_flux_indicators())
@@ -89,6 +91,7 @@ inventory = cbm_variables.initialize_inventory(
     }),
     inventory=pd.DataFrame({
         "age": np.random.randint(low=0, high=300, size=n_stands, dtype=np.int),
+        "area": np.ones(n_stands),
         "spatial_unit": np.ones(n_stands, dtype=np.int) * 42,
         "afforestation_pre_type_id": np.ones(n_stands, dtype=np.int) * -1,
         "land_class": np.ones(n_stands, dtype=np.int) * 0,
@@ -104,7 +107,34 @@ cProfile.run('cbm.spinup(inventory, pools, spinup_variables, spinup_params)')
 ```
 
 ```python
-36.280/9*1000/60
+cProfile.run('cbm.init(inventory, pools, cbm_state)')
+```
+
+```python
+cProfile.run('for i in range(0,200): cbm.step(inventory, pools, flux_indicators, cbm_state, cbm_params)')
+```
+
+# total time used for numeric processing of 1000 stands 
+  - spinup: 4.983 seconds
+  - initialization and CBM 200 timesteps: 0.774 seconds
+  - total: 5.757 seconds
+
+```python
+def project_time(time_per_single_thread_stand, n_projected_stands, max_threads):
+    time_single_thread = time_per_single_thread_stand * n_projected_stands
+    n_threads_axis = list(range(1,max_threads+1))
+    time_axis = [time_single_thread/x for x in n_threads_axis]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=n_threads_axis,y=time_axis        
+    ))
+    fig.update_layout(yaxis_type="log")
+    fig.show()
+    return pd.DataFrame({"n_threads": n_threads_axis, "time [s]": time_axis})
+```
+
+```python
+project_time(5.757/1000, 1e6, 40)
 ```
 
 ```python
@@ -113,24 +143,7 @@ results = pd.DataFrame(
     data=[(10, 3.150),(50, 3.515),(100, 3.78),(1000, 9.135),
      (2000, 14.921),(4500,29.698),(5000, 33.918),
      (7000,46.470),(9000,58.779)])
-
-```
-
-```python
 results.groupby("n_stands").sum().plot()
-```
-
-```python
-#projected minutes per million stands spinup (single thread)
-9.135*1000/60
-```
-
-```python
-cProfile.run('cbm.init(inventory, pools, cbm_state)')
-```
-
-```python
-cProfile.run('for i in range(0,200): cbm.step(inventory, pools, flux_indicators, cbm_state, cbm_params)')
 ```
 
 ```python

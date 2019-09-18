@@ -17,6 +17,7 @@ jupyter:
 import json, os
 from types import SimpleNamespace
 import notebook_startup
+
 %matplotlib inline
 ```
 
