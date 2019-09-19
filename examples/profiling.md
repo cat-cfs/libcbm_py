@@ -134,7 +134,7 @@ def project_time(time_per_single_thread_stand, n_projected_stands, max_threads):
 ```
 
 ```python
-project_time(5.757/1000, 1e6, 40)
+project_time(5.757/1000, 1e6, 200)
 ```
 
 ```python

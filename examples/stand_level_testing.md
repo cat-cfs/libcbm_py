@@ -60,7 +60,7 @@ generate random test cases
 ```python
 cases = case_generation.generate_scenarios(
     random_seed = 1,
-    num_cases = 5,
+    num_cases = 500,
     db_path = cbm_defaults_db_path,
     n_steps = n_steps,
     max_disturbances = 3,
@@ -212,4 +212,8 @@ result_comparison.get_test_case_comparison_plot(
 
 ```python
 merged_state[merged_state["identifier"]==3]
+```
+
+```python
+
 ```

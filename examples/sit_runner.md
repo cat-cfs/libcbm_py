@@ -80,17 +80,29 @@ cbm_simulator.simulate(
 
 ```python
 pi = results.pool_indicators
-list(pi)
 ```
 
 ```python
-biomass_pools = ['SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots', 'SoftwoodFineRoots', 'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots']
+biomass_pools = ['SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots', 'SoftwoodFineRoots',
+                 'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots']
+
+dom_pools = ['AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil', 'AboveGroundFastSoil', 'BelowGroundFastSoil',
+             'MediumSoil', 'AboveGroundSlowSoil', 'BelowGroundSlowSoil', 'SoftwoodStemSnag', 'SoftwoodBranchSnag',
+             'HardwoodStemSnag', 'HardwoodBranchSnag']
 
 pi[pi.identifier==1][['timestep']+biomass_pools].groupby("timestep").sum().plot(figsize=(10,10))
+pi[pi.identifier==1][['timestep']+dom_pools].groupby("timestep").sum().plot(figsize=(10,10))
 ```
 
 ```python
 list(results.state_indicators)
+#si = results.state_indicators
+```
+
+```python
+state_variables = ['timestep','last_disturbance_type', 'time_since_last_disturbance', 'time_since_land_class_change',
+ 'growth_enabled', 'enabled', 'land_class', 'age', 'growth_multiplier', 'regeneration_delay']
+si[si.identifier==1][state_variables].groupby('timestep').sum().plot(figsize=(10,10))
 ```
 
 ```python

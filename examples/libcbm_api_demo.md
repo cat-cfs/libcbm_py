@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.1'
-      jupytext_version: 1.2.1
+      jupytext_version: 1.2.3
   kernelspec:
     display_name: Python 3
     language: python
@@ -118,6 +118,7 @@ cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config)
 classifiers = pd.DataFrame({"growth_curve": np.ones(1, dtype=np.int32)})
 inventory = pd.DataFrame({
     "age": [0],
+    "area": [1],
     "spatial_unit": [42],
     "afforestation_pre_type_id": [0],
     "land_class": [1],
