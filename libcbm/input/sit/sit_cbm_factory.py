@@ -1,5 +1,6 @@
 import os
 import json
+from types import SimpleNamespace
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_defaults
@@ -87,18 +88,18 @@ def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
     return output
 
 
-def initialize_inventory(sit_data, sit_mapping):
+def initialize_inventory(sit):
     """Converts SIT inventory data input for CBM
 
     Args:
-        sit_data (object): return value of
-            :py:func:`libcbm.input.sit.sit_reader.read`
-        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): class for
-            fetching default parameters based on SIT mapping.
+        sit (object): sit instance as returned by :py:func:`load_sit`
 
     Returns:
         tuple: classifiers, inventory pandas.DataFrame pair for CBM use
     """
+    sit_data = sit.sit_data
+    sit_mapping = sit.sit_mapping
+
     classifier_config = get_classifiers(
         sit_data.classifiers, sit_data.classifier_values)
     classifier_ids = [
@@ -144,52 +145,65 @@ def initialize_inventory(sit_data, sit_mapping):
     return classifiers_result, inventory_result
 
 
-def _load_sit(config_path, db_path):
+def load_sit(config_path, db_path=None):
+    """Loads data and objects required to run from the SIT format.
+
+    Args:
+        config_path (str): path to SIT configuration
+        db_path (str, optional): path to a cbm_defaults database. If None, the
+            default database is used. Defaults to None.
+
+    Returns:
+        types.SimpleNamespace: object with parsed SIT data and objects
+    """
+    sit = SimpleNamespace()
+
+    if not db_path:
+        db_path = libcbm.resources.get_cbm_defaults_path()
+
     with open(config_path, 'r') as config_file:
         config = json.load(config_file)
         cbm_defaults_ref = CBMDefaultsReference(db_path)
-        sit_data = sit_reader.read(
+        sit.config = config
+        sit.sit_data = sit_reader.read(
             config["import_config"], os.path.dirname(config_path))
-        sit_mapping = SITMapping(
+        sit.sit_mapping = SITMapping(
             config["mapping_config"], cbm_defaults_ref)
-        return sit_data, sit_mapping
+        sit.db_path = db_path
+        sit.defaults = cbm_defaults_ref
+        return sit
 
 
-def initialize_cbm(sit_config_path, db_path=None, dll_path=None):
+def initialize_cbm(sit, dll_path=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
     Args:
-        db_path (str): path to a cbm_defaults database
-        dll_path (str): path to the libcbm compiled library
-        sit_data (object): a standard import dataset as returned by:
-            :py:func:`libcbm.input.sit.sit_reader.read`
-        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): class used to
-            link sit data to default parameters
+        sit (object): sit instance as returned by :py:func:`load_sit`
+        dll_path (str): path to the libcbm compiled library, if not
+            specified a default value is used.
 
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
     """
-    if not db_path:
-        db_path = libcbm.resources.get_cbm_defaults_path()
+
     if not dll_path:
         dll_path = libcbm.resources.get_libcbm_bin_path()
-    sit_data, sit_mapping = _load_sit(sit_config_path, db_path)
 
     cbm = cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
-            db_path),
+            sit.db_path),
         cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
-            db_path),
+            sit.db_path),
         merch_volume_to_biomass_factory=lambda:
             cbm_config.merch_volume_to_biomass_config(
-                db_path=db_path,
+                db_path=sit.db_path,
                 merch_volume_curves=get_merch_volumes(
-                    sit_data.yield_table, sit_data.classifiers,
-                    sit_data.classifier_values, sit_data.age_classes,
-                    sit_mapping)),
+                    sit.sit_data.yield_table, sit.sit_data.classifiers,
+                    sit.sit_data.classifier_values, sit.sit_data.age_classes,
+                    sit.sit_mapping)),
         classifiers_factory=lambda: get_classifiers(
-            sit_data.classifiers, sit_data.classifier_values))
+            sit.sit_data.classifiers, sit.sit_data.classifier_values))
 
     return cbm
