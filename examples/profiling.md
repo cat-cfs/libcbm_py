@@ -103,7 +103,6 @@ inventory = cbm_variables.initialize_inventory(
 
 ```python
 cProfile.run('cbm.spinup(inventory, pools, spinup_variables, spinup_params)')
-
 ```
 
 ```python
@@ -133,8 +132,14 @@ def project_time(time_per_single_thread_stand, n_projected_stands, max_threads):
     return pd.DataFrame({"n_threads": n_threads_axis, "time [s]": time_axis})
 ```
 
+Projected time to run 1 million stands through spinup and 200 CBM timesteps by number of threads
+
 ```python
 project_time(5.757/1000, 1e6, 200)
+```
+
+```python
+
 ```
 
 ```python

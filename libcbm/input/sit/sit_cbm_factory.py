@@ -164,6 +164,7 @@ def load_sit(config_path, db_path=None):
     with open(config_path, 'r') as config_file:
         config = json.load(config_file)
         cbm_defaults_ref = CBMDefaultsReference(db_path)
+        sit.config_path = config_path
         sit.config = config
         sit.sit_data = sit_reader.read(
             config["import_config"], os.path.dirname(config_path))

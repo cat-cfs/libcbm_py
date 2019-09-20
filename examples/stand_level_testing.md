@@ -60,7 +60,7 @@ generate random test cases
 ```python
 cases = case_generation.generate_scenarios(
     random_seed = 1,
-    num_cases = 500,
+    num_cases = 5,
     db_path = cbm_defaults_db_path,
     n_steps = n_steps,
     max_disturbances = 3,
@@ -72,7 +72,15 @@ cases = case_generation.generate_scenarios(
 ```
 
 ```python
+cases
+```
+
+```python
 libcbm_result = test_case_simulator.run_test_cases(cbm_defaults_db_path, libcbm_path, cases, n_steps, spinup_debug=False)
+```
+
+```python
+
 ```
 
 ```python
@@ -148,7 +156,7 @@ result_comparison.get_summarized_diff_plot(
 ```
 
 ```python
-test_case_identifier =3
+test_case_identifier =4
 ```
 
 ```python
