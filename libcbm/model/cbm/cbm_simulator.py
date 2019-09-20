@@ -1,4 +1,24 @@
+from types import SimpleNamespace
+from libcbm import data_helpers
 from libcbm.model.cbm import cbm_variables
+
+
+def create_in_memory_reporting_func():
+    results = SimpleNamespace()
+    results.pool_indicators = None
+    results.flux_indicators = None
+    results.state_indicators = None
+
+    def append_simulation_result(timestep, cbm_vars):
+        results.pool_indicators = data_helpers.append_simulation_result(
+            results.pool_indicators, cbm_vars.pools, timestep)
+        if timestep > 0:
+            results.flux_indicators = data_helpers.append_simulation_result(
+                results.flux_indicators, cbm_vars.flux_indicators, timestep)
+        results.state_indicators = data_helpers.append_simulation_result(
+            results.state_indicators, cbm_vars.state, timestep)
+
+    return results, append_simulation_result
 
 
 def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
