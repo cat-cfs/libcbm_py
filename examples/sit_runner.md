@@ -13,69 +13,52 @@ jupyter:
     name: python3
 ---
 
-```python
-import json, os
-from types import SimpleNamespace
-import notebook_startup
+# Standard Import tool demonstration
 
+```python
+import os
 %matplotlib inline
 ```
 
 ```python
-from libcbm import data_helpers
-from libcbm.input.sit import sit_reader
+import notebook_startup
 from libcbm.input.sit import sit_cbm_factory
-from libcbm.input.sit.sit_mapping import SITMapping
-from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.model.cbm import cbm_simulator
 ```
 
 ```python
-settings = notebook_startup.load_settings()
-dll_path = settings["libcbm_path"]
-db_path = settings["cbm_defaults_db_path"]
-cbm_defaults_ref = CBMDefaultsReference(db_path)
-```
-
-```python
 config_path = os.path.abspath("./sit/growth_only/sit_config.json")
-with open(config_path, 'r') as config_file:
-    config = json.load(config_file)
-sit_data = sit_reader.read(config["import_config"], os.path.dirname(config_path))
-sit_mapping = SITMapping(config["mapping_config"], cbm_defaults_ref)
+sit = sit_cbm_factory.load_sit(config_path)
 ```
 
 ```python
-cbm = sit_cbm_factory.initialize_cbm(
-    db_path, dll_path, sit_data, sit_mapping)
+classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 ```
 
 ```python
-classifiers, inventory = sit_cbm_factory.initialize_inventory(
-    sit_data, sit_mapping)
+cbm = sit_cbm_factory.initialize_cbm(sit)
 ```
 
 ```python
-results = SimpleNamespace()
-results.pool_indicators = None
-results.flux_indicators = None
-results.state_indicators = None
-
-def append_simulation_result(timestep, cbm_vars):
-    results.pool_indicators = data_helpers.append_simulation_result(
-        results.pool_indicators, cbm_vars.pools, timestep)
-    if timestep > 0:
-        results.flux_indicators = data_helpers.append_simulation_result(
-            results.flux_indicators, cbm_vars.flux_indicators, timestep)
-    results.state_indicators = data_helpers.append_simulation_result(
-        results.state_indicators, cbm_vars.state, timestep)
-    
+results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
 ```
 
 ```python
 cbm_simulator.simulate(
-    cbm, 100, classifiers, inventory, cbm_defaults_ref.get_pools(), cbm_defaults_ref.get_flux_indicators(),
-    pre_dynamics_func = lambda x: x, reporting_func=append_simulation_result)
+    cbm, 100, classifiers, inventory, 
+    sit.defaults.get_pools(), 
+    sit.defaults.get_flux_indicators(), 
+    pre_dynamics_func = lambda x: x,
+    reporting_func=reporting_func)
+
+```
+
+```python
+
+```
+
+```python
+
 ```
 
 ```python
@@ -96,7 +79,7 @@ pi[pi.identifier==1][['timestep']+dom_pools].groupby("timestep").sum().plot(figs
 
 ```python
 list(results.state_indicators)
-#si = results.state_indicators
+si = results.state_indicators
 ```
 
 ```python

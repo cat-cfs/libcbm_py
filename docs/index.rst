@@ -43,6 +43,7 @@ Code Documentation
    cbm_model
    cbm_input_and_variables
    cbm_sit
+   sit_runner
    cbm_testing
    cbm_core_functions
    libcbm_core_functions
