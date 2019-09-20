@@ -1,8 +1,14 @@
+import os
+import json
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
+from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.input.sit.sit_mapping import SITMapping
+from libcbm.input.sit import sit_reader
+import libcbm.resources
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -138,7 +144,18 @@ def initialize_inventory(sit_data, sit_mapping):
     return classifiers_result, inventory_result
 
 
-def initialize_cbm(db_path, dll_path, sit_data, sit_mapping):
+def _load_sit(config_path, db_path):
+    with open(config_path, 'r') as config_file:
+        config = json.load(config_file)
+        cbm_defaults_ref = CBMDefaultsReference(db_path)
+        sit_data = sit_reader.read(
+            config["import_config"], os.path.dirname(config_path))
+        sit_mapping = SITMapping(
+            config["mapping_config"], cbm_defaults_ref)
+        return sit_data, sit_mapping
+
+
+def initialize_cbm(sit_config_path, db_path=None, dll_path=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -153,6 +170,10 @@ def initialize_cbm(db_path, dll_path, sit_data, sit_mapping):
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
     """
+    if not db_path:
+        db_path = libcbm.resources.
+    sit_data, sit_mapping = _load_sit(sit_config_path)
+
     cbm = cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
