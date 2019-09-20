@@ -171,8 +171,10 @@ def initialize_cbm(sit_config_path, db_path=None, dll_path=None):
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
     """
     if not db_path:
-        db_path = libcbm.resources.
-    sit_data, sit_mapping = _load_sit(sit_config_path)
+        db_path = libcbm.resources.get_cbm_defaults_path()
+    if not dll_path:
+        dll_path = libcbm.resources.get_libcbm_bin_path()
+    sit_data, sit_mapping = _load_sit(sit_config_path, db_path)
 
     cbm = cbm_factory.create(
         dll_path=dll_path,
