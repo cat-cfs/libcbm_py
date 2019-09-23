@@ -12,6 +12,10 @@ cbm_defaults_db = [
     os.path.join(resources_dir, "cbm_defaults_db", x)
     for x in ["cbm_defaults_2018.db", "cbm_defaults_2019.db"]]
 
+cbm_defaults_queries = [
+    os.path.join("model", "cbm", "cbm_defaults_queries", "*.sql")
+]
+
 win_x86_64_bin = [
     os.path.join(resources_dir, "libcbm_bin", "win_x86_64", x)
     for x in [
@@ -23,6 +27,7 @@ ubuntu_18_04_x86_64_bin = [
     os.path.join(resources_dir, "libcbm_bin", "ubuntu_18_04_x86_64", x)
     for x in ["cbm.a", "core.a", "libcbm.so", "volume_to_biomass.a"]
 ]
+
 
 setup(
     name="libcbm",
@@ -40,7 +45,9 @@ setup(
     download_url="",
     packages=find_packages(),
     package_data={
-        "libcbm": cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin
+        "libcbm":
+            cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin +
+            cbm_defaults_queries
     },
     install_requires=["numpy", "pandas", "scipy"]
 )
