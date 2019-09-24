@@ -4,6 +4,20 @@ from libcbm.model.cbm import cbm_variables
 
 
 def create_in_memory_reporting_func():
+    """Create storage and a function for simulation results.  The function
+    return value can be passed to :py:func:`simulate` to track simultion
+    results.
+
+    Returns:
+        tuple: a pair of values:
+
+            1. types.SimpleNameSpace: an object with properties:
+              - pool_indicators a pandas.DataFrame for storing pools
+              - flux_indicators a pandas.DataFrame for storing fluxes
+              - state_indicators a pandas.DataFrame for storing state
+            2. func: a function for appending to the above results dataframes
+
+    """
     results = SimpleNamespace()
     results.pool_indicators = None
     results.flux_indicators = None
@@ -35,7 +49,8 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
         inventory (pandas.DataFrame): CBM inventory which defines the initial
             state of the simulation
         pool_codes (list): a list of strings describing each of the CBM pools
-        flux_indicator_codes ([type]): [description]
+        flux_indicator_codes (list): a list of strings describing the CBM flux
+            indicators.
         pre_dynamics_func (function): A function which both accepts and
             returns all CBM variables.  The layout of the CBM variables is the
             same as the return value of

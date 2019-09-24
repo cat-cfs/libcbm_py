@@ -46,7 +46,8 @@ class SITIntegrationTest(unittest.TestCase):
                 ("1", "fire")]),
             sit_age_classes=sit_age_class_parser.generate_sit_age_classes(
                 5, 100),
-            sit_inventory=pd.DataFrame(data=[("a", False, 100, 1, 0, 0, "1", "1")]),
+            sit_inventory=pd.DataFrame(
+                data=[("a", False, 100, 1, 0, 0, "1", "1")]),
             sit_yield=pd.DataFrame([
                 ["a", "a"] +
                 [x*15 for x in range(0, 20+1)]]),
