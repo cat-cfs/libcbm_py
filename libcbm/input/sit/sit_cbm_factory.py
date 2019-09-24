@@ -145,6 +145,52 @@ def initialize_inventory(sit):
     return classifiers_result, inventory_result
 
 
+def read_sit_config(config_path):
+    """Load SIT data and configuration from the json formatted configuration
+    file at specified config_path.
+
+    Args:
+        config_path (str): path to SIT configuration
+
+    Returns:
+        types.SimpleNamespace: an object with the following properties:
+
+            - config: the dictionary representation of the json configuration
+                at the specified config_path
+            - sit_data: if the "import_config" key is present in the
+                configuration, this is a loaded and parsed sit dataset, and
+                otherwise it is None.
+    """
+    sit = SimpleNamespace()
+    with open(config_path, 'r') as config_file:
+        sit.config = json.load(config_file)
+        config_path = config_path
+        if "import_config" in sit.config:
+            sit.sit_data = sit_reader.read(
+                sit.config["import_config"], os.path.dirname(config_path))
+        else:
+            sit.sit_data = None
+        return sit
+
+
+def initialize_sit_objects(sit, db_path=None):
+    """Load and attach objects required for the SIT to the specified namespace
+
+    Args:
+        sit (types.SimpleNamespace): [description]
+        db_path (str, optional): path to a cbm_defaults database. If None, the
+            default database is used. Defaults to None.
+    """
+    if not db_path:
+        db_path = libcbm.resources.get_cbm_defaults_path()
+    cbm_defaults_ref = CBMDefaultsReference(db_path)
+    sit.sit_mapping = SITMapping(
+        sit.config["mapping_config"], cbm_defaults_ref)
+    sit.db_path = db_path
+    sit.defaults = cbm_defaults_ref
+    return sit
+
+
 def load_sit(config_path, db_path=None):
     """Loads data and objects required to run from the SIT format.
 
@@ -154,25 +200,13 @@ def load_sit(config_path, db_path=None):
             default database is used. Defaults to None.
 
     Returns:
-        types.SimpleNamespace: object with parsed SIT data and objects
+        types.SimpleNamespace: object with parsed SIT data and objects.
     """
-    sit = SimpleNamespace()
 
-    if not db_path:
-        db_path = libcbm.resources.get_cbm_defaults_path()
+    sit = read_sit_config(config_path)
+    sit = initialize_sit_objects(sit, db_path)
 
-    with open(config_path, 'r') as config_file:
-        config = json.load(config_file)
-        cbm_defaults_ref = CBMDefaultsReference(db_path)
-        sit.config_path = config_path
-        sit.config = config
-        sit.sit_data = sit_reader.read(
-            config["import_config"], os.path.dirname(config_path))
-        sit.sit_mapping = SITMapping(
-            config["mapping_config"], cbm_defaults_ref)
-        sit.db_path = db_path
-        sit.defaults = cbm_defaults_ref
-        return sit
+    return sit
 
 
 def initialize_cbm(sit, dll_path=None):
