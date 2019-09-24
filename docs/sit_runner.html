@@ -1,0 +1,1328 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Standard Import tool demonstration &#8212; libcbm  documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CBM testing" href="cbm_testing.html" />
+    <link rel="prev" title="CBM Standard Import tool format" href="cbm_sit.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_testing.html" title="CBM testing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cbm_sit.html" title="CBM Standard Import tool format"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Standard Import tool demonstration</a><ul>
+<li><a class="reference internal" href="#Setup">Setup</a></li>
+<li><a class="reference internal" href="#Simulation">Simulation</a></li>
+<li><a class="reference internal" href="#Pool-Results">Pool Results</a></li>
+<li><a class="reference internal" href="#State-Variable-Results">State Variable Results</a></li>
+<li><a class="reference internal" href="#Flux-Indicators">Flux Indicators</a></li>
+<li><a class="reference internal" href="#Appendix">Appendix</a><ul>
+<li><a class="reference internal" href="#SIT-source-data">SIT source data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm_sit.html"
+                        title="previous chapter">CBM Standard Import tool format</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_testing.html"
+                        title="next chapter">CBM testing</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/sit_runner.ipynb.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 7ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Standard-Import-tool-demonstration">
+<h1>Standard Import tool demonstration<a class="headerlink" href="#Standard-Import-tool-demonstration" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">notebook_startup</span>
+<span class="kn">from</span> <span class="nn">libcbm.input.sit</span> <span class="k">import</span> <span class="n">sit_cbm_factory</span>
+<span class="kn">from</span> <span class="nn">libcbm.model.cbm</span> <span class="k">import</span> <span class="n">cbm_simulator</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Setup">
+<h2>Setup<a class="headerlink" href="#Setup" title="Permalink to this headline">¶</a></h2>
+<p>Load the standard import tool configuration at the specified path. This configuration encompasses the data source for the various sit inputs (sit_inventory, sit_classifiers etc.) and also the relationships of classifiers, and disturbance types to the default CBM parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;./sit/growth_only/sit_config.json&quot;</span><span class="p">)</span>
+<span class="n">sit</span> <span class="o">=</span> <span class="n">sit_cbm_factory</span><span class="o">.</span><span class="n">load_sit</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Initialize and validate the inventory in the sit dataset</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">classifiers</span><span class="p">,</span> <span class="n">inventory</span> <span class="o">=</span> <span class="n">sit_cbm_factory</span><span class="o">.</span><span class="n">initialize_inventory</span><span class="p">(</span><span class="n">sit</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Initialize an instance of the CBM model</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">cbm</span> <span class="o">=</span> <span class="n">sit_cbm_factory</span><span class="o">.</span><span class="n">initialize_cbm</span><span class="p">(</span><span class="n">sit</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Create storage and a function for storing CBM simulation results. This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">results</span><span class="p">,</span> <span class="n">reporting_func</span> <span class="o">=</span> <span class="n">cbm_simulator</span><span class="o">.</span><span class="n">create_in_memory_reporting_func</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Simulation">
+<h2>Simulation<a class="headerlink" href="#Simulation" title="Permalink to this headline">¶</a></h2>
+<p>The following line of code spins up the CBM inventory and runs it through 100 timesteps.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">cbm_simulator</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">cbm</span><span class="p">,</span>
+    <span class="n">n_steps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">classifiers</span><span class="o">=</span><span class="n">classifiers</span><span class="p">,</span>
+    <span class="n">inventory</span><span class="o">=</span><span class="n">inventory</span><span class="p">,</span>
+    <span class="n">pool_codes</span><span class="o">=</span><span class="n">sit</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">get_pools</span><span class="p">(),</span>
+    <span class="n">flux_indicator_codes</span><span class="o">=</span><span class="n">sit</span><span class="o">.</span><span class="n">defaults</span><span class="o">.</span><span class="n">get_flux_indicators</span><span class="p">(),</span>
+    <span class="n">pre_dynamics_func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+    <span class="n">reporting_func</span><span class="o">=</span><span class="n">reporting_func</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Pool-Results">
+<h2>Pool Results<a class="headerlink" href="#Pool-Results" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pi</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">pool_indicators</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pi</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>identifier</th>
+      <th>timestep</th>
+      <th>Input</th>
+      <th>SoftwoodMerch</th>
+      <th>SoftwoodFoliage</th>
+      <th>SoftwoodOther</th>
+      <th>SoftwoodCoarseRoots</th>
+      <th>SoftwoodFineRoots</th>
+      <th>HardwoodMerch</th>
+      <th>HardwoodFoliage</th>
+      <th>...</th>
+      <th>BelowGroundSlowSoil</th>
+      <th>SoftwoodStemSnag</th>
+      <th>SoftwoodBranchSnag</th>
+      <th>HardwoodStemSnag</th>
+      <th>HardwoodBranchSnag</th>
+      <th>CO2</th>
+      <th>CH4</th>
+      <th>CO</th>
+      <th>NO2</th>
+      <th>Products</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>2.214858</td>
+      <td>1.947779</td>
+      <td>6.477017</td>
+      <td>1.562792</td>
+      <td>0.799212</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>71.029425</td>
+      <td>22.183571</td>
+      <td>4.636539</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5565.890493</td>
+      <td>5.284379</td>
+      <td>47.557945</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>35.620019</td>
+      <td>2.494587</td>
+      <td>10.526642</td>
+      <td>9.860282</td>
+      <td>0.938075</td>
+      <td>38.721871</td>
+      <td>4.626631</td>
+      <td>...</td>
+      <td>157.978060</td>
+      <td>3.449189</td>
+      <td>0.731767</td>
+      <td>3.738908</td>
+      <td>1.385104</td>
+      <td>15441.816791</td>
+      <td>14.538085</td>
+      <td>130.838452</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>3</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>0.470588</td>
+      <td>3.098615</td>
+      <td>3.352962</td>
+      <td>0.973983</td>
+      <td>0.562738</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>70.992454</td>
+      <td>22.158805</td>
+      <td>4.541747</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5565.629202</td>
+      <td>5.284379</td>
+      <td>47.557945</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>2.581305</td>
+      <td>2.074610</td>
+      <td>7.136709</td>
+      <td>1.753310</td>
+      <td>0.864652</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>...</td>
+      <td>70.943349</td>
+      <td>21.258643</td>
+      <td>4.069901</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>5568.278796</td>
+      <td>5.284379</td>
+      <td>47.557945</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1.0</td>
+      <td>35.620019</td>
+      <td>2.494587</td>
+      <td>10.526642</td>
+      <td>9.860282</td>
+      <td>0.938075</td>
+      <td>38.721871</td>
+      <td>4.626631</td>
+      <td>...</td>
+      <td>158.052576</td>
+      <td>3.462322</td>
+      <td>0.733047</td>
+      <td>3.753634</td>
+      <td>1.391146</td>
+      <td>15449.477828</td>
+      <td>14.538085</td>
+      <td>130.838452</td>
+      <td>0.0</td>
+      <td>0.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 29 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">biomass_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SoftwoodMerch&#39;</span><span class="p">,</span><span class="s1">&#39;SoftwoodFoliage&#39;</span><span class="p">,</span> <span class="s1">&#39;SoftwoodOther&#39;</span><span class="p">,</span> <span class="s1">&#39;SoftwoodCoarseRoots&#39;</span><span class="p">,</span> <span class="s1">&#39;SoftwoodFineRoots&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;HardwoodMerch&#39;</span><span class="p">,</span> <span class="s1">&#39;HardwoodFoliage&#39;</span><span class="p">,</span> <span class="s1">&#39;HardwoodOther&#39;</span><span class="p">,</span> <span class="s1">&#39;HardwoodCoarseRoots&#39;</span><span class="p">,</span> <span class="s1">&#39;HardwoodFineRoots&#39;</span><span class="p">]</span>
+
+<span class="n">dom_pools</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;AboveGroundVeryFastSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;BelowGroundVeryFastSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;AboveGroundFastSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;BelowGroundFastSoil&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;MediumSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;AboveGroundSlowSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;BelowGroundSlowSoil&#39;</span><span class="p">,</span> <span class="s1">&#39;SoftwoodStemSnag&#39;</span><span class="p">,</span> <span class="s1">&#39;SoftwoodBranchSnag&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;HardwoodStemSnag&#39;</span><span class="p">,</span> <span class="s1">&#39;HardwoodBranchSnag&#39;</span><span class="p">]</span>
+
+<span class="n">pi</span><span class="p">[</span><span class="n">pi</span><span class="o">.</span><span class="n">identifier</span><span class="o">==</span><span class="mi">1</span><span class="p">][[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">biomass_pools</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;timestep&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">pi</span><span class="p">[</span><span class="n">pi</span><span class="o">.</span><span class="n">identifier</span><span class="o">==</span><span class="mi">1</span><span class="p">][[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span><span class="o">+</span><span class="n">dom_pools</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;timestep&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x2cc30d76a08&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/sit_runner_16_1.png" src="_images/sit_runner_16_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/sit_runner_16_2.png" src="_images/sit_runner_16_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="State-Variable-Results">
+<h2>State Variable Results<a class="headerlink" href="#State-Variable-Results" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">si</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">state_indicators</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state_variables</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">,</span><span class="s1">&#39;last_disturbance_type&#39;</span><span class="p">,</span> <span class="s1">&#39;time_since_last_disturbance&#39;</span><span class="p">,</span> <span class="s1">&#39;time_since_land_class_change&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;growth_enabled&#39;</span><span class="p">,</span> <span class="s1">&#39;enabled&#39;</span><span class="p">,</span> <span class="s1">&#39;land_class&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;growth_multiplier&#39;</span><span class="p">,</span> <span class="s1">&#39;regeneration_delay&#39;</span><span class="p">]</span>
+<span class="n">si</span><span class="p">[</span><span class="n">si</span><span class="o">.</span><span class="n">identifier</span><span class="o">==</span><span class="mi">1</span><span class="p">][</span><span class="n">state_variables</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;timestep&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x2cc32a53d88&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/sit_runner_19_1.png" src="_images/sit_runner_19_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Flux-Indicators">
+<h2>Flux Indicators<a class="headerlink" href="#Flux-Indicators" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fi</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">flux_indicators</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">annual_process_fluxes</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;DecayDOMCO2Emission&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DeltaBiomass_AG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DeltaBiomass_BG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TurnoverMerchLitterInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TurnoverFolLitterInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TurnoverOthLitterInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TurnoverCoarseLitterInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TurnoverFineLitterInput&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayVFastAGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayVFastBGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayFastAGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayFastBGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayMediumToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecaySlowAGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecaySlowBGToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecaySWStemSnagToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecaySWBranchSnagToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayHWStemSnagToAir&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DecayHWBranchSnagToAir&#39;</span><span class="p">]</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fi</span><span class="p">[</span><span class="n">fi</span><span class="p">[</span><span class="s2">&quot;identifier&quot;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">][[</span><span class="s2">&quot;timestep&quot;</span><span class="p">]</span><span class="o">+</span><span class="n">annual_process_fluxes</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;timestep&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x2cc30b8c088&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/sit_runner_23_1.png" src="_images/sit_runner_23_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Appendix">
+<h2>Appendix<a class="headerlink" href="#Appendix" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="SIT-source-data">
+<h3>SIT source data<a class="headerlink" href="#SIT-source-data" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">age_classes</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>class_size</th>
+      <th>start_year</th>
+      <th>end_year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>age_0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>age_1</td>
+      <td>10</td>
+      <td>1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>age_2</td>
+      <td>10</td>
+      <td>11</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>age_3</td>
+      <td>10</td>
+      <td>21</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>age_4</td>
+      <td>10</td>
+      <td>31</td>
+      <td>40</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>age_5</td>
+      <td>10</td>
+      <td>41</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>age_6</td>
+      <td>10</td>
+      <td>51</td>
+      <td>60</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>age_7</td>
+      <td>10</td>
+      <td>61</td>
+      <td>70</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>age_8</td>
+      <td>10</td>
+      <td>71</td>
+      <td>80</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>age_9</td>
+      <td>10</td>
+      <td>81</td>
+      <td>90</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>age_10</td>
+      <td>10</td>
+      <td>91</td>
+      <td>100</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">inventory</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>species</th>
+      <th>non forest type</th>
+      <th>age</th>
+      <th>area</th>
+      <th>delay</th>
+      <th>land_class</th>
+      <th>historical_disturbance_type</th>
+      <th>last_pass_disturbance_type</th>
+      <th>spatial_reference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>sp</td>
+      <td>f</td>
+      <td>10</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>pn</td>
+      <td>f</td>
+      <td>100</td>
+      <td>1.0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>fire</td>
+      <td>fire</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>sp</td>
+      <td>nf</td>
+      <td>0</td>
+      <td>1.0</td>
+      <td>10</td>
+      <td>1</td>
+      <td>fire</td>
+      <td>fire</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">classifiers</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>species</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>2</td>
+      <td>non forest type</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">classifier_values</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>classifier_id</th>
+      <th>name</th>
+      <th>description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>1</td>
+      <td>sp</td>
+      <td>spruce</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>1</td>
+      <td>pn</td>
+      <td>pine</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>1</td>
+      <td>oak</td>
+      <td>oak</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>2</td>
+      <td>nf</td>
+      <td>gleysolic</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>2</td>
+      <td>f</td>
+      <td>forest only</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">disturbance_types</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>name</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>dist1</td>
+      <td>fire</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>dist2</td>
+      <td>clearcut</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>dist3</td>
+      <td>deforestation</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">sit</span><span class="o">.</span><span class="n">sit_data</span><span class="o">.</span><span class="n">yield_table</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>species</th>
+      <th>non forest type</th>
+      <th>leading_species</th>
+      <th>v0</th>
+      <th>v1</th>
+      <th>v2</th>
+      <th>v3</th>
+      <th>v4</th>
+      <th>v5</th>
+      <th>v6</th>
+      <th>v7</th>
+      <th>v8</th>
+      <th>v9</th>
+      <th>v10</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>sp</td>
+      <td>?</td>
+      <td>1</td>
+      <td>0.0</td>
+      <td>15.0</td>
+      <td>30.0</td>
+      <td>45.0</td>
+      <td>60.0</td>
+      <td>75.0</td>
+      <td>90.0</td>
+      <td>105.0</td>
+      <td>120.0</td>
+      <td>135.0</td>
+      <td>150.0</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>pn</td>
+      <td>?</td>
+      <td>11</td>
+      <td>0.0</td>
+      <td>15.0</td>
+      <td>30.0</td>
+      <td>45.0</td>
+      <td>60.0</td>
+      <td>75.0</td>
+      <td>90.0</td>
+      <td>105.0</td>
+      <td>120.0</td>
+      <td>135.0</td>
+      <td>150.0</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>pn</td>
+      <td>?</td>
+      <td>109</td>
+      <td>0.0</td>
+      <td>15.0</td>
+      <td>30.0</td>
+      <td>45.0</td>
+      <td>60.0</td>
+      <td>75.0</td>
+      <td>90.0</td>
+      <td>105.0</td>
+      <td>120.0</td>
+      <td>135.0</td>
+      <td>150.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sit</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{
+    &#34;import_config&#34;: {
+        &#34;age_classes&#34;: {
+            &#34;params&#34;: {
+                &#34;path&#34;: &#34;sit_age_classes.csv&#34;
+            },
+            &#34;type&#34;: &#34;csv&#34;
+        },
+        &#34;classifiers&#34;: {
+            &#34;params&#34;: {
+                &#34;path&#34;: &#34;sit_classifiers.csv&#34;
+            },
+            &#34;type&#34;: &#34;csv&#34;
+        },
+        &#34;disturbance_types&#34;: {
+            &#34;params&#34;: {
+                &#34;path&#34;: &#34;sit_disturbance_types.csv&#34;
+            },
+            &#34;type&#34;: &#34;csv&#34;
+        },
+        &#34;events&#34;: null,
+        &#34;inventory&#34;: {
+            &#34;params&#34;: {
+                &#34;path&#34;: &#34;sit_inventory.csv&#34;
+            },
+            &#34;type&#34;: &#34;csv&#34;
+        },
+        &#34;transitions&#34;: null,
+        &#34;yield&#34;: {
+            &#34;params&#34;: {
+                &#34;path&#34;: &#34;sit_yield.csv&#34;
+            },
+            &#34;type&#34;: &#34;csv&#34;
+        }
+    },
+    &#34;mapping_config&#34;: {
+        &#34;disturbance_types&#34;: [
+            {
+                &#34;default_dist_type&#34;: &#34;Wildfire&#34;,
+                &#34;user_dist_type&#34;: &#34;fire&#34;
+            },
+            {
+                &#34;default_dist_type&#34;: &#34;Clear-cut with slash-burn&#34;,
+                &#34;user_dist_type&#34;: &#34;clearcut&#34;
+            },
+            {
+                &#34;default_dist_type&#34;: &#34;Deforestation&#34;,
+                &#34;user_dist_type&#34;: &#34;deforestation&#34;
+            }
+        ],
+        &#34;nonforest&#34;: null,
+        &#34;spatial_units&#34;: {
+            &#34;default_spuid&#34;: 42,
+            &#34;mapping_mode&#34;: &#34;SingleDefaultSpatialUnit&#34;
+        },
+        &#34;species&#34;: {
+            &#34;species_classifier&#34;: &#34;species&#34;,
+            &#34;species_mapping&#34;: [
+                {
+                    &#34;default_species&#34;: &#34;Spruce&#34;,
+                    &#34;user_species&#34;: &#34;spruce&#34;
+                },
+                {
+                    &#34;default_species&#34;: &#34;Pine&#34;,
+                    &#34;user_species&#34;: &#34;pine&#34;
+                },
+                {
+                    &#34;default_species&#34;: &#34;Oak&#34;,
+                    &#34;user_species&#34;: &#34;oak&#34;
+                }
+            ]
+        }
+    }
+}
+</pre></div></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_testing.html" title="CBM testing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cbm_sit.html" title="CBM Standard Import tool format"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

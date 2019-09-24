@@ -1,0 +1,562 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>LibCBM core functionality &#8212; libcbm  documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Other functions" href="other_functions.html" />
+    <link rel="prev" title="CBM core functionality" href="cbm_core_functions.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="other_functions.html" title="Other functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cbm_core_functions.html" title="CBM core functionality"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm_core_functions.html"
+                        title="previous chapter">CBM core functionality</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="other_functions.html"
+                        title="next chapter">Other functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/libcbm_core_functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="libcbm-core-functionality">
+<span id="libcbm-core-functions"></span><h1>LibCBM core functionality<a class="headerlink" href="#libcbm-core-functionality" title="Permalink to this headline">¶</a></h1>
+<p>The libcbm core functions are pool and flux functions that are generally useful for CBM-like models.</p>
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_ctypes.</code><code class="sig-name descname">LibCBM_ctypes</code><span class="sig-paren">(</span><em class="sig-param">dll_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for the core low level functions in the libcbm C/C++ library</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dll_path</strong> (<em>str</em>) – path to the compiled LibCBM dll on Windows,
+or compiled LibCBM .so file for Linux</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_error.LibCBM_Error">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_error.</code><code class="sig-name descname">LibCBM_Error</code><a class="headerlink" href="#libcbm.wrapper.libcbm_error.LibCBM_Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for low level C/C++ LibCBM structure of the same name.
+Stores string error message when they occur in library functions.</p>
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_error.LibCBM_Error.getError">
+<code class="sig-name descname">getError</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_error.LibCBM_Error.getError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the error code from an error returned by a library function.
+If no error occurred this is zero.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_error.LibCBM_Error.getErrorMessage">
+<code class="sig-name descname">getErrorMessage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_error.LibCBM_Error.getErrorMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the error message from an error returned by a library
+function.  If no error occurred this is an empty string.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_handle.LibCBMHandle">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_handle.</code><code class="sig-name descname">LibCBMHandle</code><span class="sig-paren">(</span><em class="sig-param">dll_path</em>, <em class="sig-param">config</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_handle.LibCBMHandle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a libcbm handle with the specified pools, and flux indicators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dll_path</strong> (<em>str</em>) – path to the libcbm compiled library</p></li>
+<li><p><strong>config</strong> (<em>str</em>) – <p>a json formatted string containing configuration
+for libcbm pools and flux definitions.</p>
+<p>The number of pools, and flux indicators defined here,
+corresponds to other data dimensions used during the lifetime
+of this instance:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The number of pools here defines the number of columns
+in the pool value matrix used by several other libCBM
+functions</p></li>
+<li><p>The number of flux_indicators here defines the number
+of columns in the flux indicator matrix in the
+ComputeFlux method.</p></li>
+<li><p>The number of pools here defines the number of rows,
+and the number of columns of all matrices allocated by
+the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function.</p></li>
+</ol>
+</div></blockquote>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;pools&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;pool_1&quot;</span><span class="p">},</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;pool_2&quot;</span><span class="p">},</span>
+        <span class="o">...</span>
+        <span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">n</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;pool_n&quot;</span><span class="p">}],</span>
+
+    <span class="s2">&quot;flux_indicators&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;process_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;source_pools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="s2">&quot;sink_pools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;process_id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;source_pools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="s2">&quot;sink_pools&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="p">},</span>
+        <span class="o">...</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Pool/Flux Indicators configuration rules:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>ids may be any integer, but are constrained to be unique
+within the set of pools.</p></li>
+<li><p>indexes must be the ordered set of integers from 0 to
+n_pools - 1.</p></li>
+<li><p>For flux indicator source_pools and sink_pools, list
+values correspond to id values in the collection of
+pools</p></li>
+</ol>
+</div></blockquote>
+</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_handle.LibCBMHandle.call">
+<code class="sig-name descname">call</code><span class="sig-paren">(</span><em class="sig-param">func_name</em>, <em class="sig-param">*args</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_handle.LibCBMHandle.call" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a libcbm C/C++ function.  The specified args are passed
+as the arguments to the named function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>func_name</strong> (<em>str</em>) – The name of the libcbm function</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – if an error is detected in the low level library
+    it is re-raised here.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>returns the value returned by the specified low level</dt><dd><p>function.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>variant</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_matrix.</code><code class="sig-name descname">LibCBM_Matrix_Base</code><span class="sig-paren">(</span><em class="sig-param">matrix</em>, <em class="sig-param">matrix_np_type</em>, <em class="sig-param">matrix_c_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper for low level C/C++ LibCBM structures LibCBM_Matrix and
+LibCBM_Matrix_Int. Used to pass a 2 dimensional numpy matrix or single
+valued array as raw memory to LibCBM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> (<em>numpy.ndarray</em>) – a 2 dimensional numpy array, or single value</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – matrix must have either 2 dimensions or be a scalar</p></li>
+<li><p><strong>ValueError</strong> – matrix must be C_CONTIGUOUS</p></li>
+<li><p><strong>ValueError</strong> – matrix must be of the correct type</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_matrix.LibCBM_Matrix">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_matrix.</code><code class="sig-name descname">LibCBM_Matrix</code><span class="sig-paren">(</span><em class="sig-param">matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_matrix.LibCBM_Matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>64 bit float specialization of
+<a class="reference internal" href="#libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base" title="libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> (<em>numpy.ndarray</em>) – a 2 dimensional numpy array, or single value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Int">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_matrix.</code><code class="sig-name descname">LibCBM_Matrix_Int</code><span class="sig-paren">(</span><em class="sig-param">matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Int" title="Permalink to this definition">¶</a></dt>
+<dd><p>32 bit int specialization of
+<a class="reference internal" href="#libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base" title="libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_matrix.LibCBM_Matrix_Base</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>matrix</strong> (<em>numpy.ndarray</em>) – a 2 dimensional numpy array, or single value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.libcbm_wrapper.</code><code class="sig-name descname">LibCBMWrapper</code><span class="sig-paren">(</span><em class="sig-param">handle</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exposes low level ctypes wrapper to regular python, for the core
+libcbm functions.</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Args (<a class="reference internal" href="#libcbm.wrapper.libcbm_handle.LibCBMHandle" title="libcbm.wrapper.libcbm_handle.LibCBMHandle"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_handle.LibCBMHandle</span></code></a>): handle</dt><dd><p>for the underlying dll/so compiled library</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp">
+<code class="sig-name descname">AllocateOp</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allocates storage for matrices, returning an id for the
+allocated block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – The number of elements in the allocated matrix block
+index, which corresponds to the number of stands that can
+be processed with this matrix block</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – raised if the Initialize method was not called
+    prior to this method.</p></li>
+<li><p><strong>RuntimeError</strong> – if an error is detected in libCBM, it will be
+    re-raised with an appropriate error message.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the id for an allocated block of matrices</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux">
+<code class="sig-name descname">ComputeFlux</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">op_processes</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and tracks flows between pool values for all stands.</p>
+<p>Performs the same operation as ComputePools, except that the fluxes
+are tracked in the specified flux parameter, according to the
+flux_indicators configuration passed to the LibCBM initialize method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ops</strong> (<em>ndarray</em>) – list of matrix block ids as allocated by the
+AllocateOp function.</p></li>
+<li><p><strong>op_processes</strong> (<em>ndarray</em>) – list of integers of length n_ops.
+Ids referencing flux indicator process_id definition in the
+Initialize method.</p></li>
+<li><p><strong>pools</strong> (<em>numpy.ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape
+n_stands by n_pools. The values in this matrix are updated by
+this function.</p></li>
+<li><p><strong>flux</strong> (<em>ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape n_stands
+by n_flux_indicators. The values in this matrix are updated
+by this function according to the definition of flux
+indicators in the configuration and the flows that occur in
+the specified operations.</p></li>
+<li><p><strong>enabled</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – optional int vector of length
+n_stands. If specified, enables or disables flows for each
+stand, based on the value at each stand index. A value of 0
+indicates a disabled stand index, and any other value is an
+enabled stand index. If None, all flows are assumed to be
+enabled. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – raised when parameters passed to this function are not
+    valid.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools">
+<code class="sig-name descname">ComputePools</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">pools</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes flows between pool values for all stands.</p>
+<p>Each value in the ops parameter is an id to a matrix block, and is also
+conceptually a list of matrixes of length n stands.</p>
+<p>Performs the following computation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_stands</span><span class="p">):</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">get_matrix</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">pools</span><span class="p">[</span><span class="n">s</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">pools</span><span class="p">[</span><span class="n">s</span><span class="p">,:],</span> <span class="n">M</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Where get_matrix is pseudocode for an internal function returning the
+matrix for the op, stand index combination.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ops</strong> (<em>ndarray</em>) – list of matrix block ids as allocated by the
+<a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp"><code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code></a> function.</p></li>
+<li><p><strong>pools</strong> (<em>numpy.ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape
+n_stands by n_pools. The values in this matrix are updated by
+this function.</p></li>
+<li><p><strong>enabled</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – optional int vector of length
+n_stands. If specified, enables or disables flows for each
+stand, based on the value at each stand index. A value of 0
+indicates a disabled stand index, and any other value is an
+enabled stand index. If None, all flows are assumed to be
+enabled. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.FreeOp">
+<code class="sig-name descname">FreeOp</code><span class="sig-paren">(</span><em class="sig-param">op_id</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.FreeOp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deallocates a matrix block that was allocated by the AllocateOp method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>op_id</strong> (<em>int</em>) – The id for an allocated block of matrices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.SetOp">
+<code class="sig-name descname">SetOp</code><span class="sig-paren">(</span><em class="sig-param">op_id</em>, <em class="sig-param">matrices</em>, <em class="sig-param">matrix_index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.SetOp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assigns values to an allocated block of matrices.</p>
+<blockquote>
+<div><p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_stands</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">op_id</span> <span class="o">=</span> <span class="n">AllocateOp</span><span class="p">(</span><span class="n">n_stands</span><span class="p">)</span>
+<span class="n">matrix_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+<span class="p">])</span>
+<span class="n">matrix_1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
+<span class="p">])</span>
+<span class="n">matrices</span> <span class="o">=</span> <span class="p">[</span><span class="n">matrix_0</span><span class="p">,</span> <span class="n">matrix_1</span><span class="p">]</span>
+<span class="n">matrix_index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">SetOp</span><span class="p">(</span><span class="n">op_id</span><span class="p">,</span> <span class="n">matrices</span><span class="p">,</span> <span class="n">matrix_index</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, a pair of matrices are passed. Here the matrices
+are of dimension N by N where N is defined by the call to
+<code class="xref py py-func docutils literal notranslate"><span class="pre">Initialize()</span></code>.</p>
+<p>matrix_0:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>p</p></th>
+<th class="head"><p>p0</p></th>
+<th class="head"><p>p1</p></th>
+<th class="head"><p>…</p></th>
+<th class="head"><p>pN</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>p0</p></td>
+<td><p>1.0</p></td>
+<td><p>0.5</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>p1</p></td>
+<td><p>0.0</p></td>
+<td><p>1.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>pN</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+<p>matrix_1:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>p</p></th>
+<th class="head"><p>p0</p></th>
+<th class="head"><p>p1</p></th>
+<th class="head"><p>…</p></th>
+<th class="head"><p>pN</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>p0</p></td>
+<td><p>1.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>p1</p></td>
+<td><p>0.5</p></td>
+<td><p>0.5</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-even"><td><p>…</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+<tr class="row-odd"><td><p>pN</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+<td><p>0.0</p></td>
+</tr>
+</tbody>
+</table>
+<p>The matrices are indexed according to the following table:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 48%" />
+<col style="width: 52%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Stand_index</p></th>
+<th class="head"><p>Matrix_index</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="simple">
+<dt>related functions: <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp"><code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code></a>, <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools"><code class="xref py py-func docutils literal notranslate"><span class="pre">ComputePools()</span></code></a>,</dt><dd><p><a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux"><code class="xref py py-func docutils literal notranslate"><span class="pre">ComputeFlux()</span></code></a></p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op_id</strong> (<em>int</em>) – The id for an allocated block of matrices</p></li>
+<li><p><strong>matrices</strong> (<em>list</em>) – a list of n by 3 ndarray matrices which are
+coordinate format triplet values (row,column,value).  All
+defined row/column combinations are set with the value, and
+all other matrix cells are assumed to be 0.</p></li>
+<li><p><strong>matrix_index</strong> (<em>ndarray</em>) – an array of length n stands where the
+value is an index to a matrix in the specified list of matrices
+provided to this function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="other_functions.html" title="Other functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cbm_core_functions.html" title="CBM core functionality"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

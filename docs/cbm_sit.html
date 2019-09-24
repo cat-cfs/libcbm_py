@@ -1,0 +1,2017 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CBM Standard Import tool format &#8212; libcbm  documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Standard Import tool Example" href="sit_example.html" />
+    <link rel="prev" title="CBM Input and Variables" href="cbm_input_and_variables.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sit_example.html" title="Standard Import tool Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CBM Standard Import tool format</a><ul>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_classifier_parser">Classifiers</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_age_class_parser">Age Classes</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_type_parser">Disturbance Types</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_inventory_parser">Inventory</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_yield_parser">Growth and Yield</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_event_parser">Disturbance Events</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_transition_rule_parser">Transition Rules</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_parser">The SIT Format</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_cbm_factory">Simulating SIT input</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_reader">Reading SIT input</a></li>
+<li><a class="reference internal" href="#sit-mapping">SIT Mapping</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm_input_and_variables.html"
+                        title="previous chapter">CBM Input and Variables</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sit_example.html"
+                        title="next chapter">Standard Import tool Example</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_sit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cbm-standard-import-tool-format">
+<span id="cbm-sit"></span><h1>CBM Standard Import tool format<a class="headerlink" href="#cbm-standard-import-tool-format" title="Permalink to this headline">¶</a></h1>
+<p>See Chapter 3 of the Operational-Scale <a class="reference external" href="http://www.cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf">CBM-CFS3-Manual</a> for a detailed
+description of this format.</p>
+<p>Note the SIT format is a no column header, ordered column format, so any column
+labels in DataFrames passed to SIT parse functions function will be ignored
+by the parsing functions here.</p>
+<div class="section" id="module-libcbm.input.sit.sit_classifier_parser">
+<span id="classifiers"></span><h2>Classifiers<a class="headerlink" href="#module-libcbm.input.sit.sit_classifier_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_classifier_parser.get_classifier_keyword">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">get_classifier_keyword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.get_classifier_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the _CLASSIFIER keyword using the SIT_Classifiers format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>_CLASSIFIER</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_classifier_parser.get_wildcard_keyword">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">get_wildcard_keyword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.get_wildcard_keyword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the classifier value wildcard keyword of the SIT format</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_classifier_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">classifiers_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse SIT_Classifiers formatted data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>classifiers_table</strong> (<em>pandas.DataFrame</em>) – a dataFrame in sit classifiers
+format.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – duplicated names detected, or other validation error
+    occurred</p>
+</dd>
+</dl>
+<p>Example Input:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 37%" />
+<col style="width: 37%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>0</p></th>
+<th class="head"><p>1</p></th>
+<th class="head"><p>2</p></th>
+<th class="head"><p>3</p></th>
+<th class="head"><p>4</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>_CLASSIFIER</p></td>
+<td><p>classifier1</p></td>
+<td><p>NaN</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>NaN</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>b</p></td>
+<td><p>b</p></td>
+<td><p>NaN</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>agg1</p></td>
+<td><p>agg1</p></td>
+<td><p>a</p></td>
+<td><p>b</p></td>
+</tr>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>agg2</p></td>
+<td><p>agg2</p></td>
+<td><p>a</p></td>
+<td><p>b</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>_CLASSIFIER</p></td>
+<td><p>classifier2</p></td>
+<td><p>NaN</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>NaN</p></td>
+<td><p>NaN</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>agg1</p></td>
+<td><p>agg1</p></td>
+<td><p>a</p></td>
+<td><p>NaN</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Output based on Example input:</p>
+<blockquote>
+<div><p>Classifiers:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>classifier1</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>classifier2</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Classifier Values:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 16%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>classifier_id</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>b</p></td>
+<td><p>b</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Classifier Aggregates:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[{</span><span class="s1">&#39;classifier_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;agg1&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;agg2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;classifier_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]},</span>
+ <span class="p">{</span><span class="s1">&#39;classifier_id&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;agg2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;agg2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;classifier_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">]},</span>
+ <span class="p">{</span><span class="s1">&#39;classifier_id&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;agg1&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;agg1&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;classifier_values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">]}]</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>classifiers - a validated table of classifiers</p></li>
+<li><p>classifier_values - a validated table of classifier values</p></li>
+<li><p>aggregate_values - a dictionary describing aggregate values</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_age_class_parser">
+<span id="age-classes"></span><h2>Age Classes<a class="headerlink" href="#module-libcbm.input.sit.sit_age_class_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_age_class_parser.generate_sit_age_classes">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">generate_sit_age_classes</code><span class="sig-paren">(</span><em class="sig-param">age_interval</em>, <em class="sig-param">max_age</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.generate_sit_age_classes" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate a valid SIT_ageclass input table.  This is a helper method
+to create input for <code class="xref py py-func docutils literal notranslate"><span class="pre">parse_age_classes()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>age_interval</strong> (<em>int</em>) – the number of years between age classes</p></li>
+<li><p><strong>max_age</strong> (<em>int</em>) – the maximum age</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a table of valid SIT_AgeClasses based on the</dt><dd><p>parameters</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generate_sit_age_classes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">   0  1</span>
+<span class="go">0  0  0</span>
+<span class="go">1  1  2</span>
+<span class="go">2  2  2</span>
+<span class="go">3  3  2</span>
+<span class="go">4  4  2</span>
+<span class="go">5  5  2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_age_class_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">age_class_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the sit age class table format into a table of age classes with
+fields:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>name</p></li>
+<li><p>class_size</p></li>
+<li><p>start_year</p></li>
+<li><p>end_year</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>age_class_table</strong> (<em>pandas.DataFrame</em>) – a dataframe</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – the first, and only the first row must have a 0 value</p></li>
+<li><p><strong>ValueError</strong> – duplicate values in the first column of the specified
+    table were detected</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Input:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 60%" />
+<col style="width: 40%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>0</p></th>
+<th class="head"><p>1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>age_0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_1</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_2</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_3</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_4</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_5</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_6</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_7</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_8</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_9</p></td>
+<td><p>10</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Output:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>class_size</p></th>
+<th class="head"><p>start_year</p></th>
+<th class="head"><p>end_year</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>age_0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_1</p></td>
+<td><p>10</p></td>
+<td><p>1</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_2</p></td>
+<td><p>10</p></td>
+<td><p>11</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_3</p></td>
+<td><p>10</p></td>
+<td><p>21</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-even"><td><p>age_4</p></td>
+<td><p>10</p></td>
+<td><p>31</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_5</p></td>
+<td><p>10</p></td>
+<td><p>41</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-even"><td><p>age_6</p></td>
+<td><p>10</p></td>
+<td><p>51</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_7</p></td>
+<td><p>10</p></td>
+<td><p>61</p></td>
+<td><p>70</p></td>
+</tr>
+<tr class="row-even"><td><p>age_8</p></td>
+<td><p>10</p></td>
+<td><p>71</p></td>
+<td><p>80</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_9</p></td>
+<td><p>10</p></td>
+<td><p>81</p></td>
+<td><p>90</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dataframe describing the age classes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_disturbance_type_parser">
+<span id="disturbance-types"></span><h2>Disturbance Types<a class="headerlink" href="#module-libcbm.input.sit.sit_disturbance_type_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_disturbance_type_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_type_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_types_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_type_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and validate a SIT formatted disturbance type table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>disturbance_types_table</strong> (<em>pandas.DataFrame</em>) – a table in SIT
+disturbance type format</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Input:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>0</p></th>
+<th class="head"><p>1</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>distid1</p></td>
+<td><p>fire</p></td>
+</tr>
+<tr class="row-odd"><td><p>distid2</p></td>
+<td><p>clearcut</p></td>
+</tr>
+<tr class="row-even"><td><p>distid3</p></td>
+<td><p>clearcut</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Output:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 47%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>distid1</p></td>
+<td><p>fire</p></td>
+</tr>
+<tr class="row-odd"><td><p>distid2</p></td>
+<td><p>clearcut</p></td>
+</tr>
+<tr class="row-even"><td><p>distid3</p></td>
+<td><p>clearcut</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – duplicate ids detected in disturbance data.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a validated copy of the input table with</dt><dd><p>standardized colmun names</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_inventory_parser">
+<span id="inventory"></span><h2>Inventory<a class="headerlink" href="#module-libcbm.input.sit.sit_inventory_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">expand_age_class_inventory</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Support for the SIT age class inventory feature.  For rows with
+inventory.using_age_class = True, the inventory.age column represents an
+identifier defined in the passed age_classes table.  The inventory record
+is divided into one record per year in the associated age class with the
+full range of ages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inventory</strong> (<em>pandas.DataFrame</em>) – [description]</p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – table of disturbance types as
+returned by the function:
+<a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – Undefined age class ids found in inventory</p></li>
+<li><p><strong>ValueError</strong> – Age class inventory mixed with spatial identifier</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the age class expanded inventory</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_inventory_parser.get_map_land_class_func">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">get_map_land_class_func</code><span class="sig-paren">(</span><em class="sig-param">land_classes</em>, <em class="sig-param">on_error</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.get_map_land_class_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function for mapping land class to land class id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>land_classes</strong> (<em>dict</em>) – a dictionary of landclass id (int, key)
+to land class value (str, value)</p></li>
+<li><p><strong>on_error</strong> (<em>func</em>) – a function of a single parameter, if the
+specified id is not found call this function with that id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the mapped value if it exists or None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_inventory_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">inventory_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates SIT formatted inventory data.  The inventory_table
+parameter is the primary data, and the other args act as validation
+metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inventory_table</strong> (<em>pandas.DataFrame</em>) – SIT formatted inventory</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – table of classifier as returned by the
+function:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – table of classifier values as
+returned by the function:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>disturbance_types</strong> (<em>pandas.DataFrame</em>) – table of disturbance types as
+returned by the function:
+<a class="reference internal" href="#libcbm.input.sit.sit_disturbance_type_parser.parse" title="libcbm.input.sit.sit_disturbance_type_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_type_parser.parse()</span></code></a></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – table of disturbance types as
+returned by the function:
+<a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – Undefined classifier values detected in inventory table</p></li>
+<li><p><strong>ValueError</strong> – Undefined disturbance types detected in inventory table</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Input:</p>
+<blockquote>
+<div><p>SIT_Inventory:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 15%" />
+<col style="width: 17%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 7%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>0</p></th>
+<th class="head"><p>1</p></th>
+<th class="head"><p>2</p></th>
+<th class="head"><p>3</p></th>
+<th class="head"><p>4</p></th>
+<th class="head"><p>5</p></th>
+<th class="head"><p>6</p></th>
+<th class="head"><p>7</p></th>
+<th class="head"><p>8</p></th>
+<th class="head"><p>9</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>True</p></td>
+<td><p>age_2</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>dist1</p></td>
+<td><p>dist2</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>False</p></td>
+<td><p>100</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>dist2</p></td>
+<td><p>dist1</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>-1</p></td>
+<td><p>4</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>dist1</p></td>
+<td><p>dist1</p></td>
+<td><p>-1</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>classifiers parameter:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 79%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>classifier1</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>classifier2</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>classifier_values parameter:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 45%" />
+<col style="width: 16%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>classifier_id</p></th>
+<th class="head"><p>name</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>b</p></td>
+<td><p>b</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>a</p></td>
+<td><p>a</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>disturbance_types parameter:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 60%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>name</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>dist1</p></td>
+<td><p>fire</p></td>
+</tr>
+<tr class="row-odd"><td><p>dist2</p></td>
+<td><p>clearcut</p></td>
+</tr>
+<tr class="row-even"><td><p>dist3</p></td>
+<td><p>clearcut</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>age_classes parameter:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 30%" />
+<col style="width: 30%" />
+<col style="width: 24%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>name</p></th>
+<th class="head"><p>class_size</p></th>
+<th class="head"><p>start_year</p></th>
+<th class="head"><p>end_year</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>age_0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_1</p></td>
+<td><p>10</p></td>
+<td><p>1</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>age_2</p></td>
+<td><p>10</p></td>
+<td><p>11</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_3</p></td>
+<td><p>10</p></td>
+<td><p>21</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-even"><td><p>age_4</p></td>
+<td><p>10</p></td>
+<td><p>31</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_5</p></td>
+<td><p>10</p></td>
+<td><p>41</p></td>
+<td><p>50</p></td>
+</tr>
+<tr class="row-even"><td><p>age_6</p></td>
+<td><p>10</p></td>
+<td><p>51</p></td>
+<td><p>60</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_7</p></td>
+<td><p>10</p></td>
+<td><p>61</p></td>
+<td><p>70</p></td>
+</tr>
+<tr class="row-even"><td><p>age_8</p></td>
+<td><p>10</p></td>
+<td><p>71</p></td>
+<td><p>80</p></td>
+</tr>
+<tr class="row-odd"><td><p>age_9</p></td>
+<td><p>10</p></td>
+<td><p>81</p></td>
+<td><p>90</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>land_classes parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">land_classes</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;lc_1&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;lc_2&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>Output: (abbreviated column names)</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 6%" />
+<col style="width: 10%" />
+<col style="width: 8%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 21%" />
+<col style="width: 19%" />
+<col style="width: 10%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>c1</p></th>
+<th class="head"><p>c2</p></th>
+<th class="head"><p>age</p></th>
+<th class="head"><p>area</p></th>
+<th class="head"><p>delay</p></th>
+<th class="head"><p>lc</p></th>
+<th class="head"><p>hist_dist</p></th>
+<th class="head"><p>last_dist</p></th>
+<th class="head"><p>s_ref</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>100</p></td>
+<td><p>1.0</p></td>
+<td><p>0</p></td>
+<td><p>lc_1</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>a</p></td>
+<td><p>a</p></td>
+<td><p>4</p></td>
+<td><p>1.0</p></td>
+<td><p>0</p></td>
+<td><p>lc_1</p></td>
+<td><p>clearcut</p></td>
+<td><p>clearcut</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>11</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>12</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>13</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>14</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>15</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>16</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>17</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>18</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-even"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>19</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>a</p></td>
+<td><p>20</p></td>
+<td><p>0.1</p></td>
+<td><p>1</p></td>
+<td><p>lc_2</p></td>
+<td><p>fire</p></td>
+<td><p>fire</p></td>
+<td><p>-1</p></td>
+</tr>
+</tbody>
+</table>
+<p>The actual output column names for this example are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>classifier1</p></li>
+<li><p>classifier2</p></li>
+<li><p>age</p></li>
+<li><p>area</p></li>
+<li><p>delay</p></li>
+<li><p>land_class</p></li>
+<li><p>historical_disturbance_type</p></li>
+<li><p>last_pass_disturbance_type</p></li>
+<li><p>spatial_reference</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>validated inventory</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_yield_parser">
+<span id="growth-and-yield"></span><h2>Growth and Yield<a class="headerlink" href="#module-libcbm.input.sit.sit_yield_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_yield_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_yield_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">yield_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_yield_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates the CBM SIT growth and yield format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yield_table</strong> (<em>pandas.DataFrame</em>) – SIT formatted growth and yield data</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the yield data. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the yield data. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – used to validate the number of volume
+columns.  Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – the specified data did not have the correct number of
+    columns according to the defined classifiers and age classes</p></li>
+<li><p><strong>ValueError</strong> – the leading_species column contained a value that was
+    not defined in the specified species map.</p></li>
+<li><p><strong>ValueError</strong> – Classifier sets were not valid according to the specified
+    classifiers and classifier_values.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>Validated sit input with standardized column names</dt><dd><p>and substituted species</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_disturbance_event_parser">
+<span id="disturbance-events"></span><h2>Disturbance Events<a class="headerlink" href="#module-libcbm.input.sit.sit_disturbance_event_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_disturbance_event_parser.get_sort_types">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">get_sort_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.get_sort_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the CBM standard import tool sorting id/name pairs as a dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_disturbance_event_parser.get_target_types">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">get_target_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.get_target_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the CBM standard import tool target type id/name pairs as a dictionary</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_disturbance_event_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_events</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates the CBM SIT disturbance event format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disturbance_events</strong> (<em>pandas.DataFrame</em>) – CBM SIT disturbance events
+formatted data.</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the disturbance event data. Use the return value
+of: <a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the disturbance event data. Use the return value
+of: <a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_aggregates</strong> (<em>pandas.DataFrame</em>) – used to validate the
+classifier set columns of the disturbance event data. Use the
+return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>disturbance_types</strong> (<em>pandas.DataFrame</em>) – Used to validate the
+disturbance_type column of the disturbance event data. Use the
+return value of:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_types_parser.parse()</span></code></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – used to validate and compute age
+eligibility criteria in disturbance_events. Use the return value
+of: <a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – undefined classifier values were found in the disturbance
+    event classifier sets</p></li>
+<li><p><strong>ValueError</strong> – undefined disturbance types were found in the disturbance
+    event disturbance_type column</p></li>
+<li><p><strong>ValueError</strong> – undefined sort types were found in the disturbance
+    event sort_type column. See <a class="reference internal" href="#libcbm.input.sit.sit_disturbance_event_parser.get_sort_types" title="libcbm.input.sit.sit_disturbance_event_parser.get_sort_types"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_sort_types()</span></code></a></p></li>
+<li><p><strong>ValueError</strong> – undefined target types were found in the disturbance
+    event target_type column. See <a class="reference internal" href="#libcbm.input.sit.sit_disturbance_event_parser.get_target_types" title="libcbm.input.sit.sit_disturbance_event_parser.get_target_types"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_target_types()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the validated disturbance events</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_transition_rule_parser">
+<span id="transition-rules"></span><h2>Transition Rules<a class="headerlink" href="#module-libcbm.input.sit.sit_transition_rule_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_transition_rule_parser.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_transition_rule_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">transition_rules</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_transition_rule_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates the CBM SIT transition rule format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transition_rules</strong> (<em>pandas.DataFrame</em>) – CBM SIT transition rule formatted
+data.</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the transition rule data. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – used to validate the classifier
+set columns of the transition rule data. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_aggregates</strong> (<em>pandas.DataFrame</em>) – used to validate the
+classifier set columns of the transition rule data. Use the return
+value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>disturbance_types</strong> (<em>pandas.DataFrame</em>) – Used to validate the
+disturbance_type column of the transition rule data. Use the return
+value of:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_types_parser.parse()</span></code></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – used to validate the number of volume
+columns.  Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – undefined classifier values were found in the transition
+    rule classifier sets</p></li>
+<li><p><strong>ValueError</strong> – a grouped set of transition rules has a percent greater
+    than 100%.</p></li>
+<li><p><strong>ValueError</strong> – undefined disturbance types were found in the transition
+    rule disturbance_type column</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>validated transition rules</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_parser">
+<span id="the-sit-format"></span><h2>The SIT Format<a class="headerlink" href="#module-libcbm.input.sit.sit_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_parser.get_parse_bool_func">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">get_parse_bool_func</code><span class="sig-paren">(</span><em class="sig-param">table_name</em>, <em class="sig-param">colname</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.get_parse_bool_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets a boolean-like value to boolean parse function according to the
+SIT specification.  The parameters are used to create a friendly error
+message when a parse failure occurs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> (<em>str</em>) – Table name to be used in failure error message</p></li>
+<li><p><strong>colname</strong> (<em>str</em>) – Column name to be used in failure error message</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a boolean-like value to bool parse function</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_parser.substitute_using_age_class_rows">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">substitute_using_age_class_rows</code><span class="sig-paren">(</span><em class="sig-param">rows</em>, <em class="sig-param">parse_bool_func</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.substitute_using_age_class_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substitute age class criteria values that appear in SIT transition
+rules or disturbance events data into age values.</p>
+<p>Checks that min softwood age equals min hardwood age and max softwood
+age equals max hardwood age since CBM does not carry separate HW/SW ages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rows</strong> (<em>pandas.DataFrame</em>) – <p>sit data containing columns that describe age
+eligibility:</p>
+<ul>
+<li><p>using_age_class</p></li>
+<li><p>min_softwood_age</p></li>
+<li><p>min_hardwood_age</p></li>
+<li><p>max_softwood_age</p></li>
+<li><p>max_hardwood_age</p></li>
+</ul>
+</p></li>
+<li><p><strong>parse_bool_func</strong> (<em>func</em>) – a function that maps boolean-like values to
+boolean.  Passed to the pandas.Series.map function for the
+using_age_class column.</p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – [description]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – values found in the age eligibility columns are not
+    defined identifiers in the specified age classes table.</p></li>
+<li><p><strong>ValueError</strong> – hardwood and softwood age criteria were not identical.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>the input table with age values criteria substituted</dt><dd><p>for age class criteria.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_parser.unpack_column">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_column</code><span class="sig-paren">(</span><em class="sig-param">table</em>, <em class="sig-param">column_description</em>, <em class="sig-param">table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates a column in a pandas DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<em>[</em><em>type</em><em>]</em>) – A table containing the column at the index specified
+by column_description</p></li>
+<li><p><strong>column_description</strong> (<em>dict</em>) – <p>A dictionary with the following supported
+keys:</p>
+<blockquote>
+<div><ul>
+<li><dl class="simple">
+<dt>name: the name of the column, which is assigned to the column</dt><dd><p>label to the result table returned by this function</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>index: the zero based index of the column in the table’s</dt><dd><p>ordered columns</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>type: (optional) the column will be converted (if necessary to</dt><dd><p>this type) If the conversion is not possible for a value
+at any row, an error is raised.</p>
+</dd>
+</dl>
+</li>
+<li><p>min_value: (optional) inclusive minimum value constraint.</p></li>
+<li><p>max_value: (optional) inclusive maximum value constraint.</p></li>
+</ul>
+</div></blockquote>
+</p></li>
+<li><p><strong>table_name</strong> (<em>str</em>) – the name of the table being processed, purely
+for error feedback when an error occurs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – the values in the column were not convertable to the
+    specified column description type</p></li>
+<li><p><strong>ValueError</strong> – a min_value or max_value was specified without specifying
+    type in column description</p></li>
+<li><p><strong>ValueError</strong> – the min_value or max_value constraint was violated by the
+    value in the column.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the resulting table</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_parser.unpack_table">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_table</code><span class="sig-paren">(</span><em class="sig-param">table</em>, <em class="sig-param">column_descriptions</em>, <em class="sig-param">table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates and assigns column names to a column-ordered table using
+the specified list of column descriptions. Any existing column labels
+on the specified table are ignored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table</strong> (<em>pandas.DataFrame</em>) – a column ordered table to validate</p></li>
+<li><p><strong>column_descriptions</strong> (<em>list</em>) – a list of dictionaries with describing the
+columns. See <a class="reference internal" href="#libcbm.input.sit.sit_parser.unpack_column" title="libcbm.input.sit.sit_parser.unpack_column"><code class="xref py py-func docutils literal notranslate"><span class="pre">unpack_column()</span></code></a> for how this is used</p></li>
+<li><p><strong>table_name</strong> (<em>str</em>) – the name of the table being processed, purely
+for error feedback when an error occurs.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – [description]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>[description]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>[type]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-libcbm.input.sit.sit_format"></span><dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_age_class_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_age_class_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_age_class_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of dictionaries describing the CBM SIT age class columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a list of dictionaries that describe the  CBM SIT age class</dt><dd><p>columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_age_eligibility_columns">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_age_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param">base_index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_age_eligibility_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the columns for age eligibility which appear in SIT events and
+SIT transition.  The index of the columns is offset using the specified
+base.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base_index</strong> (<em>index</em>) – the index of the first age eligibility columns</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a list of dictionaries describing the SIT age eligibility</dt><dd><p>columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_classifier_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_classifier_format</code><span class="sig-paren">(</span><em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_classifier_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of dictionaries describing the CBM SIT classifier columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in an sit classifiers formatted
+table</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – raised if the number of columns is less than the minimum
+    required.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of dictionaries describing the CBM SIT classifier columns</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_disturbance_eligibility_columns">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_eligibility_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the columns for disturbance eligibility which appear in SIT
+events.  The index of the columns is offset using the specified
+base.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base_index</strong> (<em>index</em>) – the index of the first eligibility column</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a list of dictionaries describing the SIT disturbance</dt><dd><p>eligibility columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_disturbance_event_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_event_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_event_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of column description dictionaries describing the SIT
+disturbance event format</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifier_names</strong> (<em>int</em>) – a list of the names of classifiers</p></li>
+<li><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in disturbance data.  This
+is required because the format has a varying number of optional
+columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – specified number of columns is invalid</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a list of dictionaries describing the SIT disturbance events</dt><dd><p>table columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_disturbance_type_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_type_format</code><span class="sig-paren">(</span><em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_type_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of dictionaries describing the CBM SIT disturbance type
+columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_columns</strong> (<em>int</em>) – The number of columns in a SIT disturbance types
+formatted table.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – n_columns is less than the minimum required number of
+    columns for the SIT disturbance type format.</p></li>
+<li><p><strong>ValueError</strong> – n_columns is more than the required number of columns for
+    the sit disturbance type format.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a list of dictionaries that describe the CBM SIT disturbance</dt><dd><p>type columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_inventory_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_inventory_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_inventory_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a description of the SIT inventory columns as a list of
+dictionaries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifier_names</strong> (<em>int</em>) – a list of the names of classifiers</p></li>
+<li><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in inventory data.  This
+is required because the format has a varying number of optional
+columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – The number of columns was incorrect</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of dictionaries describing the SIT inventory columns</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_transition_rule_classifier_set_postfix">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_transition_rule_classifier_set_postfix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_transition_rule_classifier_set_postfix" title="Permalink to this definition">¶</a></dt>
+<dd><p>since transition rules contain 2 classifier sets (2 sets of columns)
+duplicate names are a problem if the classifier names are used for both.
+This function returns a postfix to append onto the second set of
+classifiers to solve that issue.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_transition_rules_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_transition_rules_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_transition_rules_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a list of dictionaries describing each column in the SIT
+format transition rules.  The format is dynamic and changes based on the
+number of classifiers and whether or not a spatial identifier is
+specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifier_names</strong> (<em>int</em>) – a list of the names of classifiers</p></li>
+<li><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in transition rules data.
+This is used to detect whether or not a spatial identifier is
+included in the data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – n_columns was not valid for the sit transitions format</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of dictionaries describing the SIT transition rule columns</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_format.get_yield_format">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_yield_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_yield_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of dictionaries describing the CBM SIT age class columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifier_names</strong> (<em>list</em>) – a list of strings which are the names of the
+classifiers</p></li>
+<li><p><strong>n_columns</strong> (<em>int</em>) – The number of columns in a SIT yield formatted table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – the specified number of columns is less than the minimum
+    number of columns for a valid SIT yield formatted table</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a list of dictionaries that describe the  CBM SIT yield table</dt><dd><p>columns</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_cbm_factory">
+<span id="simulating-sit-input"></span><h2>Simulating SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_cbm_factory" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.get_classifiers">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_classifiers</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_classifiers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create classifier input for initializing the CBM class based on CBM
+Standard import tool formatted data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – the parsed SIT classifiers output
+of <a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – the parsed SIT classifier values
+output of <a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>configuration dictionary for CBM. See:</dt><dd><p><a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier_config" title="libcbm.model.cbm.cbm_config.classifier_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_config.classifier_config()</span></code></a></p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.get_merch_volumes">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_merch_volumes</code><span class="sig-paren">(</span><em class="sig-param">yield_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">age_classes</em>, <em class="sig-param">sit_mapping</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_merch_volumes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create merchantable volume input for initializing the CBM class
+based on CBM Standard import tool formatted data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yield_table</strong> (<em>pandas.DataFrame</em>) – the parsed SIT yield output
+of <a class="reference internal" href="#libcbm.input.sit.sit_yield_parser.parse" title="libcbm.input.sit.sit_yield_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_yield_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – the parsed SIT classifiers output
+of <a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – the parsed SIT age classes
+output of <a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+<li><p><strong>sit_mapping</strong> (<a class="reference internal" href="#libcbm.input.sit.sit_mapping.SITMapping" title="libcbm.input.sit.sit_mapping.SITMapping"><em>libcbm.input.sit.sit_mapping.SITMapping</em></a>) – instance of
+SITMapping used to validate species classifier and fetch species id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>configuration dictionary for CBM. See:</dt><dd><p><a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier_config" title="libcbm.model.cbm.cbm_config.classifier_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_config.classifier_config()</span></code></a></p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.initialize_cbm">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_cbm</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">dll_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_cbm" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Create an initialized instance of</dt><dd><p><a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_model.CBM</span></code></a> based on SIT input</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p></li>
+<li><p><strong>dll_path</strong> (<em>str</em>) – path to the libcbm compiled library, if not
+specified a default value is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an initialized CBM instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM">libcbm.model.cbm.cbm_model.CBM</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.initialize_inventory">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts SIT inventory data input for CBM</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>classifiers, inventory pandas.DataFrame pair for CBM use</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.load_sit">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">load_sit</code><span class="sig-paren">(</span><em class="sig-param">config_path</em>, <em class="sig-param">db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads data and objects required to run from the SIT format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_path</strong> (<em>str</em>) – path to SIT configuration</p></li>
+<li><p><strong>db_path</strong> (<em>str</em><em>, </em><em>optional</em>) – path to a cbm_defaults database. If None, the
+default database is used. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>object with parsed SIT data and objects</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>types.SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.input.sit.sit_reader">
+<span id="reading-sit-input"></span><h2>Reading SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_reader" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.input.sit.sit_reader.load_table">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">load_table</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">config_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.load_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a table based on the specified configuration.  The config_dir
+is used to compute absolute paths for file based tables.</p>
+<p>Supports The following formats:</p>
+<blockquote>
+<div><p>CSV:</p>
+<p>Used pandas.read_csv to load and return a pandas.DataFrame.
+With the exception of the “path” parameter, all parameters
+are passed as literal keyword args to the pandas.read_csv
+function.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;csv&quot;</span>
+ <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;my_file.csv&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>dict</em>) – [description]</p></li>
+<li><p><strong>config_dir</strong> (<em>str</em>) – directory containing the configuration</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – [description]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>[description]</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>[type]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_reader.parse">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">sit_classifiers</em>, <em class="sig-param">sit_disturbance_types</em>, <em class="sig-param">sit_age_classes</em>, <em class="sig-param">sit_inventory</em>, <em class="sig-param">sit_yield</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">sit_transitions</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates CBM Standard import tool formatted data including
+the complicated interdependencies in the SIT format. Returns an object
+containing the validated result.</p>
+<p>The returned object has the following properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>classifiers: a pandas.DataFrame of classifiers in the sit_classifiers</dt><dd><p>input</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>classifier_values: a pandas.DataFrame of the classifier values in the</dt><dd><p>sit_classifiers input</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>classifier_aggregates: a dictionary of the classifier aggregates</dt><dd><p>in the sit_classifiers input</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>disturbance_types: a pandas.DataFrame based on the disturbance types in</dt><dd><p>the sit_disturbance_types input</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>age_classes: a pandas.DataFrame of the age classes based on</dt><dd><p>sit_age_classes</p>
+</dd>
+</dl>
+</li>
+<li><p>inventory: a pandas.DataFrame of the inventory based on sit_inventory</p></li>
+<li><dl class="simple">
+<dt>yield_table: a pandas.DataFrame of the merchantable volume yield curves</dt><dd><p>in the sit_yield input</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>disturbance_events: a pandas.DataFrame of the disturbance events based</dt><dd><p>on sit_events.  If the sit_events parameter is None this field is None.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>transition_rules: a pandas.DataFrame of the transition rules based on</dt><dd><p>sit_transitions.  If the sit_transitions parameter is None this field
+is None.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sit_classifiers</strong> (<em>pandas.DataFrame</em>) – SIT formatted classifiers</p></li>
+<li><p><strong>sit_disturbance_types</strong> (<em>pandas.DataFrame</em>) – SIT formatted disturbance
+types</p></li>
+<li><p><strong>sit_age_classes</strong> (<em>pandas.DataFrame</em>) – SIT formatted age classes</p></li>
+<li><p><strong>sit_inventory</strong> (<em>pandas.DataFrame</em>) – SIT formatted inventory</p></li>
+<li><p><strong>sit_yield</strong> (<em>pandas.DataFrame</em>) – SIT formatted yield curves</p></li>
+<li><p><strong>sit_events</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – SIT formatted disturbance events</p></li>
+<li><p><strong>sit_transitions</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – SIT formatted transition
+rules</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an object containing parsed and validated SIT dataset</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="sit-mapping">
+<h2>SIT Mapping<a class="headerlink" href="#sit-mapping" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.input.sit.sit_mapping.</code><code class="sig-name descname">SITMapping</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">cbm_defaults_ref</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_disturbance_type_id">
+<code class="sig-name descname">get_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets disturbance type ids based on the specified series of
+disturbance types, and the SIT mapping.  Used to encode any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>historical disturbance type column in sit inventory</p></li>
+<li><p>last pass disturbance type column in sit inventory</p></li>
+<li><p>disturbance type column in sit disturbance events</p></li>
+<li><p>disturbacne type column in sit transition rules</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>disturbance_type</strong> (<em>pandas.Series</em>) – A series of disturbance types</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>KeyError</strong> – disturbance type mapped more than one time in SIT mapping</p></li>
+<li><p><strong>KeyError</strong> – mapped default disturbance type not found in default data</p></li>
+<li><p><strong>KeyError</strong> – sit disturbance type code not mapped to default type</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a series of disturbance type ids</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_land_class_id">
+<code class="sig-name descname">get_land_class_id</code><span class="sig-paren">(</span><em class="sig-param">land_class</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_land_class_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a validated series of land class ids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>land_class</strong> (<em>pandas.Series</em>) – a series of string land class
+codes or integer land class ids. If strings are specified
+the id associated with the name is used, and if ids are
+specified they are validated and a copy of the input is
+returned.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – at least one of the specified land class codes are
+    not associated with defined land class ids</p></li>
+<li><p><strong>ValueError</strong> – at least one of the specified land class ids is not
+    a defined land class ids</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The series of landclass ids</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_spatial_unit">
+<code class="sig-name descname">get_spatial_unit</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_spatial_unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a pandas.Series containing spatial unit ids based on SIT
+Inventory, SIT classifiers and the mapping configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inventory</strong> (<em>pandas.DataFrame</em>) – The parsed and validated SIT
+inventory.  Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_inventory_parser.parse" title="libcbm.input.sit.sit_inventory_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_inventory_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – The Standard import tool
+classifiers definition. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – The Standard import tool
+classifier values definition. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>KeyError</strong> – the configuration resulted in an undefined spatial unit
+    id.</p></li>
+<li><p><strong>ValueError</strong> – the mapping mode in SIT configuration is not valid</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>the spatial unit ids for the inventory.  The number</dt><dd><p>of values in the series is the same as the number of rows in
+the specified inventory.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_species">
+<code class="sig-name descname">get_species</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_species" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a series of CBM species ids based on the specified species
+classifier values series and the SIT import tool classifier
+configuration and mapping.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>species</strong> (<em>pandas.Series</em>) – A series of classifier values</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – The Standard import tool
+classifiers definition. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+<li><p><strong>classifier_values</strong> (<em>pandas.DataFrame</em>) – The Standard import tool
+classifier values definition. Use the return value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_classifier_parser.parse" title="libcbm.input.sit.sit_classifier_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_classifier_parser.parse()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – a species classifier is mapped more than one time
+    in mapping configuration</p></li>
+<li><p><strong>KeyError</strong> – species mapped to an undefined default species name</p></li>
+<li><p><strong>KeyError</strong> – a classifier value is not mapped to a default value</p></li>
+<li><p><strong>ValueError</strong> – a classifier value was not defined in the
+    classifier/classifier value metadata</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a series of integer species ids.  The length of</dt><dd><p>the series matches the length of the species parameter.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sit_example.html" title="Standard Import tool Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

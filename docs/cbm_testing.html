@@ -1,0 +1,1315 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CBM testing &#8212; libcbm  documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CBM core functionality" href="cbm_core_functions.html" />
+    <link rel="prev" title="Standard Import tool Example" href="sit_example.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_core_functions.html" title="CBM core functionality"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sit_example.html" title="Standard Import tool Example"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CBM testing</a><ul>
+<li><a class="reference internal" href="#test-case-generator">Test case generator</a></li>
+<li><a class="reference internal" href="#test-case-simulator">Test case simulator</a></li>
+<li><a class="reference internal" href="#cbm-cfs3-support">CBM-CFS3 support</a></li>
+<li><a class="reference internal" href="#pool-comparison">Pool comparison</a></li>
+<li><a class="reference internal" href="#module-libcbm.test.cbm.flux_comparison">Flux comparison</a></li>
+<li><a class="reference internal" href="#module-libcbm.test.cbm.state_comparison">State comparison</a></li>
+<li><a class="reference internal" href="#module-libcbm.test.cbm.result_comparison">Comparison Support Functions</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sit_example.html"
+                        title="previous chapter">Standard Import tool Example</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_core_functions.html"
+                        title="next chapter">CBM core functionality</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_testing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cbm-testing">
+<span id="id1"></span><h1>CBM testing<a class="headerlink" href="#cbm-testing" title="Permalink to this headline">¶</a></h1>
+<p>Since LibCBM is partially intended as a fully functioning rewrite of the
+<a class="reference external" href="https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107">CBM-CFS3</a> model, it is written with rigorous testing methods for comparing
+CBM-CFS3 results for numerically similar Carbon dynamics and identical
+stand-state variables.  LibCBM supports fully automated simulation of test
+cases with CBM-CFS3 and side-by-side comparison with LibCBM results.</p>
+<p>The testing approach is:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>generate randomized test cases
+(see <a class="reference internal" href="#module-libcbm.test.cbm.case_generation" title="libcbm.test.cbm.case_generation"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.case_generation()</span></code></a>) which include:</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>initially forested stands, deforestation, and afforestation</p></li>
+<li><p>growth curves including all species, and multiple species stands</p></li>
+<li><p>random stand initial conditions</p></li>
+<li><p>random disturbance events</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>simulate randomized test cases with both of:</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>CBM-CFS3 (see: <a class="reference internal" href="#module-libcbm.test.cbm.cbm3_support.cbm3_simulator" title="libcbm.test.cbm.cbm3_support.cbm3_simulator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator</span></code></a>)</p></li>
+<li><p>LibCBM (see: <a class="reference internal" href="#module-libcbm.test.cbm.test_case_simulator" title="libcbm.test.cbm.test_case_simulator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator</span></code></a>)</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="3">
+<li><p>Compare results for all randomized test cases:</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>compare pool, flux, and state variables for each case and time step combination</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<div class="section" id="test-case-generator">
+<h2>Test case generator<a class="headerlink" href="#test-case-generator" title="Permalink to this headline">¶</a></h2>
+<p>The functions in <a class="reference internal" href="#module-libcbm.test.cbm.case_generation" title="libcbm.test.cbm.case_generation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.case_generation</span></code></a> support the
+creation of randomized test cases for simulating with both LibCBM and
+CBM-CFS3.</p>
+<span class="target" id="module-libcbm.test.cbm.case_generation"></span><dl class="function">
+<dt id="libcbm.test.cbm.case_generation.generate_scenarios">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">generate_scenarios</code><span class="sig-paren">(</span><em class="sig-param">random_seed</em>, <em class="sig-param">num_cases</em>, <em class="sig-param">db_path</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">max_disturbances</em>, <em class="sig-param">max_components</em>, <em class="sig-param">n_growth_digits</em>, <em class="sig-param">age_interval</em>, <em class="sig-param">growth_curve_len</em>, <em class="sig-param">growth_only=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.generate_scenarios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a list of test cases for comparing CBM-CFS3 versus libCBM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>random_seed</strong> (<em>int</em>) – a random seed for all random functions within
+the test generator</p></li>
+<li><p><strong>num_cases</strong> (<em>int</em>) – the number of random cases (ie. number of stands
+to generate)</p></li>
+<li><p><strong>db_path</strong> (<em>str</em>) – path to a cbm_defaults database</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – the number of timesteps to simulate</p></li>
+<li><p><strong>max_disturbances</strong> (<em>int</em>) – the maximum number of disturbances that
+can occur on randomly generated stand scenarios</p></li>
+<li><p><strong>max_components</strong> (<em>int</em>) – the maximum number of growth curve component
+that can occur on a randomly generated stand</p></li>
+<li><p><strong>n_growth_digits</strong> (<em>int</em>) – included since CBM3 has a rounding to the
+second decimal place for growth curves</p></li>
+<li><p><strong>age_interval</strong> (<em>int</em>) – the number of years between growth curve values</p></li>
+<li><p><strong>growth_curve_len</strong> (<em>int</em>) – the number of growth curve values</p></li>
+<li><p><strong>growth_only</strong> (<em>bool</em><em>, </em><em>optional</em>) – If set to True, stands will only be
+forested initially. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A list of parameters which can be run as stand level</dt><dd><p>simulations by both libCBM and by CBM-CFS3</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.case_generation.get_classifier_value_name">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">get_classifier_value_name</code><span class="sig-paren">(</span><em class="sig-param">id</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.get_classifier_value_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Encodes a test case id as a classifier value name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>id</strong> (<em>int</em>) – test case id</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>encoded classifier value name</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.case_generation.get_expCurve_func">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">get_expCurve_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.get_expCurve_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomly parameterizes and returns a exponential curve as a function
+of x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>an exp curve function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.case_generation.get_ramp_func">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">get_ramp_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.get_ramp_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomly parameterizes and returns a ramp function
+of x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a ramp function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.case_generation.get_random_sigmoid_func">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">get_random_sigmoid_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.get_random_sigmoid_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomly parameterizes and returns a sigmoid function
+of x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a sigmoid function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.case_generation.get_step_func">
+<code class="sig-prename descclassname">libcbm.test.cbm.case_generation.</code><code class="sig-name descname">get_step_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.case_generation.get_step_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>randomly parameterizes and returns a step function
+of x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a step function</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="test-case-simulator">
+<h2>Test case simulator<a class="headerlink" href="#test-case-simulator" title="Permalink to this headline">¶</a></h2>
+<p>The functions in <a class="reference internal" href="#module-libcbm.test.cbm.test_case_simulator" title="libcbm.test.cbm.test_case_simulator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator</span></code></a> simulate the
+randomized test cases produced by <a class="reference internal" href="#module-libcbm.test.cbm.case_generation" title="libcbm.test.cbm.case_generation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.case_generation</span></code></a>
+using LibCBM.</p>
+<span class="target" id="module-libcbm.test.cbm.test_case_simulator"></span><dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.get_classifier_value_lookup">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">get_classifier_value_lookup</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">classifier_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.get_classifier_value_lookup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a dictionary index for fetching classifier ids by their
+corresponding classifier value names from the specified test
+cases.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cases</strong> (<em>list</em>) – list of dict defining CBM test cases</p></li>
+<li><p><strong>classifier_name</strong> (<em>str</em>) – name of the single classifier used by the
+test cases</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a dictionary of classifier value (key) to classifier value id</dt><dd><p>(value)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.get_disturbances">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">get_disturbances</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">ref</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.get_disturbances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform test cases into dictionary storage for disturbance events</p>
+<p>Returns a dictionary of the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">case_index_0</span><span class="p">:</span>
+    <span class="p">{</span>
+        <span class="n">time_step</span><span class="p">:</span> <span class="n">disturbance_type_id</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="o">...</span>
+    <span class="n">case_index_k</span><span class="p">:</span>
+    <span class="p">{</span>
+        <span class="n">time_step</span><span class="p">:</span> <span class="n">disturbance_type_id</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Cases that do not have disturbance events will be omitted from the
+result, and any case that specifies more than one event on a single
+timestep will result in a ValueError</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cases</strong> (<em>list</em>) – a list of dictionary objects specifying test cases</p></li>
+<li><p><strong>ref</strong> (<a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference"><em>CBMDefaultsReference</em></a>) – class used to convert a disturbance name
+string into a disturbance type id</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – raised if more than one event is detected for a single
+    case on a given timestep</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl>
+<dt>a nested dictionary of disturbance type ids by time step.</dt><dd><p>For example the result for case id 5 having disturbance type 3
+on timestep 10 would look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="p">{</span>
+        <span class="mi">10</span><span class="p">:</span> <span class="mi">3</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.get_test_case_classifier_factory">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">get_test_case_classifier_factory</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">classifier_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.get_test_case_classifier_factory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a function for translating test cases into LibCBM classifiers
+configuration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cases</strong> (<em>list</em>) – a list of dictionary objects specifying test cases</p></li>
+<li><p><strong>classifier_name</strong> (<em>str</em>) – the single classifier name used by the test
+case simulator</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a function that will return classifier configuration</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.get_test_case_merch_volume_factory">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">get_test_case_merch_volume_factory</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">db_path</em>, <em class="sig-param">cbm_defaults_ref</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.get_test_case_merch_volume_factory" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Creates a factory function for transforming test case data into</dt><dd><p>merchantable volume configuration input for libcbm.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cases</strong> (<em>list</em>) – a list of dictionary objects specifying test cases</p></li>
+<li><p><strong>db_path</strong> (<em>str</em>) – path to a cbm_defaults database (which contains
+merchantable volume to biomass conversion parameters)</p></li>
+<li><p><strong>cbm_defaults_ref</strong> (<a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference"><em>CBMDefaultsReference</em></a>) – class used to convert
+species names into species ids for libcbm consumption</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a factory function which produces libcbm merch volume config</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.initialize_inventory">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param">cbm</em>, <em class="sig-param">cases</em>, <em class="sig-param">classifier_name</em>, <em class="sig-param">ref</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.initialize_inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a CBM inventory based on the specified test cases</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm</strong> (<em>libcbm.model.cbm.CBM</em>) – instance of CBM, used here to fetch
+classifier value ids from configuration</p></li>
+<li><p><strong>cases</strong> (<em>list</em>) – list of dict defining CBM test cases</p></li>
+<li><p><strong>classifier_name</strong> (<em>str</em>) – name of the single classifier used by the
+test cases</p></li>
+<li><p><strong>ref</strong> (<a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference"><em>CBMDefaultsReference</em></a>) – reference for transforming string names</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>an object which defines a valid inventory for</dt><dd><p><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.CBM</span></code> functions</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.test_case_simulator.run_test_cases">
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">run_test_cases</code><span class="sig-paren">(</span><em class="sig-param">db_path</em>, <em class="sig-param">dll_path</em>, <em class="sig-param">cases</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">spinup_debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run CBM simulation test cases with libcbm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_path</strong> (<em>str</em>) – path to a cbm_defaults database</p></li>
+<li><p><strong>dll_path</strong> (<em>str</em>) – path to the libcbm compiled library</p></li>
+<li><p><strong>cases</strong> (<em>list</em>) – list of test cases in the format created by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.case_generation.generate_scenarios()</span></code></p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – the number of timesteps to run for every test case</p></li>
+<li><p><strong>spinup_debug</strong> (<em>bool</em><em>, </em><em>optional</em>) – if specified, and True extra spinup
+debugging information is generated and returned (causes
+performance drop). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>dictionary containing the following keys/values:</dt><dd><ul class="simple">
+<li><p>pools: pd.DataFrame of pool results by case,timestep</p></li>
+<li><p>flux:  pd.DataFrame of flux results by case,timestep</p></li>
+<li><dl class="simple">
+<dt>state_variable_result: pd.DataFrame of state variable</dt><dd><p>simulation results by case,timestep</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>spinup_debug: if enabled, addition spinup debugging output in a</dt><dd><p>pd.DataFrame by case,timestep</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="cbm-cfs3-support">
+<h2>CBM-CFS3 support<a class="headerlink" href="#cbm-cfs3-support" title="Permalink to this headline">¶</a></h2>
+<p>The functions in <a class="reference internal" href="#module-libcbm.test.cbm.cbm3_support.cbm3_simulator" title="libcbm.test.cbm.cbm3_support.cbm3_simulator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator</span></code></a>
+simulate the randomized test cases produced by
+<a class="reference internal" href="#module-libcbm.test.cbm.case_generation" title="libcbm.test.cbm.case_generation"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.case_generation</span></code></a> using CBM-CFS3.</p>
+<p>Simulating with CBM-CFS3 requires <a class="reference external" href="https://github.com/cat-cfs/cbm3_python">cbm3_python</a> and <a class="reference external" href="https://github.com/cat-cfs/StandardImportToolPlugin">StandardImportToolPlugin</a>
+for automation of the CBM-CFS3 toolbox to execute test cases.</p>
+<span class="target" id="module-libcbm.test.cbm.cbm3_support.cbm3_python_helper"></span><dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_python_helper.load_cbm3_python">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_python_helper.</code><code class="sig-name descname">load_cbm3_python</code><span class="sig-paren">(</span><em class="sig-param">branch='master'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_python_helper.load_cbm3_python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone the cbm3_python repository from Github if it does not exist locally
+already.  If it does already exist locally do a git pull to get the latest
+revisions. Appends the cb3_python dir to sys.path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>branch</strong> (<em>str</em><em>, </em><em>optional</em>) – The git branch to clone or pull. Defaults
+to “master”.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the directory where cbm3_python is cloned</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-libcbm.test.cbm.cbm3_support.cbm3_simulator"></span><dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">get_cbm3_results</code><span class="sig-paren">(</span><em class="sig-param">cbm3_results_db_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads and returns CBM pool, flux and state simulation results into
+pandas.DataFrame for analysis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cbm3_results_db_path</strong> (<em>str</em>) – path to a CBM-CFS3 results database.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>“pools”: a pandas.DataFrame containing CBM-CFS3 pool</dt><dd><p>simulation results</p>
+</dd>
+<dt>”flux”: a pandas.DataFrame containing CBM-CFS3 flux</dt><dd><p>simulation results</p>
+</dd>
+<dt>”state”: a pandas dataframe containing age, and landclass</dt><dd><p>information.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_config_path">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">get_config_path</code><span class="sig-paren">(</span><em class="sig-param">toolbox_path</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_config_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a sensible default path for saving the configuration file used
+to generate a CBM-CFS3 project</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>toolbox_path</strong> (<em>str</em>) – path to the installation of the Operational-Scale
+CBM-CFS3 toolbox.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – the project name, which is used to form the subdirectory
+and project file name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a path for the SIT configuration based on the specified args</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_project_path">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">get_project_path</code><span class="sig-paren">(</span><em class="sig-param">toolbox_path</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_project_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a sensible default project path for running a CBM-CFS3 project
+in the CBM-CFS3 toolbox.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>toolbox_path</strong> (<em>str</em>) – path to the installation of the Operational-Scale
+CBM-CFS3 toolbox.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – the project name, which is used to form the subdirectory
+and project file name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a path for the specified project</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_results_path">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">get_results_path</code><span class="sig-paren">(</span><em class="sig-param">project_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_results_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a sensible default results database path based on the project
+database path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – the project name, which is used to form the subdirectory
+and project file name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a path for the specified project</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_unfccc_land_class_id_ref">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">get_unfccc_land_class_id_ref</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_unfccc_land_class_id_ref" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of the name (key), id (value) pairs used in the
+CBM-CFS3 model for UNFCCC land class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dictionary of UNFCCC land class names and ids</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.import_cbm3_project">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">import_cbm3_project</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">cases</em>, <em class="sig-param">age_interval</em>, <em class="sig-param">num_age_classes</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">toolbox_path</em>, <em class="sig-param">archive_index_db_path</em>, <em class="sig-param">cbm3_project_path=None</em>, <em class="sig-param">sit_config_save_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.import_cbm3_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a CBM-CFS3 project via the StandardImportToolPlugin tool</p>
+<p>This is a windows only function, since the Operational Scale toolbox is a
+windows only application.</p>
+<p><a class="reference external" href="https://github.com/cat-cfs/StandardImportToolPlugin">https://github.com/cat-cfs/StandardImportToolPlugin</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – project name</p></li>
+<li><p><strong>cases</strong> (<em>dict</em>) – test cases as generated by the test case generator.
+See: libcbm.test.casegeneration</p></li>
+<li><p><strong>age_interval</strong> (<em>int</em>) – the number of years between each merchantable
+volume.</p></li>
+<li><p><strong>num_age_classes</strong> (<em>int</em>) – The number of points in each merchantable
+volume curve.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – The number of timesteps to simulate</p></li>
+<li><p><strong>toolbox_path</strong> (<em>str</em>) – Path to the installed Operational-Scale CBM-CFS3
+model.</p></li>
+<li><p><strong>archive_index_db_path</strong> (<em>str</em>) – path to a copy of a CBM-CFS3 archive
+index access database which stores simulation parameters.</p></li>
+<li><p><strong>cbm3_project_path</strong> (<em>str</em><em>, </em><em>optional</em>) – If specified a path at which the
+CBM3 project will be created. If unspecified, a default path is
+generated based on the project name and the “Projects” dir of the
+toolbox installation. Defaults to None.</p></li>
+<li><p><strong>sit_config_save_path</strong> (<em>str</em><em>, </em><em>optional</em>) – If specified a path at which the
+Standard Import tool config will be created. If unspecified, a
+default path is generated based on the project name and the
+“Projects” dir of the toolbox installation. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – An invalid test case was detected.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The path to the generated CBM-CFS3 project.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.cbm3_support.cbm3_simulator.run_cbm3">
+<code class="sig-prename descclassname">libcbm.test.cbm.cbm3_support.cbm3_simulator.</code><code class="sig-name descname">run_cbm3</code><span class="sig-paren">(</span><em class="sig-param">archive_index_db_path</em>, <em class="sig-param">project_path</em>, <em class="sig-param">toolbox_path</em>, <em class="sig-param">cbm_exe_path</em>, <em class="sig-param">cbm3_results_db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.run_cbm3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate the specified CBM-CFS3 project, and return the path to the
+resulting simulation results database.</p>
+<p>This is a windows only function, since the Operational-Scale CBM-CFS3
+toolbox is a windows only application.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>archive_index_db_path</strong> (<em>str</em>) – path to a copy of a CBM-CFS3 archive
+index access database.</p></li>
+<li><p><strong>project_path</strong> (<em>str</em>) – path to a CBM-CFS3 project database to simulate.</p></li>
+<li><p><strong>toolbox_path</strong> (<em>str</em>) – Path to the installed Operational-Scale CBM-CFS3
+model.</p></li>
+<li><p><strong>cbm_exe_path</strong> (<em>str</em>) – directory containing the CBM-CFS3 model
+executables “cbm.exe” and “makelist.exe”.</p></li>
+<li><p><strong>cbm3_results_db_path</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – [description]. Defaults to
+None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The path to a CBM-CFS3 results database containing simulation
+results for the specified project.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="pool-comparison">
+<h2>Pool comparison<a class="headerlink" href="#pool-comparison" title="Permalink to this headline">¶</a></h2>
+<p>The functions in <code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.pool_comparison</span></code>
+support the pool by pool comparison of test case simulation results run by
+LibCBM versus CBM-CFS3.</p>
+<span class="target" id="module-libcbm.test.cbm.pool_comparison"></span><dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_cbm3_biomass_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_cbm3_biomass_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_cbm3_biomass_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all CBM-CFS3 biomass pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all libcbm biomass pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_cbm3_dom_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_cbm3_dom_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_cbm3_dom_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all CBM-CFS3 dom pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all libcbm CBM-CFS3 dom pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_cbm3_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_cbm3_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_cbm3_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all CBM-CFS3 pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all CBM-CFS3 pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_libcbm_biomass_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_libcbm_biomass_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_libcbm_biomass_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all libcbm biomass pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all libcbm libcbm biomass pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_libcbm_dom_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_libcbm_dom_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_libcbm_dom_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all libcbm dom pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all libcbm libcbm dom pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_libcbm_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_libcbm_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_libcbm_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the names of all libcbm pools as a list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>all libcbm pool names</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_merged_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_merged_pools</code><span class="sig-paren">(</span><em class="sig-param">cbm3_pools</em>, <em class="sig-param">libcbm_pools</em>, <em class="sig-param">pools_included='all'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_merged_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a merge of the specified cbm3 and libcbm pool results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_pools</strong> (<em>pandas.DataFrame</em>) – cbm3 pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results" title="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results()</span></code></a></p></li>
+<li><p><strong>libcbm_pools</strong> (<em>pandas.DataFrame</em>) – libcbm pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="libcbm.test.cbm.test_case_simulator.run_test_cases"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator.run_test_cases()</span></code></a></p></li>
+<li><p><strong>pools_included</strong> (<em>str</em><em>, </em><em>optional</em>) – <p>one of:</p>
+<blockquote>
+<div><ul>
+<li><p>”all” to merge all pools</p></li>
+<li><p>”biomass” to merge all biomass pools</p></li>
+<li><p>”dom” to merge all dead organic matter pools.</p></li>
+</ul>
+</div></blockquote>
+<p>Defaults to “all”.</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>merged comparison of CBM3 versus libcbm for analysis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.get_pool_map">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">get_pool_map</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.get_pool_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a mapping between libcbm poolnames and cbm-cfs3 poolnames.
+Assumes the pools are ordered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – <p>one of:</p>
+<ul class="simple">
+<li><p>”all” for a map of all pools</p></li>
+<li><p>”biomass” for a map of all biomass pools</p></li>
+<li><p>”dom” for a map of all dead organic matter pools</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – the name parameter was not supported</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>mapping of CBM-CFS3 pools to libcbm pools</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>collections.OrderedDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.pool_comparison.prepare_cbm3_pools">
+<code class="sig-prename descclassname">libcbm.test.cbm.pool_comparison.</code><code class="sig-name descname">prepare_cbm3_pools</code><span class="sig-paren">(</span><em class="sig-param">cbm3_pools</em>, <em class="sig-param">pool_map</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.pool_comparison.prepare_cbm3_pools" title="Permalink to this definition">¶</a></dt>
+<dd><p>Readies a cbm3 pools query result for joining with a LibCBM pools
+result.</p>
+<p>Also performs the following table changes to make it easy to join and
+compare with the libcbm result:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>rename “TimeStep” to “timestep”</p></li>
+<li><p>convert the “identifier” column to numeric from string</p></li>
+<li><p>rename the columns from cbm3 pool names to libcbm pool names</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_pools</strong> (<em>pandas.DataFrame</em>) – The CBM-CFS3 pool indicator result</p></li>
+<li><p><strong>pool_map</strong> – (collections.OrderedDict): a map of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a copy of the input dataFrame ready to join with</dt><dd><p>libcbm pool results.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.test.cbm.flux_comparison">
+<span id="flux-comparison"></span><h2>Flux comparison<a class="headerlink" href="#module-libcbm.test.cbm.flux_comparison" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_cbm3_annual_process_flux">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_cbm3_annual_process_flux</code><span class="sig-paren">(</span><em class="sig-param">cbm3_flux</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_cbm3_annual_process_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns annual process flux from a query result of CBM3 flux
+indicators.</p>
+<p>Also performs the following table changes to make it easy to join and
+compare with to the libcbm result:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>rename “TimeStep” to “timestep”</p></li>
+<li><p>convert the “identifier” column to numeric from string</p></li>
+<li><dl class="simple">
+<dt>rename the columns according to the <code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code> of</dt><dd><p><a class="reference internal" href="#libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols" title="libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_cbm3_flux_disturbance_cols()</span></code></a> to
+<a class="reference internal" href="#libcbm.test.cbm.flux_comparison.get_libcbm_flux_annual_process_cols" title="libcbm.test.cbm.flux_comparison.get_libcbm_flux_annual_process_cols"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_libcbm_flux_annual_process_cols()</span></code></a></p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cbm3_flux</strong> (<em>pandas.DataFrame</em>) – The CBM-CFS3 flux indicator result</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a filtered and altered copy of the input containing</dt><dd><p>only annual process fluxes.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_cbm3_disturbance_flux">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_cbm3_disturbance_flux</code><span class="sig-paren">(</span><em class="sig-param">cbm3_flux</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_cbm3_disturbance_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns disturbance flux from a query result of CBM3 flux indicators.</p>
+<p>Also performs the following table changes to make it easy to join and
+compare with to the libcbm result:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>rename “TimeStep” to “timestep”</p></li>
+<li><p>convert the “identifier” column to numeric from string</p></li>
+<li><dl class="simple">
+<dt>rename the columns according to the <code class="xref py py-func docutils literal notranslate"><span class="pre">zip()</span></code> of</dt><dd><p><a class="reference internal" href="#libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols" title="libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_cbm3_flux_disturbance_cols()</span></code></a> to
+<a class="reference internal" href="#libcbm.test.cbm.flux_comparison.get_libcbm_flux_disturbance_cols" title="libcbm.test.cbm.flux_comparison.get_libcbm_flux_disturbance_cols"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_libcbm_flux_disturbance_cols()</span></code></a></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>negate the values for the following columns due to a quirk in</dt><dd><p>CBM-CFS3 flux indicator results:
+- ‘MerchToAir’
+- ‘FolToAir’
+- ‘OthToAir’
+- ‘CoarseToAir’
+- ‘FineToAir’</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cbm3_flux</strong> (<em>pandas.DataFrame</em>) – The CBM-CFS3 disturbance flux</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a filtered and altered copy of the input containing</dt><dd><p>only disturbance fluxes.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_cbm3_flux_annual_process_cols">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_cbm3_flux_annual_process_cols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_cbm3_flux_annual_process_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ordered set of names for CBM3 columns involved in annual
+process fluxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of strings which are the ordered CBM3 columns involved
+in annual process fluxes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_cbm3_flux_disturbance_cols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_cbm3_flux_disturbance_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ordered set of names for CBM3 columns involved in
+disturbance fluxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of strings which are the ordered CBM3 columns involved in
+disturbance fluxes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_libcbm_flux_annual_process_cols">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_libcbm_flux_annual_process_cols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_libcbm_flux_annual_process_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ordered set of names for LibCBM columns involved in
+annual process fluxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of strings which are the ordered LibCBM flux indicator
+columns involved in annual process fluxes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_libcbm_flux_disturbance_cols">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_libcbm_flux_disturbance_cols</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_libcbm_flux_disturbance_cols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the ordered set of names for LibCBM columns involved in
+disturbance fluxes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of strings which are the ordered LibCBM flux indicator
+columns involved in disturbance fluxes.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_merged_annual_process_flux">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_merged_annual_process_flux</code><span class="sig-paren">(</span><em class="sig-param">cbm3_flux</em>, <em class="sig-param">libcbm_flux</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_merged_annual_process_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a merge of the annual process cbm3 and libcbm flux results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_flux</strong> (<em>pandas.DataFrame</em>) – cbm3 pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results" title="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results()</span></code></a></p></li>
+<li><p><strong>libcbm_flux</strong> (<em>pandas.DataFrame</em>) – libcbm pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="libcbm.test.cbm.test_case_simulator.run_test_cases"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator.run_test_cases()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>merged comparison of CBM3 versus libcbm for analysis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.flux_comparison.get_merged_disturbance_flux">
+<code class="sig-prename descclassname">libcbm.test.cbm.flux_comparison.</code><code class="sig-name descname">get_merged_disturbance_flux</code><span class="sig-paren">(</span><em class="sig-param">cbm3_flux</em>, <em class="sig-param">libcbm_flux</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.flux_comparison.get_merged_disturbance_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a merge of the cbm3 and libcbm disturbance flux results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_flux</strong> (<em>pandas.DataFrame</em>) – cbm3 pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results" title="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results()</span></code></a></p></li>
+<li><p><strong>libcbm_flux</strong> (<em>pandas.DataFrame</em>) – libcbm pool results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="libcbm.test.cbm.test_case_simulator.run_test_cases"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator.run_test_cases()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>merged comparison of CBM3 versus libcbm for analysis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.test.cbm.state_comparison">
+<span id="state-comparison"></span><h2>State comparison<a class="headerlink" href="#module-libcbm.test.cbm.state_comparison" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.test.cbm.state_comparison.get_merged_state">
+<code class="sig-prename descclassname">libcbm.test.cbm.state_comparison.</code><code class="sig-name descname">get_merged_state</code><span class="sig-paren">(</span><em class="sig-param">cbm3_state</em>, <em class="sig-param">libcbm_state</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.state_comparison.get_merged_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>merges CBM3 and libcbm state variables for comparison</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_state</strong> (<em>pandas.DataFrame</em>) – cbm3 state results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results" title="libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results()</span></code></a></p></li>
+<li><p><strong>libcbm_state</strong> (<em>pandas.DataFrame</em>) – libcbm state results as produced by:
+<a class="reference internal" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="libcbm.test.cbm.test_case_simulator.run_test_cases"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.test.cbm.test_case_simulator.run_test_cases()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>merged comparison of CBM3 versus libcbm for analysis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.state_comparison.prepare_cbm3_state">
+<code class="sig-prename descclassname">libcbm.test.cbm.state_comparison.</code><code class="sig-name descname">prepare_cbm3_state</code><span class="sig-paren">(</span><em class="sig-param">cbm3_state</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.state_comparison.prepare_cbm3_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Readies a cbm3 state query result for joining with a LibCBM state
+result.  Since CBM3 does not have external access to much of its
+internal simulation state this is currently limited to only comparing age,
+and land_class</p>
+<p>Also performs the following table changes to make it easy to join and
+compare with to the libcbm result:</p>
+<blockquote>
+<div><ul>
+<li><p>rename:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>“TimeStep” to “timestep”</p></li>
+<li><p>“LandClassID” to “land_class”</p></li>
+<li><p>“Average Age” to “age”</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>convert the “identifier” column to numeric from string</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_pools</strong> (<em>pandas.DataFrame</em>) – The CBM-CFS3 pool indicator result</p></li>
+<li><p><strong>pool_map</strong> – (collections.OrderedDict): a map of pools</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a copy of the input dataFrame ready to join with</dt><dd><p>libcbm pool results.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-libcbm.test.cbm.result_comparison">
+<span id="comparison-support-functions"></span><h2>Comparison Support Functions<a class="headerlink" href="#module-libcbm.test.cbm.result_comparison" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.diff_result">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">diff_result</code><span class="sig-paren">(</span><em class="sig-param">merged</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.diff_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a diff table for a merge of CBM-CFS3 values versus LibCBM values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>merged</strong> (<em>pandas.DataFrame</em>) – A merged CBM3/LibCBM comparison as produced
+by: <a class="reference internal" href="#libcbm.test.cbm.result_comparison.merge_result" title="libcbm.test.cbm.result_comparison.merge_result"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_result()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>dataframe which is the comparison of the libcbm</dt><dd><p>values with the CBM-CFS3 values by timestep, identifier</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.get_summarized_diff_plot">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">get_summarized_diff_plot</code><span class="sig-paren">(</span><em class="sig-param">merged</em>, <em class="sig-param">max_results</em>, <em class="sig-param">x_label</em>, <em class="sig-param">y_label</em>, <em class="sig-param">**plot_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.get_summarized_diff_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a plot of libcbm vs cbm3 merged results including all test
+cases.  Passes any additional key word args to the pandas.DataFrame.plot
+function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>merged</strong> (<em>pandas.DataFrame</em>) – A merged CBM3/LibCBM comparison as produced
+by: <a class="reference internal" href="#libcbm.test.cbm.result_comparison.merge_result" title="libcbm.test.cbm.result_comparison.merge_result"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_result()</span></code></a>.</p></li>
+<li><p><strong>max_results</strong> (<em>int</em>) – The maximum number of difference summaries to plot.
+None for unlimited.</p></li>
+<li><p><strong>x_label</strong> (<em>str</em>) – The label on the x axis of the resulting plot</p></li>
+<li><p><strong>y_label</strong> (<em>str</em>) – The label on the y axis of the resulting plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>the return value of</dt><dd><p>pandas.DataFrame.plot</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.AxesSubplot or np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.get_test_case_comparison_by_indicator_plot">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">get_test_case_comparison_by_indicator_plot</code><span class="sig-paren">(</span><em class="sig-param">identifier</em>, <em class="sig-param">merged</em>, <em class="sig-param">diff</em>, <em class="sig-param">timesteps</em>, <em class="sig-param">y_label</em>, <em class="sig-param">**plot_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.get_test_case_comparison_by_indicator_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
+for a single test case where the X Axis are the indicators, and a values
+are generated for each timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identifier</strong> (<em>int</em>) – The test case id</p></li>
+<li><p><strong>merged</strong> (<em>pandas.DataFrame</em>) – A merged CBM3/LibCBM comparison as produced
+by: <a class="reference internal" href="#libcbm.test.cbm.result_comparison.merge_result" title="libcbm.test.cbm.result_comparison.merge_result"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_result()</span></code></a>.</p></li>
+<li><p><strong>diff</strong> (<em>bool</em>) – if true return differences from the merge, and otherwise
+return the raw merged values</p></li>
+<li><p><strong>timesteps</strong> (<em>list</em>) – a list of timesteps to plot for the indicators,
+specifying None will plot all timesteps.</p></li>
+<li><p><strong>y_label</strong> (<em>str</em>) – The label on the y axis of the resulting plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>the return value of</dt><dd><p>pandas.DataFrame.plot</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.AxesSubplot or np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.get_test_case_comparison_plot">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">get_test_case_comparison_plot</code><span class="sig-paren">(</span><em class="sig-param">identifier</em>, <em class="sig-param">merged</em>, <em class="sig-param">diff</em>, <em class="sig-param">x_label</em>, <em class="sig-param">y_label</em>, <em class="sig-param">**plot_kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.get_test_case_comparison_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
+for a single test case.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identifier</strong> (<em>int</em>) – The test case id</p></li>
+<li><p><strong>merged</strong> (<em>pandas.DataFrame</em>) – A merged CBM3/LibCBM comparison as produced
+by: <a class="reference internal" href="#libcbm.test.cbm.result_comparison.merge_result" title="libcbm.test.cbm.result_comparison.merge_result"><code class="xref py py-func docutils literal notranslate"><span class="pre">merge_result()</span></code></a>.</p></li>
+<li><p><strong>diff</strong> (<em>bool</em>) – if true return differences from the merge, and otherwise
+return the raw merged values</p></li>
+<li><p><strong>x_label</strong> (<em>str</em>) – The label on the x axis of the resulting plot</p></li>
+<li><p><strong>y_label</strong> (<em>str</em>) – The label on the y axis of the resulting plot</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>the return value of</dt><dd><p>pandas.DataFrame.plot</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>matplotlib.AxesSubplot or np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.merge_result">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">merge_result</code><span class="sig-paren">(</span><em class="sig-param">cbm3_result</em>, <em class="sig-param">libcbm_result</em>, <em class="sig-param">value_cols</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.merge_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a merge table for CBM-CFS3 values versus LibCBM values.</p>
+<p>The pair of pandas dataframes have the following columns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>“identifier”: the identifier for the a set of timeseries values in</dt><dd><p>the DataFrame</p>
+</dd>
+</dl>
+</li>
+<li><p>“timestep”: the time step for the associated identifier</p></li>
+<li><dl class="simple">
+<dt>An ordered set of value columns matching the “value_cols” list of</dt><dd><p>names.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm3_result</strong> (<em>pandas.DataFrame</em>) – The CBM result to compare</p></li>
+<li><p><strong>libcbm_result</strong> (<em>pandas.DataFrame</em>) – The LibCBM result to compare</p></li>
+<li><p><strong>value_cols</strong> (<em>list</em>) – The list of string names for the values in the pair
+of specified dataframes.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>dataframe which is the merge of the libcbm value</dt><dd><p>with the CBM-CFS3 value by timestep, identifier</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.test.cbm.result_comparison.summarize_diffs_by_identifier">
+<code class="sig-prename descclassname">libcbm.test.cbm.result_comparison.</code><code class="sig-name descname">summarize_diffs_by_identifier</code><span class="sig-paren">(</span><em class="sig-param">diffs</em>, <em class="sig-param">result_limit=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.result_comparison.summarize_diffs_by_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort and summarize a diff result returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">join_result()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>diffs</strong> (<em>pandas.DataFrame</em>) – a dataframe containing comparisons</p></li>
+<li><p><strong>result_limit</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of rows in the result.
+If set to None all rows are returned. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a summary of a difference dataframe sorted
+descending by the “abs_total_diff” column/</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_core_functions.html" title="CBM core functionality"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sit_example.html" title="Standard Import tool Example"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

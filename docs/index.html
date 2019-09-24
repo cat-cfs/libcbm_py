@@ -1,0 +1,218 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>LibCBM &#8212; libcbm  documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CBM" href="cbm_model.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_model.html" title="CBM"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">LibCBM</a><ul>
+<li><a class="reference internal" href="#key-features">Key Features</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#code-documentation">Code Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_model.html"
+                        title="next chapter">CBM</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="libcbm">
+<h1>LibCBM<a class="headerlink" href="#libcbm" title="Permalink to this headline">¶</a></h1>
+<p>LibCBM is a next generation version of the CBM-CFS3 model.  It also has useful
+functions for extending CBM, or developing new CBM-like models.</p>
+<div class="section" id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>User allocated model state using numpy/Pandas and user controlled model stepping See: <a class="reference internal" href="cbm_model.html#cbm-model"><span class="std std-ref">CBM</span></a></p></li>
+<li><p>Core CBM dynamics and state functions. See: <a class="reference internal" href="cbm_core_functions.html#cbm-core-functions"><span class="std std-ref">CBM core functionality</span></a></p></li>
+<li><p>CBM-CFS3 results comparison/test functions. See: <a class="reference internal" href="cbm_testing.html#cbm-testing"><span class="std std-ref">CBM testing</span></a></p></li>
+<li><p>General purpose matrix-based pool/flux compute methods. See: <a class="reference internal" href="libcbm_core_functions.html#libcbm-core-functions"><span class="std std-ref">LibCBM core functionality</span></a></p></li>
+<li><p>Example jupyter notebooks including CBM-CFS3 testing (see /examples)</p></li>
+<li><p>Full support for the CBM-CFS3 standard import tool format</p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>python3x</p></li>
+<li><p>The libcbm compiled library, or libcbm c/c++ source</p></li>
+<li><p>numpy</p></li>
+<li><p>pandas</p></li>
+<li><p>sqlite3</p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>In order to run the CBM-CFS3 tests there are additional requirements:</dt><dd><ul class="simple">
+<li><p>Windows OS (CBM-CFS3 is windows only)</p></li>
+<li><p>pyodbc and a working 64 bit MS Access driver</p></li>
+<li><p>gitpython</p></li>
+</ul>
+</dd>
+<dt>Running the notebooks in /examples Also have additional requirements:</dt><dd><ul class="simple">
+<li><p>scipy</p></li>
+<li><p>jupyter</p></li>
+<li><p>jupytext</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="code-documentation">
+<h2>Code Documentation<a class="headerlink" href="#code-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cbm_model.html">CBM</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cbm_model.html#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_model.html#the-cbm-class">The CBM class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_model.html#module-libcbm.model.cbm.cbm_simulator">Simulator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cbm_input_and_variables.html">CBM Input and Variables</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#pools">Pools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#flux">Flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#spinup-parameters">Spinup parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#spinup-variables">Spinup variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#cbm-time-step-parameters">CBM time step parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#cbm-state-variables">CBM state variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#classifiers">Classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#merchantable-volume-curves">Merchantable Volume Curves</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#cbm-default-parameters">CBM default parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_input_and_variables.html#cbm-default-parameters-reference">CBM default parameters reference</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cbm_sit.html">CBM Standard Import tool format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_classifier_parser">Classifiers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_age_class_parser">Age Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_disturbance_type_parser">Disturbance Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_inventory_parser">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_yield_parser">Growth and Yield</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_disturbance_event_parser">Disturbance Events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_transition_rule_parser">Transition Rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_parser">The SIT Format</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_cbm_factory">Simulating SIT input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#module-libcbm.input.sit.sit_reader">Reading SIT input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_sit.html#sit-mapping">SIT Mapping</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sit_example.html">Standard Import tool Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#Setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#Simulation">Simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#Pool-Results">Pool Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#State-Variable-Results">State Variable Results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#Flux-Indicators">Flux Indicators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sit_example.html#Appendix">Appendix</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cbm_testing.html">CBM testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#test-case-generator">Test case generator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#test-case-simulator">Test case simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#cbm-cfs3-support">CBM-CFS3 support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#pool-comparison">Pool comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#module-libcbm.test.cbm.flux_comparison">Flux comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#module-libcbm.test.cbm.state_comparison">State comparison</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cbm_testing.html#module-libcbm.test.cbm.result_comparison">Comparison Support Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cbm_core_functions.html">CBM core functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libcbm_core_functions.html">LibCBM core functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other_functions.html">Other functions</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cbm_model.html" title="CBM"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>
