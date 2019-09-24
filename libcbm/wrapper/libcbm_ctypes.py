@@ -3,7 +3,6 @@ import ctypes
 from numpy.ctypeslib import ndpointer
 
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
-from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.cbm import cbm_ctypes
 
@@ -59,23 +58,23 @@ class LibCBM_ctypes():
         )
 
         self._dll.LibCBM_ComputePools.argtypes = (
-                ctypes.POINTER(LibCBM_Error),  # error structure
-                ctypes.c_void_p,  # handle
-                ctypes.POINTER(ctypes.c_size_t),  # op ids
-                ctypes.c_size_t,  # number of op ids
-                LibCBM_Matrix,  # pools
-                ctypes.POINTER(ctypes.c_int)  # enabled
+            ctypes.POINTER(LibCBM_Error),  # error structure
+            ctypes.c_void_p,  # handle
+            ctypes.POINTER(ctypes.c_size_t),  # op ids
+            ctypes.c_size_t,  # number of op ids
+            LibCBM_Matrix,  # pools
+            ctypes.POINTER(ctypes.c_int)  # enabled
             )
 
         self._dll.LibCBM_ComputeFlux.argtypes = (
-                ctypes.POINTER(LibCBM_Error),  # error structure
-                ctypes.c_void_p,  # handle
-                ctypes.POINTER(ctypes.c_size_t),  # op ids
-                ctypes.POINTER(ctypes.c_size_t),  # op process ids
-                ctypes.c_size_t,  # number of ops
-                LibCBM_Matrix,  # pools (n_stands by n_pools)
-                LibCBM_Matrix,  # flux (n_stands by n_flux_indicators)
-                ctypes.POINTER(ctypes.c_int)  # enabled
+            ctypes.POINTER(LibCBM_Error),  # error structure
+            ctypes.c_void_p,  # handle
+            ctypes.POINTER(ctypes.c_size_t),  # op ids
+            ctypes.POINTER(ctypes.c_size_t),  # op process ids
+            ctypes.c_size_t,  # number of ops
+            LibCBM_Matrix,  # pools (n_stands by n_pools)
+            LibCBM_Matrix,  # flux (n_stands by n_flux_indicators)
+            ctypes.POINTER(ctypes.c_int)  # enabled
             )
 
         cbm_ctypes.initialize_CBM_ctypes(self._dll)
