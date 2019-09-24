@@ -30,14 +30,15 @@ def load_table(config, config_dir):
              "params": {"path": "my_file.csv", sep="\\t"}
 
     Args:
-        config (dict): [description]
+        config (dict): configuration specifying a source of data
         config_dir (str): directory containing the configuration
 
     Raises:
-        NotImplementedError: [description]
+        NotImplementedError: the name specified for "type" was not a
+            supported data source.
 
     Returns:
-        [type]: [description]
+        pandas.DataFrame: the loaded data
     """
     load_type = config["type"]
     load_params = config["params"]
