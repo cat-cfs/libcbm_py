@@ -1695,6 +1695,21 @@ specified a default value is used.</p></li>
 </dd></dl>
 
 <dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.initialize_sit_objects">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_sit_objects</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load and attach objects required for the SIT to the specified namespace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sit</strong> (<em>types.SimpleNamespace</em>) – [description]</p></li>
+<li><p><strong>db_path</strong> (<em>str</em><em>, </em><em>optional</em>) – path to a cbm_defaults database. If None, the
+default database is used. Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcbm.input.sit.sit_cbm_factory.load_sit">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">load_sit</code><span class="sig-paren">(</span><em class="sig-param">config_path</em>, <em class="sig-param">db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads data and objects required to run from the SIT format.</p>
@@ -1707,7 +1722,41 @@ default database is used. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>object with parsed SIT data and objects</p>
+<dd class="field-even"><p>object with parsed SIT data and objects.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>types.SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.read_sit_config">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">read_sit_config</code><span class="sig-paren">(</span><em class="sig-param">config_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.read_sit_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load SIT data and configuration from the json formatted configuration
+file at specified config_path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config_path</strong> (<em>str</em>) – path to SIT configuration</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>an object with the following properties:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>config: the dictionary representation of the json configuration</dt><dd><p>at the specified config_path</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>sit_data: if the “import_config” key is present in the</dt><dd><p>configuration, this is a loaded and parsed sit dataset, and
+otherwise it is None.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>types.SimpleNamespace</p>
@@ -1739,18 +1788,19 @@ function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>dict</em>) – [description]</p></li>
+<li><p><strong>config</strong> (<em>dict</em>) – configuration specifying a source of data</p></li>
 <li><p><strong>config_dir</strong> (<em>str</em>) – directory containing the configuration</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>NotImplementedError</strong> – [description]</p>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – the name specified for “type” was not a
+    supported data source.</p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>[description]</p>
+<dd class="field-odd"><p>the loaded data</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>[type]</p>
+<dd class="field-even"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>

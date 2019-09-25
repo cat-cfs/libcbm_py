@@ -330,6 +330,68 @@ for a compatible definition.</p></li>
 </div>
 <div class="section" id="module-libcbm.model.cbm.cbm_simulator">
 <span id="simulator"></span><h2>Simulator<a class="headerlink" href="#module-libcbm.model.cbm.cbm_simulator" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func">
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create storage and a function for simulation results.  The function
+return value can be passed to <a class="reference internal" href="#libcbm.model.cbm.cbm_simulator.simulate" title="libcbm.model.cbm.cbm_simulator.simulate"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate()</span></code></a> to track simultion
+results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><p>a pair of values:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>types.SimpleNameSpace: an object with properties:</p></li>
+</ol>
+<blockquote>
+<div><ul class="simple">
+<li><p>pool_indicators a pandas.DataFrame for storing pools</p></li>
+<li><p>flux_indicators a pandas.DataFrame for storing fluxes</p></li>
+<li><p>state_indicators a pandas.DataFrame for storing state</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic simple" start="2">
+<li><p>func: a function for appending to the above results dataframes</p></li>
+</ol>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.model.cbm.cbm_simulator.simulate">
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">cbm</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pool_codes</em>, <em class="sig-param">flux_indicator_codes</em>, <em class="sig-param">pre_dynamics_func</em>, <em class="sig-param">reporting_func</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.simulate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the specified number of timesteps of the CBM model.  Model output
+is processed by the provided reporting_func. The provided
+pre_dynamics_func is called prior to each CBM dynamics step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm</strong> (<a class="reference internal" href="#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM"><em>libcbm.model.cbm.cbm_model.CBM</em></a>) – Instance of the CBM model</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – The number of CBM timesteps to run</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – CBM classifiers for each of the rows
+in the inventory</p></li>
+<li><p><strong>inventory</strong> (<em>pandas.DataFrame</em>) – CBM inventory which defines the initial
+state of the simulation</p></li>
+<li><p><strong>pool_codes</strong> (<em>list</em>) – a list of strings describing each of the CBM pools</p></li>
+<li><p><strong>flux_indicator_codes</strong> (<em>list</em>) – a list of strings describing the CBM flux
+indicators.</p></li>
+<li><p><strong>pre_dynamics_func</strong> (<em>function</em>) – A function which both accepts and
+returns all CBM variables.  The layout of the CBM variables is the
+same as the return value of
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p></li>
+<li><p><strong>reporting_func</strong> (<em>function</em>) – a function which accepts all CBM variables.
+The layout of the CBM variables is the same as the return value of
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 </div>
 

@@ -63,3 +63,5 @@ Simulator
 ---------
 
 .. automodule:: libcbm.model.cbm.cbm_simulator
+	:members:
+

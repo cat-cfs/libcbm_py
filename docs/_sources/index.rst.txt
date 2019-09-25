@@ -1,8 +1,12 @@
-LibCBM
+libcbm
 ======
 
-LibCBM is a next generation version of the CBM-CFS3 model.  It also has useful
+libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
+
+See github-page_
+
+.. _github-page: http://www.github.com/cat-cfs/libcbm_py
 
 Key Features
 ------------
