@@ -133,6 +133,7 @@ class ComputePoolTests(unittest.TestCase):
         then compute the equivalent result using the numpy.matmul function,
         and check that the result is within a tolerance using numpy.allclose
         """
+        np.random.seed(1)
         n_stands = np.random.randint(1, 1000)
         n_pools = np.random.randint(3, 25)
         n_ops = np.random.randint(1, 20)
@@ -152,7 +153,7 @@ class ComputePoolTests(unittest.TestCase):
             op_mats = []
             for _ in range(n_op_mats):
                 # create a random square matrix
-                op_mats.append(np.random.rand(n_pools, n_pools))
+                op_mats.append(np.random.rand(n_pools, n_pools)*1e5)
             mats.append(op_mats)
 
         pools_test = pool_flux_helpers.ComputePools(pools, mats, op_indices)
