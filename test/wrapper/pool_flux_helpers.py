@@ -99,3 +99,70 @@ def ComputePools(pools, ops, op_indices):
     dll.ComputePools(op_ids, pools)
 
     return pools
+
+
+def create_flux_indicator(pools_by_name, process_id, sources, sinks):
+    """helper method to create configuration for dll
+    """
+
+    return {
+        'id': None,
+        'index': None,
+        'process_id': process_id,
+        'source_pools': [pools_by_name[x]["id"] for x in sources],
+        'sink_pools': [pools_by_name[x]["id"] for x in sinks]}
+
+
+def append_flux_indicator(collection, flux_indicator):
+    """helper method to create configuration for dll
+    """
+    flux_indicator["index"] = len(collection)
+    flux_indicator["id"] = len(collection)+1
+    collection.append(flux_indicator)
+
+
+def ComputeFlux(pools, poolnames, mats, op_indices, op_processes,
+                flux_indicators):
+    """Runs the libcbm ComputeFlux method for testing purposes
+
+    Args:
+        pools (numpy.ndarray): a n_stands, by n_pools matrix of pool values
+        poolnames (list): string labels for each of the columns in pools
+        mats (list): a nested list of flow matrices (numpy.ndarrays)
+        op_indices (numpy.ndarray): An n_stands by n_ops matrix, where each
+            column is a vector of indices to the jagged minor dimension of the
+            ops parameter.
+        op_processes (list): a list of integers used to filter flux indicators
+            by the process defined in flux_indicator config.
+        flux_indicators (list): a list of dictionaries which define flux
+            indicator configuration
+
+    Returns:
+        tuple: 1. the pool result (numpy.ndarray) and 2. the flux result
+            (numpy.ndarray) of the ComputeFlux libcbm method.
+    """
+    pools = pools.copy()
+    flux = np.zeros((pools.shape[0], len(flux_indicators)))
+    pooldef = create_pools(
+        [poolnames[x] for x in range(pools.shape[1])])
+    pools_by_name = create_pools_by_name(pooldef)
+    fi_collection = []
+    for flux_indicator in flux_indicators:
+        flux_indicator_config = create_flux_indicator(
+            pools_by_name, flux_indicator["process_id"],
+            flux_indicator["sources"], flux_indicator["sinks"])
+        append_flux_indicator(fi_collection, flux_indicator_config)
+    dll = load_dll({
+        "pools": pooldef,
+        "flux_indicators": fi_collection
+    })
+    op_ids = []
+    for i, matrix in enumerate(mats):
+        op_id = dll.AllocateOp(pools.shape[0])
+        op_ids.append(op_id)
+        dll.SetOp(
+            op_id, [to_coordinate(x) for x in matrix],
+            np.ascontiguousarray(op_indices[:, i]))
+
+    dll.ComputeFlux(op_ids, op_processes, pools, flux)
+    return pools, flux
