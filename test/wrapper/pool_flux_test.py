@@ -101,7 +101,7 @@ def ComputePools(pools, ops, op_indices):
     return pools
 
 
-class PoolFluxTests(unittest.testcase):
+class PoolFluxTests(unittest.TestCase):
 
     def test_single_pool_row_single_matrix_operation(self):
         pools = np.ones((1, 5))
