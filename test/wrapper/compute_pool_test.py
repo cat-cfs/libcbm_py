@@ -1,4 +1,3 @@
-import os
 import json
 import unittest
 import numpy as np
@@ -42,7 +41,9 @@ def to_coordinate(matrix):
         matrix (numpy.ndarray): [description]
 
     Returns:
-        [type]: [description]
+        numpy.ndarray: a n by 3 matrix where n is the number of non-zero values
+            in the input. Has columns for row, col, data based on the input
+            data.
 
     Example
 
