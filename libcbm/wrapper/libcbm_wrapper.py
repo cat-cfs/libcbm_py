@@ -1,12 +1,5 @@
 import ctypes
-import os
-import numpy as np
-import pandas as pd
-from types import SimpleNamespace
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
-from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
-from libcbm.wrapper.libcbm_error import LibCBM_Error
-from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import data_helpers
 
 
