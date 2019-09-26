@@ -21,9 +21,10 @@ def get_libcbm_bin_path():
         return os.path.join(
             local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll")
     elif system == "Linux":
-        plat = platform.platform()
-        if "Ubuntu" not in plat or "18.04" not in plat:
-            raise RuntimeError("unsupported linux distribution")
+        import lsb_release
+        linux_info = lsb_release.get_lsb_information()
+        if linux_info["ID"] != "Ubuntu" or "18.04" not in linux_info["RELEASE"]:
+            raise RuntimeError(f"unsupported linux distribution: {linux_info}")
         return os.path.join(
             local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so")
     else:
