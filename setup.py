@@ -28,7 +28,9 @@ ubuntu_18_04_x86_64_bin = [
     for x in ["cbm.a", "core.a", "libcbm.so", "volume_to_biomass.a"]
 ]
 
-
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
+    
 setup(
     name="libcbm",
     version=0.1,
@@ -49,5 +51,5 @@ setup(
             cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin +
             cbm_defaults_queries
     },
-    install_requires=["numpy", "pandas", "scipy"]
+    install_requires=requirements
 )
