@@ -1,6 +1,7 @@
 import os
 import sys
 import platform
+import warnings
 
 
 def get_local_dir():
@@ -23,7 +24,8 @@ def get_libcbm_bin_path():
     elif system == "Linux":
         plat = platform.platform()
         if "Ubuntu" not in plat or "18.04" not in plat:
-            raise RuntimeError(f"unsupported linux distribution: {plat}")
+            message = f"unsupported linux distribution: {plat}"
+            warnings.warn(message, RuntimeWarning)
         return os.path.join(
             local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so")
     else:
