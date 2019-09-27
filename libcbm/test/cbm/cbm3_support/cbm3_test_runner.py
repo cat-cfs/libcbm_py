@@ -1,6 +1,7 @@
 import os
 import json
 import shutil
+import datetime
 from types import SimpleNamespace
 import pandas as pd
 import win32api
@@ -31,13 +32,15 @@ def get_default_cbm3_paths():
     return toolbox_install_path, cbm_exe_dir, aidb_path
 
 
-def load_cbm_cfs3_test(dir):
+def load_cbm_cfs3_test(test_dir):
     test = SimpleNamespace()
-    with open(os.path.join(dir, 'metadata.json')) as metadata_fp:
+    with open(os.path.join(test_dir, 'metadata.json')) as metadata_fp:
         test.metadata = json.load(metadata_fp)
-    with open(os.path.join(dir, 'cases.json'), 'w') as cases_fp:
+    with open(os.path.join(test_dir, 'cases.json'), 'w') as cases_fp:
         test.cases = json.load(cases_fp)
-
+    test.pools = pd.read_csv(os.path.join(test_dir, "pools.csv"))
+    test.flux = pd.read_csv(os.path.join(test_dir, "flux.csv"))
+    test.flux = pd.read_csv(os.path.join(test_dir, "flux.csv"))
 
 
 def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
@@ -59,6 +62,7 @@ def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
 
     metadata = {
         "name": name,
+        "date": datetime.datetime.utcnow().strftime("%Y%m%d-%H:%M:%S UTC"),
         "cbm3_project_path": cbm3_project_save_path,
         "cbm3_results_path": cbm3_results_save_path,
         "age_interval": age_interval,
