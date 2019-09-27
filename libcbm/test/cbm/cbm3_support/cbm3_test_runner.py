@@ -25,7 +25,7 @@ def get_version_number(filename):
 
 def get_default_cbm3_paths():
     toolbox_install_path = os.path.join(
-        "C:", "Program Files (x86)", "Operational-Scale CBM-CFS3")
+        "C:/", "Program Files (x86)", "Operational-Scale CBM-CFS3")
     cbm_exe_dir = os.path.join(toolbox_install_path, "Admin", "executables")
     aidb_path = os.path.join(
         toolbox_install_path, "Admin", "DBs", "ArchiveIndex_Beta_Install.mdb")
@@ -43,10 +43,10 @@ def load_cbm_cfs3_test(test_dir):
     test.flux = pd.read_csv(os.path.join(test_dir, "flux.csv"))
 
 
-def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
-                       age_interval, num_age_classes, n_steps, cases,
-                       toolbox_install_path, cbm_exe_dir, aidb_path,
-                       cbm3_result):
+def save_cbm_cfs3_test(name, output_dir, start, end, runtime,
+                       cbm3_project_path, cbm3_results_path, age_interval,
+                       num_age_classes, n_steps, cases, toolbox_install_path,
+                       cbm_exe_dir, aidb_path, cbm3_result):
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -62,7 +62,9 @@ def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
 
     metadata = {
         "name": name,
-        "date": datetime.datetime.utcnow().strftime("%Y%m%d-%H:%M:%S UTC"),
+        "start": start,
+        "end": end,
+        "runtime": runtime,
         "cbm3_project_path": cbm3_project_save_path,
         "cbm3_results_path": cbm3_results_save_path,
         "age_interval": age_interval,
@@ -76,9 +78,9 @@ def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
     }
 
     with open(os.path.join(output_dir, 'metadata.json'), 'w') as metadata_fp:
-        json.dump(metadata, metadata_fp)
+        json.dump(metadata, metadata_fp, indent=4)
     with open(os.path.join(output_dir, 'cases.json'), 'w') as cases_fp:
-        json.dump(cases, cases_fp)
+        json.dump(cases, cases_fp, indent=4)
 
     cbm3_result["pools"].to_csv(os.path.join(output_dir, "pools.csv"))
     cbm3_result["flux"].to_csv(os.path.join(output_dir, "flux.csv"))
@@ -88,6 +90,7 @@ def save_cbm_cfs3_test(name, output_dir, cbm3_project_path, cbm3_results_path,
 
 def run_cases_cbm_cfs3(name, output_dir, cases, age_interval, num_age_classes,
                        n_steps):
+    start = datetime.datetime.utcnow()
     toolbox_install_path, cbm3_exe_path, archive_index_db_path \
         = get_default_cbm3_paths()
 
@@ -113,7 +116,11 @@ def run_cases_cbm_cfs3(name, output_dir, cases, age_interval, num_age_classes,
         cbm_exe_path=cbm3_exe_path)
 
     cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
+    end = datetime.datetime.utcnow()
+    date_format = "%Y%m%d-%H:%M:%S UTC"
     save_cbm_cfs3_test(
-        name, output_dir, cbm3_project_path, cbm3_results_path,
-        age_interval, num_age_classes, n_steps, cases, toolbox_install_path,
-        cbm3_exe_path, archive_index_db_path, cbm3_result)
+        name, output_dir, start.strftime(date_format),
+        end.strftime(date_format), (end-start).total_seconds(),
+        cbm3_project_path, cbm3_results_path, age_interval, num_age_classes,
+        n_steps, cases, toolbox_install_path, cbm3_exe_path,
+        archive_index_db_path, cbm3_result)
