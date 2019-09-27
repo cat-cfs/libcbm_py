@@ -23,9 +23,9 @@ def get_random_sigmoid_func():
     Returns:
         func: a sigmoid function
     """
-    x_0 = np.random.rand(1)[0] * 100
+    x_0 = np.random.rand(1)[0] * 5
     L = np.random.rand(1)[0] * 400
-    k = 0.1
+    k = 1.0
 
     def sigmoid(x):
         return L/(1+math.exp(-k*(x-x_0)))
@@ -40,7 +40,7 @@ def get_step_func():
         func: a step function
     """
     y = np.random.rand(1)[0] * 500
-    minX = np.random.randint(low=1, high=200)
+    minX = np.random.randint(low=1, high=20)
 
     def step(x):
         if x == 0:

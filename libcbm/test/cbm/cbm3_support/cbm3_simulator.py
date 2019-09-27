@@ -69,7 +69,7 @@ def get_config_path(toolbox_path, name):
         str: a path for the SIT configuration based on the specified args
     """
     cbm3_project_dir = os.path.dirname(get_project_path(toolbox_path, name))
-    return os.path.join(cbm3_project_dir, "{}.json".format(name))
+    return os.path.join(cbm3_project_dir, "{}_sit.json".format(name))
 
 
 def import_cbm3_project(name, cases, age_interval, num_age_classes, n_steps,
