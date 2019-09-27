@@ -1,6 +1,4 @@
 import os
-from libcbm.test.cbm.cbm3_support import cbm3_python_helper
-cbm3_python_helper.load_cbm3_python()
 from cbm3_python.simulation import projectsimulator
 from cbm3_python.cbm3data import sit_helper
 from cbm3_python.cbm3data import cbm3_results
