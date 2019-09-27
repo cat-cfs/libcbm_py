@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm import resources
 
 
 def get_classifier_value_name(id):
@@ -80,16 +81,16 @@ def get_expCurve_func():
 
 
 def choose_random_yield_func(func_factories=[
-            get_random_sigmoid_func,
-            get_step_func,
-            get_ramp_func,
-            get_expCurve_func]):
+        get_random_sigmoid_func,
+        get_step_func,
+        get_ramp_func,
+        get_expCurve_func]):
     return np.random.choice(func_factories, 1)[0]()
 
 
-def generate_scenarios(random_seed, num_cases, db_path, n_steps,
-                       max_disturbances, max_components, n_growth_digits,
-                       age_interval, growth_curve_len, growth_only=False):
+def generate_scenarios(random_seed, num_cases, n_steps, max_disturbances,
+                       max_components, n_growth_digits, age_interval,
+                       growth_curve_len, growth_only=False, db_path=None):
     """Create a list of test cases for comparing CBM-CFS3 versus libCBM.
 
     Args:
@@ -97,7 +98,6 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
             the test generator
         num_cases (int): the number of random cases (ie. number of stands
             to generate)
-        db_path (str): path to a cbm_defaults database
         n_steps (int): the number of timesteps to simulate
         max_disturbances (int): the maximum number of disturbances that
             can occur on randomly generated stand scenarios
@@ -109,11 +109,15 @@ def generate_scenarios(random_seed, num_cases, db_path, n_steps,
         growth_curve_len (int): the number of growth curve values
         growth_only (bool, optional): If set to True, stands will only be
             forested initially. Defaults to False.
+        db_path (str, optional): path to a cbm_defaults database. If not
+            specified a package default is used.
 
     Returns:
         list: A list of parameters which can be run as stand level
             simulations by both libCBM and by CBM-CFS3
     """
+    if not db_path:
+        db_path = resources.get_cbm_defaults_path()
     np.random.seed(random_seed)
     ref = CBMDefaultsReference(db_path, "en-CA")
     species_ref = ref.get_species()
