@@ -1,6 +1,8 @@
 libcbm
 ======
 
+version 0.1.2
+
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
 
@@ -29,7 +31,7 @@ Requirements
 In order to run the CBM-CFS3 tests there are additional requirements:
  - Windows OS (CBM-CFS3 is windows only)
  - pyodbc and a working 64 bit MS Access driver
- - gitpython
+ - cbm3_python https://github.com/cat-cfs/cbm3_python
 
 Running the notebooks in /examples Also have additional requirements:
  - scipy

@@ -59,13 +59,16 @@ The functions in :py:mod:`libcbm.test.cbm.cbm3_support.cbm3_simulator`
 simulate the randomized test cases produced by
 :py:mod:`libcbm.test.cbm.case_generation` using CBM-CFS3.
 
-Simulating with CBM-CFS3 requires cbm3_python_ and StandardImportToolPlugin_
+Simulating with CBM-CFS3 requires cbm3_python_
 for automation of the CBM-CFS3 toolbox to execute test cases.
 
-.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_python_helper
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_test_runner
     :members:
 
 .. automodule:: libcbm.test.cbm.cbm3_support.cbm3_simulator
+    :members:
+
+.. automodule:: libcbm.test.cbm.cbm3_support.cbm3_test_io
     :members:
 
 
@@ -100,4 +103,3 @@ Comparison Support Functions
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 .. _cbm3_python: https://github.com/cat-cfs/cbm3_python
-.. _StandardImportToolPlugin: https://github.com/cat-cfs/StandardImportToolPlugin

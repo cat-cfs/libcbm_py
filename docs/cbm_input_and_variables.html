@@ -906,7 +906,18 @@ directory as this module</p>
 <dl class="class">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference">
 <em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults_reference.</code><code class="sig-name descname">CBMDefaultsReference</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em>, <em class="sig-param">locale_code='en-CA'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<dd><p>Creates a reference to the localized name and id relationships
+stored in a cbm_defaults database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sqlite_path</strong> (<em>str</em>) – path to a cbm_defaults sqlite database.</p></li>
+<li><p><strong>locale_code</strong> (<em>str</em><em>, </em><em>optional</em>) – locale code as defined in the locale
+table of the cbm_defaults database. Defaults to “en-CA”.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_type_id">
 <code class="sig-name descname">get_afforestation_pre_type_id</code><span class="sig-paren">(</span><em class="sig-param">afforestation_pre_type_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_type_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the afforestation pre-type id associated with the specified

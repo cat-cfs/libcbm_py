@@ -61,9 +61,57 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-libcbm.data_helpers">
-<span id="other-functions"></span><h1>Other functions<a class="headerlink" href="#module-libcbm.data_helpers" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-libcbm.resources">
+<span id="other-functions"></span><h1>Other functions<a class="headerlink" href="#module-libcbm.resources" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="libcbm.resources.get_cbm_defaults_path">
+<code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_cbm_defaults_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_cbm_defaults_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the path to the packaged cbm defaults sqlite database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>path to the bundled database</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.resources.get_libcbm_bin_path">
+<code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_libcbm_bin_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_libcbm_bin_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bundled, OS specific compiled libcbm C/C++ library</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>RuntimeError</strong> – 32 bit systems are not supported</p></li>
+<li><p><strong>RuntimeError</strong> – unknown platform.system() value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>path to the bundled, compiled dll or so file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.resources.get_local_dir">
+<code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_local_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_local_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the directory containing this script</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>full path to the the script’s directory</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-libcbm.data_helpers"></span><dl class="function">
 <dt id="libcbm.data_helpers.append_simulation_result">
 <code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">append_simulation_result</code><span class="sig-paren">(</span><em class="sig-param">simulation_result</em>, <em class="sig-param">timestep_data</em>, <em class="sig-param">timestep</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.append_simulation_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append the specified timestep data to a simulation result spanning
