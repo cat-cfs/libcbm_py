@@ -1,8 +1,8 @@
+import json
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
-import json
 
 
 def create(dll_path, dll_config_factory, cbm_parameters_factory,

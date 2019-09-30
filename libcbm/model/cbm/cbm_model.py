@@ -1,8 +1,4 @@
-import numpy as np
 import pandas as pd
-import json
-import os
-from types import SimpleNamespace
 from libcbm import data_helpers
 
 
@@ -84,7 +80,7 @@ class CBM:
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
             inventory, parameters, historical_mean_annual_temp=True)
 
-        opSchedule = [
+        op_schedule = [
             "growth",
             "snag_turnover",
             "biomass_turnover",
@@ -97,7 +93,7 @@ class CBM:
         debug_output = None
         iteration = 0
 
-        while (True):
+        while True:
 
             n_finished = self.model_functions.AdvanceSpinupState(
                 inventory, variables, parameters)
@@ -112,12 +108,12 @@ class CBM:
                 ops["disturbance"], inventory, variables)
 
             self.compute_functions.ComputePools(
-                [ops[x] for x in opSchedule], pools,
+                [ops[x] for x in op_schedule], pools,
                 variables.enabled)
 
             self.model_functions.EndSpinupStep(pools, variables)
 
-            if(debug):
+            if debug:
                 debug_output = data_helpers.append_simulation_result(
                     debug_output,
                     pd.DataFrame(

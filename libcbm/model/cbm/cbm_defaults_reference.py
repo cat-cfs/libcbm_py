@@ -6,16 +6,15 @@ import libcbm.model.cbm.cbm_defaults_queries as queries
 
 
 class CBMDefaultsReference:
+    """Creates a reference to the localized name and id relationships
+    stored in a cbm_defaults database.
 
+    Args:
+        sqlite_path (str): path to a cbm_defaults sqlite database.
+        locale_code (str, optional): locale code as defined in the locale
+            table of the cbm_defaults database. Defaults to "en-CA".
+    """
     def __init__(self, sqlite_path, locale_code="en-CA"):
-        """Creates a reference to the localized name and id relationships
-        stored in a cbm_defaults database.
-
-        Args:
-            sqlite_path (str): path to a cbm_defaults sqlite database.
-            locale_code (str, optional): locale code as defined in the locale
-                table of the cbm_defaults database. Defaults to "en-CA".
-        """
 
         # queries for species name/species id associations
         self.species_reference_query = queries.get_query("species_ref.sql")
