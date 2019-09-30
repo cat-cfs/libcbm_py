@@ -12,9 +12,11 @@ def create_in_memory_reporting_func():
         tuple: a pair of values:
 
             1. types.SimpleNameSpace: an object with properties:
+
               - pool_indicators a pandas.DataFrame for storing pools
               - flux_indicators a pandas.DataFrame for storing fluxes
               - state_indicators a pandas.DataFrame for storing state
+
             2. func: a function for appending to the above results dataframes
 
     """
