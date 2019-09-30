@@ -1,0 +1,196 @@
+[
+    {
+        "id": 201,
+        "age": 65,
+        "area": 1.0,
+        "delay": 0,
+        "afforestation_pre_type": null,
+        "unfccc_land_class": "UNFCCC_FL_R_FL",
+        "admin_boundary": "Alberta",
+        "eco_boundary": "Boreal Plains",
+        "historical_disturbance": "Wildfire",
+        "last_pass_disturbance": "Wildfire",
+        "components": [
+            {
+                "species": "Gray birch",
+                "age_volume_pairs": [
+                    [
+                        0,
+                        0.0
+                    ],
+                    [
+                        5,
+                        1.94
+                    ],
+                    [
+                        10,
+                        3.88
+                    ],
+                    [
+                        15,
+                        5.82
+                    ],
+                    [
+                        20,
+                        7.77
+                    ],
+                    [
+                        25,
+                        9.71
+                    ],
+                    [
+                        30,
+                        11.65
+                    ],
+                    [
+                        35,
+                        13.59
+                    ],
+                    [
+                        40,
+                        15.53
+                    ],
+                    [
+                        45,
+                        17.47
+                    ],
+                    [
+                        50,
+                        19.41
+                    ],
+                    [
+                        55,
+                        21.35
+                    ],
+                    [
+                        60,
+                        23.3
+                    ],
+                    [
+                        65,
+                        25.24
+                    ],
+                    [
+                        70,
+                        27.18
+                    ],
+                    [
+                        75,
+                        29.12
+                    ],
+                    [
+                        80,
+                        31.06
+                    ],
+                    [
+                        85,
+                        33.0
+                    ],
+                    [
+                        90,
+                        34.94
+                    ],
+                    [
+                        95,
+                        36.89
+                    ]
+                ]
+            },
+            {
+                "species": "Birch",
+                "age_volume_pairs": [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        5,
+                        0
+                    ],
+                    [
+                        10,
+                        5
+                    ],
+                    [
+                        15,
+                        10
+                    ],
+                    [
+                        20,
+                        20
+                    ],
+                    [
+                        25,
+                        37
+                    ],
+                    [
+                        30,
+                        67
+                    ],
+                    [
+                        35,
+                        115
+                    ],
+                    [
+                        40,
+                        199
+                    ],
+                    [
+                        45,
+                        250
+                    ],
+                    [
+                        50,
+                        280
+                    ],
+                    [
+                        55,
+                        290
+                    ],
+                    [
+                        60,
+                        305
+                    ],
+                    [
+                        65,
+                        334
+                    ],
+                    [
+                        70,
+                        383
+                    ],
+                    [
+                        75,
+                        383
+                    ],
+                    [
+                        80,
+                        383
+                    ],
+                    [
+                        85,
+                        383
+                    ],
+                    [
+                        90,
+                        383
+                    ],
+                    [
+                        95,
+                        383
+                    ]
+                ]
+            }
+        ],
+        "events": [
+            {
+                "disturbance_type": "Clear-cut with slash-burn",
+                "time_step": 12
+            },
+            {
+                "disturbance_type": "Clearcut harvesting with salvage",
+                "time_step": 85
+            }
+        ]
+    }
+]
