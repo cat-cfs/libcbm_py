@@ -5,3 +5,5 @@
 /build
 /libcbm.egg-info
 /dist
+/.coverage
+/.pytest_cache
