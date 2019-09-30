@@ -1,6 +1,25 @@
 import pandas as pd
 
 
+def get_libcbm_result_suffix():
+    """Returns a suffix for use in the column names of cbm3/libcbm comparison
+    dataframes
+
+    Returns:
+        str: "_libcbm"
+    """
+    return "_libcbm"
+
+
+def get_cbm3_result_suffix():
+    """Returns a suffix for use in the column names of cbm3/libcbm comparison
+    dataframes
+
+    Returns:
+        str: "_cbm3"
+    """
+    return "_cbm3"
+
 
 def summarize_diffs_by_identifier(diffs, result_limit=None):
     """Sort and summarize a diff result returned by :py:func:`join_result`
@@ -53,7 +72,7 @@ def merge_result(cbm3_result, libcbm_result, value_cols):
         cbm3_result,
         left_on=['identifier', 'timestep'],
         right_on=['identifier', 'timestep'],
-        suffixes=("_libCBM", "_cbm3"))
+        suffixes=(get_libcbm_result_suffix(), get_cbm3_result_suffix()))
 
     return merged
 
@@ -77,8 +96,8 @@ def diff_result(merged):
     value_cols = [x for x in all_col if x.endswith("_cbm3")]
     value_cols = [x[:-(len("_cbm3"))] for x in value_cols]
     for flux in value_cols:
-        l = "{}_libCBM".format(flux)
-        r = "{}_cbm3".format(flux)
+        l = f"{flux}{get_libcbm_result_suffix()}"
+        r = f"{flux}{get_cbm3_result_suffix()}"
         diffs[flux] = (merged[l] - merged[r])
         diffs["abs_total_diff"] += diffs[flux].abs()
     return diffs
