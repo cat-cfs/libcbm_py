@@ -1,0 +1,15 @@
+{
+    "name": "basic_afforestation",
+    "start": "20190930-19:03:48 UTC",
+    "end": "20190930-19:04:04 UTC",
+    "runtime": 16.347255,
+    "cbm3_project_path": "M:\\CBM Tools and Development\\libcbm\\cbm3_test_cases\\basic_afforestation\\basic_afforestation.mdb",
+    "cbm3_results_path": "M:\\CBM Tools and Development\\libcbm\\cbm3_test_cases\\basic_afforestation\\basic_afforestation_results.mdb",
+    "age_interval": 5,
+    "num_age_classes": 20,
+    "n_steps": 150,
+    "toolbox_install_path": "C:/Program Files (x86)\\Operational-Scale CBM-CFS3",
+    "toolbox_version": "1.2.7200.298",
+    "cbm_exe_dir": "C:/Program Files (x86)\\Operational-Scale CBM-CFS3\\Admin\\executables",
+    "aidb_path": "C:/Program Files (x86)\\Operational-Scale CBM-CFS3\\Admin\\DBs\\ArchiveIndex_Beta_Install.mdb"
+}
