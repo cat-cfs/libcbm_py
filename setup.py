@@ -30,10 +30,10 @@ ubuntu_18_04_x86_64_bin = [
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
-    
+
 setup(
     name="libcbm",
-    version="0.1.1",
+    version="0.1.2",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
