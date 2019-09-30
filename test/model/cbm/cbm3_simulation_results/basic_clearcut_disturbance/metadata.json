@@ -1,8 +1,8 @@
 {
     "name": "basic_clearcut_disturbance",
-    "start": "20190930-23:13:34 UTC",
-    "end": "20190930-23:13:52 UTC",
-    "runtime": 17.656722,
+    "start": "20190930-23:49:17 UTC",
+    "end": "20190930-23:49:34 UTC",
+    "runtime": 17.009008,
     "cbm3_project_path": "M:\\CBM Tools and Development\\libcbm\\cbm3_test_cases\\basic_clearcut_disturbance\\basic_clearcut_disturbance.mdb",
     "cbm3_results_path": "M:\\CBM Tools and Development\\libcbm\\cbm3_test_cases\\basic_clearcut_disturbance\\basic_clearcut_disturbance_results.mdb",
     "age_interval": 5,
