@@ -3,6 +3,3 @@ classifier_id,name,description
 1,sp,spruce
 1,pn,pine
 1,oak,oak
-2,_CLASSIFIER,non forest type
-2,nf,gleysolic
-2,f,forest only
