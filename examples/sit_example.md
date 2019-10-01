@@ -6,14 +6,14 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.1'
-      jupytext_version: 1.2.3
+      jupytext_version: 1.2.4
   kernelspec:
     display_name: Python 3
     language: python
     name: python3
 ---
 
-# Standard Import tool Example
+# Standard Import Tool Example
 
 ```python
 import os, json
@@ -62,15 +62,15 @@ The following line of code spins up the CBM inventory and runs it through 100 ti
 
 ```python
 cbm_simulator.simulate(
-    cbm, 
-    n_steps=100,
-    classifiers=classifiers,
-    inventory=inventory, 
-    pool_codes=sit.defaults.get_pools(), 
-    flux_indicator_codes=sit.defaults.get_flux_indicators(), 
-    pre_dynamics_func = lambda x: x,
-    reporting_func=reporting_func)
-
+    cbm,
+    n_steps              = 100,
+    classifiers          = classifiers,
+    inventory            = inventory,
+    pool_codes           = sit.defaults.get_pools(),
+    flux_indicator_codes = sit.defaults.get_flux_indicators(),
+    pre_dynamics_func    = lambda x: x,
+    reporting_func       = reporting_func
+)
 ```
 
 ## Pool Results
