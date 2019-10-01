@@ -1,11 +1,11 @@
 {
     "import_config": {
-        "classifiers": {"type": "csv", "params": {"path": "sit_classifiers.csv"}},
+        "classifiers":       {"type": "csv", "params": {"path": "sit_classifiers.csv"}},
         "disturbance_types": {"type": "csv", "params": {"path": "sit_disturbance_types.csv"}},
-        "age_classes": {"type": "csv", "params": {"path": "sit_age_classes.csv"}},
-        "inventory": {"type": "csv", "params": {"path": "sit_inventory.csv"}},
-        "yield": {"type": "csv", "params": {"path": "sit_yield.csv"}},
-        "events": null,
+        "age_classes":       {"type": "csv", "params": {"path": "sit_age_classes.csv"}},
+        "inventory":         {"type": "csv", "params": {"path": "sit_inventory.csv"}},
+        "yield":             {"type": "csv", "params": {"path": "sit_yield.csv"}},
+        "events":      null,
         "transitions": null
     },
     "mapping_config": {
