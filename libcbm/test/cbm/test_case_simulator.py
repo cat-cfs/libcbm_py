@@ -239,7 +239,7 @@ def initialize_inventory(cases, classifier_name, ref):
 
 
 def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
-                   spinup_debug=False):
+                   spinup_debug=False, do_cbm3_rounding=True):
     """Run CBM simulation test cases with libcbm
 
     Args:
@@ -253,6 +253,9 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
         spinup_debug (bool, optional): if specified, and True extra spinup
             debugging information is generated and returned (causes
             performance drop). Defaults to False.
+        do_cbm3_rounding (bool, optional): if true pool rounding matching
+            the number of digits carried by cbm-cfs3 will be used after spinup
+            runs, otherwise no rounding will occur.
 
     Returns:
         dict: dictionary containing the following keys/values:
@@ -304,6 +307,12 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
         parameters=spinup_params,
         debug=spinup_debug
     )
+
+    if do_cbm3_rounding:
+        for bio_pool in ref.get_biomass_pools():
+            pools[bio_pool] = pools[bio_pool].round(3)
+        for dom_pool in ref.get_dead_organic_matter_pools():
+            pools[dom_pool] = pools[dom_pool].round(6)
 
     # initializes the CBM variables
     cbm.init(
