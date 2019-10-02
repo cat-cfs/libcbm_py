@@ -104,7 +104,8 @@ def get_yield_format(classifier_names, n_columns):
     """
     n_classifiers = len(classifier_names)
     classifier_values = [
-        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+        {"name": c, "index": i, "type": np.str}
+        for i, c in enumerate(classifier_names)]
     leading_species_col = [{
         "name": "leading_species", "index": n_classifiers}]
     vol_index = n_classifiers + 1

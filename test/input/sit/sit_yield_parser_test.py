@@ -31,6 +31,36 @@ class SITYieldParserTest(unittest.TestCase):
             columns=["name", "class_size", "start_year", "end_year"]
         )
 
+           
+    def test_expected_result_with_numeric_classifiers(self):
+        """Checks that numeric classifiers that appear in yield data
+        are parsed as strings
+        """
+        age_classes = self.get_mock_age_classes()
+        num_age_classes = len(age_classes)
+        classifiers = pd.DataFrame(
+            data=[
+                (1, "classifier1"),
+                (2, "classifier2")
+            ],
+            columns=["id", "name"]
+        )
+        classifier_values = pd.DataFrame(
+            data=[
+                (1, "1.0", "a"),
+                (1, "2", "b"),
+                (2, "a", "a"),
+            ],
+            columns=["classifier_id", "name", "description"]
+        )
+        yield_table = pd.DataFrame([
+            ["2", "?", "sp1"] + [x*15 for x in range(0, num_age_classes)],
+            [1.0, "?", "sp1"] + [x*15 for x in range(0, num_age_classes)]
+        ])
+        result = sit_yield_parser.parse(
+            yield_table, classifiers, classifier_values, age_classes)
+        self.assertTrue((result.classifier1 == ["2", "1.0"]).all())
+
     def test_incorrect_number_of_volumes_error(self):
         """checks that the number of volumes is equal to the number of
         specified age classes
