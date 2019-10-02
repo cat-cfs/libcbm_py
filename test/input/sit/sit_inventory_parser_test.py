@@ -57,6 +57,40 @@ class SITInventoryParserTest(unittest.TestCase):
         self.assertTrue(result.area.sum() == 3)
         self.assertTrue(set(result.age) == {100, 4, 1, 2})
 
+    def test_expected_result_with_numeric_classifiers(self):
+        """Checks that numeric classifiers that appear in inventory data
+        are parsed as strings
+        """
+        inventory_table = pd.DataFrame(
+            data=[
+                (2.0, 1, "TRUE", "1", 1, 0, 0),
+                (1, 1, False, 100, 1, 0, 0),
+                (1, 1, "-1", 4, 1, 0, 0)])
+
+        classifiers = pd.DataFrame(
+            data=[
+                (1, "classifier1"),
+                (2, "classifier2")
+            ],
+            columns=["id", "name"]
+        )
+        classifier_values = pd.DataFrame(
+            data=[
+                (1, "1", "1"),
+                (1, "2.0", "2"),
+                (2, "1", "1"),
+            ],
+            columns=["classifier_id", "name", "description"]
+        )
+
+        classifiers, classifier_values = self.get_mock_classifiers()
+        age_classes = self.get_mock_age_classes()
+        result = sit_inventory_parser.parse(
+            inventory_table, classifiers, classifier_values, None, age_classes)
+        self.assertTrue(result.shape[0] == len(inventory_table) + 1)
+        self.assertTrue(result.area.sum() == 3)
+        self.assertTrue(set(result.age) == {100, 4, 1, 2})
+
     def test_expected_result_with_using_zeroth_age_class(self):
         """Checks the age class expansion feature "using_age_class"
         """
