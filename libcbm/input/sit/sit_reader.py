@@ -1,7 +1,11 @@
+# Built-in modules #
 import os
-import pandas as pd
 from types import SimpleNamespace
 
+# Third party modules #
+import pandas as pd
+
+# Internal modules #
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit import sit_disturbance_type_parser
 from libcbm.input.sit import sit_age_class_parser
@@ -10,7 +14,7 @@ from libcbm.input.sit import sit_yield_parser
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_transition_rule_parser
 
-
+################################################################################
 def load_table(config, config_dir):
     """Load a table based on the specified configuration.  The config_dir
     is used to compute absolute paths for file based tables.
@@ -40,7 +44,7 @@ def load_table(config, config_dir):
     Returns:
         pandas.DataFrame: the loaded data
     """
-    load_type = config["type"]
+    load_type   = config["type"]
     load_params = config["params"]
     cwd = os.getcwd()
     try:
@@ -49,36 +53,40 @@ def load_table(config, config_dir):
             path = os.path.abspath(os.path.relpath(load_params["path"]))
             load_params = load_params.copy()
             del load_params["path"]
-            return pd.read_csv(
-                filepath_or_buffer=path,
-                **load_params)
+            return pd.read_csv(path, **load_params)
         else:
             raise NotImplementedError(
                 f"The specified table type {load_type} is not supported.")
     finally:
         os.chdir(cwd)
 
-
+################################################################################
 def read(config, config_dir):
-
-    sit_classifiers = load_table(config["classifiers"], config_dir)
-    sit_disturbance_types = load_table(
-        config["disturbance_types"], config_dir)
-    sit_age_classes = load_table(config["age_classes"], config_dir)
-    sit_inventory = load_table(config["inventory"], config_dir)
-    sit_yield = load_table(config["yield"], config_dir)
-    sit_events = load_table(config["events"], config_dir) \
-        if config["events"] else None
-    sit_transitions = load_table(config["transitions"], config_dir) \
-        if config["transitions"] else None
-
+    # Call pandas.read_csv on all input files #
+    sit_classifiers       = load_table(config["classifiers"],       config_dir)
+    sit_disturbance_types = load_table(config["disturbance_types"], config_dir)
+    sit_age_classes       = load_table(config["age_classes"],       config_dir)
+    sit_inventory         = load_table(config["inventory"],         config_dir)
+    sit_yield             = load_table(config["yield"],             config_dir)
+    sit_events            = load_table(config["events"],            config_dir) \
+                            if config["events"] else None
+    sit_transitions       = load_table(config["transitions"],       config_dir) \
+                            if config["transitions"] else None
+    # Guarantee that all classifier values are strings #
+    icol = max(sit_classifiers.iloc[:,0])
+    sit_inventory.iloc[:,0:icol]   = sit_inventory.ix[:,0:icol].astype(str)
+    sit_yield.iloc[:,0:icol]       = sit_yield.ix[:,0:icol].astype(str)
+    sit_events.iloc[:,0:icol]      = sit_events.ix[:,0:icol].astype(str)
+    sit_transitions.iloc[:,0:icol] = sit_transitions.ix[:,0:icol].astype(str)
+    # Validate data #
     sit_data = parse(
         sit_classifiers, sit_disturbance_types, sit_age_classes,
-        sit_inventory, sit_yield, sit_events, sit_transitions)
-
+        sit_inventory, sit_yield, sit_events, sit_transitions
+    )
+    # Return #
     return sit_data
 
-
+################################################################################
 def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
           sit_inventory, sit_yield, sit_events, sit_transitions):
     """Parses and validates CBM Standard import tool formatted data including
@@ -123,13 +131,13 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
     s = SimpleNamespace()
     classifiers, classifier_values, classifier_aggregates = \
         sit_classifier_parser.parse(sit_classifiers)
-    s.classifiers = classifiers
-    s.classifier_values = classifier_values
+    s.classifiers           = classifiers
+    s.classifier_values     = classifier_values
     s.classifier_aggregates = classifier_aggregates
-    s.disturbance_types = sit_disturbance_type_parser.parse(
+    s.disturbance_types     = sit_disturbance_type_parser.parse(
         sit_disturbance_types)
     s.age_classes = sit_age_class_parser.parse(sit_age_classes)
-    s.inventory = sit_inventory_parser.parse(
+    s.inventory   = sit_inventory_parser.parse(
         sit_inventory, classifiers, classifier_values,
         s.disturbance_types, s.age_classes)
     s.yield_table = sit_yield_parser.parse(
