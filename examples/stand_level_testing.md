@@ -68,19 +68,10 @@ cases = case_generation.generate_scenarios(
     n_growth_digits = 2,
     age_interval=age_interval,
     growth_curve_len=age_interval * num_age_classes)
-
 ```
 
 ```python
-cases
-```
-
-```python
-libcbm_result = test_case_simulator.run_test_cases(cbm_defaults_db_path, libcbm_path, cases, n_steps, spinup_debug=False)
-```
-
-```python
-
+libcbm_result = test_case_simulator.run_test_cases(cases, n_steps)
 ```
 
 ```python
@@ -105,7 +96,6 @@ cbm3_result = cbm3_simulator.get_cbm3_results(cbm3_results_path)
 
 ```python
 merged_state = state_comparison.get_merged_state(cbm3_result["state"], libcbm_result["state"])
-
 ```
 
 ```python
@@ -156,7 +146,7 @@ result_comparison.get_summarized_diff_plot(
 ```
 
 ```python
-test_case_identifier =4
+test_case_identifier =2
 ```
 
 ```python
@@ -219,9 +209,5 @@ result_comparison.get_test_case_comparison_plot(
 ```
 
 ```python
-merged_state[merged_state["identifier"]==3]
-```
-
-```python
-
+merged_state[merged_state["identifier"]==2]
 ```
