@@ -26,8 +26,8 @@ def get_classifier_format(n_columns):
     """
     classifier_format = [
         {"name": "id", "index": 0, "type": np.int},
-        {"name": "name", "index": 1},
-        {"name": "description", "index": 2},
+        {"name": "name", "index": 1, "type": np.str},
+        {"name": "description", "index": 2, "type": np.str},
     ]
 
     if n_columns < 3:
@@ -35,7 +35,7 @@ def get_classifier_format(n_columns):
             "specified number of columns invalid.  Expected at least 3.")
     elif n_columns >= 4:
         classifier_format.extend([{
-            "name": "aggregate_value_{}".format(i-2), "index": i
+            "name": "aggregate_value_{}".format(i-2), "index": i, "type": np.str
         } for i in range(3, n_columns)])
     return classifier_format
 

@@ -110,7 +110,6 @@ class SITClassifierParserTest(unittest.TestCase):
         single id
         """
 
-        # in the following data (1, _CLASSIFIER) appears on 2 different rows
         sit_classifiers_table = pd.DataFrame(
             data=[
                 ("1", "_CLASSIFIER", "classifier1", np.nan, np.nan),
@@ -153,3 +152,25 @@ class SITClassifierParserTest(unittest.TestCase):
                 'name': 'agg1',
                 'description': 'agg1',
                 'classifier_values': ['a']})
+
+
+    def test_expected_result_with_numeric_values(self):
+        """checks that numeric values are converted to strings
+        """
+
+        sit_classifiers_table = pd.DataFrame(
+            data=[
+                ("1", "_CLASSIFIER", "999", np.nan, np.nan),
+                (1, 1.0, "a", np.nan, np.nan),
+                (1, "b", "b", np.nan, np.nan),
+                (1, 2.0, "agg1", 1.0, "b"),
+                (1, "agg2", "agg2", 1.0, "b"),
+                (2, "_CLASSIFIER", 700, np.nan, np.nan),
+                (2, 5, "a", np.nan, np.nan),
+                (2, 6, "agg1", "5", np.nan)])
+
+        classifiers, classifier_values, classifier_aggregates = \
+            sit_classifier_parser.parse(sit_classifiers_table)
+
+        self.assertTrue(list(classifiers.id) == [1, 2])
+        self.assertTrue(list(classifiers.name) == ["999", "700"])
