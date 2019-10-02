@@ -230,7 +230,8 @@ def get_inventory_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
 
     classifier_set = [
-        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+        {"name": c, "index": i, "type": np.str}
+        for i, c in enumerate(classifier_names)]
 
     inventory = [
         {"name": "using_age_class", "index": n_classifiers, "type": np.str},
