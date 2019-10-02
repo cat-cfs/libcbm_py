@@ -6,13 +6,13 @@
         "delay": 0,
         "afforestation_pre_type": null,
         "unfccc_land_class": "UNFCCC_FL_R_FL",
-        "admin_boundary": "Alberta",
-        "eco_boundary": "Boreal Plains",
+        "admin_boundary": "British Columbia",
+        "eco_boundary": "Montane Cordillera",
         "historical_disturbance": "Wildfire",
         "last_pass_disturbance": "Wildfire",
         "components": [
             {
-                "species": "Gray birch",
+                "species": "Birch",
                 "age_volume_pairs": [
                     [
                         0,
