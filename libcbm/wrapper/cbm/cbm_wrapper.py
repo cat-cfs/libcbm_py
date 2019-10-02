@@ -255,14 +255,17 @@ class CBMWrapper(LibCBM_ctypes):
             "LibCBM_EndSpinupStep", n, v.spinup_state, v.disturbance_type,
             poolMat, v.age, v.slow_pools, v.growth_enabled)
 
-    def GetMerchVolumeGrowthOps(self, growth_op, inventory, pools,
-                                state_variables):
+    def GetMerchVolumeGrowthOps(self, growth_op, overmature_decline_op,
+                                inventory, pools, state_variables):
         """Computes CBM merchantable growth as a bulk matrix operation.
 
         Args:
             growth_op (int): Handle for a block of matrices as allocated by
                 the :py:func:`AllocateOp` function. Used to compute merch
                 volume growth operations.
+            overmature_decline_op (int): Handle for a block of matrices as
+                allocated by the :py:func:`AllocateOp` function. Used to
+                compute merch volume growth operations.
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Used by this function to find correct
                 parameters from the set of merch volume growth parameters
@@ -285,7 +288,7 @@ class CBMWrapper(LibCBM_ctypes):
         n = pools.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
 
-        opIds = (ctypes.c_size_t * (1))(*[growth_op])
+        opIds = (ctypes.c_size_t * (2))(*[growth_op, overmature_decline_op])
         i = data_helpers.unpack_ndarrays(inventory)
         classifiersMat = LibCBM_Matrix_Int(
             data_helpers.get_ndarray(i.classifiers))

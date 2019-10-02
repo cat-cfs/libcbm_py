@@ -17,9 +17,9 @@ def initialize_CBM_ctypes(dll):
 
     """
     dll.LibCBM_Initialize_CBM.argtypes = (
-            ctypes.POINTER(LibCBM_Error),  # error structure
-            ctypes.c_void_p,  # handle
-            ctypes.c_char_p  # config json string
+        ctypes.POINTER(LibCBM_Error),  # error structure
+        ctypes.c_void_p,  # handle
+        ctypes.c_char_p  # config json string
         )
 
     dll.LibCBM_AdvanceStandState.argtypes = (
@@ -163,7 +163,7 @@ def initialize_CBM_ctypes(dll):
     dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
         ctypes.c_void_p,  # handle
-        ctypes.ARRAY(ctypes.c_size_t, 1),  # op_ids
+        ctypes.ARRAY(ctypes.c_size_t, 2),  # op_ids
         ctypes.c_size_t,  # n stands
         LibCBM_Matrix_Int,  # classifier values (n stands by n classifiers)
         LibCBM_Matrix,  # pools (n stands by n pools)
