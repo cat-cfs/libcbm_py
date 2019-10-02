@@ -165,7 +165,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     """
     n_classifiers = len(classifier_names)
     classifier_set_src = [
-        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+        {"name": c, "index": i, "type": np.str}
+        for i, c in enumerate(classifier_names)]
     age_eligibility = get_age_eligibility_columns(n_classifiers)
     disturbance_type = [{
         "name": "disturbance_type",
@@ -188,7 +189,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     classifier_set_dest = [
         {
             "name": f"{c}{tr_cset_postfix}",
-            "index": i + n_classifiers + len(age_eligibility) + 1}
+            "index": i + n_classifiers + len(age_eligibility) + 1,
+            "type": np.str}
         for i, c in enumerate(classifier_names)]
     result = []
     result.extend(classifier_set_src)  # source classifier set

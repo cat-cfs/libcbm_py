@@ -65,6 +65,53 @@ class SITTransitionRuleParserTest(unittest.TestCase):
             for tr in transitions
         ])
 
+    def test_expected_result_with_numeric_classifiers(self):
+        """Checks that numeric classifiers that appear in transition rules
+        data are parsed as strings
+        """
+        transition = {
+            "classifier_set_src": [1, "2.0"],
+            "age_eligibility": ["f", "-1", "-1", "-1", "-1"],
+            "disturbance_type": ["dist1"],
+            "classifier_set_dest": [2, "?"],
+            "post_transition": [0, -1, 100]}
+        transition_table = self.assemble_transition_table([transition])
+        classifiers = pd.DataFrame(
+            data=[
+                (1, "classifier1"),
+                (2, "classifier2")
+            ],
+            columns=["id", "name"]
+        )
+        classifier_values = pd.DataFrame(
+            data=[
+                (1, "1", "1"),
+                (1, "2", "2"),
+                (2, "a", "a")
+            ],
+            columns=["classifier_id", "name", "description"]
+        )
+        aggregates = [
+            {'classifier_id': 1,
+             'name': 'agg1',
+             'description': 'agg1',
+             'classifier_values': ['a', 'b']},
+            {'classifier_id': 1,
+             'name': 'agg2',
+             'description': 'agg2',
+             'classifier_values': ['a', 'b']},
+            {'classifier_id': 2,
+             'name': '2.0',
+             'description': '2.0',
+             'classifier_values': ['a']}]
+        result = sit_transition_rule_parser.parse(
+            transition_table, classifiers, classifier_values, aggregates,
+            self.get_mock_disturbance_types(), self.get_mock_age_classes())
+        self.assertTrue(result.classifier1[0] == "1")
+        self.assertTrue(result.classifier2[0] == "2.0")
+        self.assertTrue(result.classifier1_tr[0] == "2")
+        self.assertTrue(result.classifier2_tr[0] == "?")
+
     def test_incorrect_number_of_classifiers_error(self):
         """checks that the format has the correct number of columns
         according to the defined classifiers
