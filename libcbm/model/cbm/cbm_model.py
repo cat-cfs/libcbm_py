@@ -20,6 +20,7 @@ class CBM:
             "growth",
             "snag_turnover",
             "biomass_turnover",
+            "overmature_decline",
             "dom_decay",
             "slow_decay",
             "slow_mixing",
@@ -28,6 +29,7 @@ class CBM:
 
         self.op_processes = {
             "growth": 1,
+            "overmature_decline": 1,
             "snag_turnover": 1,
             "biomass_turnover": 1,
             "dom_decay": 2,
@@ -84,6 +86,7 @@ class CBM:
             "growth",
             "snag_turnover",
             "biomass_turnover",
+            "overmature_decline",
             "growth",
             "dom_decay",
             "slow_decay",
@@ -102,7 +105,8 @@ class CBM:
                 break
 
             self.model_functions.GetMerchVolumeGrowthOps(
-                ops["growth"], inventory, pools, variables)
+                ops["growth"], ops["overmature_decline"], inventory, pools,
+                variables)
 
             self.model_functions.GetDisturbanceOps(
                 ops["disturbance"], inventory, variables)
@@ -229,6 +233,7 @@ class CBM:
             "growth",
             "snag_turnover",
             "biomass_turnover",
+            "overmature_decline",
             "growth",
             "dom_decay",
             "slow_decay",
@@ -251,7 +256,8 @@ class CBM:
         # disabled (which happens in peatland)
 
         self.model_functions.GetMerchVolumeGrowthOps(
-            ops["growth"], inventory, pools, state_variables)
+            ops["growth"], ops["overmature_decline"], inventory, pools,
+            state_variables)
 
         self.model_functions.GetTurnoverOps(
             ops["snag_turnover"], ops["biomass_turnover"],
