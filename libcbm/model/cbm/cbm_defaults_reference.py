@@ -45,6 +45,9 @@ class CBMDefaultsReference:
 
         self.pools_query = queries.get_query("pools.sql")
 
+        self.bio_pools_query = queries.get_query("bio_pools.sql")
+        self.dom_pools_query = queries.get_query("dom_pools.sql")
+
         locale_param = (locale_code,)
         self.species_ref = self.load_data(
             sqlite_path, self.species_reference_query, locale_param)
@@ -75,6 +78,8 @@ class CBMDefaultsReference:
             x["code"]: x for x in self.land_class_ref}
 
         self.pools_ref = self.load_data(sqlite_path, self.pools_query)
+        self.bio_pools_ref = self.load_data(sqlite_path, self.bio_pools_query)
+        self.dom_pools_ref = self.load_data(sqlite_path, self.dom_pools_query)
 
         self.flux_indicator_ref = self.load_data(
             sqlite_path, self.flux_indicator_query)
@@ -303,6 +308,24 @@ class CBMDefaultsReference:
             list: list of string codes for cbm pools
         """
         return [x["code"] for x in self.pools_ref]
+
+    def get_biomass_pools(self):
+        """Returns the subset of the pool codes that correspond to biomass
+        pools in cbm_defaults
+
+        Returns:
+            list: list of string codes for cbm biomass pools
+        """
+        return [x["code"] for x in self.bio_pools_ref]
+
+    def get_dead_organic_matter_pools(self):
+        """Returns the subset of the pool codes that correspond to dead
+        organic matter (DOM) pools in cbm_defaults
+
+        Returns:
+            list: list of string codes for cbm DOM pools
+        """
+        return [x["code"] for x in self.dom_pools_ref]
 
     def get_flux_indicators(self):
         """Get the ordered list of human readable flux indicator codes defined
