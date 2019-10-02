@@ -332,7 +332,8 @@ def get_disturbance_event_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
 
     classifier_set = [
-        {"name": c, "index": i} for i, c in enumerate(classifier_names)]
+        {"name": c, "index": i, "type": np.str}
+        for i, c in enumerate(classifier_names)]
 
     disturbance_age_eligibility = get_age_eligibility_columns(n_classifiers)
 

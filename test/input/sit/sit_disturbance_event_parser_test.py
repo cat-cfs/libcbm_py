@@ -69,6 +69,50 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             sit_format.get_disturbance_eligibility_columns(0))
         return num_eligibility_cols
 
+    def test_expected_value_with_numeric_classifier_values(self):
+        """Checks that numeric classifiers that appear in events data
+        are parsed as strings
+        """
+        event = {
+            "classifier_set": [1, 2.0],
+            "age_eligibility": ["False", -1, -1, -1, -1],
+            "eligibility": [-1] * self.get_num_eligibility_cols(),
+            "target": [1.0, "1", "A", 100, "dist1", 2, 100]}
+
+        classifiers = pd.DataFrame(
+            data=[
+                (1, "classifier1"),
+                (2, "classifier2")
+            ],
+            columns=["id", "name"]
+        )
+        classifier_values = pd.DataFrame(
+            data=[
+                (1, "1", "a"),
+                (1, "b", "b"),
+                (2, "a", "a")
+            ],
+            columns=["classifier_id", "name", "description"]
+        )
+        aggregates = [
+            {'classifier_id': 1,
+             'name': 'agg1',
+             'description': 'agg2',
+             'classifier_values': ['a', 'b']},
+            {'classifier_id': 1,
+             'name': 'agg2',
+             'description': 'agg2',
+             'classifier_values': ['a', 'b']},
+            {'classifier_id': 2,
+             'name': '2.0',
+             'description': 'agg1',
+             'classifier_values': ['a']}]
+
+        e = self.assemble_disturbance_events_table([event])
+        result = sit_disturbance_event_parser.parse(
+            e, classifiers, classifier_values, aggregates,
+            self.get_mock_disturbance_types(), self.get_mock_age_classes())
+
     def test_incorrect_number_of_classifiers_error(self):
         """checks that the format has the correct number of columns
         according to the defined classifiers
