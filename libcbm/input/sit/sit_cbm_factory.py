@@ -173,17 +173,20 @@ def read_sit_config(config_path):
         return sit
 
 
-def initialize_sit_objects(sit, db_path=None):
+def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     """Load and attach objects required for the SIT to the specified namespace
 
     Args:
-        sit (types.SimpleNamespace): [description]
+        sit (types.SimpleNamespace): object with parsed SIT data, such as the
+            return value of :py:func:`read_sit_config`.
         db_path (str, optional): path to a cbm_defaults database. If None, the
             default database is used. Defaults to None.
+        locale_code (str, optional): a locale code used to fetch the
+            corresponding translated version of default parameter strings
     """
     if not db_path:
         db_path = libcbm.resources.get_cbm_defaults_path()
-    cbm_defaults_ref = CBMDefaultsReference(db_path)
+    cbm_defaults_ref = CBMDefaultsReference(db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], cbm_defaults_ref)
     sit.db_path = db_path
