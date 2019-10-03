@@ -88,12 +88,11 @@ def parse(transition_rules, classifiers, classifier_values,
     transitions = sit_parser.substitute_using_age_class_rows(
         transitions, parse_bool_func, age_classes)
 
-    # validate and subsitute disturbance type names versus the SIT disturbance
+    # validate and substitute disturbance type names versus the SIT disturbance
     # types
-    undefined_disturbances = np.setdiff1d(
-        transitions.disturbance_type.unique(),
-        disturbance_types.id.unique()
-    )
+    a = transitions.disturbance_type.unique()
+    b = disturbance_types.id.unique()
+    undefined_disturbances = np.setdiff1d(a, b)
     if len(undefined_disturbances) > 0:
         raise ValueError(
             "Undefined disturbance type ids (as defined in sit "
