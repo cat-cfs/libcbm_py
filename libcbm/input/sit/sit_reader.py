@@ -142,14 +142,14 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         s.disturbance_types, s.age_classes)
     s.yield_table = sit_yield_parser.parse(
         sit_yield, s.classifiers, s.classifier_values, s.age_classes)
-    if sit_events:
+    if sit_events is not None:
         s.disturbance_events = sit_disturbance_event_parser.parse(
             sit_events, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types,
             s.age_classes)
     else:
         s.disturbance_events = None
-    if sit_transitions:
+    if sit_transitions is not None:
         s.transition_rules = sit_transition_rule_parser.parse(
             sit_transitions, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types, s.age_classes)
