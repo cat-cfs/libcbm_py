@@ -1,5 +1,4 @@
 from types import SimpleNamespace
-import numpy as np
 from libcbm.input.sit import sit_classifier_parser
 
 
@@ -40,10 +39,16 @@ class ClassifierFilter():
             if x["classifier_id"] == classifier_id}
 
     def create_classifiers_filter(self, classifier_set, classifier_values):
-        """[summary]
+        """Creates a filter based on the specified classifier set to select a
+        subset of the values in classifier_values
 
         Args:
-            classifier_set ([type]): [description]
+            classifier_set (list): a list of strings, these may be any of:
+
+                - a defined classifier value
+                - a classifier aggregate
+                - or a wildcard "?"
+
             classifier_values ([type]): [description]
 
         Raises:
@@ -54,11 +59,12 @@ class ClassifierFilter():
         Returns:
             object: an object with properties:
 
-                - expression: a boolean expression to filter the values in
-                    local_dict. The variables are defined as the keys in
+                - expression (str): a boolean expression to filter the values
+                    in local_dict. The variables are defined as the keys in
                     local_dict.
-                - local_dict: a dictionary containing named numpy variables to
-                    filter.
+                - local_dict (dict): a dictionary containing named numpy
+                    variables to filter.
+
         """
 
         if self.n_classifiers != classifier_values.shape[1] or \
@@ -101,6 +107,12 @@ class ClassifierFilter():
                     f"undefined classifier set value {classifier_set_value}")
 
         result = SimpleNamespace()
+        result.expression = ""
+        result.local_dict = {}
+        if not expression_tokens:
+            # this can happen if the classifier set is all wildcards
+            return result
+
         result.expression = " & ".join(expression_tokens)
         result.local_dict = {
             get_classifier_variable(i): classifier_values[x["name"]].to_numpy()
