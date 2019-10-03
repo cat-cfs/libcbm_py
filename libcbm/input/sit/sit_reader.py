@@ -72,12 +72,6 @@ def read(config, config_dir):
                             if config["events"] else None
     sit_transitions       = load_table(config["transitions"],       config_dir) \
                             if config["transitions"] else None
-    # Guarantee that all classifier values are strings #
-    icol = max(sit_classifiers.iloc[:,0])
-    sit_inventory.iloc[:,0:icol]   = sit_inventory.ix[:,0:icol].astype(str)
-    sit_yield.iloc[:,0:icol]       = sit_yield.ix[:,0:icol].astype(str)
-    sit_events.iloc[:,0:icol]      = sit_events.ix[:,0:icol].astype(str)
-    sit_transitions.iloc[:,0:icol] = sit_transitions.ix[:,0:icol].astype(str)
     # Validate data #
     sit_data = parse(
         sit_classifiers, sit_disturbance_types, sit_age_classes,
@@ -142,14 +136,14 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         s.disturbance_types, s.age_classes)
     s.yield_table = sit_yield_parser.parse(
         sit_yield, s.classifiers, s.classifier_values, s.age_classes)
-    if sit_events:
+    if sit_events is not None:
         s.disturbance_events = sit_disturbance_event_parser.parse(
             sit_events, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types,
             s.age_classes)
     else:
         s.disturbance_events = None
-    if sit_transitions:
+    if sit_transitions is not None:
         s.transition_rules = sit_transition_rule_parser.parse(
             sit_transitions, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types, s.age_classes)

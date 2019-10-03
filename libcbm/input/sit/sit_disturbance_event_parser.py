@@ -125,10 +125,9 @@ def parse(disturbance_events, classifiers, classifier_values,
     events.target_type = events.target_type.map(get_target_types())
 
     # validate disturbance type according to specified disturbance types
-    undefined_disturbances = np.setdiff1d(
-        events.disturbance_type.unique(),
-        disturbance_types.id.unique()
-    )
+    a = events.disturbance_type.unique()
+    b = disturbance_types.id.unique()
+    undefined_disturbances = np.setdiff1d(a, b)
     if len(undefined_disturbances) > 0:
         raise ValueError(
             "Undefined disturbance type ids (as defined in sit "
