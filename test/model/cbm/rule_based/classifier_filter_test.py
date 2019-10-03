@@ -1,10 +1,10 @@
 import unittest
 import pandas as pd
 import numpy as np
-from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 
-class FilterTest(unittest.TestCase):
+class ClassifierFilterTest(unittest.TestCase):
 
     def test_create_classifiers_filter_expected_value(self):
 
@@ -32,7 +32,8 @@ class FilterTest(unittest.TestCase):
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
-        rule_filter = RuleFilter(classifiers_config, classifier_aggregates)
+        rule_filter = ClassifierFilter(
+            classifiers_config, classifier_aggregates)
 
         def get_classifier_value_index(classifier_id):
             return {
