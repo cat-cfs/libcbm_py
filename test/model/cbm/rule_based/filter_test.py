@@ -38,7 +38,7 @@ class FilterTest(unittest.TestCase):
             return {
                 x["name"]: x["id"] for x
                 in classifiers_config["classifier_values"]
-                if classifiers_config["classifier_id"] == classifier_id}
+                if x["classifier_id"] == classifier_id}
 
         c1 = get_classifier_value_index(1)
         c2 = get_classifier_value_index(2)
@@ -52,9 +52,12 @@ class FilterTest(unittest.TestCase):
                 ("c1_v1", "c2_v2", "c3_v3"),  # match
                 ("c1_v1", "c2_v2", "c3_v1"),  # match
                 ("c1_v1", "c2_v2", "c3_v2"),  # non-match (aggregate)
-             ]])
+             ]], columns=["c1", "c2", "c3"])
 
         result = rule_filter.create_classifiers_filter(
             classifier_set, classifier_values)
         self.assertTrue(
-            list(result) == [True, False, True, True, False, False])
+            result.expression == "c_0 == 1 & (c_2 == 5 | c_2 == 7)")
+        self.assertTrue(list(result.local_dict["c_0"]) == [1, 2, 1, 1, 1])
+        self.assertTrue(list(result.local_dict["c_1"]) == [3, 3, 4, 4, 4])
+        self.assertTrue(list(result.local_dict["c_2"]) == [7, 7, 7, 5, 6])
