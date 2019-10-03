@@ -52,12 +52,39 @@ def merge_filters(filters):
             result.local_dict.update(f.local_dict)
 
 
-def create_filter(expression, local_variable_prefix, data, variables):
+def create_filter(expression, data, columns, column_variable_map=None):
+    """Creates a filter object for filtering a pandas dataframe using an
+    expression.
+
+    Args:
+        expression (str): a boolean expression in terms of the values in
+            column_variable_map
+        data (pandas.DataFrame): the data to for which to create a filter
+        columns (list): the columns involved in the expression
+        column_variable_map (dict, optional): a mapping of the column names
+            to variable names in the expression. Default None. If None, the
+            column names themselves are assumed to be present in the
+            expression.
+
+    Returns:
+        object: object with properties:
+            - expression (str): a boolean expression to filter the values
+                in local_dict. The variables are defined as the keys in
+                local_dict.
+            - local_dict (dict): a dictionary containing named numpy
+                variables to filter.
+
+    """
     result = SimpleNamespace()
     result.expression = expression
-    result.local_dict = {
-        f"{local_variable_prefix}_{i}": data[v].to_numpy()
-        for i, v in enumerate(variables)}
+    if column_variable_map:
+        result.local_dict = {
+            column_variable_map[col]: data[col].to_numpy()
+            for i, col in enumerate(columns)}
+    else:
+        result.local_dict = {
+            col: data[col].to_numpy()
+            for i, col in enumerate(columns)}
     return result
 
 
@@ -75,5 +102,6 @@ def evaluate_filter(filter_obj):
     Returns:
         np.ndarray: filter result
     """
-    if
-    return numexpr.evaluate(filter_obj.expression, filter_obj.local_dict)
+    if filter_obj.expression:
+        return numexpr.evaluate(filter_obj.expression, filter_obj.local_dict)
+    return None
