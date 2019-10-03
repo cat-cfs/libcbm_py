@@ -171,7 +171,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     age_eligibility = get_age_eligibility_columns(n_classifiers)
     disturbance_type = [{
         "name": "disturbance_type",
-        "index": n_classifiers+5}]
+        "index": n_classifiers+5,
+        "type": np.str}]
 
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
@@ -317,7 +318,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
     disturbance event format
 
     Args:
-        classifier_names (int): a list of the names of classifiers
+        classifier_names: a list of the names of classifiers
         n_columns (int): the number of columns in disturbance data.  This
             is required because the format has a varying number of optional
             columns.
@@ -349,7 +350,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
         {"name": "target_type", "index": index + 2},
         {"name": "target", "index": index + 3, "type": np.float,
          "min_value": 0},
-        {"name": "disturbance_type", "index": index + 4},
+        {"name": "disturbance_type", "index": index + 4, "type": np.str},
         {"name": "disturbance_year", "index": index + 5, "type": np.int,
          "min_value": 1},
     ]
