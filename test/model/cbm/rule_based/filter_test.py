@@ -1,12 +1,12 @@
 import unittest
 import pandas as pd
 import numpy as np
-from libcbm.model.cbm.rule_based import rule_filter
+from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 
 
 class FilterTest(unittest.TestCase):
 
-    def test_filter_classifiers_expected_value(self):
+    def test_create_classifiers_filter_expected_value(self):
 
         classifier_set = ["c1_v1", "?", "agg1"]
 
@@ -32,8 +32,7 @@ class FilterTest(unittest.TestCase):
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
-        mask = np.array([True]*5 + [False])
-
+        rule_filter = RuleFilter(classifiers_config, classifier_aggregates)
 
         def get_classifier_value_index(classifier_id):
             return {
@@ -53,10 +52,9 @@ class FilterTest(unittest.TestCase):
                 ("c1_v1", "c2_v2", "c3_v3"),  # match
                 ("c1_v1", "c2_v2", "c3_v1"),  # match
                 ("c1_v1", "c2_v2", "c3_v2"),  # non-match (aggregate)
-                ("c1_v1", "c2_v1", "c3_v3"),  # non-match (masked)
              ]])
 
-        result = rule_filter.filter_classifiers(
-            mask, classifier_set, classifier_values, classifiers_config,
-            classifier_aggregates)
-        self.assertTrue(list(result) == [True, False, True, True, False, False])
+        result = rule_filter.create_classifiers_filter(
+            classifier_set, classifier_values)
+        self.assertTrue(
+            list(result) == [True, False, True, True, False, False])
