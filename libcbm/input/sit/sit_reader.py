@@ -72,12 +72,6 @@ def read(config, config_dir):
                             if config["events"] else None
     sit_transitions       = load_table(config["transitions"],       config_dir) \
                             if config["transitions"] else None
-    # Guarantee that all classifier values are strings #
-    icol = max(sit_classifiers.iloc[:,0])
-    sit_inventory.iloc[:,0:icol]   = sit_inventory.ix[:,0:icol].astype(str)
-    sit_yield.iloc[:,0:icol]       = sit_yield.ix[:,0:icol].astype(str)
-    sit_events.iloc[:,0:icol]      = sit_events.ix[:,0:icol].astype(str)
-    sit_transitions.iloc[:,0:icol] = sit_transitions.ix[:,0:icol].astype(str)
     # Validate data #
     sit_data = parse(
         sit_classifiers, sit_disturbance_types, sit_age_classes,
