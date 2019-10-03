@@ -1,11 +1,11 @@
 from types import SimpleNamespace
 import numpy as np
-import numexpr as ne
 from libcbm.input.sit import sit_classifier_parser
 
 
-class RuleFilter():
-
+class ClassifierFilter():
+    """Creates a classifier filter
+    """
     def __init__(self, classifiers_config, classifier_aggregates):
         self.wildcard_keyword = sit_classifier_parser.get_wildcard_keyword()
         self.classifiers_config = classifiers_config
@@ -40,6 +40,26 @@ class RuleFilter():
             if x["classifier_id"] == classifier_id}
 
     def create_classifiers_filter(self, classifier_set, classifier_values):
+        """[summary]
+
+        Args:
+            classifier_set ([type]): [description]
+            classifier_values ([type]): [description]
+
+        Raises:
+            ValueError: mismatch in the number of classifiers
+            ValueError: a classifier value in the specified classifier
+                set is not defined
+
+        Returns:
+            object: an object with properties:
+
+                - expression: a boolean expression to filter the values in
+                    local_dict. The variables are defined as the keys in
+                    local_dict.
+                - local_dict: a dictionary containing named numpy variables to
+                    filter.
+        """
 
         if self.n_classifiers != classifier_values.shape[1] or \
            self.n_classifiers != len(classifier_set):
@@ -73,9 +93,7 @@ class RuleFilter():
                     aggregate_expression_tokens.append(
                         " == ".join([
                             get_classifier_variable(i_classifier),
-                            str(classifier_value_id)]
-                        )
-                    )
+                            str(classifier_value_id)]))
                 expression_tokens.append(
                     "({})".format(" | ".join(aggregate_expression_tokens)))
             elif classifier_set_value != self.wildcard_keyword:
@@ -88,4 +106,3 @@ class RuleFilter():
             get_classifier_variable(i): classifier_values[x["name"]].to_numpy()
             for i, x in enumerate(self.classifiers_config["classifiers"])}
         return result
-
