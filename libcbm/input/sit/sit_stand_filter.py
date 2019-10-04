@@ -59,11 +59,14 @@ def get_state_variable_filter_mappings():
         ("LastDistTypeID", "last_disturbance_type", "==")]
 
 
-def create_state_variable_filter(sit_data, state_variables, filter_mappings):
+def create_state_variable_filter(create_filter, sit_data, state_variables,
+                                 filter_mappings):
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 
     Args:
+        create_filter (func): a function to create a filter.
+            :py:func:`libcbm.model.cbm.rule_based.rule_filter.create_filter`
         sit_data (dict): a row dictionary from an SIT events, or SIT
             transition rules table
         state_variables (pandas.DataFrame): simulation state variables
@@ -82,7 +85,8 @@ def create_state_variable_filter(sit_data, state_variables, filter_mappings):
     expression_tokens = []
     for sit_column, state_variable_column, operator in filter_mappings:
 
-        if sit_data[sit_column] >= 0:
+        if sit_data[sit_column] < 0:
+            # by convention, SIT criteria less than 0 are considered null criteria
             continue
         columns.append(sit_column)
         expression_tokens.append(
@@ -93,7 +97,7 @@ def create_state_variable_filter(sit_data, state_variables, filter_mappings):
             ))
 
     expression = " & ".join(expression_tokens)
-    return rule_filter.create_filter(
+    return create_filter(
         expression, state_variables, columns=columns)
 
 
