@@ -1,27 +1,73 @@
 from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
+# TEMPORARY: see issue #15 (https://github.com/cat-cfs/libcbm_py/issues/15)
+from libcbm.test.cbm import pool_comparison
+#########
+
 
 def get_pool_variable_filter_mappings():
+
+    biomass = pool_comparison.get_libcbm_biomass_pools()
     return [
-        ("MinTotBiomassC", "", ""),
-        ("MaxTotBiomassC", "", ""),
-        ("MinSWMerchBiomassC", "", ""),
-        ("MaxSWMerchBiomassC", "", ""),
-        ("MinHWMerchBiomassC", "", ""),
-        ("MaxHWMerchBiomassC", "", ""),
-        ("MinTotalStemSnagC", "", ""),
-        ("MaxTotalStemSnagC", "", ""),
-        ("MinSWStemSnagC", "", ""),
-        ("MaxSWStemSnagC", "", ""),
-        ("MinHWStemSnagC", "", ""),
-        ("MaxHWStemSnagC", "", ""),
-        ("MinTotalStemSnagMerchC", "", ""),
-        ("MaxTotalStemSnagMerchC", "", ""),
-        ("MinSWMerchStemSnagC", "", ""),
-        ("MaxSWMerchStemSnagC", "", ""),
-        ("MinHWMerchStemSnagC", "", ""),
-        ("MaxHWMerchStemSnagC", "", "")]
+        ("MinTotBiomassC", biomass, ">="),
+        ("MaxTotBiomassC", biomass, "<="),
+        ("MinSWMerchBiomassC", ["SoftwoodMerch"], ">="),
+        ("MaxSWMerchBiomassC", ["SoftwoodMerch"], "<="),
+        ("MinHWMerchBiomassC", ["HardwoodMerch"], ">="),
+        ("MaxHWMerchBiomassC", ["HardwoodMerch"], "<="),
+        ("MinTotalStemSnagC", ["SoftwoodStemSnag", "HardwoodStemSnag"], ">="),
+        ("MaxTotalStemSnagC", ["SoftwoodStemSnag", "HardwoodStemSnag"], "<="),
+        ("MinSWStemSnagC", ["SoftwoodStemSnag"], ">="),
+        ("MaxSWStemSnagC", ["SoftwoodStemSnag"], "<="),
+        ("MinHWStemSnagC", ["HardwoodStemSnag"], ">="),
+        ("MaxHWStemSnagC", ["HardwoodStemSnag"], "<="),
+        ("MinTotalStemSnagMerchC",
+         ["SoftwoodMerch", "HardwoodMerch",
+          "SoftwoodStemSnag", "HardwoodStemSnag"], ">="),
+        ("MaxTotalStemSnagMerchC",
+         ["SoftwoodMerch", "HardwoodMerch",
+          "SoftwoodStemSnag", "HardwoodStemSnag"], "<="),
+        ("MinSWMerchStemSnagC", ["SoftwoodMerch", "SoftwoodStemSnag"], ">="),
+        ("MaxSWMerchStemSnagC", ["SoftwoodMerch", "SoftwoodStemSnag"], "<="),
+        ("MinHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], ">="),
+        ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<=")]
+
+
+def create_pool_value_filter(create_filter, sit_data, pools):
+    """Create a filter against simulation pool values based on a single
+    row of SIT disturbance event, or transition rule data.
+
+    Args:
+        create_filter (func): a function to create a filter.
+            :py:func:`libcbm.model.cbm.rule_based.rule_filter.create_filter`
+        sit_data (dict): a row dictionary from an SIT events, or SIT
+            transition rules table
+        pools (pandas.DataFrame): simulation pool values
+
+    Returns:
+        object: a filter object for use with :py:mod:`libcbm.model.cbm`
+    """
+    columns = set()
+    expression_tokens = []
+
+    mappings = get_pool_variable_filter_mappings()
+    for sit_column, pool_values, operator in mappings:
+        if sit_data[sit_column] < 0:
+            # by convention, SIT criteria less than 0 are considered null
+            # criteria
+            continue
+        columns.update(set(pool_values))
+        expression_tokens.append(
+            "({pool_expression} {operator} {value})".format(
+                pool_expression="({})".format(" + ".join(pool_values)),
+                operator=operator,
+                value=sit_data[sit_column]
+            ))
+
+    expression = " & ".join(expression_tokens)
+    return create_filter(
+        expression, pools, columns=columns)
 
 
 def get_state_variable_age_filter_mappings():
