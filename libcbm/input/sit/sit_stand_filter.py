@@ -81,14 +81,15 @@ def create_state_variable_filter(create_filter, sit_data, state_variables,
         object: a filter object for use with :py:mod:`libcbm.model.cbm`
     """
 
-    columns = []
+    columns = set()
     expression_tokens = []
     for sit_column, state_variable_column, operator in filter_mappings:
 
         if sit_data[sit_column] < 0:
-            # by convention, SIT criteria less than 0 are considered null criteria
+            # by convention, SIT criteria less than 0 are considered null
+            # criteria
             continue
-        columns.append(sit_column)
+        columns.add(state_variable_column)
         expression_tokens.append(
             "({state_variable} {operator} {value})".format(
                 state_variable=state_variable_column,
