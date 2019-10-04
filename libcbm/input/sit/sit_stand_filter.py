@@ -39,14 +39,17 @@ def create_pool_value_filter(sit_data):
     row of SIT disturbance event, or transition rule data.
 
     Args:
-        create_filter (func): a function to create a filter.
-            :py:func:`libcbm.model.cbm.rule_based.rule_filter.create_filter`
         sit_data (dict): a row dictionary from an SIT events, or SIT
             transition rules table
-        pools (pandas.DataFrame): simulation pool values
 
     Returns:
-        object: a filter object for use with :py:mod:`libcbm.model.cbm`
+        tuple:
+            1. expression (str): a boolean expression compatible with numexpr
+            2. columns (list): the list of column names that are referenced in
+                the expression
+
+            These values are intended for use with the
+            :py:func:`libcbm.model.rule_based.rule_filter module`
     """
     columns = set()
     expression_tokens = []
@@ -119,7 +122,13 @@ def create_state_variable_filter(sit_data, filter_mappings):
               (for use with sit transition rules)
 
     Returns:
-        object: a filter object for use with :py:mod:`libcbm.model.cbm`
+        tuple:
+            1. expression (str): a boolean expression compatible with numexpr
+            2. columns (list): the list of column names that are referenced in
+                the expression
+
+            These values are intended for use with the
+            :py:func:`libcbm.model.rule_based.rule_filter module`
     """
 
     columns = set()
