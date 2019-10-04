@@ -49,7 +49,9 @@ class ClassifierFilter():
                 - a classifier aggregate
                 - or a wildcard "?"
 
-            classifier_values ([type]): [description]
+            classifier_values (pandas.DataFrame): dataframe of classifier
+                value ids by stand (row), by classifier (columns).  Column
+                labels are the classifier names.
 
         Raises:
             ValueError: mismatch in the number of classifiers

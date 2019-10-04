@@ -2,14 +2,8 @@ import unittest
 import pandas as pd
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
-
-class ClassifierFilterTest(unittest.TestCase):
-
-    def test_create_classifiers_filter_expected_value(self):
-
-        classifier_set = ["c1_v1", "?", "agg1"]
-
-        classifiers_config = {
+def get_mock_classifiers_config():
+    return {
             "classifiers": [
                 {"id": 1, "name": "c1"},
                 {"id": 2, "name": "c2"},
@@ -25,6 +19,14 @@ class ClassifierFilterTest(unittest.TestCase):
                 {"id": 7, "classifier_id": 3, "name": "c3_v3"}
             ]
         }
+
+
+class ClassifierFilterTest(unittest.TestCase):
+
+    def test_create_classifiers_filter_expected_value(self):
+
+        classifier_set = ["c1_v1", "?", "agg1"]
+        classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
             {'classifier_id': 3,
              'name': 'agg1',
@@ -66,10 +68,41 @@ class ClassifierFilterTest(unittest.TestCase):
         """check that an error is raised on mismatch in the number of
         classifiers
         """
-        self.fail()
+        classifiers_config = get_mock_classifiers_config()
+
+        rule_filter = ClassifierFilter(
+            classifiers_config, [])
+
+        with self.assertRaises(ValueError):
+            rule_filter.create_classifiers_filter(
+                ["c1_v1", "?", "agg1", "extra"],
+                pd.DataFrame([[1, 3, 5]]))
+
+        with self.assertRaises(ValueError):
+            rule_filter.create_classifiers_filter(
+                ["c1_v1", "?"],  # one too few
+                pd.DataFrame([[1, 3, 5]]))
+
+        with self.assertRaises(ValueError):
+            rule_filter.create_classifiers_filter(
+                ["c1_v1", "?", "agg1"],
+                pd.DataFrame([[1, 3]]))  # not enough columns in dataframe
+
+        with self.assertRaises(ValueError):
+            rule_filter.create_classifiers_filter(
+                ["c1_v1", "?", "agg1"],
+                pd.DataFrame([[1, 3, 5, 1]]))  # too many columns in dataframe
 
     def test_error_on_undefined_value_in_classifier_set(self):
         """check that an error is raised on when classifier value in
         the specified classifier set is not defined
         """
-        self.fail()
+        classifiers_config = get_mock_classifiers_config()
+
+        rule_filter = ClassifierFilter(
+            classifiers_config, [])
+
+        with self.assertRaises(ValueError):
+            rule_filter.create_classifiers_filter(
+                ["undefined", "?", "agg1"],
+                pd.DataFrame([[1, 3, 5]]))
