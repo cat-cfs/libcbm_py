@@ -1,6 +1,5 @@
 import unittest
 import pandas as pd
-import numpy as np
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 
@@ -62,3 +61,15 @@ class ClassifierFilterTest(unittest.TestCase):
         self.assertTrue(list(result.local_dict["c_0"]) == [1, 2, 1, 1, 1])
         self.assertTrue(list(result.local_dict["c_1"]) == [3, 3, 4, 4, 4])
         self.assertTrue(list(result.local_dict["c_2"]) == [7, 7, 7, 5, 6])
+
+    def test_error_on_mismatching_classifiers(self):
+        """check that an error is raised on mismatch in the number of
+        classifiers
+        """
+        self.fail()
+
+    def test_error_on_undefined_value_in_classifier_set(self):
+        """check that an error is raised on when classifier value in
+        the specified classifier set is not defined
+        """
+        self.fail()

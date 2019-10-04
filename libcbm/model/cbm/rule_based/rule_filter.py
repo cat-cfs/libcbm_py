@@ -2,24 +2,11 @@ from types import SimpleNamespace
 import numexpr
 
 
-def intersection(first, *others):
-    """Intersect all parameters
-    https://stackoverflow.com/questions/2953280/taking-intersection-of-n-many-lists-in-python
-
-    Args:
-        first (iterable): the seed iterable
-
-    Returns:
-        set: the intersection of all parameters
-    """
-    return set(first).intersection(*others)
-
-
-def merge_filters(filters):
+def merge_filters(*filters):
     """Merge filters into a single filter
 
     Args:
-        filters (list): a list of objects with properties:
+        filters (iterable): a list of objects with properties:
             - expression (str): a boolean expression to filter the values
                 in local_dict. The variables are defined as the keys in
                 local_dict.
@@ -36,20 +23,25 @@ def merge_filters(filters):
     """
     if not filters:
         return None
-    intersecting_variables = intersection(
-        filters[0].local_dict.keys(),
-        *[f.local_dict.keys() for f in filters[1:]])
-    if intersecting_variables:
-        raise ValueError(
-            "The following variables are present in more than one filter "
-            f"{intersecting_variables}")
+
     result = SimpleNamespace()
     result.expression = "({})".format(
         ") & (".join([x.expression for x in filters if x.expression]))
     result.local_dict = {}
-    for f in filters:
-        if f.expression:
-            result.local_dict.update(f.local_dict)
+
+    intersecting_variables = set()
+    for merge_filter in filters:
+        if merge_filter.expression:
+            intersecting_variables.update(
+                set(result.local_dict.keys()).intersection(
+                    set(merge_filter.local_dict.keys())))
+            result.local_dict.update(merge_filter.local_dict)
+
+    if intersecting_variables:
+        raise ValueError(
+            "The following variables are present in more than one filter "
+            f"{intersecting_variables}")
+    return result
 
 
 def create_filter(expression, data, columns, column_variable_map=None):
