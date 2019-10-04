@@ -29,20 +29,12 @@ class SITStandFilterTest(unittest.TestCase):
             data=mock_data,
             columns=["min_age", "max_age"])
 
-        mock_state_variables = pd.DataFrame({"age": list(range(0, 10))})
-
-        def create_test_func(i_row):
-            def mock_create_filter(expression, state_variables, columns):
-                self.assertTrue(state_variables.equals(mock_state_variables))
-                self.assertTrue(expression == expected_expressions[i_row])
-                self.assertTrue(set(columns) == set(expected_columns[i_row]))
-            return mock_create_filter
-
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            sit_stand_filter.create_state_variable_filter(
-                create_test_func(i_row), row, mock_state_variables,
-                sit_stand_filter.get_state_variable_age_filter_mappings())
+            exp, cols = sit_stand_filter.create_state_variable_filter(
+                row, sit_stand_filter.get_state_variable_age_filter_mappings())
+            self.assertTrue(exp == expected_expressions[i_row])
+            self.assertTrue(set(cols) == set(expected_columns[i_row]))
 
     def test_expected_result_on_create_state_variable_filter(self):
 
@@ -76,17 +68,44 @@ class SITStandFilterTest(unittest.TestCase):
             data=mock_data,
             columns=mock_data_columns)
 
-        mock_state_variables = pd.DataFrame({"age": list(range(0, 10))})
-
-        def create_test_func(i_row):
-            def mock_create_filter(expression, state_variables, columns):
-                self.assertTrue(state_variables.equals(mock_state_variables))
-                self.assertTrue(expression == expected_expressions[i_row])
-                self.assertTrue(set(columns) == set(expected_columns[i_row]))
-            return mock_create_filter
-
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            sit_stand_filter.create_state_variable_filter(
-                create_test_func(i_row), row, mock_state_variables,
-                sit_stand_filter.get_state_variable_filter_mappings())
+            exp, cols = sit_stand_filter.create_state_variable_filter(
+                row, sit_stand_filter.get_state_variable_filter_mappings())
+            self.assertTrue(exp == expected_expressions[i_row])
+            self.assertTrue(set(cols) == set(expected_columns[i_row]))
+
+    def test_get_pool_variable_filter_mappings_expected_value(self):
+
+        pool_mappings = sit_stand_filter.get_pool_variable_filter_mappings()
+        mock_data_columns = [x[0] for x in pool_mappings]
+
+        mock_data = [
+            list(range(0, len(pool_mappings))),
+            [-1 for _ in pool_mappings]]
+
+        mock_sit_events = pd.DataFrame(
+            data=mock_data, columns=mock_data_columns)
+        expected_expression_tokens = [
+            "({pool_exp} {operator} {value})".format(
+                pool_exp="({})".format(" + ".join(x[1])),
+                operator=x[2],
+                value=i_x)
+            for i_x, x in enumerate(pool_mappings)]
+
+        expected_expression = " & ".join(expected_expression_tokens)
+
+        expected_columns = set()
+        for x in pool_mappings:
+            expected_columns.update(set(x[1]))
+
+        rows = mock_sit_events.to_dict("records")
+        expression0, columns0 = sit_stand_filter.create_pool_value_filter(
+            rows[0])
+        self.assertTrue(expression0 == expected_expression)
+        self.assertTrue(set(columns0) == set(expected_columns))
+
+        expression1, columns1 = sit_stand_filter.create_pool_value_filter(
+            rows[1])
+        self.assertTrue(expression1 == "")
+        self.assertTrue(set(columns1) == set())

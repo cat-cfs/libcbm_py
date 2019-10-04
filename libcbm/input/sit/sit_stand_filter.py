@@ -34,7 +34,7 @@ def get_pool_variable_filter_mappings():
         ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<=")]
 
 
-def create_pool_value_filter(create_filter, sit_data, pools):
+def create_pool_value_filter(sit_data):
     """Create a filter against simulation pool values based on a single
     row of SIT disturbance event, or transition rule data.
 
@@ -66,8 +66,7 @@ def create_pool_value_filter(create_filter, sit_data, pools):
             ))
 
     expression = " & ".join(expression_tokens)
-    return create_filter(
-        expression, pools, columns=columns)
+    return expression, columns
 
 
 def get_state_variable_age_filter_mappings():
@@ -105,17 +104,13 @@ def get_state_variable_filter_mappings():
         ("LastDistTypeID", "last_disturbance_type", "==")]
 
 
-def create_state_variable_filter(create_filter, sit_data, state_variables,
-                                 filter_mappings):
+def create_state_variable_filter(sit_data, filter_mappings):
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 
     Args:
-        create_filter (func): a function to create a filter.
-            :py:func:`libcbm.model.cbm.rule_based.rule_filter.create_filter`
         sit_data (dict): a row dictionary from an SIT events, or SIT
             transition rules table
-        state_variables (pandas.DataFrame): simulation state variables
         filter_mappings (list): the return value of either:
 
             - :py:func:`get_state_variable_filter_mappings`
@@ -144,8 +139,7 @@ def create_state_variable_filter(create_filter, sit_data, state_variables,
             ))
 
     expression = " & ".join(expression_tokens)
-    return create_filter(
-        expression, state_variables, columns=columns)
+    return expression, columns
 
 
 def create_classifier_filter(sit_data, classifier_values,
