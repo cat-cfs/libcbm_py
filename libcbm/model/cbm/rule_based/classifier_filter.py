@@ -91,17 +91,17 @@ class ClassifierFilter():
             aggregates = self.aggregate_value_lookup[classifier_name]
             if classifier_set_value in classifier_id_by_name:
                 expression_tokens.append(
-                    " == ".join([
+                    "({0} == {1})".format(
                         get_classifier_variable(i_classifier),
-                        str(classifier_id_by_name[classifier_set_value])]))
+                        str(classifier_id_by_name[classifier_set_value])))
             elif classifier_set_value in aggregates:
                 aggregate_expression_tokens = []
                 aggregate_values = aggregates[classifier_set_value]
                 for classifier_value_id in aggregate_values:
                     aggregate_expression_tokens.append(
-                        " == ".join([
+                        "({0} == {1})".format(
                             get_classifier_variable(i_classifier),
-                            str(classifier_value_id)]))
+                            str(classifier_value_id)))
                 expression_tokens.append(
                     "({})".format(" | ".join(aggregate_expression_tokens)))
             elif classifier_set_value != self.wildcard_keyword:

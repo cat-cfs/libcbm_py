@@ -59,7 +59,7 @@ class ClassifierFilterTest(unittest.TestCase):
         result = rule_filter.create_classifiers_filter(
             classifier_set, classifier_values)
         self.assertTrue(
-            result.expression == "c_0 == 1 & (c_2 == 5 | c_2 == 7)")
+            result.expression == "(c_0 == 1) & ((c_2 == 5) | (c_2 == 7))")
         self.assertTrue(list(result.local_dict["c_0"]) == [1, 2, 1, 1, 1])
         self.assertTrue(list(result.local_dict["c_1"]) == [3, 3, 4, 4, 4])
         self.assertTrue(list(result.local_dict["c_2"]) == [7, 7, 7, 5, 6])

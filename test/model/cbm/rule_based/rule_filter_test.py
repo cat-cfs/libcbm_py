@@ -27,3 +27,40 @@ class RuleFilterTest(unittest.TestCase):
         self.assertTrue(result.expression == "(a == 1) & (b == 2) & (c == 3)")
         self.assertTrue(result.local_dict == {"a": 1, "b": 2, "c": 3})
 
+    def test_create_filter_expected_output(self):
+        result = rule_filter.create_filter(
+            "(A < 5) | (B > 6)",
+            pd.DataFrame({
+                "a": range(1, 10),
+                "b": range(1, 10),
+                "c": range(1, 10)}),
+            columns=["a", "b"],
+            column_variable_map={"a": "A", "b": "B"})
+
+        self.assertTrue(result.expression == "(A < 5) | (B > 6)")
+        self.assertTrue(list(result.local_dict["A"]) == list(range(1, 10)))
+        self.assertTrue(list(result.local_dict["B"]) == list(range(1, 10)))
+
+    def test_evaluate_filter_expected_output(self):
+        result = rule_filter.evaluate_filter(
+            rule_filter.create_filter(
+                "(A < 5) | (B > 6)",
+                pd.DataFrame({
+                    "a": range(1, 10),
+                    "b": range(1, 10),
+                    "c": range(1, 10)}),
+                columns=["a", "b"],
+                column_variable_map={"a": "A", "b": "B"}))
+        self.assertTrue(list(result) == [True]*4 + [False]*2 + [True]*3)
+
+    def test_error_on_invalid_expression_evaluate_filter(self):
+        with self.assertRaises(KeyError):
+            rule_filter.evaluate_filter(
+                rule_filter.create_filter(
+                    "(A < 5) | (C > 6)",
+                    pd.DataFrame({
+                        "a": range(1, 10),
+                        "b": range(1, 10),
+                        "c": range(1, 10)}),
+                    columns=["a", "b"],
+                    column_variable_map={"a": "A", "b": "B"}))
