@@ -3,20 +3,20 @@ import numpy as np
 from libcbm.model.cbm import cbm_variables
 
 
-def disturbance_target(inventory, target_var, target):
+def disturbance_target(target_var, target):
 
     if target_var == 0 and target > 0:
         # unrealized target
-        return
+        raise ValueError("unrealized target")
 
-    disturbed = inventory.copy()
+    disturbed = pd.DataFrame()
     disturbed["target_var"] = target_var
     disturbed = disturbed.sort_values(by="target_var", ascending=False)
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
         # error, there are no records contributing to the target
-        return
+        raise ValueError("no target values greater that zero")
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
@@ -32,7 +32,7 @@ def disturbance_target(inventory, target_var, target):
     partial_disturb = disturbed[disturbed.target_var_sums > target]
     if partial_disturb.shape[0] == 0 and remaining_target > 0:
         # unrealized target
-        return
+        raise ValueError("unrealized target")
 
     # for merch C and area targets a final record is split to meet target
     # exactly
@@ -53,6 +53,10 @@ def disturbance_target(inventory, target_var, target):
             [fully_disturbed_proportions,
              split_disturbed_proportions])
     })
+
+
+def area_target(area_target_value, inventory):
+    return disturbance_target(inventory.area, area_target_value)
 
 
 def disturbance_flux_target(cbm, carbon_target, pools, inventory,
@@ -90,6 +94,6 @@ def disturbance_flux_target(cbm, carbon_target, pools, inventory,
         flux["DisturbanceDOMProduction"]
     ).multiply(inventory.area, axis=0) * efficiency
 
-    result = disturbance_target(inventory, production_c, carbon_target)
+    result = disturbance_target(production_c, carbon_target)
     result.area_proportions = result.area_proportions * efficiency
     return result
