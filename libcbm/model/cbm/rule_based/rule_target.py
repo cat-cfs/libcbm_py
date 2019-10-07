@@ -34,11 +34,27 @@ def disturbance_flux_target(cbm, carbon_target, pools, inventory,
     production_c = (
         flux["DisturbanceSoftProduction"] +
         flux["DisturbanceHardProduction"] +
-        flux["DisturbanceDOMProduction"]).multiply(
-            inventory.area)
+        flux["DisturbanceDOMProduction"]
+    ).multiply(inventory.area, axis=0)
 
-    if production_c < carbon_target:
-        # unrealized carbon target
+    target_var = production_c
+    target = carbon_target
+    if target_var == 0 and target > 0:
+        # unrealized target
+        return
 
     disturbed_inventory = inventory.copy()
-    disturbed_inventory["production_c"] = production_c
+    disturbed_inventory["target_var"] = target_var
+    disturbed_inventory = disturbed_inventory.sort_values(by="target_var", ascending=False)
+    disturbed_inventory = disturbed_inventory.loc[disturbed_inventory.target_var > 0]
+    # compute the cumulative sums of the target var to compare versus the target value
+    disturbed_inventory["target_var_sums"] = disturbed_inventory["target_var"].cumsum()
+    disturbed_inventory = disturbed_inventory.reset_index()
+
+
+    fully_disturbed_records = disturbed_inventory[disturbed_inventory.target_var_sums <= target]
+    remaining_target = target
+    if fully_disturbed_records.shape[0] > 0:
+        remaining_target = target - fully_disturbed_records["target_var_sums"].max()
+
+    split_record = disturbed_inventory[disturbed_inventory.target_var_sums > target].iloc[[0]]
