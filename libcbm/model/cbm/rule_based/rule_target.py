@@ -35,24 +35,21 @@ def sorted_disturbance_target(target_var, sort_var, target):
         # unrealized target
         raise ValueError("unrealized target")
 
-    # for merch C and area targets a final record is split to meet target
-    # exactly
-    split_record = partial_disturb.iloc[[0]]
+    result = pd.DataFrame({
+        "disturbed_indices": fully_disturbed_records["index"],
+        "area_proportions":  np.ones(len(fully_disturbed_records["index"]))})
 
-    fully_disturbed_index = fully_disturbed_records["index"]
-    fully_disturbed_proportions = pd.Series(
-        np.ones(len(fully_disturbed_records["index"])))
+    if partial_disturb.shape[0] > 0:
+        # for merch C and area targets a final record is split to meet target
+        # exactly
+        split_record = partial_disturb.iloc[[0]]
+        result = result.append(
+            pd.DataFrame({
+                "disturbed_indices": split_record["index"],
+                "area_proportions": remaining_target / split_record.target_var
+        }))
 
-    split_disturbed_index = split_record["index"]
-    split_disturbed_proportions = remaining_target / split_record.target_var
-
-    return pd.DataFrame({
-        "disturbed_indices": pd.concat(
-            [fully_disturbed_index, split_disturbed_index]),
-        "area_proportions":  pd.concat(
-            [fully_disturbed_proportions,
-             split_disturbed_proportions])
-    })
+    return result
 
 
 def area_target(area_target_value, sort_value, inventory):
