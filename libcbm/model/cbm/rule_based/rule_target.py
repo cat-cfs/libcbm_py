@@ -3,8 +3,61 @@ import numpy as np
 from libcbm.model.cbm import cbm_variables
 
 
+def disturbance_target(inventory, target_var, target):
+
+    if target_var == 0 and target > 0:
+        # unrealized target
+        return
+
+    disturbed = inventory.copy()
+    disturbed["target_var"] = target_var
+    disturbed = disturbed.sort_values(by="target_var", ascending=False)
+    # filter out records that produced nothing towards the target
+    disturbed = disturbed.loc[disturbed.target_var > 0]
+    if disturbed.shape[0] == 0:
+        # error, there are no records contributing to the target
+        return
+    # compute the cumulative sums of the target var to compare versus the
+    # target value
+    disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
+    disturbed = disturbed.reset_index()
+
+    fully_disturbed_records = disturbed[
+        disturbed.target_var_sums <= target]
+    remaining_target = target
+    if fully_disturbed_records.shape[0] > 0:
+        remaining_target = \
+            target - fully_disturbed_records["target_var_sums"].max()
+
+    partial_disturb = disturbed[disturbed.target_var_sums > target]
+    if partial_disturb.shape[0] == 0 and remaining_target > 0:
+        # unrealized target
+        return
+
+    # for merch C and area targets a final record is split to meet target
+    # exactly
+    split_record = partial_disturb.iloc[[0]]
+
+    fully_disturbed_index = fully_disturbed_records["index"]
+    fully_disturbed_proportions = pd.Series(
+        np.ones(len(fully_disturbed_records["index"])))
+
+    split_disturbed_index = split_record["index"]
+    split_disturbed_proportions = \
+        split_record.area * remaining_target / split_record.target_var
+
+    return pd.DataFrame({
+        "disturbed_indices": pd.concat(
+            [fully_disturbed_index, split_disturbed_index]),
+        "area_proportions":  pd.concat(
+            [fully_disturbed_proportions,
+             split_disturbed_proportions])
+    })
+
+
 def disturbance_flux_target(cbm, carbon_target, pools, inventory,
-                            disturbance_type, flux_indicator_codes):
+                            disturbance_type, flux_indicator_codes,
+                            efficiency=1.0):
 
     # compute the flux based on the specified disturbance type
 
@@ -35,45 +88,8 @@ def disturbance_flux_target(cbm, carbon_target, pools, inventory,
         flux["DisturbanceSoftProduction"] +
         flux["DisturbanceHardProduction"] +
         flux["DisturbanceDOMProduction"]
-    ).multiply(inventory.area, axis=0)
+    ).multiply(inventory.area, axis=0) * efficiency
 
-    target_var = production_c
-    target = carbon_target
-    if target_var == 0 and target > 0:
-        # unrealized target
-        return
-
-    disturbed = inventory.copy()
-    disturbed["target_var"] = target_var
-    disturbed = disturbed.sort_values(by="target_var", ascending=False)
-    #filter out records that produced nothing towards the target
-    disturbed = disturbed.loc[disturbed.target_var > 0]
-    if disturbed.shape[0] == 0:
-        # error, there are no records contributing to the target
-        return
-    # compute the cumulative sums of the target var to compare versus the
-    # target value
-    disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
-    disturbed = disturbed.reset_index()
-
-    fully_disturbed_records = disturbed[
-        disturbed.target_var_sums <= target]
-    remaining_target = target
-    if fully_disturbed_records.shape[0] > 0:
-        remaining_target = target - fully_disturbed_records["target_var_sums"].max()
-
-    partial_disturb = disturbed[disturbed.target_var_sums > target]
-    if partial_disturb.shape[0] == 0 and remaining_target > 0:
-        # unrealized target
-        return
-
-    split_record = partial_disturb.iloc[[0]]
-
-    result = pd.DataFrame({
-        "disturbed_indices": pd.concat(
-            (fully_disturbed_records["index"], split_record["index"])
-        ),
-        "area_proportions": pd.concat(
-            (pd.Series(np.ones(len(fully_disturbed_records["index"]))),
-             split_record.area * remaining_target / split_record.production_c )
-        )})
+    result = disturbance_target(inventory, production_c, carbon_target)
+    result.area_proportions = result.area_proportions * efficiency
+    return result
