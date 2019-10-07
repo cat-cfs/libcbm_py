@@ -3,15 +3,15 @@ import numpy as np
 from libcbm.model.cbm import cbm_variables
 
 
-def sorted_disturbance_target(target_var, sort_var, target, area):
+def sorted_disturbance_target(target_var, sort_var, target):
 
     if target_var.sum() <= 0 and target > 0:
         # unrealized target
         raise ValueError("unrealized target")
 
-    disturbed = pd.DataFrame({"area": area})
-    disturbed["target_var"] = target_var
-    disturbed["sort_var"] = sort_var
+    disturbed = pd.DataFrame({
+        "target_var": target_var,
+        "sort_var": sort_var})
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
@@ -59,8 +59,7 @@ def area_target(area_target_value, sort_value, inventory):
     return sorted_disturbance_target(
         target_var=inventory.area,
         sort_var=sort_value,
-        target=area_target_value,
-        area=inventory.area)
+        target=area_target_value)
 
 
 def merch_target(carbon_target, disturbance_production, inventory, sort_value,
@@ -70,8 +69,7 @@ def merch_target(carbon_target, disturbance_production, inventory, sort_value,
     result = sorted_disturbance_target(
         target_var=production_c,
         sort_var=sort_value,
-        target=carbon_target,
-        area=inventory.area)
+        target=carbon_target)
     result.area_proportions = result.area_proportions * efficiency
     return result
 
