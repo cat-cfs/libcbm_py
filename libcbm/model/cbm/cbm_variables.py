@@ -272,7 +272,7 @@ def initialize_inventory(classifiers, inventory):
     i = SimpleNamespace()
     i.classifiers = np.ascontiguousarray(classifiers).astype(np.int32)
     i.age = inventory.age.to_numpy(dtype=np.int32)
-    i.area = inventory.area.to_numpy(dtype=np.int32)
+    i.area = inventory.area.to_numpy(dtype=np.float)
     i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
     i.afforestation_pre_type_id = \
         inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32)

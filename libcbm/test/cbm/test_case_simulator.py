@@ -227,7 +227,7 @@ def initialize_inventory(cases, classifier_name, ref):
         classifiers=classifiers,
         inventory=pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
-            "area": np.ones(n_stands),
+            "area": np.array([c["area"] for c in cases], dtype=np.float),
             "spatial_unit": spatial_units,
             "afforestation_pre_type_id": afforestation_pre_type_id,
             "land_class": land_class,
@@ -327,7 +327,7 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
     state_variable_result = None
 
     pool_result = data_helpers.append_simulation_result(
-        pool_result, pools, 0)
+        pool_result, pools.multiply(inventory.area, axis=0), 0)
 
     state_variable_result = data_helpers.append_simulation_result(
         state_variable_result, cbm_state, 0)
@@ -350,9 +350,9 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
             state_variables=cbm_state, parameters=cbm_params)
 
         pool_result = data_helpers.append_simulation_result(
-            pool_result, pools, t)
+            pool_result, pools.multiply(inventory.area, axis=0), t)
         flux_result = data_helpers.append_simulation_result(
-            flux_result, flux, t)
+            flux_result, flux.multiply(inventory.area, axis=0), t)
         state_variable_result = data_helpers.append_simulation_result(
             state_variable_result, cbm_state, t)
 
