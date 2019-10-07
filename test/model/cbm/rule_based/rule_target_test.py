@@ -5,6 +5,20 @@ from libcbm.model.cbm.rule_based import rule_target
 
 class RuleTargetTest(unittest.TestCase):
 
+    def test_sorted_disturbance_target_error_on_less_than_zero_target(self):
+        with self.assertRaises(ValueError):
+            rule_target.sorted_disturbance_target(
+                target_var=pd.Series([10, 1000, 0]),
+                sort_var=pd.Series([1, 2, 3]),
+                target=-10)
+
+    def test_sorted_disturbance_target_error_on_less_than_zero_target_var(self):
+        with self.assertRaises(ValueError):
+            rule_target.sorted_disturbance_target(
+                target_var=pd.Series([-1, 1000, 0]),
+                sort_var=pd.Series([1, 2, 3]),
+                target=10)
+
     def test_sorted_disturbance_target_error_on_zero_target_var_sum(self):
         with self.assertRaises(ValueError):
             rule_target.sorted_disturbance_target(
