@@ -76,20 +76,38 @@ def sorted_disturbance_target(target_var, sort_var, target):
             pd.DataFrame({
                 "disturbed_indices": split_record["index"],
                 "area_proportions": remaining_target / split_record.target_var
-        }))
+            }))
 
     return result
 
 
-def area_target(area_target_value, sort_value, inventory):
+def sorted_area_target(area_target_value, sort_value, inventory):
+    """create a sorted area target for meeting an area target exactly.
+
+    Args:
+        area_target_value (float): the target area to disturb
+        sort_value (pd.Series): a sequence of values who's decending sort
+            defines the order to accumulate areas.  Length must equal the
+            number of rows in the specified inventory
+        inventory (pd.DataFrame): the inventory being targetted for
+            disturbance.
+
+    pandas.DataFrame: a data frame with columns:
+
+        - disturbed_indices: the zero based indices of the records that
+            should be disturbed
+        - area_proportion: the proportion of each disturbed index to
+            disturb, 1 indicates the entire record, and < 1 indicates to
+            disturb a proportion.
+    """
     return sorted_disturbance_target(
         target_var=inventory.area,
         sort_var=sort_value,
         target=area_target_value)
 
 
-def merch_target(carbon_target, disturbance_production, inventory, sort_value,
-                 efficiency):
+def sorted_merch_target(carbon_target, disturbance_production, inventory,
+                        sort_value, efficiency):
 
     production_c = disturbance_production.Total * inventory.area * efficiency
     result = sorted_disturbance_target(
