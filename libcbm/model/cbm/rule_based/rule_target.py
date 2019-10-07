@@ -4,7 +4,37 @@ from libcbm.model.cbm import cbm_variables
 
 
 def sorted_disturbance_target(target_var, sort_var, target):
+    """Given a target variable, a sort variable, and a cumulative
+    target, produce a table of index, area proportions that will
+    satisfy exactly a rule based disturbance target.
 
+    Args:
+        target_var (pd.Series): a series of values fed into an
+            accumulator to satisfy the cumulative target.
+        sort_var (pd.Series): a variable who's descending sort order
+            defined the order in which target_var values are fed into
+            the accumulator.
+        target (float): the cumulative target.
+
+    Raises:
+        ValueError: unrealized target: the sum of target_var was less
+            than the cumulative target value.
+        ValueError: specified target was less than 0
+        ValueError: less than zero values are detected in target_var
+
+    Returns:
+        pandas.DataFrame: a data frame with columns:
+
+            - disturbed_indices: the zero based indices of the records that
+                should be disturbed
+            - area_proportion: the proportion of each disturbed index to
+                disturb, 1 indicates the entire record, and < 1 indicates to
+                disturb a proportion.
+    """
+    if target < 0:
+        raise ValueError("target is less than zero")
+    if (target_var < 0).any():
+        raise ValueError("less than zero values detected in target_var")
     if target_var.sum() <= 0 and target > 0:
         # unrealized target
         raise ValueError("unrealized target")
@@ -16,8 +46,7 @@ def sorted_disturbance_target(target_var, sort_var, target):
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
-        # error, there are no records contributing to the target
-        raise ValueError("no target values greater that zero")
+        raise ValueError("unrealized target")
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
