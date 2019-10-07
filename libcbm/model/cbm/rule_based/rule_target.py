@@ -3,15 +3,16 @@ import numpy as np
 from libcbm.model.cbm import cbm_variables
 
 
-def disturbance_target(target_var, target):
+def sorted_disturbance_target(target_var, sort_var, target, area):
 
-    if target_var == 0 and target > 0:
+    if target_var.sum() <= 0 and target > 0:
         # unrealized target
         raise ValueError("unrealized target")
 
-    disturbed = pd.DataFrame()
+    disturbed = pd.DataFrame({"area": area})
     disturbed["target_var"] = target_var
-    disturbed = disturbed.sort_values(by="target_var", ascending=False)
+    disturbed["sort_var"] = sort_var
+    disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
@@ -43,8 +44,7 @@ def disturbance_target(target_var, target):
         np.ones(len(fully_disturbed_records["index"])))
 
     split_disturbed_index = split_record["index"]
-    split_disturbed_proportions = \
-        split_record.area * remaining_target / split_record.target_var
+    split_disturbed_proportions = remaining_target / split_record.target_var
 
     return pd.DataFrame({
         "disturbed_indices": pd.concat(
@@ -55,13 +55,29 @@ def disturbance_target(target_var, target):
     })
 
 
-def area_target(area_target_value, inventory):
-    return disturbance_target(inventory.area, area_target_value)
+def area_target(area_target_value, sort_value, inventory):
+    return sorted_disturbance_target(
+        target_var=inventory.area,
+        sort_var=sort_value,
+        target=area_target_value,
+        area=inventory.area)
 
 
-def disturbance_flux_target(cbm, carbon_target, pools, inventory,
-                            disturbance_type, flux_indicator_codes,
-                            efficiency=1.0):
+def merch_target(carbon_target, disturbance_production, inventory, sort_value,
+                 efficiency):
+
+    production_c = disturbance_production.Total * inventory.area * efficiency
+    result = sorted_disturbance_target(
+        target_var=production_c,
+        sort_var=sort_value,
+        target=carbon_target,
+        area=inventory.area)
+    result.area_proportions = result.area_proportions * efficiency
+    return result
+
+
+def compute_disturbance_production(cbm, pools, inventory,
+                                   disturbance_type, flux_indicator_codes):
 
     # compute the flux based on the specified disturbance type
 
@@ -78,7 +94,7 @@ def disturbance_flux_target(cbm, carbon_target, pools, inventory,
 
     # set the disturbance type for all records
     disturbance_type = pd.DataFrame({
-        "disturbance_type": np.ones(n_stands)*disturbance_type})
+        "disturbance_type": np.ones(n_stands) * disturbance_type})
     cbm.model_functions.GetDisturbanceOps(
         disturbance_op, inventory, disturbance_type)
     flux = cbm_variables.initialize_flux(n_stands, flux_indicator_codes)
@@ -88,12 +104,11 @@ def disturbance_flux_target(cbm, carbon_target, pools, inventory,
 
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
-    production_c = (
-        flux["DisturbanceSoftProduction"] +
-        flux["DisturbanceHardProduction"] +
-        flux["DisturbanceDOMProduction"]
-    ).multiply(inventory.area, axis=0) * efficiency
-
-    result = disturbance_target(production_c, carbon_target)
-    result.area_proportions = result.area_proportions * efficiency
-    return result
+    return pd.DataFrame(data={
+        "DisturbanceSoftProduction": flux["DisturbanceSoftProduction"],
+        "DisturbanceHardProduction": flux["DisturbanceHardProduction"],
+        "DisturbanceDOMProduction": flux["DisturbanceDOMProduction"],
+        "Total":
+            flux["DisturbanceSoftProduction"] +
+            flux["DisturbanceHardProduction"] +
+            flux["DisturbanceDOMProduction"]})
