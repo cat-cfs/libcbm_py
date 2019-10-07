@@ -1,5 +1,6 @@
 import unittest
 import pandas as pd
+import numpy as np
 from libcbm.model.cbm.rule_based import rule_target
 
 
@@ -12,7 +13,7 @@ class RuleTargetTest(unittest.TestCase):
                 sort_var=pd.Series([1, 2, 3]),
                 target=-10)
 
-    def test_sorted_disturbance_target_error_on_less_than_zero_target_var(self):
+    def test_sorted_disturbance_target_error_on_lt_zero_target_var(self):
         with self.assertRaises(ValueError):
             rule_target.sorted_disturbance_target(
                 target_var=pd.Series([-1, 1000, 0]),
@@ -50,3 +51,29 @@ class RuleTargetTest(unittest.TestCase):
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.disturbed_indices) == [2, 1])
         self.assertTrue(list(result.area_proportions) == [1.0, 1/33])
+
+    def test_sorted_area_target_expected_result(self):
+        mock_inventory = pd.DataFrame({
+            "age": [0, 20, 10, 30],
+            "area": [1.5, 2.0, 2.0, 3.0]
+        })
+        result = rule_target.sorted_area_target(
+            area_target_value=5.1,
+            sort_value=mock_inventory.age,
+            inventory=mock_inventory)
+        self.assertTrue(list(result.disturbed_indices) == [3, 1, 2])
+        self.assertTrue(
+            np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0]))
+
+    def test_sorted_merch_target_expected_result(self):
+        mock_inventory = pd.DataFrame({
+            "age": [0, 20, 10, 30],
+            "area": [1.5, 2.0, 2.0, 3.0]
+        })
+        result = rule_target.sorted_area_target(
+            area_target_value=5.1,
+            sort_value=mock_inventory.age,
+            inventory=mock_inventory)
+        self.assertTrue(list(result.disturbed_indices) == [3, 1, 2])
+        self.assertTrue(
+            np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0])
