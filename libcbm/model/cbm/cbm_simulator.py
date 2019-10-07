@@ -10,9 +10,9 @@ def create_in_memory_reporting_func(density=False):
 
     Args:
         density (bool, optional): if set to true pool and flux indicators will
-            be computed as area densities (tonnes C/ha), and if true, they are
-            computed as mass (tonnes C) based on the area of each stand.
-            Defaults to False.
+            be computed as area densities (tonnes C/ha). By default, pool and
+            flux outputs are computed as mass (tonnes C) based on the area of
+            each stand. Defaults to False.
 
     Returns:
             tuple: a pair of values:
