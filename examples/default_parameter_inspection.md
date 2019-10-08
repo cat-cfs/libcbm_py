@@ -20,7 +20,7 @@ from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 ```
 
 ```python
-db_path = r"C:\Users\smorken\dev\cbm_defaults\cbm_defaults_2019.db"
+db_path = "cbm_defaults.db"
 cbm_default_parameters = cbm_defaults.load_cbm_parameters(db_path)
 cbm_default_ref = CBMDefaultsReference(db_path, "en-CA")
 
