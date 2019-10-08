@@ -42,6 +42,8 @@ class RuleTargetTest(unittest.TestCase):
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.disturbed_indices) == [2, 1, 0])
         self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
+        self.assertTrue(list(result.target_var) == [33, 33, 33])
+        self.assertTrue(list(result.sort_var) == [3, 2, 1])
 
     def test_sorted_disturbance_target_expected_result_with_less_target(self):
         result = rule_target.sorted_disturbance_target(
@@ -51,6 +53,8 @@ class RuleTargetTest(unittest.TestCase):
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.disturbed_indices) == [2, 1])
         self.assertTrue(list(result.area_proportions) == [1.0, 1/33])
+        self.assertTrue(list(result.target_var) == [33, 33])
+        self.assertTrue(list(result.sort_var) == [3, 2])
 
     def test_sorted_area_target_expected_result(self):
         mock_inventory = pd.DataFrame({
@@ -62,6 +66,8 @@ class RuleTargetTest(unittest.TestCase):
             sort_value=mock_inventory.age,
             inventory=mock_inventory)
         self.assertTrue(list(result.disturbed_indices) == [3, 1, 2])
+        self.assertTrue(list(result.target_var) == [3.0, 2.0, 2.0])
+        self.assertTrue(list(result.sort_var) == [30, 20, 10])
         self.assertTrue(
             np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0]))
 
@@ -83,13 +89,15 @@ class RuleTargetTest(unittest.TestCase):
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0)
         self.assertTrue(list(result.disturbed_indices) == [0, 1, 2])
+        self.assertTrue(list(result.target_var) == [20, 20, 20])
+        self.assertTrue(list(result.sort_var) == [4, 3, 2])
         self.assertTrue(
             np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
 
     def test_sorted_merch_target_expected_result_with_efficiency(self):
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
-            "area": [1.0, 1.0, 1.0, 1.0]
+            "area": [1.0, 2.0, 1.0, 1.0]
         })
         mock_disturbance_production = pd.DataFrame(
             {"Total": [10, 10, 10, 10]})
@@ -97,15 +105,17 @@ class RuleTargetTest(unittest.TestCase):
         # and all records will be split
 
         result = rule_target.sorted_merch_target(
-            carbon_target=25,
+            carbon_target=33,
             disturbance_production=mock_disturbance_production,
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=0.8)
         self.assertTrue(list(result.disturbed_indices) == [0, 1, 2, 3])
+        self.assertTrue(list(result.target_var) == [8, 16, 8, 8])
+        self.assertTrue(list(result.sort_var) == [4, 3, 2, 1])
 
-        # (0.8 * 10 + 0.8 * 10 + 0.8 * 10) == 24
-        # (10 * x) == 1
+        # (0.8 * 10 + 0.8 * 20 + 0.8 * 10) == 32
+        # (10 * x) == 33 - 32 == 1
         # x = 1/10
 
         # carbon_target = 0.8 * 3 * 10 + 1/10 = 25
