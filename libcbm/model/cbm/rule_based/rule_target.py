@@ -173,7 +173,7 @@ def compute_disturbance_production(cbm, pools, inventory,
     cbm.compute_functions.ComputeFlux(
         [disturbance_op], [disturbance_op_process_id],
         pools.copy(), flux, enabled=None)
-
+    cbm.compute_functions.FreeOp(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
     return pd.DataFrame(data={
