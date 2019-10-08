@@ -62,8 +62,23 @@ pools.merge(default_parameters["decay_parameters"], left_on="id", right_on="Pool
 ```
 
 ```python
-spatial_units.merge(default_parameters["mean_annual_temp"])
+default_parameters["slow_mixing_rate"]
+```
 
+```python
+spatial_units.merge(default_parameters["mean_annual_temp"])
+```
+
+```python
+default_parameters["turnover_parameters"]
+```
+
+```python
+default_parameters["root_parameter"]
+```
+
+```python
+spatial_units.merge(default_parameters["spinup_parameter"])
 ```
 
 ```python
