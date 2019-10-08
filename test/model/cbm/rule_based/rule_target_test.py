@@ -68,12 +68,20 @@ class RuleTargetTest(unittest.TestCase):
     def test_sorted_merch_target_expected_result(self):
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
-            "area": [1.5, 2.0, 2.0, 3.0]
+            "area": [2.0, 2.0, 2.0, 2.0]
         })
-        result = rule_target.sorted_area_target(
-            area_target_value=5.1,
-            sort_value=mock_inventory.age,
-            inventory=mock_inventory)
-        self.assertTrue(list(result.disturbed_indices) == [3, 1, 2])
+        mock_disturbance_production = pd.DataFrame(
+            {"Total": [10, 10, 10, 10]})  # tonnes C/ha
+        # since C targets are accumulated on mass values
+        # the total production values here are actually
+        # 20,20,20,20 tonnes using the above area multipliers
+
+        result = rule_target.sorted_merch_target(
+            carbon_target=55,
+            disturbance_production=mock_disturbance_production,
+            inventory=mock_inventory,
+            sort_value=pd.Series([4, 3, 2, 1]),
+            efficiency=1.0)
+        self.assertTrue(list(result.disturbed_indices) == [0, 1, 2])
         self.assertTrue(
-            np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0])
+            np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
