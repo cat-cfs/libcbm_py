@@ -65,6 +65,8 @@ def sorted_disturbance_target(target_var, sort_var, target):
         raise ValueError("unrealized target")
 
     result = pd.DataFrame({
+        "target_var": fully_disturbed_records["target_var"],
+        "sort_var": fully_disturbed_records["sort_var"],
         "disturbed_indices": fully_disturbed_records["index"],
         "area_proportions":  np.ones(len(fully_disturbed_records["index"]))})
 
@@ -74,6 +76,8 @@ def sorted_disturbance_target(target_var, sort_var, target):
         split_record = partial_disturb.iloc[[0]]
         result = result.append(
             pd.DataFrame({
+                "target_var": split_record["target_var"],
+                "sort_var": split_record["sort_var"],
                 "disturbed_indices": split_record["index"],
                 "area_proportions": remaining_target / split_record.target_var
             }))
