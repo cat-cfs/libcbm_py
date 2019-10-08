@@ -85,3 +85,29 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(list(result.disturbed_indices) == [0, 1, 2])
         self.assertTrue(
             np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
+
+    def test_sorted_merch_target_expected_result_with_efficiency(self):
+        mock_inventory = pd.DataFrame({
+            "age": [0, 20, 10, 30],
+            "area": [1.0, 1.0, 1.0, 1.0]
+        })
+        mock_disturbance_production = pd.DataFrame(
+            {"Total": [10, 10, 10, 10]})
+        # with efficiency < 1.0 the disturbance production is lowered,
+        # and all records will be split
+
+        result = rule_target.sorted_merch_target(
+            carbon_target=25,
+            disturbance_production=mock_disturbance_production,
+            inventory=mock_inventory,
+            sort_value=pd.Series([4, 3, 2, 1]),
+            efficiency=0.8)
+        self.assertTrue(list(result.disturbed_indices) == [0, 1, 2, 3])
+
+        # (0.8 * 10 + 0.8 * 10 + 0.8 * 10) == 24
+        # (10 * x) == 1
+        # x = 1/10
+
+        # carbon_target = 0.8 * 3 * 10 + 1/10 = 25
+        self.assertTrue(
+            np.allclose(result.area_proportions, [0.8, 0.8, 0.8, 1/10]))
