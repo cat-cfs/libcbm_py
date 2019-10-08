@@ -94,6 +94,6 @@ def evaluate_filter(filter_obj):
     Returns:
         np.ndarray: filter result
     """
-    if filter_obj.expression:
-        return numexpr.evaluate(filter_obj.expression, filter_obj.local_dict)
-    return None
+    if not filter_obj or not filter_obj.expression:
+        return None
+    return numexpr.evaluate(filter_obj.expression, filter_obj.local_dict)

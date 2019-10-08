@@ -36,11 +36,10 @@ def get_pool_variable_filter_mappings():
 
 def create_pool_value_filter(sit_data):
     """Create a filter against simulation pool values based on a single
-    row of SIT disturbance event, or transition rule data.
+    row of SIT disturbance events
 
     Args:
-        sit_data (dict): a row dictionary from an SIT events, or SIT
-            transition rules table
+        sit_data (dict): a row dictionary from an SIT events
 
     Returns:
         tuple:

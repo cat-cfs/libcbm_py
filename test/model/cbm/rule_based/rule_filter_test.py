@@ -7,6 +7,15 @@ from libcbm.model.cbm.rule_based import rule_filter
 
 class RuleFilterTest(unittest.TestCase):
 
+    def test_merge_filters_expected_none_result(self):
+        self.assertTrue(rule_filter.merge_filters() is None)
+
+    def test_evaluate_filter_none_result(self):
+        mock_filter = SimpleNamespace()
+        mock_filter.expression = None
+        self.assertTrue(rule_filter.evaluate_filter(mock_filter) is None)
+        self.assertTrue(rule_filter.evaluate_filter(None) is None)
+
     def test_merge_filters_error_on_intersecting_variables(self):
         """check if any 2 filters have intersecting values in local_dict
         property
@@ -28,6 +37,20 @@ class RuleFilterTest(unittest.TestCase):
         self.assertTrue(result.local_dict == {"a": 1, "b": 2, "c": 3})
 
     def test_create_filter_expected_output(self):
+        result = rule_filter.create_filter(
+            "(A < 5) | (B > 6)",
+            pd.DataFrame({
+                "A": range(1, 10),
+                "B": range(1, 10),
+                "C": range(1, 10)}),
+            columns=["A", "B"],
+            column_variable_map=None)
+
+        self.assertTrue(result.expression == "(A < 5) | (B > 6)")
+        self.assertTrue(list(result.local_dict["A"]) == list(range(1, 10)))
+        self.assertTrue(list(result.local_dict["B"]) == list(range(1, 10)))
+
+    def test_create_filter_expected_output_with_map(self):
         result = rule_filter.create_filter(
             "(A < 5) | (B > 6)",
             pd.DataFrame({

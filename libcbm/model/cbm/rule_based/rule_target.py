@@ -102,7 +102,8 @@ def sorted_area_target(area_target_value, sort_value, inventory):
             disturb a proportion.
     """
     if inventory.shape[0] != sort_value.shape[0]:
-        raise ValueError("sort_value dimension must equal number of rows in inventory")
+        raise ValueError(
+            "sort_value dimension must equal number of rows in inventory")
     return sorted_disturbance_target(
         target_var=inventory.area,
         sort_var=sort_value,
@@ -139,7 +140,8 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
                 disturb a proportion.
     """
     if inventory.shape[0] != sort_value.shape[0]:
-        raise ValueError("sort_value dimension must equal number of rows in inventory")
+        raise ValueError(
+            "sort_value dimension must equal number of rows in inventory")
     production_c = disturbance_production.Total * inventory.area * efficiency
     result = sorted_disturbance_target(
         target_var=production_c,
