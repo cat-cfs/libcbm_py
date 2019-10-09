@@ -31,7 +31,7 @@ class SITStandFilterTest(unittest.TestCase):
 
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            exp, cols = sit_stand_filter.create_state_variable_filter(
+            exp, cols = sit_stand_filter.create_state_variable_filter_expression(
                 row, sit_stand_filter.get_state_variable_age_filter_mappings())
             self.assertTrue(exp == expected_expressions[i_row])
             self.assertTrue(set(cols) == set(expected_columns[i_row]))
@@ -70,7 +70,7 @@ class SITStandFilterTest(unittest.TestCase):
 
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            exp, cols = sit_stand_filter.create_state_variable_filter(
+            exp, cols = sit_stand_filter.create_state_variable_filter_expression(
                 row, sit_stand_filter.get_state_variable_filter_mappings())
             self.assertTrue(exp == expected_expressions[i_row])
             self.assertTrue(set(cols) == set(expected_columns[i_row]))
@@ -100,12 +100,12 @@ class SITStandFilterTest(unittest.TestCase):
             expected_columns.update(set(x[1]))
 
         rows = mock_sit_events.to_dict("records")
-        expression0, columns0 = sit_stand_filter.create_pool_value_filter(
+        expression0, columns0 = sit_stand_filter.create_pool_value_filter_expression(
             rows[0])
         self.assertTrue(expression0 == expected_expression)
         self.assertTrue(set(columns0) == set(expected_columns))
 
-        expression1, columns1 = sit_stand_filter.create_pool_value_filter(
+        expression1, columns1 = sit_stand_filter.create_pool_value_filter_expression(
             rows[1])
         self.assertTrue(expression1 == "")
         self.assertTrue(set(columns1) == set())

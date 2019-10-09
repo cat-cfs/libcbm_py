@@ -34,7 +34,7 @@ def get_pool_variable_filter_mappings():
         ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<=")]
 
 
-def create_pool_value_filter(sit_data):
+def create_pool_value_filter_expression(sit_data):
     """Create a filter against simulation pool values based on a single
     row of SIT disturbance events
 
@@ -106,7 +106,7 @@ def get_state_variable_filter_mappings():
         ("LastDistTypeID", "last_disturbance_type", "==")]
 
 
-def create_state_variable_filter(sit_data, filter_mappings):
+def create_state_variable_filter_expression(sit_data, filter_mappings):
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 
@@ -165,3 +165,33 @@ def get_classifier_set(sit_data_row, classifiers):
     classifier_set = [
         sit_data_row[x] for x in classifiers]
     return classifier_set
+
+
+def create_sit_event_filter(sit_event_row, classifier_values, state_variables,
+                            pools, filter_builder, classifier_filter_builder):
+
+    classifier_names = classifier_values.columns.values.tolist()
+    classifier_set = get_classifier_set(sit_event_row, classifier_names)
+
+    pool_filter_expression, pool_filter_columns = \
+        create_pool_value_filter_expression(sit_event_row)
+
+    state_filter_expression, state_filter_columns = \
+        create_state_variable_filter_expression(
+            sit_event_row, get_state_variable_filter_mappings())
+
+    classifier_filter = classifier_filter_builder.create_classifiers_filter(
+        classifier_set, classifier_values)
+
+    merged_filter = rule_filter.merge_filters(
+        filter_builder(
+            expression=pool_filter_expression,
+            data=pools,
+            columns=pool_filter_columns),
+        filter_builder(
+            expression=state_filter_expression,
+            data=state_variables,
+            columns=state_filter_columns),
+        classifier_filter
+    )
+    return merged_filter

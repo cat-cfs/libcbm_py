@@ -351,7 +351,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
         {"name": "target", "index": index + 3, "type": np.float,
          "min_value": 0},
         {"name": "disturbance_type", "index": index + 4, "type": np.str},
-        {"name": "disturbance_year", "index": index + 5, "type": np.int,
+        {"name": "time_step", "index": index + 5, "type": np.int,
          "min_value": 1},
     ]
     if n_columns < index + 6:

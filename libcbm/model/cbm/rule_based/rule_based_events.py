@@ -2,6 +2,25 @@ import numpy as np
 from types import SimpleNamespace
 
 
+def select_rule_based_events(rule_based_events, time_step):
+    # TODO: In CBM-CFS3 events are sorted by default disturbance type id
+    # (ascending) In libcbm, sort order needs to be explicitly defined in
+    # cbm_defaults (or other place)
+    time_step_events = rule_based_events[
+        rule_based_events.time_step == time_step]
+    for _, time_step_event in time_step_events.itterows():
+        yield dict(time_step_event)
+        # yield filter_generator(
+        #     , classifier_values, state_variables, pools)
+
+
+def create_rule_based_event_filter(rule_based_event, filter_generator,
+                                   classifier_values, state_variables,
+                                   pools):
+    return filter_generator(
+        rule_based_event, classifier_values, state_variables, pools)
+
+
 def create_proportional_rule_based_event(rule_filter, proportion):
     pass
 
