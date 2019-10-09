@@ -21,7 +21,7 @@ def create_rule_based_event_filter(rule_based_event, filter_generator,
         rule_based_event, classifier_values, state_variables, pools)
 
 
-def create_proportional_rule_based_event(rule_filter, proportion):
+def create_rule_based_event_target(target_generator, proportion):
     pass
 
 

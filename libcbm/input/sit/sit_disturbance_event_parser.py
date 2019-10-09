@@ -22,7 +22,8 @@ def get_sort_types():
 
 
 def get_target_types():
-    """Gets the CBM standard import tool target type id/name pairs as a dictionary
+    """Gets the CBM standard import tool target type id/name pairs as a
+    dictionary
     """
     return {
         "A": "Area",

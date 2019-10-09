@@ -195,3 +195,4 @@ def create_sit_event_filter(sit_event_row, classifier_values, state_variables,
         classifier_filter
     )
     return merged_filter
+
