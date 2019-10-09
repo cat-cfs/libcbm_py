@@ -3,7 +3,7 @@ import numpy as np
 from libcbm.model.cbm import cbm_variables
 
 
-def sorted_disturbance_target(target_var, sort_var, target):
+def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     """Given a target variable, a sort variable, and a cumulative
     target, produce a table of index, area proportions that will
     satisfy exactly a rule based disturbance target.
@@ -11,14 +11,12 @@ def sorted_disturbance_target(target_var, sort_var, target):
     Args:
         target_var (pd.Series): a series of values fed into an
             accumulator to satisfy the cumulative target.
-        sort_var (pd.Series): a variable who's descending sort order
-            defined the order in which target_var values are fed into
+        sort_var (pd.Series): a variable whose descending sort order
+            defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
 
     Raises:
-        ValueError: unrealized target: the sum of target_var was less
-            than the cumulative target value.
         ValueError: specified target was less than 0
         ValueError: less than zero values are detected in target_var
 
@@ -35,9 +33,11 @@ def sorted_disturbance_target(target_var, sort_var, target):
         raise ValueError("target is less than zero")
     if (target_var < 0).any():
         raise ValueError("less than zero values detected in target_var")
-    if target_var.sum() <= 0 and target > 0:
-        # unrealized target
-        raise ValueError("unrealized target")
+    remaining_target = target
+    result = pd.DataFrame(
+        columns=[
+            "target_var", "sort_var", "disturbed_indices",
+            "area_proportions"])
 
     disturbed = pd.DataFrame({
         "target_var": target_var,
@@ -46,7 +46,9 @@ def sorted_disturbance_target(target_var, sort_var, target):
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
-        raise ValueError("unrealized target")
+        if target > 0:
+            on_unrealized(remaining_target)
+        return result
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
@@ -54,38 +56,39 @@ def sorted_disturbance_target(target_var, sort_var, target):
 
     fully_disturbed_records = disturbed[
         disturbed.target_var_sums <= target]
-    remaining_target = target
+
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = \
             target - fully_disturbed_records["target_var_sums"].max()
 
-    partial_disturb = disturbed[disturbed.target_var_sums > target]
-    if partial_disturb.shape[0] == 0 and remaining_target > 0:
-        # unrealized target
-        raise ValueError("unrealized target")
-
-    result = pd.DataFrame({
+    result = result.append(pd.DataFrame({
         "target_var": fully_disturbed_records["target_var"],
         "sort_var": fully_disturbed_records["sort_var"],
         "disturbed_indices": fully_disturbed_records["index"],
-        "area_proportions":  np.ones(len(fully_disturbed_records["index"]))})
+        "area_proportions":  np.ones(len(fully_disturbed_records["index"]))}))
 
-    if partial_disturb.shape[0] > 0:
+    partial_disturb = disturbed[disturbed.target_var_sums > target]
+
+    if partial_disturb.shape[0] > 0 and remaining_target > 0:
         # for merch C and area targets a final record is split to meet target
         # exactly
-        split_record = partial_disturb.iloc[[0]]
+        split_record = partial_disturb.iloc[0]
+        proportion = remaining_target / split_record["target_var"]
+        remaining_target = 0
+
         result = result.append(
             pd.DataFrame({
                 "target_var": split_record["target_var"],
                 "sort_var": split_record["sort_var"],
                 "disturbed_indices": split_record["index"],
-                "area_proportions": remaining_target / split_record.target_var
+                "area_proportions": [proportion]
             }))
-
+    if remaining_target > 0:
+        on_unrealized(remaining_target)
     return result
 
 
-def sorted_area_target(area_target_value, sort_value, inventory):
+def sorted_area_target(area_target_value, sort_value, inventory, on_unrealized):
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
 
@@ -111,11 +114,12 @@ def sorted_area_target(area_target_value, sort_value, inventory):
     return sorted_disturbance_target(
         target_var=inventory.area,
         sort_var=sort_value,
-        target=area_target_value)
+        target=area_target_value,
+        on_unrealized=on_unrealized)
 
 
 def sorted_merch_target(carbon_target, disturbance_production, inventory,
-                        sort_value, efficiency):
+                        sort_value, efficiency, on_unrealized):
     """create a sorted sequence of areas/proportions for meeting a merch C
     target exactly.
 
@@ -146,11 +150,16 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
             "sort_value dimension must equal number of rows in inventory")
+    if inventory.shape[0] != disturbance_production.shape[0]:
+        raise ValueError(
+            "number of disturbance_production rows must equal number of rows "
+            "in inventory")
     production_c = disturbance_production.Total * inventory.area * efficiency
     result = sorted_disturbance_target(
         target_var=production_c,
         sort_var=sort_value,
-        target=carbon_target)
+        target=carbon_target,
+        on_unrealized=on_unrealized)
     result.area_proportions = result.area_proportions * efficiency
     return result
 
