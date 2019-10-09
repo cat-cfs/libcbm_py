@@ -15,6 +15,9 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
             defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
+        on_unrealized (func): a function called when the specified parameter
+            will result in an unrealized disturbance. target - sum(target_var)
+            is passed as the single parameter.
 
     Raises:
         ValueError: specified target was less than 0
