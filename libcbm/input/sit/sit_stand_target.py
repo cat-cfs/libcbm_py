@@ -24,7 +24,7 @@ def is_production_based(sit_event_row):
     return False
 
 
-def get_production_sort_value(sort_type, pools, production):
+def get_production_sort_value(sort_type, production):
     if sort_type == "MERCHCSORT_TOTAL":
         return production.Total
     elif sort_type == "MERCHCSORT_SW":
@@ -52,42 +52,51 @@ def get_sort_value(sort_type, pools, state_variables):
             f"specified sort_type '{sort_type}' is not sort value")
 
 
-def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools, inventory, on_unrealized):
+def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
+                            inventory, state_variables, on_unrealized):
 
     sort = sit_event_row["sort_type"]
     target = sit_event_row["target"]
     disturbance_type_name = sit_event_row["disturbance_type"]
     disturbance_type_id = cbm_defaults_ref.get_disturbance_type_id(
         disturbance_type_name)
-    area_target_type = sit_disturbance_event_parser.get_target_types()["A"]
+    target_types = sit_disturbance_event_parser.get_target_types()
+    area_target_type = target_types["A"]
+    merchantable_target_type = target_types["M"]
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if is_production_based(sit_event_row):
         production = rule_target.compute_disturbance_production(
             cbm, pools, inventory, disturbance_type_id,
             cbm_defaults_ref.get_flux_indicators())
+    rule_target_result = None
     if target == area_target_type and sort not in non_sorted:
         if is_production_sort(sit_event_row):
-            rule_target.sorted_area_target(
+            rule_target_result = rule_target.sorted_area_target(
                 area_target_value=sit_event_row["target"],
-                sort_value=production,
+                sort_value=get_production_sort_value(sort, production),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
         else:
-            rule_target.sorted_area_target(
+            rule_target_result = rule_target.sorted_area_target(
                 area_target_value=sit_event_row["target"],
-                sort_value=production,
+                sort_value=get_sort_value(sort, pools, state_variables),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
+    elif target == merchantable_target_type:
+        if is_production_sort(sit_event_row):
+            rule_target_result = rule_target.sorted_merch_target(
+                carbon_target=sit_event_row["target"],
+                disturbance_production=production.Total,
+                inventory=inventory,
+                sort_value=get_production_sort_value(sort, production),
+                efficiency=sit_event_row["efficiency"],
+                on_unrealized=on_unrealized)
+        else:
+            rule_target_result = rule_target.sorted_merch_target(
+                carbon_target=sit_event_row["target"],
+                disturbance_production=production.Total,
+                inventory=inventory,
+                sort_value=get_sort_value(sort, pools, state_variables),
+                efficiency=sit_event_row["efficiency"],
+                on_unrealized=on_unrealized)
 
-   #if sit_event_row["sort_type"] == "PROPORTION_OF_EVERY_RECORD"
-
-   #"MERCHCSORT_TOTAL",
-   #    3: "SORT_BY_SW_AGE",
-   #    5: "SVOID ",
-   #    6: "RANDOMSORT",
-   #    7: "TOTALSTEMSNAG",
-   #    8: "SWSTEMSNAG",
-   #    9: "HWSTEMSNAG",
-   #    10: "MERCHCSORT_SW",
-   #    11: "MERCHCSORT_HW",
-   #    12: "SORT_BY_HW_AGE"}"
