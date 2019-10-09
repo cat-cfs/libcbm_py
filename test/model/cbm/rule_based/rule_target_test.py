@@ -170,7 +170,7 @@ class RuleTargetTest(unittest.TestCase):
                 carbon_target=55,
                 disturbance_production=mock_disturbance_production,
                 inventory=mock_inventory,
-                sort_value=pd.Series([4, 3, 2, 1, 15]),#extra here
+                sort_value=pd.Series([4, 3, 2, 1, 15]),  # extra here
                 efficiency=1.0,
                 on_unrealized=on_unrealized)
 

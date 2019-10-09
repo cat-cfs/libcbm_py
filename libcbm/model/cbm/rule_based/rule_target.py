@@ -15,7 +15,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
             defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
-        on_unrealized (func): a function called when the specified parameter
+        on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance. target - sum(target_var)
             is passed as the single parameter.
 
@@ -91,7 +91,8 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     return result
 
 
-def sorted_area_target(area_target_value, sort_value, inventory, on_unrealized):
+def sorted_area_target(area_target_value, sort_value, inventory,
+                       on_unrealized):
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
 
@@ -102,6 +103,10 @@ def sorted_area_target(area_target_value, sort_value, inventory, on_unrealized):
             number of rows in the specified inventory
         inventory (pd.DataFrame): the inventory being targetted for
             disturbance.
+        on_unrealized (func): a function called when the specified parameters
+            will result in an unrealized disturbance.
+            area_target_value - sum(inventory.area) is passed as the single
+            parameter.
 
     pandas.DataFrame: a data frame with columns:
 

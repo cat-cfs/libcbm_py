@@ -55,8 +55,3 @@ def apply_rule_based_event(classifiers, inventory, state_variables,
 
     return (target_index, updated_inventory, updated_classifiers,
             updated_state_variables)
-
-
-
-
-
