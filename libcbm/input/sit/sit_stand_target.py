@@ -2,6 +2,12 @@ from libcbm.model.cbm.rule_based import rule_target
 from libcbm.input.sit import sit_disturbance_event_parser
 
 
+def is_production_sort(sit_event_row):
+    production_sorts = ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]
+    if sit_event_row["sort_type"] in production_sorts:
+        # sorted by the production
+        return True
+
 def is_production_based(sit_event_row):
     """Returns true if the specified disturbance event requires computation
     of production via disturbance matrix
@@ -9,11 +15,10 @@ def is_production_based(sit_event_row):
     Args:
         sit_event_row (dict): a row dict from parsed SIT disturbance events
     """
-    production_sorts = ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]
-    if sit_event_row["sort_type"] in production_sorts:
-        # sorted by the production
+    if is_production_sort():
         return True
-    if sit_event_row["target"] == sit_disturbance_event_parser.get_target_types("M"):
+    if sit_event_row["target"] == \
+        sit_disturbance_event_parser.get_target_types()["M"]:
         # the production is the target variable
         return True
     return False
@@ -47,19 +52,33 @@ def get_sort_value(sort_type, pools, state_variables):
             f"specified sort_type '{sort_type}' is not sort value")
 
 
-def create_sit_event_target(sit_event_row, inventory):
+def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools, inventory, on_unrealized):
 
     sort = sit_event_row["sort_type"]
     target = sit_event_row["target"]
-    area_target_type = sit_disturbance_event_parser.get_target_types("A")
+    disturbance_type_name = sit_event_row["disturbance_type"]
+    disturbance_type_id = cbm_defaults_ref.get_disturbance_type_id(
+        disturbance_type_name)
+    area_target_type = sit_disturbance_event_parser.get_target_types()["A"]
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
+    if is_production_based(sit_event_row):
+        production = rule_target.compute_disturbance_production(
+            cbm, pools, inventory, disturbance_type_id,
+            cbm_defaults_ref.get_flux_indicators())
     if target == area_target_type and sort not in non_sorted:
+        if is_production_sort(sit_event_row):
+            rule_target.sorted_area_target(
+                area_target_value=sit_event_row["target"],
+                sort_value=production,
+                inventory=inventory,
+                on_unrealized=on_unrealized)
+        else:
+            rule_target.sorted_area_target(
+                area_target_value=sit_event_row["target"],
+                sort_value=production,
+                inventory=inventory,
+                on_unrealized=on_unrealized)
 
-        rule_target.sorted_area_target(
-            area_target_value = sit_event_row["target"],
-            sort_value,
-            inventory = inventory,
-            on_unrealized)
    #if sit_event_row["sort_type"] == "PROPORTION_OF_EVERY_RECORD"
 
    #"MERCHCSORT_TOTAL",
