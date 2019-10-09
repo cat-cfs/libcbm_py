@@ -35,12 +35,12 @@ def apply_rule_based_event(classifiers, inventory, state_variables,
     split_inventory = updated_inventory.iloc[split_index].copy()
     # reduce the area of the disturbed inventory by the disturbance area
     # proportion
-    updated_inventory.area = \
-        updated_inventory.area * target_area_proportions[split_index]
+    updated_inventory.area = updated_inventory.area.multiply(
+        target_area_proportions[split_index], axis=0)
 
     # set the split inventory as the remaining undisturbed area
-    split_inventory.area = \
-        split_inventory.area * (1-target_area_proportions[split_index])
+    split_inventory.area = split_inventory.area.multiply(
+        1.0 - target_area_proportions[split_index], axis=0)
 
     # create the updated inventory by appending the split records
     updated_inventory = updated_inventory.append(split_inventory)
