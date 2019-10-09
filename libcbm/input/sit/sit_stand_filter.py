@@ -150,9 +150,18 @@ def create_state_variable_filter(sit_data, filter_mappings):
     return expression, columns
 
 
-def create_classifier_filter(sit_data, classifier_values,
-                             classifier_filter_builder):
+def get_classifier_set(sit_data_row, classifiers):
+    """Get a classifier set from a row of SIT data
+        disturbance events, transition rules, yield or inventory
+
+    Args:
+        sit_data_row (dict): a row dictionary from SIT data
+        classifier_values (list): list of classifier names
+
+    Returns:
+        list: a list of strings with classifier values in the specified row
+            also known as a "classifier set"
+    """
     classifier_set = [
-        sit_data[x] for x in classifier_values.columns.values.tolist()]
-    return classifier_filter_builder.create_classifiers_filter(
-        classifier_set, classifier_values)
+        sit_data_row[x] for x in classifiers]
+    return classifier_set
