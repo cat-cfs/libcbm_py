@@ -172,8 +172,9 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
     return result
 
 
-def compute_disturbance_production(cbm, pools, inventory,
-                                   disturbance_type, flux_indicator_codes):
+def compute_disturbance_production(model_functions, compute_functions, pools,
+                                   inventory, disturbance_type,
+                                   flux_indicator_codes):
 
     # this is by convention in the cbm_defaults database
     disturbance_op_process_id = 3
@@ -184,19 +185,19 @@ def compute_disturbance_production(cbm, pools, inventory,
     n_stands = inventory.shape[0]
 
     # allocate space for computing the Carbon flows
-    disturbance_op = cbm.compute_functions.AllocateOp(n_stands)
+    disturbance_op = compute_functions.AllocateOp(n_stands)
 
     # set the disturbance type for all records
     disturbance_type = pd.DataFrame({
         "disturbance_type": np.ones(n_stands) * disturbance_type})
-    cbm.model_functions.GetDisturbanceOps(
+    model_functions.GetDisturbanceOps(
         disturbance_op, inventory, disturbance_type)
     flux = cbm_variables.initialize_flux(n_stands, flux_indicator_codes)
     # compute the flux based on the specified disturbance type
-    cbm.compute_functions.ComputeFlux(
+    compute_functions.ComputeFlux(
         [disturbance_op], [disturbance_op_process_id],
         pools.copy(), flux, enabled=None)
-    cbm.compute_functions.FreeOp(disturbance_op)
+    compute_functions.FreeOp(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
     return pd.DataFrame(data={
