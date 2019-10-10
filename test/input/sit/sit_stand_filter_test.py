@@ -100,12 +100,27 @@ class SITStandFilterTest(unittest.TestCase):
             expected_columns.update(set(x[1]))
 
         rows = mock_sit_events.to_dict("records")
-        expression0, columns0 = sit_stand_filter.create_pool_value_filter_expression(
-            rows[0])
+        expression0, columns0 = \
+            sit_stand_filter.create_pool_value_filter_expression(rows[0])
         self.assertTrue(expression0 == expected_expression)
         self.assertTrue(set(columns0) == set(expected_columns))
 
-        expression1, columns1 = sit_stand_filter.create_pool_value_filter_expression(
-            rows[1])
+        expression1, columns1 = \
+            sit_stand_filter.create_pool_value_filter_expression(rows[1])
         self.assertTrue(expression1 == "")
         self.assertTrue(set(columns1) == set())
+
+    def test_get_classifier_set_expected_result(self):
+        mock_classifiers = ["a", "b", "c"]
+        mock_classifier_sets = [
+            ["a1", "b1", "c1"],
+            ["a2", "b2", "c2"],
+            ["a3", "b3", "c3"]]
+        mock_sit_data = pd.DataFrame(
+            data=mock_classifier_sets,
+            columns=mock_classifiers)
+
+        for i_row, row in mock_sit_data.iterrows():
+            result = sit_stand_filter.get_classifier_set(
+                row, mock_classifiers)
+            self.assertTrue(result == mock_classifier_sets[i_row])

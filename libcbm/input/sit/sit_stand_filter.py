@@ -156,7 +156,7 @@ def get_classifier_set(sit_data_row, classifiers):
 
     Args:
         sit_data_row (dict): a row dictionary from SIT data
-        classifier_values (list): list of classifier names
+        classifiers (list): list of classifier names
 
     Returns:
         list: a list of strings with classifier values in the specified row
