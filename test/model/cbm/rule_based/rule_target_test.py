@@ -1,8 +1,9 @@
 import unittest
+from types import SimpleNamespace
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm.rule_based import rule_target
-
+from libcbm.model.cbm.cbm_model import CBM
 
 class RuleTargetTest(unittest.TestCase):
 
@@ -207,3 +208,32 @@ class RuleTargetTest(unittest.TestCase):
         # carbon_target = 0.8 * 3 * 10 + 1/10 = 25
         self.assertTrue(
             np.allclose(result.area_proportions, [0.8, 0.8, 0.8, 1/10]))
+
+    def test_compute_disturbance_production_expected_result(self):
+
+        pools = pd.DataFrame({
+            "a": [1, 2, 3],
+            "b": [1, 2, 3]})
+        inventory = pd.DataFrame({
+            "age": [1, 1, 1],
+            "area": [10, 20, 30]})
+        disturbance_type = 15
+        flux_indicator_codes = [
+            "DisturbanceSoftProduction", "DisturbanceHardProduction",
+            "DisturbanceDOMProduction"]
+
+        model_functions = SimpleNamespace()
+        compute_functions = SimpleNamespace()
+
+        def mock_allocate_op(n_stands):
+            self.assertTrue(n_stands == 3)
+            return 999
+        compute_functions.AllocateOp = mock_allocate_op
+        compute_functions.ComputeFlux = lambda x, y, z: None
+        compute_functions.FreeOp = lambda op_id: self.assertTrue(op_id)
+        rule_target.compute_disturbance_production(
+            model_functions, compute_functions, pools, inventory,
+            disturbance_type, flux_indicator_codes)
+        mock_cbm.model_functions.GetDisturbanceOps.assert_called_with(
+            999, inventory, disturbance_type
+        )
