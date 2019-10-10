@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_variables
+from libcbm.model.cbm import cbm_model
 
 
 def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
@@ -174,10 +175,10 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
 
 def compute_disturbance_production(model_functions, compute_functions, pools,
                                    inventory, disturbance_type,
-                                   flux_indicator_codes):
+                                   flux):
 
     # this is by convention in the cbm_defaults database
-    disturbance_op_process_id = 3
+    disturbance_op_process_id = cbm_model.get_op_processes()["disturbance"]
 
     # The number of stands is the number of rows in the inventory table.
     # The set of inventory here is assumed to be the eligible for disturbance
@@ -192,7 +193,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
         "disturbance_type": np.ones(n_stands) * disturbance_type})
     model_functions.GetDisturbanceOps(
         disturbance_op, inventory, disturbance_type)
-    flux = cbm_variables.initialize_flux(n_stands, flux_indicator_codes)
+
     # compute the flux based on the specified disturbance type
     compute_functions.ComputeFlux(
         [disturbance_op], [disturbance_op_process_id],

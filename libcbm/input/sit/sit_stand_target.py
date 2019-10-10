@@ -108,7 +108,8 @@ def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
                 f"specified sort: '{sort}', target: '{target}' combination "
                 "not valid")
     elif sort == "PROPORTION_OF_EVERY_RECORD":
-        # TODO, proportion of all eligible records fed into merch or area target accumulator
+        # TODO, proportion of all eligible records fed into merch or area
+        # target accumulator
         raise NotImplementedError()
     elif sort == "SVOID":
         # TODO indicates a spatially explicit event, so targets are ignored
