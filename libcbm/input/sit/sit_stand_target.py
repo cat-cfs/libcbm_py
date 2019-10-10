@@ -15,10 +15,10 @@ def is_production_based(sit_event_row):
     Args:
         sit_event_row (dict): a row dict from parsed SIT disturbance events
     """
-    if is_production_sort():
+    if is_production_sort(sit_event_row):
         return True
     if sit_event_row["target"] == \
-        sit_disturbance_event_parser.get_target_types()["M"]:
+       sit_disturbance_event_parser.get_target_types()["M"]:
         # the production is the target variable
         return True
     return False
@@ -63,6 +63,7 @@ def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
     target_types = sit_disturbance_event_parser.get_target_types()
     area_target_type = target_types["A"]
     merchantable_target_type = target_types["M"]
+    proportional_target_type = target_types["P"]
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if is_production_based(sit_event_row):
         production = rule_target.compute_disturbance_production(
@@ -82,7 +83,7 @@ def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
                 sort_value=get_sort_value(sort, pools, state_variables),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
-    elif target == merchantable_target_type:
+    elif target == merchantable_target_type and sort not in non_sorted:
         if is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_merch_target(
                 carbon_target=sit_event_row["target"],
@@ -99,4 +100,16 @@ def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
                 sort_value=get_sort_value(sort, pools, state_variables),
                 efficiency=sit_event_row["efficiency"],
                 on_unrealized=on_unrealized)
-
+    elif target == proportional_target_type:
+        if sort != "PROPORTION_OF_EVERY_RECORD" or sort != "SVOID":
+            raise ValueError(
+                f"specified sort: '{sort}', target: '{target}' combination "
+                "not valid")
+    elif sort == "PROPORTION_OF_EVERY_RECORD":
+        # TODO, proportion of all eligible records fed into merch or area target accumulator
+        raise NotImplementedError()
+    elif sort == "SVOID":
+        # TODO indicates a spatially explicit event, so targets are ignored
+        # (total of a single stand is disturbed)
+        raise NotImplementedError()
+    return rule_target_result
