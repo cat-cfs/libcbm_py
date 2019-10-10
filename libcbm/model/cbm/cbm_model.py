@@ -2,6 +2,41 @@ import pandas as pd
 from libcbm import data_helpers
 
 
+def get_op_names():
+    """Gets the names of the CBM dynamics operations
+
+    Returns:
+        list: the list of string names describing the dynamics ops
+    """
+    return [
+        "growth",
+        "snag_turnover",
+        "biomass_turnover",
+        "overmature_decline",
+        "dom_decay",
+        "slow_decay",
+        "slow_mixing",
+        "disturbance"]
+
+
+def get_op_processes():
+    """Gets a dictionary of operation name to process id, which is
+    used to group flux indicators
+
+    Returns:
+        dict: dictionary of key: operation name, value: process id
+    """
+    return {
+        "growth": 1,
+        "overmature_decline": 1,
+        "snag_turnover": 1,
+        "biomass_turnover": 1,
+        "dom_decay": 2,
+        "slow_decay": 2,
+        "slow_mixing": 2,
+        "disturbance": 3}
+
+
 class CBM:
     """The CBM model.
 
@@ -16,27 +51,9 @@ class CBM:
         self.compute_functions = compute_functions
         self.model_functions = model_functions
 
-        self.op_names = [
-            "growth",
-            "snag_turnover",
-            "biomass_turnover",
-            "overmature_decline",
-            "dom_decay",
-            "slow_decay",
-            "slow_mixing",
-            "disturbance"
-            ]
+        self.op_names = get_op_names()
 
-        self.op_processes = {
-            "growth": 1,
-            "overmature_decline": 1,
-            "snag_turnover": 1,
-            "biomass_turnover": 1,
-            "dom_decay": 2,
-            "slow_decay": 2,
-            "slow_mixing": 2,
-            "disturbance": 3
-        }
+        self.op_processes = get_op_processes()
 
     def spinup(self, inventory, pools, variables, parameters, debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
