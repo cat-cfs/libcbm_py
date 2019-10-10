@@ -1,5 +1,4 @@
 import numpy as np
-from types import SimpleNamespace
 
 
 def select_rule_based_events(rule_based_events, time_step):
@@ -14,35 +13,35 @@ def select_rule_based_events(rule_based_events, time_step):
         #     , classifier_values, state_variables, pools)
 
 
-def create_rule_based_event_filter(rule_based_event, filter_generator,
-                                   classifier_values, state_variables,
-                                   pools):
-    return filter_generator(
-        rule_based_event, classifier_values, state_variables, pools)
+def apply_filter(filter_factory, classifiers_filter_factory, filter_data,
+                 undisturbed, pools, state_variables, classifiers,
+                 inventory):
 
+    classifier_filter = classifiers_filter_factory(
+        filter_data.classifier_set, classifiers)
 
-def create_rule_based_event_target(target_generator, proportion):
-    pass
-
-
-def create_sorted_rule_based_event(rule_filter, target):
-    rule_based_event = SimpleNamespace()
-
-    return rule_based_event
-
-
-def apply_rule_based_event(classifiers, inventory, state_variables,
-                           undisturbed, rule_based_event,
-                           evaluate_filter_func, target_func):
-
-    # returns a boolean numpy array where true indicates the stand is eligible
-    # for disturbance
-    filtered = evaluate_filter_func(rule_based_event.rule_filter)
+    merged_filter = filter_factory.merge_filters(
+        filter_factory.create_filter(
+            expression=filter_data.pool_filter_expression,
+            data=pools,
+            columns=filter_data.pool_filter_columns),
+        filter_factory.create_filter(
+            expression=filter_data.state_filter_expression,
+            data=state_variables,
+            columns=filter_data.state_filter_columns),
+        classifier_filter)
+    filtered = filter_factory.evaluate_filter(merged_filter)
 
     # remove those stands affected by a previous disturbance from eligibility
     filtered = np.logical_and(undisturbed, filtered)
 
-    target = target_func(inventory)
+    return pools[filtered], state_variables[filtered], inventory[filtered]
+
+
+def apply_rule_based_event(pools, classifiers, inventory, state_variables,
+                           target_func):
+
+    target = target_func(pools, inventory, state_variables)
     target_index = target["disturbed_indices"]
     target_area_proportions = target["area_proportions"]
 

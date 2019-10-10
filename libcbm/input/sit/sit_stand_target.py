@@ -53,9 +53,20 @@ def _get_sort_value(sort_type, pools, state_variables):
             f"specified sort_type '{sort_type}' is not sort value")
 
 
-def create_sit_event_target(rule_target, sit_event_row, cbm, cbm_defaults_ref,
-                            pools, inventory, flux, state_variables,
-                            on_unrealized):
+def create_sit_event_target_factory(rule_target, sit_event_row, cbm, flux,
+                                    cbm_defaults_ref, on_unrealized):
+
+    def factory(pools, inventory, state_variables):
+
+        return create_sit_event_target(rule_target, sit_event_row, cbm, flux,
+                                       cbm_defaults_ref, pools, inventory,
+                                       state_variables, on_unrealized)
+    return factory
+
+
+def create_sit_event_target(rule_target, sit_event_row, cbm, flux,
+                            cbm_defaults_ref, pools, inventory,
+                            state_variables, on_unrealized):
 
     sort = sit_event_row["sort_type"]
     target = sit_event_row["target"]
