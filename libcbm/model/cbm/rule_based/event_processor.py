@@ -1,18 +1,6 @@
 import numpy as np
 
 
-def select_rule_based_events(rule_based_events, time_step):
-    # TODO: In CBM-CFS3 events are sorted by default disturbance type id
-    # (ascending) In libcbm, sort order needs to be explicitly defined in
-    # cbm_defaults (or other place)
-    time_step_events = rule_based_events[
-        rule_based_events.time_step == time_step]
-    for _, time_step_event in time_step_events.itterows():
-        yield dict(time_step_event)
-        # yield filter_generator(
-        #     , classifier_values, state_variables, pools)
-
-
 def process_event(filter_factory, classifiers_filter_factory, filter_data,
                   undisturbed, target_func, pools, state_variables,
                   classifiers, inventory):
@@ -31,6 +19,7 @@ def process_event(filter_factory, classifiers_filter_factory, filter_data,
 
     return apply_rule_based_event(
         target, classifiers, inventory, pools, state_variables)
+
 
 def apply_filter(filter_factory, classifiers_filter_factory, filter_data,
                  undisturbed, pools, state_variables, classifiers):

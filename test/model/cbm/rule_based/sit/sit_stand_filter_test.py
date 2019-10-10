@@ -1,6 +1,6 @@
 import unittest
 import pandas as pd
-from libcbm.input.sit import sit_stand_filter
+from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 
 
 class SITStandFilterTest(unittest.TestCase):
