@@ -3,10 +3,12 @@ from libcbm.input.sit import sit_disturbance_event_parser
 
 
 def is_production_sort(sit_event_row):
-    production_sorts = ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]
+    production_sorts = [
+        "MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]
     if sit_event_row["sort_type"] in production_sorts:
         # sorted by the production
         return True
+
 
 def is_production_based(sit_event_row):
     """Returns true if the specified disturbance event requires computation
@@ -67,8 +69,8 @@ def create_sit_event_target(sit_event_row, cbm, cbm_defaults_ref, pools,
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if is_production_based(sit_event_row):
         production = rule_target.compute_disturbance_production(
-            cbm, pools, inventory, disturbance_type_id,
-            cbm_defaults_ref.get_flux_indicators())
+            cbm.model_functions, cbm.compute_functions, pools, inventory,
+            disturbance_type_id, cbm_defaults_ref.get_flux_indicators())
     rule_target_result = None
     if target == area_target_type and sort not in non_sorted:
         if is_production_sort(sit_event_row):
