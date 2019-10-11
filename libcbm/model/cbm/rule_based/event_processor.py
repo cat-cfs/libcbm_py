@@ -53,7 +53,7 @@ def apply_rule_based_target(target_func, pools, inventory, state_variables):
 def apply_rule_based_event(target, classifiers, inventory, pools,
                            state_variables):
 
-    target_index = target["disturbed_indices"]
+    target_index = target["disturbed_index"]
     target_area_proportions = target["area_proportions"]
 
     updated_inventory = inventory.copy()

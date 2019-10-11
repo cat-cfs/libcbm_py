@@ -48,6 +48,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     disturbed = pd.DataFrame({
         "target_var": target_var,
         "sort_var": sort_var})
+    disturbed = disturbed[eligible]
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
@@ -61,7 +62,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     disturbed = disturbed.reset_index()
 
     fully_disturbed_records = disturbed[
-        (disturbed.target_var_sums <= target) & eligible]
+        disturbed.target_var_sums <= target]
 
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = \
