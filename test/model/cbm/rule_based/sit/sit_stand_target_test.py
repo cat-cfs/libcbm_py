@@ -27,6 +27,32 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools):
 
 class SITStandTargetTest(unittest.TestCase):
 
+    def test_create_sit_event_target_proportion_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_total_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_sw_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_hw_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_svoid_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_random_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_total_stem_snag_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_sw_stem_snag_sort_area_target(self):
+        pass
+
+    def test_create_sit_event_target_hw_stem_snag_sort_area_target(self):
+        pass
 
     def test_create_sit_event_target_swage_sort_area_target(self):
         """confirm state_variable.age is used as a sort value
@@ -64,5 +90,35 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-    def test_create_sit_event_target_hwage_sort_area_target(self):
+    def test_create_sit_event_target_proportion_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_total_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_sw_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_merch_hw_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_svoid_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_random_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_total_stem_snag_merch_area_target(self):
+        pass
+
+    def test_create_sit_event_target_sw_stem_snag_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_hw_stem_snag_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_proportion_sort_proportion_target(self):
+        pass
+
+    def test_create_sit_event_target_proportion_sort_svoid_target(self):
         pass
