@@ -141,6 +141,36 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(
             np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
 
+    def test_sorted_merch_target_expected_result_unrealized(self):
+        def on_unrealized(amount):
+            self.assertTrue(amount == 5)
+        mock_inventory = pd.DataFrame({
+            "age": [0, 20, 10, 30],
+            "area": [2.0, 2.0, 2.0, 2.0]
+        })
+        mock_disturbance_production = pd.DataFrame(
+            {"Total": [10, 10, 10, 10]})  # tonnes C/ha
+        # since C targets are accumulated on mass values
+        # the total production values here are actually
+        # 20,20,20,20 tonnes using the above area multipliers
+
+        # since the last index is not eligible maning the total production
+        # available is 60 tonnes, and the target is 65, on_unrealized should
+        # be called with 5
+        result = rule_target.sorted_merch_target(
+            carbon_target=65,
+            disturbance_production=mock_disturbance_production,
+            inventory=mock_inventory,
+            sort_value=pd.Series([4, 3, 2, 1]),
+            efficiency=1.0,
+            eligible=pd.Series([True, True, True, False]),  # note ineligible
+            on_unrealized=on_unrealized)
+        self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
+        self.assertTrue(list(result.target_var) == [20, 20, 20])
+        self.assertTrue(list(result.sort_var) == [4, 3, 2])
+        self.assertTrue(
+            np.allclose(result.area_proportions, [1.0, 1.0, 1.0]))
+
     def test_sorted_merch_target_error_on_dimension_mismatch1(self):
         def on_unrealized(_):
             self.fail()
@@ -162,7 +192,6 @@ class RuleTargetTest(unittest.TestCase):
                 efficiency=1.0,
                 eligible=pd.Series([True, True, True, True]),
                 on_unrealized=on_unrealized)
-
 
     def test_sorted_merch_target_error_on_dimension_mismatch2(self):
         def on_unrealized(_):
@@ -258,7 +287,7 @@ class RuleTargetTest(unittest.TestCase):
                 cbm_model.get_op_processes()["disturbance"]])
             self.assertTrue(ops == [999])
             self.assertTrue(pools.equals(mock_pools))
-            self.assertTrue(enabled.equals(mock_eligible))
+            self.assertTrue(list(enabled) == list(mock_eligible))
             flux[:] = 1
         compute_functions.ComputeFlux = mock_compute_flux
 
