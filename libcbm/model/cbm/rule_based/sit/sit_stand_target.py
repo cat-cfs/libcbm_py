@@ -53,53 +53,52 @@ def _get_sort_value(sort_type, pools, state_variables):
             f"specified sort_type '{sort_type}' is not sort value")
 
 
-def create_sit_event_target_factory(rule_target, sit_event_row, cbm, flux,
-                                    cbm_defaults_ref, on_unrealized):
+def create_sit_event_target_factory(rule_target, sit_event_row,
+                                    disturbance_production_func,
+                                    on_unrealized):
 
     def factory(pools, inventory, state_variables):
-
-        return create_sit_event_target(rule_target, sit_event_row, cbm, flux,
-                                       cbm_defaults_ref, pools, inventory,
-                                       state_variables, on_unrealized)
+        return create_sit_event_target(
+            rule_target, sit_event_row, pools, inventory, state_variables,
+            disturbance_production_func, on_unrealized)
     return factory
 
 
-def create_sit_event_target(rule_target, sit_event_row, cbm, flux,
-                            cbm_defaults_ref, pools, inventory,
-                            state_variables, on_unrealized):
+def create_sit_event_target(rule_target, sit_event_row,
+                            pools, inventory, state_variables,
+                            disturbance_production_func,
+                            on_unrealized):
 
     sort = sit_event_row["sort_type"]
+    target_type = sit_event_row["target_type"]
     target = sit_event_row["target"]
     disturbance_type_name = sit_event_row["disturbance_type"]
-    disturbance_type_id = cbm_defaults_ref.get_disturbance_type_id(
-        disturbance_type_name)
     target_types = sit_disturbance_event_parser.get_target_types()
     area_target_type = target_types["A"]
     merchantable_target_type = target_types["M"]
     proportional_target_type = target_types["P"]
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if _is_production_based(sit_event_row):
-        production = rule_target.compute_disturbance_production(
-            cbm.model_functions, cbm.compute_functions, pools, inventory,
-            disturbance_type_id, flux)
+        production = disturbance_production_func(
+            pools, inventory, disturbance_type_name)
     rule_target_result = None
-    if target == area_target_type and sort not in non_sorted:
+    if target_type == area_target_type and sort not in non_sorted:
         if _is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_area_target(
-                area_target_value=sit_event_row["target"],
+                area_target_value=target,
                 sort_value=_get_production_sort_value(sort, production),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
         else:
             rule_target_result = rule_target.sorted_area_target(
-                area_target_value=sit_event_row["target"],
+                area_target_value=target,
                 sort_value=_get_sort_value(sort, pools, state_variables),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
     elif target == merchantable_target_type and sort not in non_sorted:
         if _is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_merch_target(
-                carbon_target=sit_event_row["target"],
+                carbon_target=target,
                 disturbance_production=production.Total,
                 inventory=inventory,
                 sort_value=_get_production_sort_value(sort, production),
@@ -107,7 +106,7 @@ def create_sit_event_target(rule_target, sit_event_row, cbm, flux,
                 on_unrealized=on_unrealized)
         else:
             rule_target_result = rule_target.sorted_merch_target(
-                carbon_target=sit_event_row["target"],
+                carbon_target=target,
                 disturbance_production=production.Total,
                 inventory=inventory,
                 sort_value=_get_sort_value(sort, pools, state_variables),
