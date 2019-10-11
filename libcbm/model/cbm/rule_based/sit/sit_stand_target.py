@@ -39,7 +39,7 @@ def _get_production_sort_value(sort_type, production):
             f"specified sort_type '{sort_type}' is not a production sort")
 
 
-def _get_sort_value(sort_type, pools, state_variables):
+def _get_sort_value(sort_type, pools, state_variables, random_generator):
     if sort_type == "SORT_BY_SW_AGE" or sort_type == "SORT_BY_HW_AGE":
         return state_variables.age
     elif sort_type == "TOTALSTEMSNAG":
@@ -48,6 +48,8 @@ def _get_sort_value(sort_type, pools, state_variables):
         return pools.SoftwoodStemSnag
     elif sort_type == "HWSTEMSNAG":
         return pools.HardwoodStemSnag
+    elif sort_type == "RANDOMSORT":
+        return random_generator(pools.shape[0])
     else:
         raise ValueError(
             f"specified sort_type '{sort_type}' is not sort value")
@@ -55,19 +57,19 @@ def _get_sort_value(sort_type, pools, state_variables):
 
 def create_sit_event_target_factory(rule_target, sit_event_row,
                                     disturbance_production_func,
-                                    on_unrealized):
+                                    random_generator, on_unrealized):
 
     def factory(pools, inventory, state_variables):
         return create_sit_event_target(
             rule_target, sit_event_row, pools, inventory, state_variables,
-            disturbance_production_func, on_unrealized)
+            disturbance_production_func, random_generator, on_unrealized)
     return factory
 
 
 def create_sit_event_target(rule_target, sit_event_row,
                             pools, inventory, state_variables,
                             disturbance_production_func,
-                            on_unrealized):
+                            random_generator, on_unrealized):
 
     sort = sit_event_row["sort_type"]
     target_type = sit_event_row["target_type"]
@@ -92,7 +94,8 @@ def create_sit_event_target(rule_target, sit_event_row,
         else:
             rule_target_result = rule_target.sorted_area_target(
                 area_target_value=target,
-                sort_value=_get_sort_value(sort, pools, state_variables),
+                sort_value=_get_sort_value(
+                    sort, pools, state_variables, random_generator),
                 inventory=inventory,
                 on_unrealized=on_unrealized)
     elif target == merchantable_target_type and sort not in non_sorted:
@@ -109,7 +112,8 @@ def create_sit_event_target(rule_target, sit_event_row,
                 carbon_target=target,
                 disturbance_production=production.Total,
                 inventory=inventory,
-                sort_value=_get_sort_value(sort, pools, state_variables),
+                sort_value=_get_sort_value(
+                    sort, pools, state_variables, random_generator),
                 efficiency=sit_event_row["efficiency"],
                 on_unrealized=on_unrealized)
     elif target == proportional_target_type:

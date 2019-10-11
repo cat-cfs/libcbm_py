@@ -5,7 +5,8 @@ from mock import Mock
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 from libcbm.model.cbm.rule_based import rule_target
 
-def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools):
+def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
+                      mock_random_generator):
     mock_rule_target = Mock(spec=rule_target)
 
     mock_disturbance_production_func = Mock()
@@ -16,7 +17,9 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools):
         rule_target=mock_rule_target,
         sit_event_row=mock_sit_event_row,
         disturbance_production_func=mock_disturbance_production_func,
-        on_unrealized=mock_unrealized)
+        on_unrealized=mock_unrealized,
+        random_generator=mock_random_generator
+        )
 
     create_target(
         pools=mock_pools,
@@ -64,7 +67,8 @@ class SITStandTargetTest(unittest.TestCase):
                 "target": 100,
                 "disturbance_type": "fire"},
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
-            mock_pools="pools"
+            mock_pools="pools",
+            mock_random_generator=None
         ).sorted_area_target.assert_called_once_with(
             area_target_value=100,
             sort_value=[10, 2, 30],
@@ -82,7 +86,8 @@ class SITStandTargetTest(unittest.TestCase):
                 "target": 100,
                 "disturbance_type": "fire"},
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
-            mock_pools="pools"
+            mock_pools="pools",
+            mock_random_generator=None
         ).sorted_area_target.assert_called_once_with(
             area_target_value=100,
             sort_value=[10, 2, 30],
