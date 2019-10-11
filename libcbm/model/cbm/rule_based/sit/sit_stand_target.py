@@ -56,19 +56,20 @@ def _get_sort_value(sort_type, pools, state_variables, random_generator):
 
 
 def create_sit_event_target_factory(rule_target, sit_event_row,
-                                    disturbance_production_func,
+                                    disturbance_production_func, eligible,
                                     random_generator, on_unrealized):
 
     def factory(pools, inventory, state_variables):
         return create_sit_event_target(
             rule_target, sit_event_row, pools, inventory, state_variables,
-            disturbance_production_func, random_generator, on_unrealized)
+            disturbance_production_func, eligible, random_generator,
+            on_unrealized)
     return factory
 
 
 def create_sit_event_target(rule_target, sit_event_row,
                             pools, inventory, state_variables,
-                            disturbance_production_func,
+                            disturbance_production_func, eligible,
                             random_generator, on_unrealized):
 
     sort = sit_event_row["sort_type"]
@@ -90,6 +91,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 area_target_value=target,
                 sort_value=_get_production_sort_value(sort, production),
                 inventory=inventory,
+                eligible=eligible,
                 on_unrealized=on_unrealized)
         else:
             rule_target_result = rule_target.sorted_area_target(
@@ -97,8 +99,9 @@ def create_sit_event_target(rule_target, sit_event_row,
                 sort_value=_get_sort_value(
                     sort, pools, state_variables, random_generator),
                 inventory=inventory,
+                eligible=eligible,
                 on_unrealized=on_unrealized)
-    elif target == merchantable_target_type and sort not in non_sorted:
+    elif target_type == merchantable_target_type and sort not in non_sorted:
         if _is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_merch_target(
                 carbon_target=target,
@@ -106,6 +109,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 inventory=inventory,
                 sort_value=_get_production_sort_value(sort, production),
                 efficiency=sit_event_row["efficiency"],
+                eligible=eligible,
                 on_unrealized=on_unrealized)
         else:
             rule_target_result = rule_target.sorted_merch_target(
@@ -115,6 +119,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 sort_value=_get_sort_value(
                     sort, pools, state_variables, random_generator),
                 efficiency=sit_event_row["efficiency"],
+                eligible=eligible,
                 on_unrealized=on_unrealized)
     elif target == proportional_target_type:
         if sort != "PROPORTION_OF_EVERY_RECORD" or sort != "SVOID":
@@ -122,9 +127,20 @@ def create_sit_event_target(rule_target, sit_event_row,
                 f"specified sort: '{sort}', target: '{target}' combination "
                 "not valid")
     elif sort == "PROPORTION_OF_EVERY_RECORD":
-        # TODO, proportion of all eligible records fed into merch or area
-        # target accumulator
-        raise NotImplementedError()
+        if target_type == area_target_type:
+            rule_target_result = rule_target.proportion_area_target(
+                area_target_value=target,
+                inventory=inventory,
+                eligible=eligible,
+                on_unrealized=on_unrealized)
+        elif target_type == merchantable_target_type:
+            rule_target_result = rule_target.proportion_merch_target(
+                carbon_target=target,
+                disturbance_production=production.Total,
+                inventory=inventory,
+                efficiency=sit_event_row["efficiency"],
+                eligible=eligible,
+                on_unrealized=on_unrealized)
     elif sort == "SVOID":
         # TODO indicates a spatially explicit event, so targets are ignored
         # (total of a single stand is disturbed)
