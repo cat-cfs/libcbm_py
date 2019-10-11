@@ -16,7 +16,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
             defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
-        eligible (pandas.Series) boolean array indicating
+        eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance. target - sum(target_var)
@@ -95,6 +95,26 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     return result
 
 
+def proportion_area_target(area_target_value, inventory, eligible,
+                           on_unrealized):
+    """create a disturbance target which disturbs that proportion of all
+    eligible records that such that the sum of all eligible record
+    areas multiplied by the proportion equals the area target exactly.
+
+    Args:
+        area_target_value (float): the target area to disturb
+        inventory (pd.DataFrame): the inventory being targetted for
+            disturbance.
+        eligible (pandas.Series): boolean array indicating
+            whether or not each index is eligible for this disturbance target
+        on_unrealized (func): a function called when the specified parameters
+            will result in an unrealized disturbance.
+            area_target_value - sum(inventory.area[eligible]) is passed as the single
+            parameter.
+    """
+    raise NotImplementedError()
+
+
 def sorted_area_target(area_target_value, sort_value, inventory, eligible,
                        on_unrealized):
     """create a sorted sequence of areas/proportions for meeting an area
@@ -107,11 +127,11 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible,
             number of rows in the specified inventory
         inventory (pd.DataFrame): the inventory being targetted for
             disturbance.
-        eligible (pandas.Series) boolean array indicating
+        eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance.
-            area_target_value - sum(inventory.area) is passed as the single
+            area_target_value - sum(inventory.area[eligible]) is passed as the single
             parameter.
 
     pandas.DataFrame: a data frame with columns:
@@ -133,6 +153,11 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible,
         on_unrealized=on_unrealized)
 
 
+def proportion_merch_target(carbon_target, disturbance_production, inventory,
+                            efficiency, eligible, on_unrealized):
+    raise NotImplementedError()
+
+
 def sorted_merch_target(carbon_target, disturbance_production, inventory,
                         sort_value, efficiency, eligible, on_unrealized):
     """create a sorted sequence of areas/proportions for meeting a merch C
@@ -152,7 +177,7 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
             the number of rows in the specified inventory
         efficiency (float): reduce the disturbance production and split all
             records
-        eligible (pandas.Series) boolean array indicating
+        eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance.
