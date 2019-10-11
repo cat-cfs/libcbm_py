@@ -13,6 +13,7 @@ class RuleTargetTest(unittest.TestCase):
                 target_var=pd.Series([10, 1000, 0]),
                 sort_var=pd.Series([1, 2, 3]),
                 target=-10,
+                eligible=pd.Series([True, True, True]),
                 on_unrealized=lambda x: None)
 
     def test_sorted_disturbance_target_error_on_lt_zero_target_var(self):
@@ -21,6 +22,7 @@ class RuleTargetTest(unittest.TestCase):
                 target_var=pd.Series([-1, 1000, 0]),
                 sort_var=pd.Series([1, 2, 3]),
                 target=10,
+                eligible=pd.Series([True, True, True]),
                 on_unrealized=lambda x: None)
 
     def test_sorted_disturbance_target_unrealized_on_zero_target_var_sum(self):
@@ -30,6 +32,7 @@ class RuleTargetTest(unittest.TestCase):
             target_var=pd.Series([0, 0, 0]),
             sort_var=pd.Series([1, 2, 3]),
             target=10,
+            eligible=pd.Series([True, True, True]),
             on_unrealized=lambda x: on_unrealized)
 
     def test_sorted_disturbance_target_on_unrealized_target(self):
@@ -39,8 +42,9 @@ class RuleTargetTest(unittest.TestCase):
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=100,
+            eligible=pd.Series([True, True, True]),
             on_unrealized=on_unrealized)
-        self.assertTrue(list(result.disturbed_indices) == [2, 1, 0])
+        self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
         self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
         self.assertTrue(list(result.target_var) == [33, 33, 33])
         self.assertTrue(list(result.sort_var) == [3, 2, 1])
@@ -52,9 +56,10 @@ class RuleTargetTest(unittest.TestCase):
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=99,
+            eligible=pd.Series([True, True, True]),
             on_unrealized=on_unrealized)
         # cbm sorts descending for disturbance targets (oldest first, etc.)
-        self.assertTrue(list(result.disturbed_indices) == [2, 1, 0])
+        self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
         self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
         self.assertTrue(list(result.target_var) == [33, 33, 33])
         self.assertTrue(list(result.sort_var) == [3, 2, 1])
@@ -66,9 +71,10 @@ class RuleTargetTest(unittest.TestCase):
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=34,
+            eligible=pd.Series([True, True, True]),
             on_unrealized=on_unrealized)
         # cbm sorts descending for disturbance targets (oldest first, etc.)
-        self.assertTrue(list(result.disturbed_indices) == [2, 1])
+        self.assertTrue(list(result.disturbed_index) == [2, 1])
         self.assertTrue(list(result.area_proportions) == [1.0, 1/33])
         self.assertTrue(list(result.target_var) == [33, 33])
         self.assertTrue(list(result.sort_var) == [3, 2])
@@ -84,8 +90,9 @@ class RuleTargetTest(unittest.TestCase):
             area_target_value=5.1,
             sort_value=mock_inventory.age,
             inventory=mock_inventory,
+            eligible=pd.Series([True, True, True, True]),
             on_unrealized=on_unrealized)
-        self.assertTrue(list(result.disturbed_indices) == [3, 1, 2])
+        self.assertTrue(list(result.disturbed_index) == [3, 1, 2])
         self.assertTrue(list(result.target_var) == [3.0, 2.0, 2.0])
         self.assertTrue(list(result.sort_var) == [30, 20, 10])
         self.assertTrue(
@@ -104,6 +111,7 @@ class RuleTargetTest(unittest.TestCase):
                 area_target_value=5.1,
                 sort_value=pd.Series([1, 2, 3]),
                 inventory=mock_inventory,
+                eligible=pd.Series([True, True, True, True]),
                 on_unrealized=on_unrealized)
 
     def test_sorted_merch_target_expected_result(self):
@@ -125,8 +133,9 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0,
+            eligible=pd.Series([True, True, True, True]),
             on_unrealized=on_unrealized)
-        self.assertTrue(list(result.disturbed_indices) == [0, 1, 2])
+        self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
         self.assertTrue(list(result.target_var) == [20, 20, 20])
         self.assertTrue(list(result.sort_var) == [4, 3, 2])
         self.assertTrue(
@@ -151,6 +160,7 @@ class RuleTargetTest(unittest.TestCase):
                 inventory=mock_inventory,
                 sort_value=pd.Series([4, 3, 2, 1]),
                 efficiency=1.0,
+                eligible=pd.Series([True, True, True, True]),
                 on_unrealized=on_unrealized)
 
 
@@ -173,6 +183,7 @@ class RuleTargetTest(unittest.TestCase):
                 inventory=mock_inventory,
                 sort_value=pd.Series([4, 3, 2, 1, 15]),  # extra here
                 efficiency=1.0,
+                eligible=pd.Series([True, True, True, True]),
                 on_unrealized=on_unrealized)
 
     def test_sorted_merch_target_expected_result_with_efficiency(self):
@@ -193,8 +204,9 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=0.8,
+            eligible=pd.Series([True, True, True, True]),
             on_unrealized=on_unrealized)
-        self.assertTrue(list(result.disturbed_indices) == [0, 1, 2, 3])
+        self.assertTrue(list(result.disturbed_index) == [0, 1, 2, 3])
 
         # efficiency*production causes this
         self.assertTrue(list(result.target_var) == [8, 16, 8, 8])
@@ -223,6 +235,7 @@ class RuleTargetTest(unittest.TestCase):
         mock_flux = pd.DataFrame(
             data=[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
             columns=flux_indicator_codes)
+        mock_eligible = pd.Series([True, True, True])
         mock_disturbance_type = 15
 
         model_functions = SimpleNamespace()
@@ -245,7 +258,7 @@ class RuleTargetTest(unittest.TestCase):
                 cbm_model.get_op_processes()["disturbance"]])
             self.assertTrue(ops == [999])
             self.assertTrue(pools.equals(mock_pools))
-            self.assertTrue(enabled is None)
+            self.assertTrue(enabled.equals(mock_eligible))
             flux[:] = 1
         compute_functions.ComputeFlux = mock_compute_flux
 
@@ -254,7 +267,7 @@ class RuleTargetTest(unittest.TestCase):
         compute_functions.FreeOp = mock_free_op
         result = rule_target.compute_disturbance_production(
             model_functions, compute_functions, mock_pools, mock_inventory,
-            mock_disturbance_type, mock_flux)
+            mock_disturbance_type, mock_flux, mock_eligible)
         for flux_code in flux_indicator_codes:
-            self.assertTrue(list(result[flux_code])==[1,1,1])
-        self.assertTrue(list(result["Total"])==[3,3,3])
+            self.assertTrue(list(result[flux_code]) == [1, 1, 1])
+        self.assertTrue(list(result["Total"]) == [3, 3, 3])

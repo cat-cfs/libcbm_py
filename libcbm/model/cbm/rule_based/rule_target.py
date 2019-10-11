@@ -1,10 +1,10 @@
 import pandas as pd
 import numpy as np
-from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_model
 
 
-def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
+def sorted_disturbance_target(target_var, sort_var, target, eligible,
+                              on_unrealized):
     """Given a target variable, a sort variable, and a cumulative
     target, produce a table of index, area proportions that will
     satisfy exactly a rule based disturbance target.
@@ -16,6 +16,8 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
             defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
+        eligible (pandas.Series) boolean array indicating
+            whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance. target - sum(target_var)
             is passed as the single parameter.
@@ -27,7 +29,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     Returns:
         pandas.DataFrame: a data frame with columns:
 
-            - disturbed_indices: the zero based indices of the records that
+            - disturbed_index: the zero based indices of the records that
                 should be disturbed
             - area_proportion: the proportion of each disturbed index to
                 disturb, 1 indicates the entire record, and < 1 indicates to
@@ -40,7 +42,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     remaining_target = target
     result = pd.DataFrame(
         columns=[
-            "target_var", "sort_var", "disturbed_indices",
+            "target_var", "sort_var", "disturbed_index",
             "area_proportions"])
 
     disturbed = pd.DataFrame({
@@ -59,7 +61,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     disturbed = disturbed.reset_index()
 
     fully_disturbed_records = disturbed[
-        disturbed.target_var_sums <= target]
+        (disturbed.target_var_sums <= target) & eligible]
 
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = \
@@ -68,7 +70,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     result = result.append(pd.DataFrame({
         "target_var": fully_disturbed_records["target_var"],
         "sort_var": fully_disturbed_records["sort_var"],
-        "disturbed_indices": fully_disturbed_records["index"],
+        "disturbed_index": fully_disturbed_records["index"],
         "area_proportions":  np.ones(len(fully_disturbed_records["index"]))}))
 
     partial_disturb = disturbed[disturbed.target_var_sums > target]
@@ -84,7 +86,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
             pd.DataFrame({
                 "target_var": split_record["target_var"],
                 "sort_var": split_record["sort_var"],
-                "disturbed_indices": split_record["index"],
+                "disturbed_index": split_record["index"],
                 "area_proportions": [proportion]
             }))
     if remaining_target > 0:
@@ -92,7 +94,7 @@ def sorted_disturbance_target(target_var, sort_var, target, on_unrealized):
     return result
 
 
-def sorted_area_target(area_target_value, sort_value, inventory,
+def sorted_area_target(area_target_value, sort_value, inventory, eligible,
                        on_unrealized):
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
@@ -104,6 +106,8 @@ def sorted_area_target(area_target_value, sort_value, inventory,
             number of rows in the specified inventory
         inventory (pd.DataFrame): the inventory being targetted for
             disturbance.
+        eligible (pandas.Series) boolean array indicating
+            whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance.
             area_target_value - sum(inventory.area) is passed as the single
@@ -111,7 +115,7 @@ def sorted_area_target(area_target_value, sort_value, inventory,
 
     pandas.DataFrame: a data frame with columns:
 
-        - disturbed_indices: the zero based indices of the records that
+        - disturbed_index: the zero based indices of the records that
             should be disturbed in order to meet the area target exactly
         - area_proportion: the proportion of each disturbed index to
             disturb, 1 indicates the entire record, and < 1 indicates to
@@ -124,11 +128,12 @@ def sorted_area_target(area_target_value, sort_value, inventory,
         target_var=inventory.area,
         sort_var=sort_value,
         target=area_target_value,
+        eligible=eligible,
         on_unrealized=on_unrealized)
 
 
 def sorted_merch_target(carbon_target, disturbance_production, inventory,
-                        sort_value, efficiency, on_unrealized):
+                        sort_value, efficiency, eligible, on_unrealized):
     """create a sorted sequence of areas/proportions for meeting a merch C
     target exactly.
 
@@ -146,11 +151,17 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
             the number of rows in the specified inventory
         efficiency (float): reduce the disturbance production and split all
             records
+        eligible (pandas.Series) boolean array indicating
+            whether or not each index is eligible for this disturbance target
+        on_unrealized (func): a function called when the specified parameters
+            will result in an unrealized disturbance.
+            carbon_target - sum(eligible production) is passed as the single
+            parameter.
 
     Returns:
         pandas.DataFrame: a data frame with columns:
 
-            - disturbed_indices: the zero based indices of the records that
+            - disturbed_index: the zero based indices of the records that
                 should be disturbed in order to meet the carbon target exactly
             - area_proportion: the proportion of each disturbed index to
                 disturb, 1 indicates the entire record, and < 1 indicates to
@@ -168,6 +179,7 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
         target_var=production_c,
         sort_var=sort_value,
         target=carbon_target,
+        eligible=eligible,
         on_unrealized=on_unrealized)
     result.area_proportions = result.area_proportions * efficiency
     return result
@@ -175,7 +187,7 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
 
 def compute_disturbance_production(model_functions, compute_functions, pools,
                                    inventory, disturbance_type,
-                                   flux):
+                                   flux, eligible):
 
     # this is by convention in the cbm_defaults database
     disturbance_op_process_id = cbm_model.get_op_processes()["disturbance"]
@@ -197,7 +209,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
     # compute the flux based on the specified disturbance type
     compute_functions.ComputeFlux(
         [disturbance_op], [disturbance_op_process_id],
-        pools.copy(), flux, enabled=None)
+        pools.copy(), flux, enabled=eligible)
     compute_functions.FreeOp(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
