@@ -12,11 +12,12 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
     mock_disturbance_production_func = Mock()
     mock_unrealized = "on_unrealized"
     mock_inventory = "inventory"
-
+    mock_eligible = "eligible"
     create_target = sit_stand_target.create_sit_event_target_factory(
         rule_target=mock_rule_target,
         sit_event_row=mock_sit_event_row,
         disturbance_production_func=mock_disturbance_production_func,
+        eligible=mock_eligible,
         on_unrealized=mock_unrealized,
         random_generator=mock_random_generator
         )
@@ -73,6 +74,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
+            eligible="eligible",
             on_unrealized="on_unrealized"
         )
 
@@ -92,6 +94,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
+            eligible="eligible",
             on_unrealized="on_unrealized"
         )
 
