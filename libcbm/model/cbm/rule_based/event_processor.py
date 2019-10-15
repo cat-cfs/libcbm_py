@@ -13,9 +13,8 @@ def process_event(filter_factory, classifiers_filter_factory, filter_data,
     filtered_state_variables = state_variables[filter_result]
     filtered_pools = pools[filter_result]
 
-    target = apply_rule_based_target(
-        target_func, filtered_pools, filtered_inventory,
-        filtered_state_variables)
+    target = target_func(
+        filtered_pools, filtered_inventory, filtered_state_variables)
 
     return apply_rule_based_event(
         target, classifiers, inventory, pools, state_variables)
@@ -46,10 +45,6 @@ def apply_filter(filter_factory, classifiers_filter_factory, filter_data,
     return filter_result
 
 
-def apply_rule_based_target(target_func, pools, inventory, state_variables):
-    return target_func(pools, inventory, state_variables)
-
-
 def apply_rule_based_event(target, classifiers, inventory, pools,
                            state_variables):
 
@@ -63,26 +58,27 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
 
     split_index = target_index[target_area_proportions < 1.0]
     split_inventory = updated_inventory.iloc[split_index].copy()
-    # reduce the area of the disturbed inventory by the disturbance area
-    # proportion
-    updated_inventory.area = updated_inventory.area.multiply(
-        target_area_proportions[split_index], axis=0)
+    if len(split_inventory.index) > 0:
+        # reduce the area of the disturbed inventory by the disturbance area
+        # proportion
+        updated_inventory.area = updated_inventory[split_index].area.multiply(
+            target_area_proportions[split_index], axis=0)
 
-    # set the split inventory as the remaining undisturbed area
-    split_inventory.area = split_inventory.area.multiply(
-        1.0 - target_area_proportions[split_index], axis=0)
+        # set the split inventory as the remaining undisturbed area
+        split_inventory.area = split_inventory[split_index].area.multiply(
+            1.0 - target_area_proportions[split_index], axis=0)
 
-    # create the updated inventory by appending the split records
-    updated_inventory = updated_inventory.append(split_inventory)
+        # create the updated inventory by appending the split records
+        updated_inventory = updated_inventory.append(split_inventory)
 
-    # since classifiers, pools, and state variables are not altered here (this
-    # is done in the model) splitting is just a matter of adding a copy of the
-    # split values
-    updated_classifiers = updated_classifiers.append(
-        updated_classifiers.iloc[split_index].copy())
-    updated_state_variables = updated_state_variables.append(
-        updated_state_variables[split_index].copy())
-    updated_pools = updated_pools.append(
-        updated_pools[split_index].copy())
+        # Since classifiers, pools, and state variables are not altered here
+        # (this is done in the model) splitting is just a matter of adding a
+        # copy of the split values.
+        updated_classifiers = updated_classifiers.append(
+            updated_classifiers.iloc[split_index].copy())
+        updated_state_variables = updated_state_variables.append(
+            updated_state_variables[split_index].copy())
+        updated_pools = updated_pools.append(
+            updated_pools[split_index].copy())
     return (target_index, updated_inventory, updated_classifiers,
             updated_state_variables)
