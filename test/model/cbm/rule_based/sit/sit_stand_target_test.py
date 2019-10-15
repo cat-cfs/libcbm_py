@@ -472,7 +472,7 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-    def test_create_sit_event_target_total_stem_snag_merch_sort_merch_target(self):
+    def test_create_sit_event_target_total_stem_snag_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
