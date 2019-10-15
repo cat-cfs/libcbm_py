@@ -472,7 +472,7 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-    def test_create_sit_event_target_total_stem_snag_merch_area_target(self):
+    def test_create_sit_event_target_total_stem_snag_merch_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
@@ -513,13 +513,92 @@ class SITStandTargetTest(unittest.TestCase):
         )
 
     def test_create_sit_event_target_sw_stem_snag_sort_merch_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
+            return mock_production
+
+        mock_pools = SimpleNamespace(
+            SoftwoodStemSnag=[1, 2, 3])
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SWSTEMSNAG",
+                "target_type": "Merchantable",
+                "target": 47,
+                "disturbance_type": "harvest",
+                "efficiency": 1.1},
+            mock_state_variables="mock_state_vars",
+            mock_pools=mock_pools,
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=47,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=mock_pools.SoftwoodStemSnag,
+            efficiency=1.1,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_hw_stem_snag_sort_merch_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
+            return mock_production
+
+        mock_pools = SimpleNamespace(
+            HardwoodStemSnag=[1, 2, 3])
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "HWSTEMSNAG",
+                "target_type": "Merchantable",
+                "target": 97,
+                "disturbance_type": "harvest",
+                "efficiency": 2.1},
+            mock_state_variables="mock_state_vars",
+            mock_pools=mock_pools,
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=97,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=mock_pools.HardwoodStemSnag,
+            efficiency=2.1,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_proportion_sort_proportion_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SORT_BY_HW_AGE",
+                "target_type": "Area",
+                "target": 100,
+                "disturbance_type": "fire"},
+            mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
+            mock_pools="pools",
+            mock_random_generator=None
+        ).sorted_area_target.assert_called_once_with(
+            area_target_value=100,
+            sort_value=[10, 2, 30],
+            inventory="inventory",
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_proportion_sort_svoid_target(self):
         pass
@@ -529,4 +608,3 @@ class SITStandTargetTest(unittest.TestCase):
 
     def test_create_sit_event_target_svoid_sort_area_target(self):
         pass
-
