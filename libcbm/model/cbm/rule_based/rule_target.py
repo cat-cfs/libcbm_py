@@ -3,6 +3,42 @@ import numpy as np
 from libcbm.model.cbm import cbm_model
 
 
+def spatially_indexed_target(identifier, inventory):
+    """return a target for a single inventory record identified by the
+    specified identifier
+
+    Args:
+        identifier (int): the integer identifier matching a single row in
+            inventory.spatial_reference
+        inventory (pandas.DataFrame): inventory records
+
+    Raises:
+        ValueError: the specified identifier was not present in the specified
+            inventory spatial_reference column
+        ValueError: the specified identifier appears 2 or more times in the
+            specified inventory spatial_reference column
+
+    Returns:
+        [type]: [description]
+    """
+    match = inventory[inventory.spatial_reference == identifier]
+    match_index = match.index
+    if len(match_index) < 1:
+        raise ValueError(
+            "no matching value in inventory spatial_reference column for "
+            f"identifier {identifier}")
+    if len(match_index) > 1:
+        raise ValueError(
+            "multiple matching values in inventory spatial_reference column "
+            f"for identifier {identifier}")
+    result = pd.DataFrame({
+        "target_var": [match.area],
+        "sort_var": [0.0],
+        "disturbed_index": [match_index[0]],
+        "area_proportions":  [1.0]})
+    return result
+
+
 def sorted_disturbance_target(target_var, sort_var, target, eligible,
                               on_unrealized):
     """Given a target variable, a sort variable, and a cumulative
@@ -109,8 +145,8 @@ def proportion_area_target(area_target_value, inventory, eligible,
             whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance.
-            area_target_value - sum(inventory.area[eligible]) is passed as the single
-            parameter.
+            area_target_value - sum(inventory.area[eligible]) is passed as the
+            single parameter.
     """
     raise NotImplementedError()
 
@@ -131,16 +167,13 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible,
             whether or not each index is eligible for this disturbance target
         on_unrealized (func): a function called when the specified parameters
             will result in an unrealized disturbance.
-            area_target_value - sum(inventory.area[eligible]) is passed as the single
-            parameter.
+            area_target_value - sum(inventory.area[eligible]) is passed as the
+            single parameter.
 
-    pandas.DataFrame: a data frame with columns:
+    pandas.DataFrame: a data frame specifying the sorted disturbance event
+        area target. Has the same format as the return value of
+        :py:func:`sorted_disturbance_target`
 
-        - disturbed_index: the zero based indices of the records that
-            should be disturbed in order to meet the area target exactly
-        - area_proportion: the proportion of each disturbed index to
-            disturb, 1 indicates the entire record, and < 1 indicates to
-            disturb a proportion.
     """
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
@@ -185,13 +218,9 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
             parameter.
 
     Returns:
-        pandas.DataFrame: a data frame with columns:
-
-            - disturbed_index: the zero based indices of the records that
-                should be disturbed in order to meet the carbon target exactly
-            - area_proportion: the proportion of each disturbed index to
-                disturb, 1 indicates the entire record, and < 1 indicates to
-                disturb a proportion.
+        pandas.DataFrame: a data frame specifying the sorted disturbance event
+            merchantable C target. Has the same format as the return value of
+            :py:func:`sorted_disturbance_target`
     """
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
@@ -214,7 +243,35 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
 def compute_disturbance_production(model_functions, compute_functions, pools,
                                    inventory, disturbance_type,
                                    flux, eligible):
+    """Computes a series of disturbance production values based on
 
+    Args:
+        model_functions (object): Model specific functions. Used for computing
+            disturbance flows based on the specified disturbance type.
+        compute_functions (object): Functions for computing pool flows.
+        pools (pandas.DataFrame): The current pool values.
+        inventory (pandas.DataFrame): The inventory DataFrame.
+        disturbance_type (int): The integer code specifying the disturbance type.
+        flux (pandas.DataFrame): Storage for flux computation
+        eligible (pandas.Series): Bit values where True specifies the index is
+            eligible for the disturbance, and false the opposite. In the
+            returned result False indices will be set with 0's.
+
+    Returns:
+        pandas.DataFrame: dataframe describing the C production associated
+            with applying the specified disturbance type on the specified
+            pools.  All columns are expressed as area density values
+            in units tonnes C/ha.
+
+            Fields:
+
+                - DisturbanceSoftProduction: the softwood C production
+                - DisturbanceSoftProduction: the hardwood C production
+                - DisturbanceDOMProduction: the dead organic matter C
+                    production
+                - Total: the row sums of the above three values
+
+    """
     # this is by convention in the cbm_defaults database
     disturbance_op_process_id = cbm_model.get_op_processes()["disturbance"]
 
