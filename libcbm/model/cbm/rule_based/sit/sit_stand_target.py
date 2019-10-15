@@ -18,7 +18,7 @@ def _is_production_based(sit_event_row):
     """
     if _is_production_sort(sit_event_row):
         return True
-    if sit_event_row["target"] == \
+    if sit_event_row["target_type"] == \
        sit_disturbance_event_parser.get_target_types()["M"]:
         # the production is the target variable
         return True
