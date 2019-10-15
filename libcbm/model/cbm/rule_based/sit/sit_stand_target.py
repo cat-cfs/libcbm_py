@@ -16,6 +16,9 @@ def _is_production_based(sit_event_row):
     Args:
         sit_event_row (dict): a row dict from parsed SIT disturbance events
     """
+    if sit_event_row["sort_type"] == "SVOID":
+        # spatially explicit cannot be a merch production target
+        return False
     if _is_production_sort(sit_event_row):
         return True
     if sit_event_row["target_type"] == \
@@ -142,7 +145,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 eligible=eligible,
                 on_unrealized=on_unrealized)
     elif sort == "SVOID":
-        # TODO indicates a spatially explicit event, so targets are ignored
-        # (total of a single stand is disturbed)
-        raise NotImplementedError()
+        rule_target_result = rule_target.spatially_indexed_target(
+            identifier=sit_event_row["spatial_reference"],
+            inventory=inventory)
     return rule_target_result
