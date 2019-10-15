@@ -600,11 +600,50 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-    def test_create_sit_event_target_proportion_sort_svoid_target(self):
-        pass
+    def test_create_sit_event_target_svoid_sort_proportion_target(self):
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SVOID",
+                "target_type": "Proportion",
+                "target": 100,
+                "disturbance_type": "fire",
+                "spatial_reference": 1000},
+            mock_state_variables="inventory",
+            mock_pools="pools",
+            mock_random_generator=None
+        ).spatially_indexed_target.assert_called_once_with(
+            identifier=1000,
+            inventory="inventory"
+        )
 
     def test_create_sit_event_target_svoid_sort_merch_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SVOID",
+                "target_type": "Merchantable",
+                "target": 10,
+                "disturbance_type": "fire",
+                "spatial_reference": 4000},
+            mock_state_variables="inventory",
+            mock_pools="pools",
+            mock_random_generator=None
+        ).spatially_indexed_target.assert_called_once_with(
+            identifier=4000,
+            inventory="inventory"
+        )
 
     def test_create_sit_event_target_svoid_sort_area_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SVOID",
+                "target_type": "Area",
+                "target": 130,
+                "disturbance_type": "fire",
+                "spatial_reference": 1050},
+            mock_state_variables="inventory",
+            mock_pools="pools",
+            mock_random_generator=None
+        ).spatially_indexed_target.assert_called_once_with(
+            identifier=1050,
+            inventory="inventory"
+        )
