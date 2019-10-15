@@ -56,10 +56,10 @@ class SITStandTargetTest(unittest.TestCase):
     def test_create_sit_event_target_merch_total_sort_area_target(self):
 
         mock_production = SimpleNamespace(
-                Total=[3, 3, 3, 3],
-                DisturbanceSoftProduction=[1, 1, 1, 1],
-                DisturbanceHardProduction=[1, 1, 1, 1],
-                DisturbanceDOMProduction=[1, 1, 1, 1])
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
                                              disturbance_type_name):
@@ -88,10 +88,10 @@ class SITStandTargetTest(unittest.TestCase):
 
     def test_create_sit_event_target_merch_sw_sort_area_target(self):
         mock_production = SimpleNamespace(
-                Total=[3, 3, 3, 3],
-                DisturbanceSoftProduction=[1, 1, 1, 1],
-                DisturbanceHardProduction=[1, 1, 1, 1],
-                DisturbanceDOMProduction=[1, 1, 1, 1])
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
                                              disturbance_type_name):
@@ -125,10 +125,10 @@ class SITStandTargetTest(unittest.TestCase):
 
     def test_create_sit_event_target_merch_hw_sort_area_target(self):
         mock_production = SimpleNamespace(
-                Total=[3, 3, 3, 3],
-                DisturbanceSoftProduction=[1, 1, 1, 1],
-                DisturbanceHardProduction=[1, 1, 1, 1],
-                DisturbanceDOMProduction=[1, 1, 1, 1])
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
                                              disturbance_type_name):
@@ -159,9 +159,6 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
             on_unrealized="on_unrealized"
         )
-
-    def test_create_sit_event_target_svoid_sort_area_target(self):
-        pass
 
     def test_create_sit_event_target_random_sort_area_target(self):
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
@@ -354,7 +351,6 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-
     def test_create_sit_event_target_merch_sw_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
@@ -394,7 +390,6 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
             on_unrealized="on_unrealized"
         )
-
 
     def test_create_sit_event_target_merch_hw_sort_merch_target(self):
         mock_production = SimpleNamespace(
@@ -436,15 +431,86 @@ class SITStandTargetTest(unittest.TestCase):
             on_unrealized="on_unrealized"
         )
 
-
-    def test_create_sit_event_target_svoid_sort_merch_target(self):
-        pass
-
     def test_create_sit_event_target_random_sort_merch_target(self):
-        pass
+
+        mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
+
+        def mock_random_gen(n_values):
+            return [1] * n_values
+
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(list(pools.a) == [12, 3, 4, 5])
+            return mock_production
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "RANDOMSORT",
+                "target_type": "Merchantable",
+                "target": 31,
+                "disturbance_type": "harvest",
+                "efficiency": 0.99},
+            mock_state_variables="mock_state_vars",
+            mock_pools=mock_pools,
+            mock_random_generator=mock_random_gen,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=31,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=mock_random_gen(mock_pools.shape[0]),
+            efficiency=0.99,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_total_stem_snag_merch_area_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
+            self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
+            return mock_production
+
+        mock_pools = SimpleNamespace(
+            SoftwoodStemSnag=[1, 2, 3],
+            HardwoodStemSnag=[1, 2, 3])
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "TOTALSTEMSNAG",
+                "target_type": "Merchantable",
+                "target": 37,
+                "disturbance_type": "harvest",
+                "efficiency": 1.0},
+            mock_state_variables="mock_state_vars",
+            mock_pools=mock_pools,
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=37,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            # simply confirm the '+' operator is used on the correct pools
+            sort_value=(
+                mock_pools.SoftwoodStemSnag +
+                mock_pools.HardwoodStemSnag),
+            efficiency=1.0,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_sw_stem_snag_sort_merch_target(self):
         pass
@@ -457,3 +523,10 @@ class SITStandTargetTest(unittest.TestCase):
 
     def test_create_sit_event_target_proportion_sort_svoid_target(self):
         pass
+
+    def test_create_sit_event_target_svoid_sort_merch_target(self):
+        pass
+
+    def test_create_sit_event_target_svoid_sort_area_target(self):
+        pass
+
