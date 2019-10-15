@@ -287,10 +287,10 @@ class SITStandTargetTest(unittest.TestCase):
 
     def test_create_sit_event_target_proportion_sort_merch_target(self):
         mock_production = SimpleNamespace(
-                Total=[3, 3, 3, 3],
-                DisturbanceSoftProduction=[1, 1, 1, 1],
-                DisturbanceHardProduction=[1, 1, 1, 1],
-                DisturbanceDOMProduction=[1, 1, 1, 1])
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
                                              disturbance_type_name):
@@ -320,13 +320,122 @@ class SITStandTargetTest(unittest.TestCase):
         )
 
     def test_create_sit_event_target_merch_total_sort_merch_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools == "pools")
+            return mock_production
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "MERCHCSORT_TOTAL",
+                "target_type": "Merchantable",
+                "target": 4,
+                "disturbance_type": "harvest",
+                "efficiency": 100},
+            mock_state_variables="mock_state_vars",
+            mock_pools="pools",
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=4,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=mock_production.Total,
+            efficiency=100,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
+
 
     def test_create_sit_event_target_merch_sw_sort_merch_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools == "pools")
+            return mock_production
+
+        # tests that the + operator is used for the correct production fields
+        expected_sort_value = \
+            mock_production.DisturbanceSoftProduction + \
+            mock_production.DisturbanceDOMProduction
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "MERCHCSORT_SW",
+                "target_type": "Merchantable",
+                "target": 23,
+                "disturbance_type": "harvest",
+                "efficiency": 0.1},
+            mock_state_variables="mock_state_vars",
+            mock_pools="pools",
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=23,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=expected_sort_value,
+            efficiency=0.1,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
+
 
     def test_create_sit_event_target_merch_hw_sort_merch_target(self):
-        pass
+        mock_production = SimpleNamespace(
+            Total=[3, 3, 3, 3],
+            DisturbanceSoftProduction=[1, 1, 1, 1],
+            DisturbanceHardProduction=[1, 1, 1, 1],
+            DisturbanceDOMProduction=[1, 1, 1, 1])
+
+        def mock_disturbance_production_func(pools, inventory,
+                                             disturbance_type_name):
+            self.assertTrue(disturbance_type_name == "harvest")
+            self.assertTrue(inventory == "inventory")
+            self.assertTrue(pools == "pools")
+            return mock_production
+
+        # tests that the + operator is used for the correct production fields
+        expected_sort_value = \
+            mock_production.DisturbanceHardProduction + \
+            mock_production.DisturbanceDOMProduction
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "MERCHCSORT_HW",
+                "target_type": "Merchantable",
+                "target": 31,
+                "disturbance_type": "harvest",
+                "efficiency": 0.99},
+            mock_state_variables="mock_state_vars",
+            mock_pools="pools",
+            mock_random_generator=None,
+            mock_disturbance_production_func=mock_disturbance_production_func
+        ).sorted_merch_target.assert_called_once_with(
+            carbon_target=31,
+            disturbance_production=mock_production.Total,
+            inventory="inventory",
+            sort_value=expected_sort_value,
+            efficiency=0.99,
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
+
 
     def test_create_sit_event_target_svoid_sort_merch_target(self):
         pass
