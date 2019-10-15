@@ -29,7 +29,11 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
 
     return mock_rule_target
 
+
 class SITStandTargetTest(unittest.TestCase):
+    """Tests for functions that compute CBM rule based disturbance event
+    targets based on SIT disturbance event input.
+    """
 
     def test_create_sit_event_target_proportion_sort_area_target(self):
         pass
@@ -47,16 +51,86 @@ class SITStandTargetTest(unittest.TestCase):
         pass
 
     def test_create_sit_event_target_random_sort_area_target(self):
-        pass
+        mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
+
+        def mock_random_gen(n_values):
+            return [1] * n_values
+
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "RANDOMSORT",
+                "target_type": "Area",
+                "target": 11,
+                "disturbance_type": "fire"},
+            mock_state_variables="mock_state_vars",
+            mock_pools=mock_pools,
+            mock_random_generator=mock_random_gen
+        ).sorted_area_target.assert_called_once_with(
+            area_target_value=11,
+            sort_value=mock_random_gen(mock_pools.shape[0]),
+            inventory="inventory",
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_total_stem_snag_sort_area_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "TOTALSTEMSNAG",
+                "target_type": "Area",
+                "target": 50,
+                "disturbance_type": "fire"},
+            mock_state_variables="mock_state_vars",
+            mock_pools=SimpleNamespace(
+                SoftwoodStemSnag=[1, 2, 3, 4],
+                HardwoodStemSnag=[5, 6, 7, 8]),
+            mock_random_generator=None
+        ).sorted_area_target.assert_called_once_with(
+            area_target_value=50,
+            # since it's difficult for mock to test with
+            # pd.DataSeries (simple equality won't work)
+            # just check that the + operater was used.
+            sort_value=[1, 2, 3, 4] + [5, 6, 7, 8],
+            inventory="inventory",
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_sw_stem_snag_sort_area_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "SWSTEMSNAG",
+                "target_type": "Area",
+                "target": 1,
+                "disturbance_type": "fire"},
+            mock_state_variables="mock_state_vars",
+            mock_pools=SimpleNamespace(SoftwoodStemSnag=[1, 2, 3, 4]),
+            mock_random_generator=None
+        ).sorted_area_target.assert_called_once_with(
+            area_target_value=1,
+            sort_value=[1, 2, 3, 4],
+            inventory="inventory",
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_hw_stem_snag_sort_area_target(self):
-        pass
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "HWSTEMSNAG",
+                "target_type": "Area",
+                "target": 1,
+                "disturbance_type": "fire"},
+            mock_state_variables="mock_state_vars",
+            mock_pools=SimpleNamespace(HardwoodStemSnag=[1, 2, 3, 4]),
+            mock_random_generator=None
+        ).sorted_area_target.assert_called_once_with(
+            area_target_value=1,
+            sort_value=[1, 2, 3, 4],
+            inventory="inventory",
+            eligible="eligible",
+            on_unrealized="on_unrealized"
+        )
 
     def test_create_sit_event_target_swage_sort_area_target(self):
         """confirm state_variable.age is used as a sort value
