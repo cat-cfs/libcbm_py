@@ -122,5 +122,5 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
             updated_state_variables[split_index].copy())
         updated_pools = updated_pools.append(
             updated_pools[split_index].copy())
-    return (target_index, updated_inventory, updated_classifiers,
+    return (updated_classifiers, updated_inventory, pools,
             updated_state_variables)

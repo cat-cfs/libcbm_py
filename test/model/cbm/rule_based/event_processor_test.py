@@ -70,7 +70,7 @@ class EventProcessorTest(unittest.TestCase):
             [1, 1]
         ], columns=["age", "area"])
 
-        index, inventory, classifiers, state_variables = \
+        classifiers, inventory, pools, state_variables = \
             event_processor.process_event(
                 filter_factory=mock_filter_factory,
                 classifiers_filter_factory=classifiers_filter_factory,
@@ -81,11 +81,12 @@ class EventProcessorTest(unittest.TestCase):
                 state_variables=mock_state_variables,
                 classifiers=mock_classifiers,
                 inventory=mock_inventory)
-        self.assertTrue(list(index) == [1, 2])
+
         # no splits occurred here, so the inputs are returned
         self.assertTrue(inventory.equals(mock_inventory))
         self.assertTrue(classifiers.equals(mock_classifiers))
         self.assertTrue(state_variables.equals(mock_state_variables))
+        self.assertTrue(pools.equals(mock_pools))
 
     def test_apply_filter_expected_result(self):
 
@@ -132,9 +133,6 @@ class EventProcessorTest(unittest.TestCase):
             lambda merged_filter: mock_evaluate_filter_return
 
         mock_classifiers_filter_factory = Mock()
-
-        def classifier_filter_factory(classifier_set, classifiers):
-            return "mock_classifier_filter"
         mock_classifiers_filter_factory.side_effect = \
             lambda classifier_set, classifiers: "mock_classifier_filter"
 
@@ -158,5 +156,53 @@ class EventProcessorTest(unittest.TestCase):
             list(result) == list(
                 np.logical_and(mock_undisturbed, mock_evaluate_filter_return)))
 
-    def test_apply_rule_based_event_expected_result(self):
-        pass
+    def test_apply_rule_based_event_expected_result_with_no_split(self):
+
+        classifiers, inventory, pools, state_variables = \
+            event_processor.apply_rule_based_event(
+                target=pd.DataFrame({
+                    "disturbed_index": pd.Series([1, 2]),
+                    "area_proportions": pd.Series([1.0, 1.0])}),
+                classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
+                inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
+                pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
+                state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
+
+        self.assertTrue(
+            classifiers.equals(pd.DataFrame({"classifier1": [1, 2, 3, 4]})))
+        self.assertTrue(
+            inventory.equals(pd.DataFrame({"area": [1, 2, 3, 4]})))
+        self.assertTrue(
+            pools.equals(pd.DataFrame({"p1": [1, 2, 3, 4]})))
+        self.assertTrue(
+            state_variables.equals(pd.DataFrame({"s1": [1, 2, 3, 4]})))
+
+    def test_apply_rule_based_event_expected_result_with_split(self):
+
+        classifiers, inventory, pools, state_variables = \
+            event_processor.apply_rule_based_event(
+                target=pd.DataFrame({
+                    "disturbed_index": pd.Series([0, 1, 2]),
+                    "area_proportions": pd.Series([1.0, 0.85, 0.9])}),
+                classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
+                inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
+                pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
+                state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
+
+        self.assertTrue(
+            classifiers.equals(pd.DataFrame(
+                {"classifier1": [1, 2, 3, 4, 2, 3]})))
+        self.assertTrue(
+            inventory.equals(
+                pd.DataFrame({"area": [
+                    1,
+                    2 * 0.85,  # index=1 is split at 0.85
+                    3 * 0.9,   # index=2 is split at 0.9
+                    4,
+                    2 * 0.15,  # the remainder of index=1
+                    3 * 0.1    # the remainder of index=2
+                    ]})))
+        self.assertTrue(
+            pools.equals(pd.DataFrame({"p1": [1, 2, 3, 4, 2, 3]})))
+        self.assertTrue(
+            state_variables.equals(pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})))
