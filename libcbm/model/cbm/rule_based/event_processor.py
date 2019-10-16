@@ -63,13 +63,15 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
         state_variables (pandas.DataFrame): CBM simulation state variables
 
     Returns:
-        tuple: tuple of copies of the 4 input variables with splits applied if
-            necessary:
+        tuple: tuple of target information and copies of the 4 input variables
+            with splits applied if necessary:
 
-            1. classifiers (pandas.DataFrame): CBM classifier values
-            2. inventory (pandas.DataFrame): CBM inventory
-            3. pools (pandas.DataFrame): CBM simulation pools
-            4. state_variables (pandas.DataFrame): CBM simulation state
+            1. target (dict): a dictionary describing the computed disturbacne
+                target
+            2. classifiers (pandas.DataFrame): CBM classifier values
+            3. inventory (pandas.DataFrame): CBM inventory
+            4. pools (pandas.DataFrame): CBM simulation pools
+            5. state_variables (pandas.DataFrame): CBM simulation state
                variables
 
     """
@@ -112,5 +114,5 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
         updated_pools = updated_pools.append(
             updated_pools.iloc[split_index].copy()
             ).reset_index(drop=True)
-    return (updated_classifiers, updated_inventory, updated_pools,
+    return (target, updated_classifiers, updated_inventory, updated_pools,
             updated_state_variables)
