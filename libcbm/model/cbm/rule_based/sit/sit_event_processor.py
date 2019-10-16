@@ -53,24 +53,13 @@ class SITEventProcessor():
 
     def process_event(self, eligible, sit_event, classifiers, inventory, pools,
                       state_variables, on_unrealized):
-        pool_filter, pool_filter_cols = \
-            sit_stand_filter.create_pool_value_filter_expression(
-                sit_event)
-        state_filter, state_filter_cols = \
-            sit_stand_filter.create_state_variable_filter_expression(
-                sit_event,
-                sit_stand_filter.get_state_variable_age_filter_mappings())
-        classifier_filter = \
-            self.classifier_filter_builder.create_classifiers_filter(
-                sit_stand_filter.get_classifier_set(
-                    sit_event, classifiers.columns.tolist()),
-                classifiers)
+
         compute_disturbance_production = get_compute_disturbance_production(
             model_functions=self.model_functions,
             compute_functions=self.compute_functions,
             eligible=eligible,
             flux_codes=self.cbm_defaults_ref.get_flux_indicators(),
-            disturbance_types=self.cbm_defaults_ref.get_disturbance_type_id(
+            disturbance_type=self.cbm_defaults_ref.get_disturbance_type_id(
                 sit_event["disturbance_type"])
         )
         target_factory = sit_stand_target.create_sit_event_target_factory(
@@ -81,12 +70,33 @@ class SITEventProcessor():
             random_generator=self.random_generator,
             on_unrealized=on_unrealized)
 
-        rule_filter.create_filter(
-            pool_filter, pools, pool_filter_cols)
-        rule_filter.create_filter(
-            state_filter, state_variables, state_filter_cols)
-        event_processor.process_event(
-            filter_factory=rule_filter,
-            classifiers_filter_factory=self.classifier_filter_builder,
-            filter_data=
-            )
+        pool_filter_expression, pool_filter_cols = \
+            sit_stand_filter.create_pool_value_filter_expression(
+                sit_event)
+        state_filter_expression, state_filter_cols = \
+            sit_stand_filter.create_state_variable_filter_expression(
+                sit_event,
+                sit_stand_filter.get_state_variable_age_filter_mappings())
+
+        event_filter = rule_filter.merge_filters(
+            rule_filter.create_filter(
+                pool_filter_expression, pools, pool_filter_cols),
+            rule_filter.create_filter(
+                expression=state_filter_expression,
+                data=state_variables,
+                columns=state_filter_cols),
+            self.classifier_filter_builder.create_classifiers_filter(
+                sit_stand_filter.get_classifier_set(
+                    sit_event, classifiers.columns.tolist()),
+                classifiers))
+
+        _classifiers, _inventory, _pools, _state_variables = \
+            event_processor.process_event(
+                filter_evaluator=rule_filter.evaluate_filter,
+                event_filter=event_filter,
+                undisturbed=eligible,
+                target_func=target_factory,
+                classifiers=classifiers,
+                inventory=inventory,
+                pools=pools,
+                state_variables=state_variables)
