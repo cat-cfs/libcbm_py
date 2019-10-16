@@ -12,36 +12,6 @@ class EventProcessorTest(unittest.TestCase):
         """A test of the overall flow and a few of the internal calls
         of the process_event function.
         """
-        mock_filter_factory = Mock()
-
-        mock_filter_factory.merge_filters = Mock()
-
-        mock_filter_factory.create_filter = Mock()
-
-        mock_filter_factory.evaluate_filter = Mock()
-        mock_filter_factory.evaluate_filter.side_effect = \
-            lambda _: [False, True, True, False]
-
-        classifiers_filter_factory = Mock()
-
-        mock_filter_data = SimpleNamespace(
-            classifier_set="mock_classifier_set",
-            pool_filter_expression="mock_pool_filter",
-            pool_filter_columns="mock_pool_filter_columns",
-            state_filter_expression="mock_tate_filter",
-            state_filter_columns="mock_tate_filter_columns",
-        )
-
-        mock_undisturbed = [True, True, True, True]
-
-        mock_target_func = Mock()
-        mock_target_func.side_effect = lambda a, b, c: {
-            # mocks a disturbance target that fully disturbs inventory records
-            # at index 1, 2
-            "disturbed_index": pd.Series([1, 2]),
-            "area_proportions": pd.Series([1.0, 1.0])
-        }
-
         mock_pools = pd.DataFrame([
             [1, 1, 1, 1],
             [1, 1, 1, 1],
@@ -70,17 +40,46 @@ class EventProcessorTest(unittest.TestCase):
             [1, 1]
         ], columns=["age", "area"])
 
+        mock_evaluate_filter_return = [False, True, True, False]
+        mock_evaluate_filter = Mock()
+        mock_evaluate_filter.side_effect = \
+            lambda _: mock_evaluate_filter_return
+
+        mock_event_filter = "mock_event_filter"
+
+        mock_undisturbed = [True, True, True, True]
+
+        mock_target_func = Mock()
+
+        def target_func(pool, inventory, state):
+            event_filter = np.logical_and(
+                mock_evaluate_filter_return, mock_undisturbed)
+
+            self.assertTrue(pool.equals(mock_pools[event_filter]))
+            self.assertTrue(inventory.equals(mock_inventory[event_filter]))
+            self.assertTrue(state.equals(mock_state_variables[event_filter]))
+            # mocks a disturbance target that fully disturbs inventory records
+            # at index 1, 2
+            return {
+                "disturbed_index": pd.Series([1, 2]),
+                "area_proportions": pd.Series([1.0, 1.0])
+            }
+
+        mock_target_func.side_effect = target_func
+
         classifiers, inventory, pools, state_variables = \
             event_processor.process_event(
-                filter_factory=mock_filter_factory,
-                classifiers_filter_factory=classifiers_filter_factory,
-                filter_data=mock_filter_data,
+                filter_evaluator=mock_evaluate_filter,
+                event_filter=mock_event_filter,
                 undisturbed=mock_undisturbed,
                 target_func=mock_target_func,
                 classifiers=mock_classifiers,
                 inventory=mock_inventory,
                 pools=mock_pools,
                 state_variables=mock_state_variables)
+
+        mock_evaluate_filter.assert_called_once_with("mock_event_filter")
+        mock_target_func.assert_called_once()
 
         # no splits occurred here, so the inputs are returned
         self.assertTrue(classifiers.equals(mock_classifiers))
