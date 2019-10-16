@@ -67,7 +67,7 @@ class EventProcessorTest(unittest.TestCase):
 
         mock_target_func.side_effect = target_func
 
-        classifiers, inventory, pools, state_variables = \
+        target, classifiers, inventory, pools, state_variables = \
             event_processor.process_event(
                 filter_evaluator=mock_evaluate_filter,
                 event_filter=mock_event_filter,
@@ -81,6 +81,8 @@ class EventProcessorTest(unittest.TestCase):
         mock_evaluate_filter.assert_called_once_with("mock_event_filter")
         mock_target_func.assert_called_once()
 
+        self.assertTrue(target["disturbed_index"].equals(pd.Series([1, 2])))
+        self.assertTrue(target["area_proportions"].equals(pd.Series([1.0, 1.0])))
         # no splits occurred here, so the inputs are returned
         self.assertTrue(classifiers.equals(mock_classifiers))
         self.assertTrue(inventory.equals(mock_inventory))
@@ -89,7 +91,7 @@ class EventProcessorTest(unittest.TestCase):
 
     def test_apply_rule_based_event_expected_result_with_no_split(self):
 
-        classifiers, inventory, pools, state_variables = \
+        target, classifiers, inventory, pools, state_variables = \
             event_processor.apply_rule_based_event(
                 target=pd.DataFrame({
                     "disturbed_index": pd.Series([1, 2]),
@@ -98,6 +100,9 @@ class EventProcessorTest(unittest.TestCase):
                 inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
                 pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
                 state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
+
+        self.assertTrue(target["disturbed_index"].equals(pd.Series([1, 2])))
+        self.assertTrue(target["area_proportions"].equals(pd.Series([1.0, 1.0])))
 
         self.assertTrue(
             classifiers.equals(pd.DataFrame({"classifier1": [1, 2, 3, 4]})))
@@ -110,7 +115,7 @@ class EventProcessorTest(unittest.TestCase):
 
     def test_apply_rule_based_event_expected_result_with_split(self):
 
-        classifiers, inventory, pools, state_variables = \
+        target, classifiers, inventory, pools, state_variables = \
             event_processor.apply_rule_based_event(
                 target=pd.DataFrame({
                     "disturbed_index": pd.Series([0, 1, 2]),
@@ -119,6 +124,9 @@ class EventProcessorTest(unittest.TestCase):
                 inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
                 pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
                 state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
+
+        self.assertTrue(target["disturbed_index"].equals(pd.Series([0, 1, 2])))
+        self.assertTrue(target["area_proportions"].equals(pd.Series([1.0, 0.85, 0.9])))
 
         self.assertTrue(
             classifiers.equals(pd.DataFrame(
