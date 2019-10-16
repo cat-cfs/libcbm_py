@@ -193,15 +193,16 @@ class EventProcessorTest(unittest.TestCase):
             classifiers.equals(pd.DataFrame(
                 {"classifier1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(
-            inventory.equals(
-                pd.DataFrame({"area": [
+            np.allclose(
+                inventory.area,
+                [
                     1,
                     2 * 0.85,  # index=1 is split at 0.85
                     3 * 0.9,   # index=2 is split at 0.9
                     4,
                     2 * 0.15,  # the remainder of index=1
                     3 * 0.1    # the remainder of index=2
-                    ]})))
+                ]))
         self.assertTrue(
             pools.equals(pd.DataFrame({"p1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(

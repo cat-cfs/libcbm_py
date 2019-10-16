@@ -103,24 +103,30 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
-        updated_inventory.area = updated_inventory[split_index].area.multiply(
-            target_area_proportions, axis=0)
+        updated_inventory.area[split_index] = \
+            updated_inventory.area[split_index] * \
+            target_area_proportions[target_area_proportions < 1.0].array
 
         # set the split inventory as the remaining undisturbed area
-        split_inventory.area = split_inventory[split_index].area.multiply(
-            1.0 - target_area_proportions, axis=0)
+        split_inventory.area = \
+            split_inventory.area * \
+            (1.0 - target_area_proportions[target_area_proportions < 1.0].array)
 
         # create the updated inventory by appending the split records
-        updated_inventory = updated_inventory.append(split_inventory)
+        updated_inventory = updated_inventory.append(
+            split_inventory).reset_index(drop=True)
 
         # Since classifiers, pools, and state variables are not altered here
         # (this is done in the model) splitting is just a matter of adding a
         # copy of the split values.
         updated_classifiers = updated_classifiers.append(
-            updated_classifiers.iloc[split_index].copy())
+            updated_classifiers.iloc[split_index].copy()
+            ).reset_index(drop=True)
         updated_state_variables = updated_state_variables.append(
-            updated_state_variables[split_index].copy())
+            updated_state_variables.iloc[split_index].copy()
+            ).reset_index(drop=True)
         updated_pools = updated_pools.append(
-            updated_pools[split_index].copy())
-    return (updated_classifiers, updated_inventory, pools,
+            updated_pools.iloc[split_index].copy()
+            ).reset_index(drop=True)
+    return (updated_classifiers, updated_inventory, updated_pools,
             updated_state_variables)
