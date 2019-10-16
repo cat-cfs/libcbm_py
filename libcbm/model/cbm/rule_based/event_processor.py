@@ -1,9 +1,8 @@
 import numpy as np
 
 
-def process_event(filter_factory, classifiers_filter_factory, filter_data,
-                  undisturbed, target_func, classifiers, inventory, pools,
-                  state_variables):
+def process_event(filter_evaluator, event_filter, undisturbed, target_func,
+                  classifiers, inventory, pools, state_variables):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -48,20 +47,8 @@ def process_event(filter_factory, classifiers_filter_factory, filter_data,
             classifiers and inventory which can be modified when splitting
             occurs. See the return value of :py:func:`apply_rule_based_event`
     """
-    classifier_filter = classifiers_filter_factory(
-        filter_data.classifier_set, classifiers)
 
-    merged_filter = filter_factory.merge_filters(
-        filter_factory.create_filter(
-            expression=filter_data.pool_filter_expression,
-            data=pools,
-            columns=filter_data.pool_filter_columns),
-        filter_factory.create_filter(
-            expression=filter_data.state_filter_expression,
-            data=state_variables,
-            columns=filter_data.state_filter_columns),
-        classifier_filter)
-    filter_result = filter_factory.evaluate_filter(merged_filter)
+    filter_result = filter_evaluator(event_filter)
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
