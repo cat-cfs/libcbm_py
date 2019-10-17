@@ -213,15 +213,15 @@ def initialize_inventory(classifiers, inventory):
 
 
 
-    Example Inventory table:
+    Example Inventory table: (abbreviated column names)
 
-    ====  =============  ==========================  ===========  =============================  ============================
-     age   spatial_unit   afforestation_pre_type_id   land_class   historical_disturbance_type    last_pass_disturbance_type
-    ====  =============  ==========================  ===========  =============================  ============================
-     0      1               1                           1          -1                               -1
-     1      10              -1                          0           1                               1
-     10     42              -1                          0           1                               5
-    ====  =============  ==========================  ===========  =============================  ============================
+    ====  ==== =====  ======  =====  ====  =====  =====
+     age  area  spu   affor    lc    hist  last   delay
+    ====  ==== =====  ======  =====  ====  =====  =====
+     0     5      1      1      1     1      3     10
+     11    7     10     -1      0     1      1     -1
+     0    30     42      1      0     1      5     -1
+    ====  ==== =====  ======  =====  ====  =====  =====
 
     Example classifiers table:
 
@@ -245,6 +245,7 @@ def initialize_inventory(classifiers, inventory):
         inventory (pandas.DataFrame): Data defining the inventory. Columns:
 
             - age: the inventory age at the start of CBM simulation
+            - area: the inventory area
             - spatial_unit: the spatial unit id
             - afforestation_pre_type_id: If the stand is initially
                 non-forested, this can be used to set an initial soil
@@ -255,6 +256,8 @@ def initialize_inventory(classifiers, inventory):
                 routine.
             - last_pass_disturbance_type: the id for a disturbance type used
               for the final disturbance in the spinup routine.
+            - delay: number of steps to simulate dead organic matter decays
+              after a last pass deforestation event occurs.
     Raises:
         ValueError: Raised if the number of rows for classifiers and
             data are not the same.
@@ -268,9 +271,10 @@ def initialize_inventory(classifiers, inventory):
         raise ValueError(
             ("number of inventory records: {inv} does not match number of "
              "classifier sets: {c_sets}").format(
-                inv=n_stands, c_sets=len(classifiers.index)))
+                 inv=n_stands, c_sets=len(classifiers.index)))
     i = SimpleNamespace()
     i.classifiers = np.ascontiguousarray(classifiers).astype(np.int32)
+    i.classifier_names = list(classifiers)
     i.age = inventory.age.to_numpy(dtype=np.int32)
     i.area = inventory.area.to_numpy(dtype=np.float)
     i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
