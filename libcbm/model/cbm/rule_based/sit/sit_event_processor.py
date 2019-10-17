@@ -162,13 +162,8 @@ class SITEventProcessor():
 
         def sit_events_pre_dynamics_func(time_step, cbm_vars):
 
-            inventory = pd.DataFrame(
-                data={
-                    ""
-                })
-            classifiers = pd.DataFrame(
-                data=cbm_vars.inventory.classifiers,
-                columns=cbm_vars.inventory.classifiers.dtype.names)
+            classifiers, inventory = cbm_variables.inventory_to_df(
+                cbm_vars.inventory)
 
             (disturbance_types,
              _classifiers,
