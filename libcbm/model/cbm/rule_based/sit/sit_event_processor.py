@@ -40,13 +40,13 @@ class SITEventProcessor():
         def compute_disturbance_production(pools, inventory,
                                            disturbance_type):
 
-            lookup_func = self.cbm_defaults_ref.get_disturbance_type_id
             self.rule_target.compute_disturbance_production(
                 model_functions=model_functions,
                 compute_functions=compute_functions,
                 pools=pools,
                 inventory=inventory,
-                disturbance_type=lookup_func(disturbance_type),
+                disturbance_type=self.disturbance_type_id_lookup[
+                    disturbance_type],
                 flux=cbm_variables.initialize_flux(
                     inventory.shape[0], flux_codes),
                 eligible=eligible)
