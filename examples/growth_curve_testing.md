@@ -66,12 +66,12 @@ generate randomized growth curve test cases
 
 ```python
 cases = case_generation.generate_scenarios(
-    random_seed = 2,
-    num_cases = 5,
+    random_seed = 4,
+    num_cases = 10,
     db_path = cbm_defaults_db_path,
     n_steps=n_steps,
     max_disturbances = 0,
-    max_components = 1,
+    max_components = 3,
     n_growth_digits = 2,
     age_interval=age_interval,
     growth_curve_len=age_interval*num_age_classes,
@@ -133,6 +133,10 @@ result_comparison.get_test_case_comparison_plot(
 result_comparison.get_test_case_comparison_plot(
     identifier=2, merged=pools_merged, diff=True,
     x_label="time step", y_label="pool value [tonnes C/ha]", figsize=(15,10))
+```
+
+```python
+
 ```
 
 ```python

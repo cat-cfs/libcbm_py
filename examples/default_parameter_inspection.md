@@ -17,19 +17,20 @@ jupyter:
 import pandas as pd
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm import resources
 ```
 
 ```python
-db_path = "cbm_defaults.db"
+#change this if you have another database path
+db_path = resources.get_cbm_defaults_path()
+
 cbm_default_parameters = cbm_defaults.load_cbm_parameters(db_path)
 cbm_default_ref = CBMDefaultsReference(db_path, "en-CA")
-
 ```
 
 ```python
 spatial_units = pd.DataFrame([dict(x) for x in cbm_default_ref.get_spatial_units()])
 pools = pd.DataFrame([dict(x) for x in cbm_default_ref.pools_ref])
-
 ```
 
 ```python
@@ -79,8 +80,4 @@ default_parameters["root_parameter"]
 
 ```python
 spatial_units.merge(default_parameters["spinup_parameter"])
-```
-
-```python
-
 ```

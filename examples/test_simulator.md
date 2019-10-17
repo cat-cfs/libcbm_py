@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.1'
-      jupytext_version: 1.2.1
+      jupytext_version: 1.2.3
   kernelspec:
     display_name: Python 3
     language: python
@@ -84,7 +84,7 @@ pools[["timestep",'AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil',
 ```
 
 ```python
-state_variables = result["state_variable_result"]
+state_variables = result["state"]
 state_variables[['timestep', 'age', 'land_class', 'last_disturbance_type', 
                  'time_since_last_disturbance', 'time_since_land_class_change',
                  'growth_enabled', 'growth_multiplier', 'regeneration_delay',
