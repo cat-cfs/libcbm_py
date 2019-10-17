@@ -11,7 +11,8 @@ class SITEventProcessor():
     def __init__(self, rule_filter_functions, rule_target_functions,
                  event_processor_functions, model_functions,
                  compute_functions, cbm_defaults_ref,
-                 classifier_filter_builder, random_generator):
+                 classifier_filter_builder, random_generator,
+                 on_unrealized_event):
 
         self.model_functions = model_functions
         self.compute_functions = compute_functions
@@ -30,9 +31,11 @@ class SITEventProcessor():
             x["disturbance_type_name"]: x["disturbance_type_id"]
             for x in self.cbm_defaults_ref.get_disturbance_types()}
 
-    def get_compute_disturbance_production(self, model_functions,
-                                           compute_functions,
-                                           eligible, flux_codes):
+        self.on_unrealized_event = on_unrealized_event
+
+    def _get_compute_disturbance_production(self, model_functions,
+                                            compute_functions,
+                                            eligible, flux_codes):
 
         def compute_disturbance_production(pools, inventory,
                                            disturbance_type):
@@ -50,15 +53,19 @@ class SITEventProcessor():
 
         return compute_disturbance_production
 
-    def process_event(self, eligible, sit_event, classifiers, inventory, pools,
-                      state_variables, on_unrealized):
+    def _process_event(self, eligible, sit_event, classifiers, inventory,
+                       pools, state_variables):
 
         compute_disturbance_production = \
-            self.get_compute_disturbance_production(
+            self._get_compute_disturbance_production(
                 model_functions=self.model_functions,
                 compute_functions=self.compute_functions,
                 eligible=eligible,
                 flux_codes=self.cbm_defaults_ref.get_flux_indicators())
+
+        # helper to
+        def on_unrealized(shortfall):
+            self.on_unrealized_event(shortfall, sit_event)
 
         target_factory = sit_stand_target.create_sit_event_target_factory(
             rule_target=self.rule_target,
@@ -100,7 +107,7 @@ class SITEventProcessor():
             pools=pools,
             state_variables=state_variables)
 
-    def event_iterator(self, time_step, sit_events):
+    def _event_iterator(self, time_step, sit_events):
 
         # TODO: In CBM-CFS3 events are sorted by default disturbance type id
         # (ascending) In libcbm, sort order needs to be explicitly defined in
@@ -116,24 +123,62 @@ class SITEventProcessor():
             yield dict(time_step_event)
 
     def process_events(self, time_step, sit_events, classifiers, inventory,
-                       pools, state_variables, on_unrealized):
+                       pools, state_variables):
+        """Process sit_events for the start of the given timestep, computing a
+        new simulation state, and the disturbance types to apply for the
+        timestep.
 
+        Because of the nature of CBM rule based events, the size of the
+        returned arrays may grow on the "n_stands" dimension from the original
+        sizes due to area splitting, however the total inventory area will
+        remain constant.
+
+        Args:
+            time_step (int): the simulation time step for which to compute the
+                events.  Used to filter the specified sit_events DataFrame by
+                its "time_step" column
+            sit_events (pandas.DataFrame): table of SIT formatted events.
+                Expected format is the same as the return value of:
+                :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
+            classifiers (pandas.DataFrame): dataframe of classifier
+                value ids by stand (row), by classifier (columns).  Column
+                labels are the classifier names.
+            inventory (pandas.DataFrame): table of inventory data by
+                stand (rows)
+            pools (pandas.DataFrame): CBM pool values by stand (rows), by
+                classifier (columns).  Column labels are the pool names.
+            state_variables (pandas.DataFrame): table of CBM simulation state
+                variables by stand (rows)
+
+        Returns:
+            tuple: a tuple of the array of disturbance types for the specified
+                events and simulation state, and the modified simulation state.
+
+                1. disturbance_types (numpy.ndarray): array of CBM disturbance
+                   type ids for each inventory index
+                2. classifiers (pandas.DataFrame): updated CBM classifier
+                   values
+                3. inventory (pandas.DataFrame): updated CBM inventory
+                4. pools (pandas.DataFrame): updated CBM simulation pools
+                5. state_variables (pandas.DataFrame): updated CBM simulation
+                   state variables
+
+        """
         disturbance_types = np.zeros(inventory.shape[0], dtype=np.int32)
         eligible = np.ones(inventory.shape[0])
         _classifiers = classifiers
         _inventory = inventory
         _pools = pools
         _state_variables = state_variables
-        for sit_event in self.event_iterator(time_step, sit_events):
+        for sit_event in self._event_iterator(time_step, sit_events):
             target, _classifiers, _inventory, _pools, _state_variables = \
-                self.process_event(
+                self._process_event(
                     eligible,
                     sit_event,
                     _classifiers,
                     _inventory,
                     _pools,
-                    _state_variables,
-                    on_unrealized)
+                    _state_variables)
 
             target_area_proportions = target["area_proportions"]
 
@@ -159,7 +204,32 @@ class SITEventProcessor():
             _state_variables)
 
     def get_pre_dynamics_func(self, sit_events):
+        """Gets a function for applying SIT rule based events in a CBM
+        timestep loop.
 
+        The returned function can be used as the
+        pre_dynamics_func argument of
+        :py:func:`libcbm.model.cbm.cbm_simulator.simulate’`
+
+        Args:
+            sit_events (pandas.DataFrame): table of SIT formatted events.
+            Expected format is the same as the return value of:
+            :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
+
+        Returns:
+            func: a function of 2 parameters:
+
+                1. time_step: the simulation time step which is used to select
+                   sit_events by the time_step column.
+                2. cbm_vars: an object containing CBM simulation variables and
+                   parameters.  Formatted the same as the return value of
+                   :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
+
+                The function's return value is a copy of the input cbm_vars
+                with changes applied according to the sit_events for the
+                specified timestep.
+
+        """
         def sit_events_pre_dynamics_func(time_step, cbm_vars):
 
             classifiers, inventory = cbm_variables.inventory_to_df(
@@ -175,8 +245,7 @@ class SITEventProcessor():
                  classifiers,
                  inventory,
                  cbm_vars.pools,
-                 cbm_vars.state,
-                 None)
+                 cbm_vars.state)
 
             n_stands = _inventory.shape[0]
             cbm_vars.params = cbm_variables.initialize_cbm_parameters(
