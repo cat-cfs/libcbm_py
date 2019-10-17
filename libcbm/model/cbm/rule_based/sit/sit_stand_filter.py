@@ -103,19 +103,18 @@ def get_state_variable_filter_mappings():
         ("LastDistTypeID", "last_disturbance_type", "==")]
 
 
-def create_state_variable_filter_expression(sit_data, filter_mappings):
+def create_state_variable_filter_expression(sit_data, age_only):
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 
     Args:
         sit_data (dict): a row dictionary from an SIT events, or SIT
             transition rules table
-        filter_mappings (list): the return value of either:
-
-            - :py:func:`get_state_variable_filter_mappings`
-              (for use with sit events)
-            - :py:func:`get_state_variable_age_filter_mappings`
-              (for use with sit transition rules)
+        age_only (bool, optional): if true specifies that only age variables
+            will be considered when building the expression. This is useful
+            for SIT_Transition_Rules which consider age as a criteria.
+            If False all state variables are included, this is required for
+            SIT_Events.
 
     Returns:
         tuple:
@@ -129,6 +128,10 @@ def create_state_variable_filter_expression(sit_data, filter_mappings):
 
     columns = set()
     expression_tokens = []
+    if age_only:
+        filter_mappings = get_state_variable_age_filter_mappings()
+    else:
+        filter_mappings = get_state_variable_filter_mappings()
     for sit_column, state_variable_column, operator in filter_mappings:
 
         if sit_data[sit_column] < 0:

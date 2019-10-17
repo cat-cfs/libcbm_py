@@ -74,8 +74,7 @@ class SITStandFilterTest(unittest.TestCase):
         for i_row, row in enumerate(rows):
             exp, cols = \
                 sit_stand_filter.create_state_variable_filter_expression(
-                    row,
-                    sit_stand_filter.get_state_variable_filter_mappings())
+                    row, False)
             self.assertTrue(exp == expected_expressions[i_row])
             self.assertTrue(set(cols) == set(expected_columns[i_row]))
 
