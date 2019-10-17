@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
@@ -148,3 +147,6 @@ class SITEventProcessor():
         return (
             disturbance_types, _classifiers, _inventory, _pools,
             _state_variables)
+
+    def sit_events_pre_dynamics_func(self, time_step, cbm_vars):
+        return cbm_vars
