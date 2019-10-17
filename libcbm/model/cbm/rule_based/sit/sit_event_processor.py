@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
@@ -92,22 +94,30 @@ class SITEventProcessor():
                     sit_event, classifiers.columns.tolist()),
                 classifiers))
 
-        _classifiers, _inventory, _pools, _state_variables = \
-            self.event_processor.process_event(
-                filter_evaluator=self.rule_filter.evaluate_filter,
-                event_filter=event_filter,
-                undisturbed=eligible,
-                target_func=target_factory,
-                classifiers=classifiers,
-                inventory=inventory,
-                pools=pools,
-                state_variables=state_variables)
-
+        return self.event_processor.process_event(
+            filter_evaluator=self.rule_filter.evaluate_filter,
+            event_filter=event_filter,
+            undisturbed=eligible,
+            target_func=target_factory,
+            classifiers=classifiers,
+            inventory=inventory,
+            pools=pools,
+            state_variables=state_variables)
 
     def process_events(self, time_step, sit_events, classifiers, inventory,
                        pools, state_variables, on_unrealized):
+
+        disturbance_types = np.zeros(inventory.shape[0], dtype=np.int32)
+        eligible = np.ones(inventory.shape[0])
+        _classifiers = classifiers
+        _inventory = inventory
+        _pools = pools
+        _state_variables = state_variables
         for sit_event in event_iterator(time_step, sit_events):
-            _classifiers, _inventory, _pools, _state_variables = \
+            disturbance_type_id = \
+                self.cbm_defaults_ref.get_disturbance_type_id(
+                    sit_event["disturbance_type"])
+            target, _classifiers, _inventory, _pools, _state_variables = \
                 self.process_event(
                     eligible,
                     sit_event,
@@ -116,3 +126,25 @@ class SITEventProcessor():
                     pools,
                     state_variables,
                     on_unrealized)
+
+            target_area_proportions = target["area_proportions"]
+
+            n_splits = (target_area_proportions < 1.0).sum()
+            # update eligible to false at the disturbed indices, since they are
+            # not eligible for the next event in this timestep.
+            eligible[target["disturbed_index"]] = 0
+
+            # extend the eligible array by the number of splits
+            eligible = np.concatenate([eligible, np.ones(n_splits)])
+
+            # set the disturbance types for the disturbed indices, based on
+            # the sit_event disturbance_type field.
+            disturbance_types[target["disturbed_index"]] = disturbance_type_id
+
+            # extend the disturbance type array by the number of splits
+            disturbance_types = np.concatenate(
+                [disturbance_types, np.zeros(n_splits, dtype=np.int32)])
+
+        return (
+            disturbance_types, _classifiers, _inventory, _pools,
+            _state_variables)
