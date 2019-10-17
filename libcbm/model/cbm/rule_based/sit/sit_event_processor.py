@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
@@ -157,5 +158,42 @@ class SITEventProcessor():
             disturbance_types, _classifiers, _inventory, _pools,
             _state_variables)
 
-    def sit_events_pre_dynamics_func(self, time_step, cbm_vars):
-        return cbm_vars
+    def get_pre_dynamics_func(self, sit_events):
+
+        def sit_events_pre_dynamics_func(time_step, cbm_vars):
+
+            inventory = pd.DataFrame(
+                data={
+                    ""
+                })
+            classifiers = pd.DataFrame(
+                data=cbm_vars.inventory.classifiers,
+                columns=cbm_vars.inventory.classifiers.dtype.names)
+
+            (disturbance_types,
+             _classifiers,
+             _inventory,
+             _pools,
+             _state) = self.process_events(
+                 time_step,
+                 sit_events,
+                 classifiers,
+                 inventory,
+                 cbm_vars.pools,
+                 cbm_vars.state,
+                 None)
+
+            n_stands = _inventory.shape[0]
+            cbm_vars.params = cbm_variables.initialize_cbm_parameters(
+                n_stands=n_stands,
+                disturbance_type=disturbance_types)
+
+            cbm_vars.inventory = cbm_variables.initialize_inventory(
+                classifiers=_classifiers,
+                inventory=_inventory)
+
+            cbm_vars.pools = _pools
+            cbm_vars.state = _state
+            return cbm_vars
+
+        return sit_events_pre_dynamics_func
