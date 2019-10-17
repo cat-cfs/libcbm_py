@@ -290,6 +290,41 @@ def initialize_inventory(classifiers, inventory):
     return i
 
 
+def inventory_to_df(inventory):
+    """converts a result returned by :py:func:`initialize_inventory` a tuple
+    of pandas.DataFrame
+
+    Args:
+        inventory (object): an object in the format returned by
+            :py:func:`initialize_inventory`
+
+    Returns:
+        object: a tuple containing:
+
+            1. classifier DataFrame
+            2. inventory DataFrame
+
+    """
+    inventory = pd.DataFrame(
+        data={
+            "age": inventory.age,
+            "area": inventory.area,
+            "spatial_unit": inventory.spatial_unit,
+            "afforestation_pre_type_id":
+                inventory.afforestation_pre_type_id,
+            "land_class": inventory.land_class,
+            "historical_disturbance_type":
+                inventory.historical_disturbance_type,
+            "last_pass_disturbance_type":
+                inventory.last_pass_disturbance_type,
+            "delay": inventory.delay,
+        })
+    classifiers = pd.DataFrame(
+        data=inventory.classifiers,
+        columns=inventory.classifier_names)
+    return classifiers, inventory
+
+
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
                                     flux_indicator_codes):
     n_stands = inventory.shape[0]
