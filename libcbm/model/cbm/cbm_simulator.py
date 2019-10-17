@@ -65,13 +65,18 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
         pool_codes (list): a list of strings describing each of the CBM pools
         flux_indicator_codes (list): a list of strings describing the CBM flux
             indicators.
-        pre_dynamics_func (function): A function which both accepts and
-            returns all CBM variables.  The layout of the CBM variables is the
-            same as the return value of
+        pre_dynamics_func (function): A function which accepts the simulation
+            timestep and all CBM variables, and which is called prior to
+            computing C dynamics  The layout of the CBM variables is the same
+            as the return value of:
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        reporting_func (function): a function which accepts all CBM variables.
-            The layout of the CBM variables is the same as the return value of
+            The function returns all CBM variables which will then be passed
+            into the current CBM timestep.
+        reporting_func (function): a function which accepts the simulation
+            timestep and all CBM variables. The layout of the CBM variables is
+            the same as the return value of:
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
+            The function returns None.
     """
     n_stands = inventory.shape[0]
 
@@ -86,7 +91,7 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
     cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)
     for time_step in range(1, n_steps + 1):
-        cbm_vars = pre_dynamics_func(cbm_vars)
+        cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm.step(
             cbm_vars.inventory, cbm_vars.pools, cbm_vars.flux_indicators,
             cbm_vars.state, cbm_vars.params)
