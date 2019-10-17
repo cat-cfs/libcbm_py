@@ -40,28 +40,21 @@ def unpack_ndarrays(variables):
 
 def get_ndarray(a):
     """Helper method to deal with numpy arrays stored in pandas objects.
-    Returns specified value if it is already an np.ndarray instance, and
-    otherwise gets a reference to the underlying numpy.ndarray storage
-    from a pandas.DataFrame or pandas.Series.  If None is specified, None is
-    returned.
+    Gets a reference to the underlying numpy.ndarray storage from a
+    pandas.DataFrame or pandas.Series.
 
     Args:
         a (None, ndarray, pandas.DataFrame, or pandas.Series): data to
             potentially convert to ndarray
 
     Returns:
-        ndarray, or None: the specified ndarray, the ndarray storage of a
-            specified pandas object, or None
+        any: the specified value, or the ndarray storage of a
+            specified pandas object
     """
-    if a is None:
-        return None
-    if isinstance(a, np.ndarray):
-        return a
-    elif isinstance(a, pd.DataFrame) or isinstance(a, pd.Series):
+    if isinstance(a, pd.DataFrame) or isinstance(a, pd.Series):
         return a.values
     else:
-        raise ValueError(
-            "Specified type not supported for conversion to ndarray")
+        return a
 
 
 def get_nullable_ndarray(a, type=ctypes.c_double):
