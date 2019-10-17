@@ -5,23 +5,13 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_target
 from libcbm.model.cbm import cbm_variables
 
 
-def event_iterator(time_step, sit_events):
-
-    # TODO: In CBM-CFS3 events are sorted by default disturbance type id
-    # (ascending) In libcbm, sort order needs to be explicitly defined in
-    # cbm_defaults (or other place)
-    time_step_events = sit_events[
-        sit_events.time_step == time_step]
-    for _, time_step_event in time_step_events.itterows():
-        yield dict(time_step_event)
-
-
 class SITEventProcessor():
 
     def __init__(self, rule_filter_functions, rule_target_functions,
                  event_processor_functions, model_functions,
                  compute_functions, cbm_defaults_ref,
                  classifier_filter_builder, random_generator):
+
         self.model_functions = model_functions
         self.compute_functions = compute_functions
 
@@ -32,6 +22,12 @@ class SITEventProcessor():
         self.event_processor = event_processor_functions
         self.rule_filter = rule_filter_functions
         self.rule_target = rule_target_functions
+
+        # this is for looking up disturbance type ids given a disturbance type
+        # name.
+        self.disturbance_type_id_lookup = {
+            x["disturbance_type_name"]: x["disturbance_type_id"]
+            for x in self.cbm_defaults_ref.get_disturbance_types()}
 
     def get_compute_disturbance_production(self, model_functions,
                                            compute_functions,
@@ -49,8 +45,8 @@ class SITEventProcessor():
                 disturbance_type=lookup_func(disturbance_type),
                 flux=cbm_variables.initialize_flux(
                     inventory.shape[0], flux_codes),
-                eligible=eligible
-                )
+                eligible=eligible)
+
         return compute_disturbance_production
 
     def process_event(self, eligible, sit_event, classifiers, inventory, pools,
@@ -103,6 +99,21 @@ class SITEventProcessor():
             pools=pools,
             state_variables=state_variables)
 
+    def event_iterator(self, time_step, sit_events):
+
+        # TODO: In CBM-CFS3 events are sorted by default disturbance type id
+        # (ascending) In libcbm, sort order needs to be explicitly defined in
+        # cbm_defaults (or other place)
+        time_step_events = sit_events[
+            sit_events.time_step == time_step].copy()
+
+        time_step_events.disturbance_type_id = \
+            time_step_events.disturbance_type.map(
+                self.disturbance_type_id_lookup)
+        time_step_events.sort_values(by="disturbance_type_id")
+        for _, time_step_event in time_step_events.itterows():
+            yield dict(time_step_event)
+
     def process_events(self, time_step, sit_events, classifiers, inventory,
                        pools, state_variables, on_unrealized):
 
@@ -112,18 +123,15 @@ class SITEventProcessor():
         _inventory = inventory
         _pools = pools
         _state_variables = state_variables
-        for sit_event in event_iterator(time_step, sit_events):
-            disturbance_type_id = \
-                self.cbm_defaults_ref.get_disturbance_type_id(
-                    sit_event["disturbance_type"])
+        for sit_event in self.event_iterator(time_step, sit_events):
             target, _classifiers, _inventory, _pools, _state_variables = \
                 self.process_event(
                     eligible,
                     sit_event,
-                    classifiers,
-                    inventory,
-                    pools,
-                    state_variables,
+                    _classifiers,
+                    _inventory,
+                    _pools,
+                    _state_variables,
                     on_unrealized)
 
             target_area_proportions = target["area_proportions"]
@@ -138,7 +146,8 @@ class SITEventProcessor():
 
             # set the disturbance types for the disturbed indices, based on
             # the sit_event disturbance_type field.
-            disturbance_types[target["disturbed_index"]] = disturbance_type_id
+            disturbance_types[target["disturbed_index"]] = \
+                sit_event["disturbance_type_id"]
 
             # extend the disturbance type array by the number of splits
             disturbance_types = np.concatenate(
