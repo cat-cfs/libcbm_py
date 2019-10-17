@@ -126,7 +126,8 @@ class EventProcessorTest(unittest.TestCase):
                 state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
 
         self.assertTrue(target["disturbed_index"].equals(pd.Series([0, 1, 2])))
-        self.assertTrue(target["area_proportions"].equals(pd.Series([1.0, 0.85, 0.9])))
+        self.assertTrue(target["area_proportions"].equals(
+            pd.Series([1.0, 0.85, 0.9])))
 
         self.assertTrue(
             classifiers.equals(pd.DataFrame(
