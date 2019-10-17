@@ -66,7 +66,7 @@ class SITIntegrationTest(unittest.TestCase):
             inventory=inventory,
             pool_codes=sit.defaults.get_pools(),
             flux_indicator_codes=sit.defaults.get_flux_indicators(),
-            pre_dynamics_func=lambda x: x,
+            pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
             reporting_func=reporting_func)
         # there should be 2 rows, timestep 0 and timestep 1
         self.assertTrue(results.pool_indicators.shape[0] == 2)
