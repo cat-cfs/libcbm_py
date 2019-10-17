@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+
+from libcbm.model.cbm.rule_based import event_processor
+from libcbm.model.cbm.rule_based import rule_filter
+from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
@@ -8,8 +12,7 @@ from libcbm.model.cbm import cbm_variables
 
 class SITEventProcessor():
 
-    def __init__(self, rule_filter_functions, rule_target_functions,
-                 event_processor_functions, model_functions,
+    def __init__(self, model_functions,
                  compute_functions, cbm_defaults_ref,
                  classifier_filter_builder, random_generator,
                  on_unrealized_event):
@@ -20,10 +23,6 @@ class SITEventProcessor():
         self.classifier_filter_builder = classifier_filter_builder
         self.cbm_defaults_ref = cbm_defaults_ref
         self.random_generator = random_generator
-
-        self.event_processor = event_processor_functions
-        self.rule_filter = rule_filter_functions
-        self.rule_target = rule_target_functions
 
         # this is for looking up disturbance type ids given a disturbance type
         # name.
@@ -40,7 +39,7 @@ class SITEventProcessor():
         def compute_disturbance_production(pools, inventory,
                                            disturbance_type):
 
-            self.rule_target.compute_disturbance_production(
+            rule_target.compute_disturbance_production(
                 model_functions=model_functions,
                 compute_functions=compute_functions,
                 pools=pools,
@@ -68,7 +67,7 @@ class SITEventProcessor():
             self.on_unrealized_event(shortfall, sit_event)
 
         target_factory = sit_stand_target.create_sit_event_target_factory(
-            rule_target=self.rule_target,
+            rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
             eligible=eligible,
@@ -80,15 +79,14 @@ class SITEventProcessor():
                 sit_event)
         state_filter_expression, state_filter_cols = \
             sit_stand_filter.create_state_variable_filter_expression(
-                sit_event,
-                sit_stand_filter.get_state_variable_filter_mappings())
+                sit_event, False)
 
-        event_filter = self.rule_filter.merge_filters(
-            self.rule_filter.create_filter(
+        event_filter = rule_filter.merge_filters(
+            rule_filter.create_filter(
                 expression=pool_filter_expression,
                 data=pools,
                 columns=pool_filter_cols),
-            self.rule_filter.create_filter(
+            rule_filter.create_filter(
                 expression=state_filter_expression,
                 data=state_variables,
                 columns=state_filter_cols),
@@ -97,8 +95,8 @@ class SITEventProcessor():
                     sit_event, classifiers.columns.tolist()),
                 classifiers))
 
-        return self.event_processor.process_event(
-            filter_evaluator=self.rule_filter.evaluate_filter,
+        return event_processor.process_event(
+            filter_evaluator=rule_filter.evaluate_filter,
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
@@ -115,11 +113,11 @@ class SITEventProcessor():
         time_step_events = sit_events[
             sit_events.time_step == time_step].copy()
 
-        time_step_events.disturbance_type_id = \
+        time_step_events["disturbance_type_id"] = \
             time_step_events.disturbance_type.map(
                 self.disturbance_type_id_lookup)
         time_step_events.sort_values(by="disturbance_type_id")
-        for _, time_step_event in time_step_events.itterows():
+        for _, time_step_event in time_step_events.iterrows():
             yield dict(time_step_event)
 
     def process_events(self, time_step, sit_events, classifiers, inventory,
