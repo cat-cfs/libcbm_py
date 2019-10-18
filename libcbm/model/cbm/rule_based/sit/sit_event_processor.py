@@ -10,6 +10,69 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_target
 from libcbm.model.cbm import cbm_variables
 
 
+def get_pre_dynamics_func(sit_event_processor, sit_events):
+    """Gets a function for applying SIT rule based events in a CBM
+    timestep loop.
+
+    The returned function can be used as the
+    pre_dynamics_func argument of
+    :py:func:`libcbm.model.cbm.cbm_simulator.simulate’`
+
+    Args:
+        sit_event_processor (SITEventProcessor): Instance of
+            :py:class:`SITEventProcessor` for computing sit rule based
+            disturbance events.
+        sit_events (pandas.DataFrame): table of SIT formatted events.
+            Expected format is the same as the return value of:
+            :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
+
+    Returns:
+        func: a function of 2 parameters:
+
+            1. time_step: the simulation time step which is used to select
+                sit_events by the time_step column.
+            2. cbm_vars: an object containing CBM simulation variables and
+                parameters.  Formatted the same as the return value of
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
+
+            The function's return value is a copy of the input cbm_vars
+            with changes applied according to the sit_events for the
+            specified timestep.
+
+    """
+    def sit_events_pre_dynamics_func(time_step, cbm_vars):
+
+        classifiers, inventory = cbm_variables.inventory_to_df(
+            cbm_vars.inventory)
+
+        (disturbance_types,
+            _classifiers,
+            _inventory,
+            _pools,
+            _state) = sit_event_processor.process_events(
+                time_step,
+                sit_events,
+                classifiers,
+                inventory,
+                cbm_vars.pools,
+                cbm_vars.state)
+
+        n_stands = _inventory.shape[0]
+        cbm_vars.params = cbm_variables.initialize_cbm_parameters(
+            n_stands=n_stands,
+            disturbance_type=disturbance_types)
+
+        cbm_vars.inventory = cbm_variables.initialize_inventory(
+            classifiers=_classifiers,
+            inventory=_inventory)
+
+        cbm_vars.pools = _pools
+        cbm_vars.state = _state
+        return cbm_vars
+
+    return sit_events_pre_dynamics_func
+
+
 class SITEventProcessor():
 
     def __init__(self, model_functions,
@@ -200,62 +263,3 @@ class SITEventProcessor():
         return (
             disturbance_types, _classifiers, _inventory, _pools,
             _state_variables)
-
-    def get_pre_dynamics_func(self, sit_events):
-        """Gets a function for applying SIT rule based events in a CBM
-        timestep loop.
-
-        The returned function can be used as the
-        pre_dynamics_func argument of
-        :py:func:`libcbm.model.cbm.cbm_simulator.simulate’`
-
-        Args:
-            sit_events (pandas.DataFrame): table of SIT formatted events.
-            Expected format is the same as the return value of:
-            :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
-
-        Returns:
-            func: a function of 2 parameters:
-
-                1. time_step: the simulation time step which is used to select
-                   sit_events by the time_step column.
-                2. cbm_vars: an object containing CBM simulation variables and
-                   parameters.  Formatted the same as the return value of
-                   :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-
-                The function's return value is a copy of the input cbm_vars
-                with changes applied according to the sit_events for the
-                specified timestep.
-
-        """
-        def sit_events_pre_dynamics_func(time_step, cbm_vars):
-
-            classifiers, inventory = cbm_variables.inventory_to_df(
-                cbm_vars.inventory)
-
-            (disturbance_types,
-             _classifiers,
-             _inventory,
-             _pools,
-             _state) = self.process_events(
-                 time_step,
-                 sit_events,
-                 classifiers,
-                 inventory,
-                 cbm_vars.pools,
-                 cbm_vars.state)
-
-            n_stands = _inventory.shape[0]
-            cbm_vars.params = cbm_variables.initialize_cbm_parameters(
-                n_stands=n_stands,
-                disturbance_type=disturbance_types)
-
-            cbm_vars.inventory = cbm_variables.initialize_inventory(
-                classifiers=_classifiers,
-                inventory=_inventory)
-
-            cbm_vars.pools = _pools
-            cbm_vars.state = _state
-            return cbm_vars
-
-        return sit_events_pre_dynamics_func
