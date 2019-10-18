@@ -232,7 +232,7 @@ class SITEventProcessor():
 
         """
         disturbance_types = np.zeros(inventory.shape[0], dtype=np.int32)
-        eligible = np.ones(inventory.shape[0])
+        eligible = np.ones(inventory.shape[0], dtype=bool)
         _classifiers = classifiers
         _inventory = inventory
         _pools = pools
