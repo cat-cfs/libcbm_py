@@ -62,7 +62,7 @@ class SITEventProcessor():
                 eligible=eligible,
                 flux_codes=self.cbm_defaults_ref.get_flux_indicators())
 
-        # helper to
+        # helper to indicate unrealized events to class user
         def on_unrealized(shortfall):
             self.on_unrealized_event(shortfall, sit_event)
 
