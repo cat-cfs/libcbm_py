@@ -305,7 +305,7 @@ def inventory_to_df(inventory):
             2. inventory DataFrame
 
     """
-    inventory = pd.DataFrame(
+    inventory_data = pd.DataFrame(
         data={
             "age": inventory.age,
             "area": inventory.area,
@@ -322,7 +322,7 @@ def inventory_to_df(inventory):
     classifiers = pd.DataFrame(
         data=inventory.classifiers,
         columns=inventory.classifier_names)
-    return classifiers, inventory
+    return classifiers, inventory_data
 
 
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
