@@ -31,7 +31,7 @@ def get_pool_variable_filter_mappings():
         ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<=")]
 
 
-def create_pool_value_filter_expression(sit_data):
+def create_pool_filter_expression(sit_data):
     """Create a filter against simulation pool values based on a single
     row of SIT disturbance events
 
@@ -103,7 +103,7 @@ def get_state_variable_filter_mappings():
         ("LastDistTypeID", "last_disturbance_type", "==")]
 
 
-def create_state_variable_filter_expression(sit_data, age_only):
+def create_state_filter_expression(sit_data, age_only):
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 

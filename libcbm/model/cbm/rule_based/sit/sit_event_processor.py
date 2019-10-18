@@ -75,10 +75,10 @@ class SITEventProcessor():
             on_unrealized=on_unrealized)
 
         pool_filter_expression, pool_filter_cols = \
-            sit_stand_filter.create_pool_value_filter_expression(
+            sit_stand_filter.create_pool_filter_expression(
                 sit_event)
         state_filter_expression, state_filter_cols = \
-            sit_stand_filter.create_state_variable_filter_expression(
+            sit_stand_filter.create_state_filter_expression(
                 sit_event, False)
 
         event_filter = rule_filter.merge_filters(
