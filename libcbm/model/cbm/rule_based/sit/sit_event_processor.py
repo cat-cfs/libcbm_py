@@ -68,6 +68,12 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 
         cbm_vars.pools = _pools
         cbm_vars.state = _state
+
+        #re-size the flux indicators array according to the number of stands
+        cbm_vars.flux_indicators = cbm_variables.initialize_flux(
+            n_stands=n_stands,
+            flux_indicator_codes=list(cbm_vars.flux_indicators))
+
         return cbm_vars
 
     return sit_events_pre_dynamics_func
