@@ -27,14 +27,14 @@ class ClassifierFilter():
             if aggregate["classifier_id"] != classifier_id:
                 continue
             classifier_name = self.classifier_lookup[classifier_id]
-            result[aggregate["name"]] = [
+            result[aggregate["value"]] = [
                 self.classifier_value_lookup[classifier_name][y]
                 for y in aggregate["classifier_values"]]
         return result
 
     def _get_classifier_value_index(self, classifier_id):
         return {
-            x["name"]: x["id"] for x
+            x["value"]: x["id"] for x
             in self.classifiers_config["classifier_values"]
             if x["classifier_id"] == classifier_id}
 

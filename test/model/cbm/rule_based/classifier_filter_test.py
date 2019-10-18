@@ -10,13 +10,13 @@ def get_mock_classifiers_config():
                 {"id": 3, "name": "c3"}
             ],
             "classifier_values": [
-                {"id": 1, "classifier_id": 1, "name": "c1_v1"},
-                {"id": 2, "classifier_id": 1, "name": "c1_v2"},
-                {"id": 3, "classifier_id": 2, "name": "c2_v1"},
-                {"id": 4, "classifier_id": 2, "name": "c2_v2"},
-                {"id": 5, "classifier_id": 3, "name": "c3_v1"},
-                {"id": 6, "classifier_id": 3, "name": "c3_v2"},
-                {"id": 7, "classifier_id": 3, "name": "c3_v3"}
+                {"id": 1, "classifier_id": 1, "value": "c1_v1"},
+                {"id": 2, "classifier_id": 1, "value": "c1_v2"},
+                {"id": 3, "classifier_id": 2, "value": "c2_v1"},
+                {"id": 4, "classifier_id": 2, "value": "c2_v2"},
+                {"id": 5, "classifier_id": 3, "value": "c3_v1"},
+                {"id": 6, "classifier_id": 3, "value": "c3_v2"},
+                {"id": 7, "classifier_id": 3, "value": "c3_v3"}
             ]
         }
 
@@ -29,7 +29,7 @@ class ClassifierFilterTest(unittest.TestCase):
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
             {'classifier_id': 3,
-             'name': 'agg1',
+             'value': 'agg1',
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
@@ -38,7 +38,7 @@ class ClassifierFilterTest(unittest.TestCase):
 
         def get_classifier_value_index(classifier_id):
             return {
-                x["name"]: x["id"] for x
+                x["value"]: x["id"] for x
                 in classifiers_config["classifier_values"]
                 if x["classifier_id"] == classifier_id}
 
@@ -72,7 +72,7 @@ class ClassifierFilterTest(unittest.TestCase):
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
             {'classifier_id': 3,
-             'name': 'agg1',
+             'value': 'agg1',
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
@@ -81,7 +81,7 @@ class ClassifierFilterTest(unittest.TestCase):
 
         def get_classifier_value_index(classifier_id):
             return {
-                x["name"]: x["id"] for x
+                x["value"]: x["id"] for x
                 in classifiers_config["classifier_values"]
                 if x["classifier_id"] == classifier_id}
 
