@@ -76,10 +76,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     if (target_var < 0).any():
         raise ValueError("less than zero values detected in target_var")
     remaining_target = target
-    result = pd.DataFrame(
-        columns=[
-            "target_var", "sort_var", "disturbed_index",
-            "area_proportions"])
+    result = pd.DataFrame()
 
     disturbed = pd.DataFrame({
         "target_var": target_var,
