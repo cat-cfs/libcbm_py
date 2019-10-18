@@ -179,7 +179,8 @@ class SITEventProcessor():
         time_step_events["disturbance_type_id"] = \
             time_step_events.disturbance_type.map(
                 self.disturbance_type_id_lookup)
-        time_step_events.sort_values(by="disturbance_type_id")
+        time_step_events = time_step_events.sort_values(
+            by="disturbance_type_id")
         for _, time_step_event in time_step_events.iterrows():
             yield dict(time_step_event)
 
