@@ -6,12 +6,23 @@ from mock import Mock
 
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
     import SITEventProcessor
-
+from libcbm.model.cbm.rule_based.sit.sit_event_processor \
+    import get_pre_dynamics_func
 
 class SITEventProcessorTest(unittest.TestCase):
 
-    def test_process_events_behaviour(self):
+    def test_get_pre_dynamics_func(self):
+        mock_sit_event_processor = Mock()
+        mock_sit_event_processor.process_events = Mock()
+        mock_sit_events = "mock_events"
+        result = get_pre_dynamics_func(
+            mock_sit_event_processor, mock_sit_events)
 
+
+    def test_process_events_behaviour(self):
+        """Test some of the internal behaviour of SITEventProcessor, and check
+        the expected result with a pair of events on a single timestep.
+        """
         patch_path = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
         # patch all of the imported modules so they can be mocked
         with patch.multiple(
