@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 
 from libcbm.model.cbm.rule_based import event_processor
@@ -50,12 +49,12 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
          _inventory,
          _pools,
          _state) = sit_event_processor.process_events(
-             time_step,
-             sit_events,
-             classifiers,
-             inventory,
-             cbm_vars.pools,
-             cbm_vars.state)
+             time_step=time_step,
+             sit_events=sit_events,
+             classifiers=classifiers,
+             inventory=inventory,
+             pools=cbm_vars.pools,
+             state_variables=cbm_vars.state)
 
         n_stands = _inventory.shape[0]
         cbm_vars.params = cbm_variables.initialize_cbm_parameters(

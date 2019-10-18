@@ -3,30 +3,102 @@ from unittest.mock import patch
 from unittest.mock import DEFAULT
 import pandas as pd
 from mock import Mock
-
+from types import SimpleNamespace
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
     import SITEventProcessor
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
     import get_pre_dynamics_func
 
+# used in patching (overriding) module imports in the module being tested
+PATCH_PATH = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
+
+
 class SITEventProcessorTest(unittest.TestCase):
 
     def test_get_pre_dynamics_func(self):
-        mock_sit_event_processor = Mock()
-        mock_sit_event_processor.process_events = Mock()
-        mock_sit_events = "mock_events"
-        result = get_pre_dynamics_func(
-            mock_sit_event_processor, mock_sit_events)
+        """tests get_pre_dynamics_func and also calls the function returned
+        """
+        with patch(PATCH_PATH + ".cbm_variables") as cbm_variables:
 
+            time_step = 10
+            cbm_variables.inventory_to_df = Mock()
+            cbm_variables.inventory_to_df.side_effect = \
+                lambda _: ("mock_classifiers", "mock_inventory")
+            cbm_variables.initialize_cbm_parameters = Mock()
+            cbm_variables.initialize_cbm_parameters.side_effect = \
+                lambda **kwargs: "mock_params"
+            cbm_variables.initialize_inventory = Mock()
+
+            def mock_initialize_inventory(classifiers, inventory):
+                self.assertTrue(classifiers == "mock_classifiers")
+                self.assertTrue(inventory.equals(pd.DataFrame({"a": [1]})))
+                return "mock_inventory_object_result"
+
+            cbm_variables.initialize_inventory.side_effect = \
+                mock_initialize_inventory
+            cbm_variables.initialize_flux = Mock()
+            cbm_variables.initialize_flux.side_effect = \
+                lambda **kwargs: "mock_flux_result"
+
+            cbm_vars = SimpleNamespace(
+                inventory="mock_inventory_object",
+                pools="mock_pools",
+                state="mock_state",
+                flux_indicators=pd.DataFrame({"a": [1], "b": [2], "c": [3]}))
+
+            mock_sit_event_processor = Mock()
+            mock_sit_event_processor.process_events = Mock()
+            mock_sit_event_processor.process_events.side_effect = \
+                lambda **kwargs: (
+                    "mock_disturbance_types",
+                    "mock_classifiers",
+                    pd.DataFrame({"a": [1]}),  # .shape[0] is used internally
+                    "mock_pools_result",
+                    "mock_state_result"
+                )
+
+            mock_sit_events = "mock_events"
+            pre_dynamics_func = get_pre_dynamics_func(
+                mock_sit_event_processor, mock_sit_events)
+            cbm_vars_result = pre_dynamics_func(time_step, cbm_vars)
+
+            mock_sit_event_processor.process_events.assert_called_with(
+                time_step=time_step,
+                sit_events=mock_sit_events,
+                classifiers="mock_classifiers",
+                inventory="mock_inventory",
+                pools="mock_pools",
+                state_variables="mock_state")
+
+            cbm_variables.inventory_to_df.assert_called_with(
+                "mock_inventory_object")
+            cbm_variables.initialize_cbm_parameters.assert_called_with(
+                n_stands=1,
+                disturbance_type="mock_disturbance_types"
+            )
+            cbm_variables.initialize_inventory.assert_called()
+            cbm_variables.initialize_flux.assert_called_with(
+                n_stands=1,
+                flux_indicator_codes=["a", "b", "c"]
+            )
+
+            self.assertTrue(
+                cbm_vars_result.inventory == "mock_inventory_object_result")
+            self.assertTrue(
+                cbm_vars_result.pools == "mock_pools_result")
+            self.assertTrue(
+                cbm_vars_result.state == "mock_state_result")
+            self.assertTrue(
+                cbm_vars_result.flux_indicators == "mock_flux_result")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
         the expected result with a pair of events on a single timestep.
         """
-        patch_path = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
+
         # patch all of the imported modules so they can be mocked
         with patch.multiple(
-                patch_path,
+                PATCH_PATH,
                 event_processor=DEFAULT,
                 rule_filter=DEFAULT,
                 rule_target=DEFAULT,
