@@ -62,8 +62,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 2)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -73,7 +73,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_TOTAL",
                 "target_type": "Area",
                 "target": 18,
-                "disturbance_type": "harvest"},
+                "disturbance_type_id": 2},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
@@ -94,8 +94,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 4000)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -110,7 +110,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_SW",
                 "target_type": "Area",
                 "target": 18,
-                "disturbance_type": "harvest"},
+                "disturbance_type_id": 4000},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
@@ -131,8 +131,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 100)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -147,7 +147,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_HW",
                 "target_type": "Area",
                 "target": 19,
-                "disturbance_type": "harvest"},
+                "disturbance_type_id": 100},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
@@ -290,8 +290,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 90)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -301,7 +301,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "PROPORTION_OF_EVERY_RECORD",
                 "target_type": "Merchantable",
                 "target": 17,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 90,
                 "efficiency": 55},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
@@ -324,8 +324,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 99)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -335,7 +335,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_TOTAL",
                 "target_type": "Merchantable",
                 "target": 4,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 99,
                 "efficiency": 100},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
@@ -359,8 +359,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 45)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -375,7 +375,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_SW",
                 "target_type": "Merchantable",
                 "target": 23,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 45,
                 "efficiency": 0.1},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
@@ -399,8 +399,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 73)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools == "pools")
             return mock_production
@@ -415,7 +415,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "MERCHCSORT_HW",
                 "target_type": "Merchantable",
                 "target": 31,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 73,
                 "efficiency": 0.99},
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
@@ -445,8 +445,8 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 43)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(list(pools.a) == [12, 3, 4, 5])
             return mock_production
@@ -456,7 +456,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "RANDOMSORT",
                 "target_type": "Merchantable",
                 "target": 31,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 43,
                 "efficiency": 0.99},
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
@@ -477,8 +477,8 @@ class SITStandTargetTest(unittest.TestCase):
             Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 15)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
             self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
@@ -493,7 +493,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "TOTALSTEMSNAG",
                 "target_type": "Merchantable",
                 "target": 37,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 15,
                 "efficiency": 1.0},
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
@@ -517,8 +517,8 @@ class SITStandTargetTest(unittest.TestCase):
             Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 57)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
             return mock_production
@@ -531,7 +531,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "SWSTEMSNAG",
                 "target_type": "Merchantable",
                 "target": 47,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 57,
                 "efficiency": 1.1},
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
@@ -552,8 +552,8 @@ class SITStandTargetTest(unittest.TestCase):
             Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_name):
-            self.assertTrue(disturbance_type_name == "harvest")
+                                             disturbance_type_id):
+            self.assertTrue(disturbance_type_id == 9)
             self.assertTrue(inventory == "inventory")
             self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
             return mock_production
@@ -566,7 +566,7 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "HWSTEMSNAG",
                 "target_type": "Merchantable",
                 "target": 97,
-                "disturbance_type": "harvest",
+                "disturbance_type_id": 9,
                 "efficiency": 2.1},
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
@@ -587,8 +587,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_sit_event_row={
                 "sort_type": "SORT_BY_HW_AGE",
                 "target_type": "Area",
-                "target": 100,
-                "disturbance_type": "fire"},
+                "target": 100},
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
             mock_pools="pools",
             mock_random_generator=None
@@ -606,7 +605,6 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "SVOID",
                 "target_type": "Proportion",
                 "target": 100,
-                "disturbance_type": "fire",
                 "spatial_reference": 1000},
             mock_state_variables="inventory",
             mock_pools="pools",
@@ -622,7 +620,6 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "SVOID",
                 "target_type": "Merchantable",
                 "target": 10,
-                "disturbance_type": "fire",
                 "spatial_reference": 4000},
             mock_state_variables="inventory",
             mock_pools="pools",
@@ -638,7 +635,6 @@ class SITStandTargetTest(unittest.TestCase):
                 "sort_type": "SVOID",
                 "target_type": "Area",
                 "target": 130,
-                "disturbance_type": "fire",
                 "spatial_reference": 1050},
             mock_state_variables="inventory",
             mock_pools="pools",

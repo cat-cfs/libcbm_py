@@ -109,8 +109,8 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_sit_events = pd.DataFrame(
                 data={
                     "time_step": [1, 1, 2, 2, 2, 2],
-                    "disturbance_type": [
-                        "harvest", "fire", "harvest", "harvest", "fire", "fire"
+                    "disturbance_type_id": [
+                        2, 1, 2, 2, 1, 1
                     ]
                 })
 
@@ -198,14 +198,6 @@ class SITEventProcessorTest(unittest.TestCase):
 
             # mock cbm defaults reference
             mock_cbm_defaults_ref = Mock()
-            mock_cbm_defaults_ref.get_disturbance_types = Mock()
-            mock_cbm_defaults_ref.get_disturbance_types.side_effect = \
-                lambda: [
-                    {"disturbance_type_name": "fire",
-                     "disturbance_type_id": 1},
-                    {"disturbance_type_name": "harvest",
-                     "disturbance_type_id": 2}]
-
             mock_cbm_defaults_ref.get_flux_indicators = Mock()
             mock_cbm_defaults_ref.get_flux_indicators.side_effect = \
                 lambda: ["a", "b", "c"]
