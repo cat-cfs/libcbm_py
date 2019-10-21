@@ -78,7 +78,6 @@ def create_sit_event_target(rule_target, sit_event_row,
     sort = sit_event_row["sort_type"]
     target_type = sit_event_row["target_type"]
     target = sit_event_row["target"]
-    disturbance_type_name = sit_event_row["disturbance_type"]
     target_types = sit_disturbance_event_parser.get_target_types()
     area_target_type = target_types["A"]
     merchantable_target_type = target_types["M"]
@@ -86,7 +85,7 @@ def create_sit_event_target(rule_target, sit_event_row,
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if _is_production_based(sit_event_row):
         production = disturbance_production_func(
-            pools, inventory, disturbance_type_name)
+            pools, inventory, sit_event_row["disturbance_type_id"])
     rule_target_result = None
     if target_type == area_target_type and sort not in non_sorted:
         if _is_production_sort(sit_event_row):
