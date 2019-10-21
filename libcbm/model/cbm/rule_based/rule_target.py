@@ -248,7 +248,8 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
         compute_functions (object): Functions for computing pool flows.
         pools (pandas.DataFrame): The current pool values.
         inventory (pandas.DataFrame): The inventory DataFrame.
-        disturbance_type (int): The integer code specifying the disturbance type.
+        disturbance_type (int): The integer code specifying the disturbance
+            type.
         flux (pandas.DataFrame): Storage for flux computation
         eligible (pandas.Series): Bit values where True specifies the index is
             eligible for the disturbance, and false the opposite. In the
@@ -282,7 +283,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
 
     # set the disturbance type for all records
     disturbance_type = pd.DataFrame({
-        "disturbance_type": np.ones(n_stands) * disturbance_type})
+        "disturbance_type": np.ones(n_stands, dtype=np.int32) * disturbance_type})
     model_functions.GetDisturbanceOps(
         disturbance_op, inventory, disturbance_type)
 
