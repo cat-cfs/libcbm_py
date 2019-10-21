@@ -36,12 +36,8 @@ def process_event(filter_evaluator, event_filter, undisturbed, target_func,
     # eligibility
     filter_result = np.logical_and(undisturbed, filter_result)
 
-    filtered_inventory = inventory[filter_result]
-    filtered_state_variables = state_variables[filter_result]
-    filtered_pools = pools[filter_result]
-
     target = target_func(
-        filtered_pools, filtered_inventory, filtered_state_variables)
+        pools, inventory, state_variables, filter_result)
 
     return apply_rule_based_event(
         target, classifiers, inventory, pools, state_variables)

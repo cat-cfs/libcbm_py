@@ -18,7 +18,6 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
         rule_target=mock_rule_target,
         sit_event_row=mock_sit_event_row,
         disturbance_production_func=mock_disturbance_production_func,
-        eligible=mock_eligible,
         on_unrealized=mock_unrealized,
         random_generator=mock_random_generator
         )
@@ -26,7 +25,8 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
     create_target(
         pools=mock_pools,
         inventory=mock_inventory,
-        state_variables=mock_state_variables)
+        state_variables=mock_state_variables,
+        eligible=mock_eligible)
 
     return mock_rule_target
 

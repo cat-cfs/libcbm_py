@@ -51,13 +51,12 @@ class EventProcessorTest(unittest.TestCase):
 
         mock_target_func = Mock()
 
-        def target_func(pool, inventory, state):
-            event_filter = np.logical_and(
-                mock_evaluate_filter_return, mock_undisturbed)
-
-            self.assertTrue(pool.equals(mock_pools[event_filter]))
-            self.assertTrue(inventory.equals(mock_inventory[event_filter]))
-            self.assertTrue(state.equals(mock_state_variables[event_filter]))
+        def target_func(pool, inventory, state, eligible):
+            self.assertTrue(list(eligible) == list(np.logical_and(
+                mock_evaluate_filter_return, mock_undisturbed)))
+            self.assertTrue(pool.equals(mock_pools))
+            self.assertTrue(inventory.equals(mock_inventory))
+            self.assertTrue(state.equals(mock_state_variables))
             # mocks a disturbance target that fully disturbs inventory records
             # at index 1, 2
             return {
@@ -82,7 +81,8 @@ class EventProcessorTest(unittest.TestCase):
         mock_target_func.assert_called_once()
 
         self.assertTrue(target["disturbed_index"].equals(pd.Series([1, 2])))
-        self.assertTrue(target["area_proportions"].equals(pd.Series([1.0, 1.0])))
+        self.assertTrue(
+            target["area_proportions"].equals(pd.Series([1.0, 1.0])))
         # no splits occurred here, so the inputs are returned
         self.assertTrue(classifiers.equals(mock_classifiers))
         self.assertTrue(inventory.equals(mock_inventory))

@@ -59,10 +59,10 @@ def _get_sort_value(sort_type, pools, state_variables, random_generator):
 
 
 def create_sit_event_target_factory(rule_target, sit_event_row,
-                                    disturbance_production_func, eligible,
+                                    disturbance_production_func,
                                     random_generator, on_unrealized):
 
-    def factory(pools, inventory, state_variables):
+    def factory(pools, inventory, state_variables, eligible):
         return create_sit_event_target(
             rule_target, sit_event_row, pools, inventory, state_variables,
             disturbance_production_func, eligible, random_generator,

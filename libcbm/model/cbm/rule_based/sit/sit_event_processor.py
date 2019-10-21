@@ -131,7 +131,6 @@ class SITEventProcessor():
             rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
-            eligible=eligible,
             random_generator=self.random_generator,
             on_unrealized=on_unrealized)
 
