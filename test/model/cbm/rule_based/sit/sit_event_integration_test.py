@@ -1,4 +1,6 @@
 import unittest
+import os
+import json
 import pandas as pd
 import numpy as np
 from types import SimpleNamespace
@@ -6,80 +8,47 @@ from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_age_class_parser
+from libcbm.input.sit import sit_disturbance_type_parser
 from libcbm.model.cbm import cbm_variables
 
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 from libcbm.model.cbm.rule_based.sit import sit_event_processor
 
-
-def assemble_disturbance_events_table(events):
-    return pd.DataFrame([
-        event["classifier_set"] +
-        event["age_eligibility"] +
-        event["eligibility"] +
-        event["target"]
-        for event in events
-    ])
+from libcbm import resources
 
 
-def get_num_eligibility_cols():
-    num_eligibility_cols = len(
-        sit_format.get_disturbance_eligibility_columns(0))
-    return num_eligibility_cols
+def get_test_data_dir():
+    return os.path.join(
+        resources.get_examples_dir(), "sit", "rule_based_events")
+
+
+def load_sit_data(events_file):
+    sit = SimpleNamespace()
+    sit_config = load_config(events_file)
+    sit.sit_data = sit_reader.read(
+        sit_config["import_config"], get_test_data_dir())
+    sit.config = sit_config
+    return sit
+
+
+def load_config(events_file):
+    sit_rule_based_examples_dir = get_test_data_dir()
+
+    config_path = os.path.join(sit_rule_based_examples_dir, "sit_config.json")
+    with open(config_path) as sit_config_fp:
+        sit_config = json.load(sit_config_fp)
+
+    sit_config["import_config"]["events"] = {
+        "type": "csv", "params": {"path": f"{events_file}.csv"}}
+    return sit_config
 
 
 class SITEventIntegrationTest(unittest.TestCase):
 
     def test_sit_rule_based_event_integration(self):
 
-        sit = SimpleNamespace()
-        sit.config = {
-            "mapping_config": {
-                "nonforest": None,
-                "species": {
-                    "species_classifier": "classifier1",
-                    "species_mapping": [
-                        {
-                            "user_species": "a",
-                            "default_species": "Spruce"
-                        }
-                    ]
-                },
-                "spatial_units": {
-                    "mapping_mode": "SingleDefaultSpatialUnit",
-                    "default_spuid": 42
-                },
-                "disturbance_types": [
-                    {
-                        "user_dist_type": "fire",
-                        "default_dist_type": "Wildfire"
-                    }
-                ]
-            }
-        }
-        events = [{
-            "classifier_set": ["a"],
-            "age_eligibility": ["False", -1, -1, -1, -1],
-            "eligibility": [-1] * get_num_eligibility_cols(),
-            "target": [1.0, 2, "A", 100, "fire", 1, -1]}]
+        sit = load_sit_data("area_target_age_sort")
 
-        sit.sit_data = sit_reader.parse(
-            sit_classifiers=pd.DataFrame(
-                data=[
-                    (1, "_CLASSIFIER", "classifier1"),
-                    (1, "a", "a")]),
-            sit_disturbance_types=pd.DataFrame(data=[
-                ("fire", "fire")]),
-            sit_age_classes=sit_age_class_parser.generate_sit_age_classes(
-                5, 100),
-            sit_inventory=pd.DataFrame(
-                data=[("a", False, 100, 1, 0, 0, "fire", "fire")]),
-            sit_yield=pd.DataFrame([
-                ["a", "a"] +
-                [x*15 for x in range(0, 20+1)]]),
-            sit_events=assemble_disturbance_events_table(events),
-            sit_transitions=None
-        )
         sit = sit_cbm_factory.initialize_sit_objects(sit)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         sit_events = sit_cbm_factory.initialize_events(sit)
@@ -106,3 +75,4 @@ class SITEventIntegrationTest(unittest.TestCase):
             classifiers, inventory, sit.defaults.get_pools(),
             sit.defaults.get_flux_indicators())
         cbm_vars = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
