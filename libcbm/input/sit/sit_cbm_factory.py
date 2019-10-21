@@ -145,6 +145,25 @@ def initialize_inventory(sit):
     return classifiers_result, inventory_result
 
 
+def initialize_events(sit):
+    """Returns a copy of the parsed sit events with the disturbance type id
+    resulting from the SIT configuration.
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+
+    Returns:
+        pandas.DataFrame: the disturbance events with an added
+            "disturbance_type_id" column.
+    """
+    if sit.sit_data.disturbance_events is None:
+        return None
+    sit_events = sit.sit_data.disturbance_events.copy()
+    sit_events["disturbance_type_id"] = \
+        sit.sit_mapping.get_disturbance_type_id(sit_events.disturbance_type)
+    return sit_events
+
+
 def read_sit_config(config_path):
     """Load SIT data and configuration from the json formatted configuration
     file at specified config_path.
