@@ -92,12 +92,6 @@ class SITEventProcessor():
         self.cbm_defaults_ref = cbm_defaults_ref
         self.random_generator = random_generator
 
-        # this is for looking up disturbance type ids given a disturbance type
-        # name.
-        self.disturbance_type_id_lookup = {
-            x["disturbance_type_name"]: x["disturbance_type_id"]
-            for x in self.cbm_defaults_ref.get_disturbance_types()}
-
         self.on_unrealized_event = on_unrealized_event
 
     def _get_compute_disturbance_production(self, model_functions,
@@ -105,15 +99,14 @@ class SITEventProcessor():
                                             eligible, flux_codes):
 
         def compute_disturbance_production(pools, inventory,
-                                           disturbance_type):
+                                           disturbance_type_id):
 
-            rule_target.compute_disturbance_production(
+            return rule_target.compute_disturbance_production(
                 model_functions=model_functions,
                 compute_functions=compute_functions,
                 pools=pools,
                 inventory=inventory,
-                disturbance_type=self.disturbance_type_id_lookup[
-                    disturbance_type],
+                disturbance_type=disturbance_type_id,
                 flux=cbm_variables.initialize_flux(
                     inventory.shape[0], flux_codes),
                 eligible=eligible)
@@ -181,9 +174,6 @@ class SITEventProcessor():
         time_step_events = sit_events[
             sit_events.time_step == time_step].copy()
 
-        time_step_events["disturbance_type_id"] = \
-            time_step_events.disturbance_type.map(
-                self.disturbance_type_id_lookup)
         time_step_events = time_step_events.sort_values(
             by="disturbance_type_id")
         for _, time_step_event in time_step_events.iterrows():
