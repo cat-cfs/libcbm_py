@@ -9,10 +9,7 @@ from libcbm.input.sit import sit_age_class_parser
 from libcbm.model.cbm import cbm_variables
 
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
-from libcbm.model.cbm.rule_based.sit.sit_event_processor import \
-    get_pre_dynamics_func
-from libcbm.model.cbm.rule_based.sit.sit_event_processor \
-    import SITEventProcessor
+from libcbm.model.cbm.rule_based.sit import sit_event_processor
 
 
 def assemble_disturbance_events_table(events):
@@ -35,7 +32,6 @@ class SITEventIntegrationTest(unittest.TestCase):
 
     def test_sit_rule_based_event_integration(self):
 
-        return # some more work to do here.
         sit = SimpleNamespace()
         sit.config = {
             "mapping_config": {
@@ -65,7 +61,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             "classifier_set": ["a"],
             "age_eligibility": ["False", -1, -1, -1, -1],
             "eligibility": [-1] * get_num_eligibility_cols(),
-            "target": [1.0, 3, "A", 100, "fire", 1, -1]}]
+            "target": [1.0, 2, "A", 100, "fire", 1, -1]}]
 
         sit.sit_data = sit_reader.parse(
             sit_classifiers=pd.DataFrame(
@@ -86,13 +82,14 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         sit = sit_cbm_factory.initialize_sit_objects(sit)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+        sit_events = sit_cbm_factory.initialize_events(sit)
         cbm = sit_cbm_factory.initialize_cbm(sit)
 
         classifier_filter = ClassifierFilter(
             classifiers_config=sit_cbm_factory.get_classifiers(
                 sit.sit_data.classifiers, sit.sit_data.classifier_values),
             classifier_aggregates=sit.sit_data.classifier_aggregates)
-        sit_event_processor = SITEventProcessor(
+        processor = sit_event_processor.SITEventProcessor(
             model_functions=cbm.model_functions,
             compute_functions=cbm.compute_functions,
             cbm_defaults_ref=sit.defaults,
@@ -103,10 +100,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                     f"unrealized target. Shortfall: {shortfall}, "
                     f"Event: {sit_event}"))
 
-        pre_dynamics_func = get_pre_dynamics_func(
-            sit_event_processor, sit.sit_data.disturbance_events)
+        pre_dynamics_func = sit_event_processor.get_pre_dynamics_func(
+            processor, sit_events)
         cbm_vars = cbm_variables.initialize_simulation_variables(
             classifiers, inventory, sit.defaults.get_pools(),
             sit.defaults.get_flux_indicators())
         cbm_vars = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
-
