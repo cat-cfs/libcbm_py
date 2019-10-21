@@ -283,7 +283,8 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
 
     # set the disturbance type for all records
     disturbance_type = pd.DataFrame({
-        "disturbance_type": np.ones(n_stands, dtype=np.int32) * disturbance_type})
+        "disturbance_type":
+            np.ones(n_stands, dtype=np.int32) * disturbance_type})
     model_functions.GetDisturbanceOps(
         disturbance_op, inventory, disturbance_type)
 
