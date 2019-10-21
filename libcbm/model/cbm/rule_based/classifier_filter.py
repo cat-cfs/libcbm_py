@@ -27,7 +27,7 @@ class ClassifierFilter():
             if aggregate["classifier_id"] != classifier_id:
                 continue
             classifier_name = self.classifier_lookup[classifier_id]
-            result[aggregate["value"]] = [
+            result[aggregate["name"]] = [
                 self.classifier_value_lookup[classifier_name][y]
                 for y in aggregate["classifier_values"]]
         return result

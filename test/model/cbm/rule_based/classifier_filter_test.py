@@ -29,7 +29,7 @@ class ClassifierFilterTest(unittest.TestCase):
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
             {'classifier_id': 3,
-             'value': 'agg1',
+             'name': 'agg1',
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
@@ -72,7 +72,7 @@ class ClassifierFilterTest(unittest.TestCase):
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
             {'classifier_id': 3,
-             'value': 'agg1',
+             'name': 'agg1',
              'description': 'agg1',
              'classifier_values': ['c3_v1', 'c3_v3']}]
 
