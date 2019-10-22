@@ -23,8 +23,8 @@ def get_cbm_defaults_path():
         get_local_dir(), "cbm_defaults_db", "cbm_defaults_2019.db")
 
 
-def get_examples_dir():
-    return os.path.join(get_local_dir(), "examples")
+def get_test_resources_dir():
+    return os.path.join(get_local_dir(), "test")
 
 
 def get_libcbm_bin_path():
