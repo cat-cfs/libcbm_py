@@ -8,7 +8,7 @@ class ComputeFluxTests(unittest.TestCase):
     def test_compute_flux(self):
         """Tests the libcbm ComputeFlux method with random inputs
         """
-        
+
         np.random.seed(1)
         flux_indicator_config = [
             # with this flux indicator, we are capturing all flows from the "a"
