@@ -147,4 +147,8 @@ def create_sit_event_target(rule_target, sit_event_row,
         rule_target_result = rule_target.spatially_indexed_target(
             identifier=sit_event_row["spatial_reference"],
             inventory=inventory)
+    if rule_target_result is None:
+        raise ValueError(
+            f"specified sort ({sort}), target_type ({target_type}) "
+            "is not valid")
     return rule_target_result
