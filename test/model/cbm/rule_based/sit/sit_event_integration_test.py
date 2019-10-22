@@ -245,3 +245,5 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
         self.assertTrue(cbm_vars.state.shape[0] == 3)
+        # note the age sort order caused the first record to split
+        self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
