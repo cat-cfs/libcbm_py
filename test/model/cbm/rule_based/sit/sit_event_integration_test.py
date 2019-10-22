@@ -96,7 +96,7 @@ def get_pre_dynamics_func(sit, on_unrealized):
 
 class SITEventIntegrationTest(unittest.TestCase):
 
-    def test_sit_rule_based_event_integration_area_target_age_sort(self):
+    def test_rule_based_area_target_age_sort(self):
         """Test a rule based event with area target, and age sort where no
         splitting occurs
         """
@@ -130,3 +130,83 @@ class SITEventIntegrationTest(unittest.TestCase):
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [1, 0, 0, 1])
+
+    def test_rule_based_area_target_age_sort_unrealized(self):
+        """Test a rule based event with area target, and age sort where no
+        splitting occurs
+        """
+        mock_on_unrealized = Mock()
+
+        sit = load_sit_data()
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a2", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 10, "disturbance_type": "fire", "disturbance_year": 1}
+        ])
+
+        # record at index 1 is the only eligible record meaning the above event
+        # will be unrealized with a shortfall of 5
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a2", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        # since age sort is set, the oldest values of the eligible records
+        # will be disturbed
+        cbm_vars.state.age = np.array([99, 100, 98, 100])
+
+        pre_dynamics_func = get_pre_dynamics_func(sit, mock_on_unrealized)
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        # records 0 and 3 are the disturbed records: both are eligible, they
+        # are the oldest stands, and together they exactly satisfy the target.
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [0, 1, 0, 0])
+        # mock_on_unrealized.assert_called_once()
+        mock_args, _ = mock_on_unrealized.call_args
+        self.assertTrue(mock_args[0] == 5)
+        expected = sit.sit_data.disturbance_events.to_dict("records")[0]
+        expected["disturbance_type_id"] = 1
+        diff = set(mock_args[1].items()) ^ set(expected.items())
+        self.assertTrue(len(diff) == 0)
+
+    def test_rule_based_area_target_age_sort_multiple_event(self):
+        """Check interactions between two age sort/area target events
+        """
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 10, "disturbance_type": "clearcut",
+             "disturbance_year": 1},
+            {"admin": "?", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 10, "disturbance_type": "fire", "disturbance_year": 1},
+        ])
+        # the second of the above events will match all records, and it will
+        # occur first since fire happens before clearcut
+
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a2", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e3", "species": "sp", "area": 5}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        # since age sort is set, the oldest values of the eligible records
+        # will be disturbed
+        cbm_vars.state.age = np.array([100, 99, 98, 97, 96])
+
+        pre_dynamics_func = get_pre_dynamics_func(sit, mock_on_unrealized)
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [1, 1, 0, 3, 3])
