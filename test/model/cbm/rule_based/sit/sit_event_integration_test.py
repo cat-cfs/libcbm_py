@@ -210,3 +210,38 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [1, 1, 0, 3, 3])
+
+
+    def test_rule_based_area_target_age_sort_split(self):
+        """Test a rule based event with area target, and age sort where no
+        splitting occurs
+        """
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 6, "disturbance_type": "fire", "disturbance_year": 1}
+        ])
+        # since the target is 6, one of the 2 inventory records below needs to
+        # be split
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        # since the sort is by age, the first record will be fully disturbed
+        # and the second will be split into 1 and 4 hectare stands.
+        cbm_vars.state.age = np.array([99, 100])
+
+        pre_dynamics_func = get_pre_dynamics_func(sit, mock_on_unrealized)
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [1, 1, 0])
+
+        self.assertTrue(cbm_vars.pools.shape[0] == 3)
+        self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+        self.assertTrue(cbm_vars.state.shape[0] == 3)
