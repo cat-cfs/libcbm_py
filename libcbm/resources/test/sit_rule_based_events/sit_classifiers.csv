@@ -1,0 +1,16 @@
+classifier_id,name,description,agg1,agg2
+1,_CLASSIFIER,admin,,
+1,a1,administrative area 1,,
+1,a2,administrative area 2,,
+2,_CLASSIFIER,eco,,
+2,e1,ecological area 1,,
+2,e2,ecological area 2,,
+2,e3,ecological area 3,,
+2,e4,ecological area 4,,
+2,e5,ecological area 5,,
+2,group1,ecological group 1,e1,e2
+2,group2,ecological group 2,e3,e4
+3,_CLASSIFIER,species,,
+3,sp,spruce,,
+3,pn,pine,,
+3,oak,oak,,
