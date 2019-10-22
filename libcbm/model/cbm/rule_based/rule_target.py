@@ -120,11 +120,12 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
             pd.DataFrame({
                 "target_var": split_record["target_var"],
                 "sort_var": split_record["sort_var"],
-                "disturbed_index": split_record["index"],
+                "disturbed_index": int(split_record["index"]),
                 "area_proportions": [proportion]
             }))
     if remaining_target > 0:
         on_unrealized(remaining_target)
+    result = result.reset_index(drop=True)
     return result
 
 
