@@ -174,7 +174,9 @@ class SITEventProcessor():
             sit_events.time_step == time_step].copy()
 
         time_step_events = time_step_events.sort_values(
-            by="disturbance_type_id")
+            by="disturbance_type_id",
+            kind="mergesort")
+            # mergesort is a stable sort, and the default "quicksort" is not
         for _, time_step_event in time_step_events.iterrows():
             yield dict(time_step_event)
 
