@@ -75,7 +75,7 @@ def get_nullable_ndarray(a, type=ctypes.c_double):
     if a is None:
         return None
     else:
-        result = get_ndarray(a).ctypes.data_as(ctypes.POINTER(type))
+        result = get_ndarray(a.astype(type)).ctypes.data_as(ctypes.POINTER(type))
         return result
 
 
