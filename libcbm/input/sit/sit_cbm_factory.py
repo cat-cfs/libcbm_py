@@ -231,7 +231,7 @@ def load_sit(config_path, db_path=None):
     return sit
 
 
-def initialize_cbm(sit, dll_path=None):
+def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -246,13 +246,14 @@ def initialize_cbm(sit, dll_path=None):
 
     if not dll_path:
         dll_path = libcbm.resources.get_libcbm_bin_path()
-
+    if parameters_factory is None:
+        parameters_factory = cbm_defaults.get_cbm_parameters_factory(
+            sit.db_path)
     cbm = cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
             sit.db_path),
-        cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
-            sit.db_path),
+        cbm_parameters_factory=parameters_factory,
         merch_volume_to_biomass_factory=lambda:
             cbm_config.merch_volume_to_biomass_config(
                 db_path=sit.db_path,
