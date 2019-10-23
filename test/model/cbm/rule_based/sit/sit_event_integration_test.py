@@ -348,13 +348,52 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         sit.sit_data.inventory = initialize_inventory(sit, [
             {"admin": "a1", "eco": "e1", "species": "sp", "area": 3},
-            {"admin": "a1", "eco": "e2", "species": "sp", "area": 4}
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 4},
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 2},
         ])
 
         cbm_vars = setup_cbm_vars(sit)
 
-        # 1 tonnes C/ha * (3+4) ha total = 7 tonnes C available for event, with
-        # target = 10, therefore the expected shortfall is 3
+        # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event, with
+        # target = 10, therefore the expected shortfall is 1
+        cbm_vars.pools.SoftwoodMerch = 1.0
+        cbm_vars.state.age = np.array([99, 100, 98])
+
+        pre_dynamics_func = get_pre_dynamics_func(
+            sit, mock_on_unrealized, get_parameters_factory())
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [3, 3, 3])
+
+        mock_args, _ = mock_on_unrealized.call_args
+        self.assertTrue(mock_args[0] == 1) # confirm expected shortfall (in tonnes C)
+        expected = sit.sit_data.disturbance_events.to_dict("records")[0]
+        expected["disturbance_type_id"] = 3
+        diff = set(mock_args[1].items()) ^ set(expected.items())
+        self.assertTrue(len(diff) == 0)
+
+    def test_rule_based_merch_target_age_sort_split(self):
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
+             "target": 7, "disturbance_type": "clearcut",
+             "disturbance_year": 1}
+        ])
+
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            # the remaining target after 7 - 5 = 2, so 2/5ths of the area
+            # of this stand will be disturbed
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
+            # this entire record will be disturbed first (see age sort)
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
@@ -363,11 +402,9 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [3, 3])
-
-        mock_args, _ = mock_on_unrealized.call_args
-        self.assertTrue(mock_args[0] == 3)
-        expected = sit.sit_data.disturbance_events.to_dict("records")[0]
-        expected["disturbance_type_id"] = 3
-        diff = set(mock_args[1].items()) ^ set(expected.items())
-        self.assertTrue(len(diff) == 0)
+            list(cbm_vars_result.params.disturbance_type) == [3, 3, 0])
+        self.assertTrue(cbm_vars.pools.shape[0] == 3)
+        self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+        self.assertTrue(cbm_vars.state.shape[0] == 3)
+        # note the age sort order caused the first record to split
+        self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
