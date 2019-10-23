@@ -155,9 +155,6 @@ def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None):
 
 class SITEventIntegrationTest(unittest.TestCase):
 
-    def setUp(self):
-        self.parameter_factory = get_parameters_factory()
-
     def test_rule_based_area_target_age_sort(self):
         """Test a rule based event with area target, and age sort where no
         splitting occurs
@@ -331,7 +328,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([99, 100])
 
         pre_dynamics_func = get_pre_dynamics_func(
-            sit, mock_on_unrealized, self.parameter_factory)
+            sit, mock_on_unrealized, get_parameters_factory())
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
@@ -361,7 +358,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([99, 100])
 
         pre_dynamics_func = get_pre_dynamics_func(
-            sit, mock_on_unrealized, self.parameter_factory)
+            sit, mock_on_unrealized, get_parameters_factory())
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
