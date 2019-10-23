@@ -252,7 +252,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
         disturbance_type (int): The integer code specifying the disturbance
             type.
         flux (pandas.DataFrame): Storage for flux computation
-        eligible (pandas.Series): Bit values where True specifies the index is
+        eligible (numpy.ndarray): Bit values where True specifies the index is
             eligible for the disturbance, and false the opposite. In the
             returned result False indices will be set with 0's.
 
