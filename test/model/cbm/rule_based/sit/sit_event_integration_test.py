@@ -44,11 +44,12 @@ def get_parameters_factory():
     non_source_pools = [
         pool["id"] for pool in pools if pool["name"] not in
         ["SoftwoodMerch", "HardwoodMerch", "SoftwoodStemSnag",
-         "HardwoodStemSnag", "Input", "CO2", "CO", "CH4", "N2O", "Products"]]
+         "HardwoodStemSnag", "Input", "CO2", "CO", "CH4", "N2O",
+         "Products"]]
     # set up a matrix where all merch and snags flow into the products pool
     matrix_sources = [
         sw_merch, hw_merch, sw_stem_snag, hw_stem_snag] + non_source_pools
-    matrix_sinks = [products]*4 + non_source_pools
+    matrix_sinks = [products] * 4 + non_source_pools
     matrix_values = [1.0] * len(matrix_sources)
     new_matrix = pd.DataFrame()
     for dmid in dmids:
@@ -308,13 +309,13 @@ class SITEventIntegrationTest(unittest.TestCase):
     def test_rule_based_merch_target_age_sort(self):
         mock_on_unrealized = Mock()
         sit = load_sit_data()
+
         sit.sit_data.disturbance_events = initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
-             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 6, "disturbance_type": "fire", "disturbance_year": 1}
+             "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
+             "target": 10, "disturbance_type": "clearcut", "disturbance_year": 1}
         ])
-        # since the target is 6, one of the 2 inventory records below needs to
-        # be split
+
         sit.sit_data.inventory = initialize_inventory(sit, [
             {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
             {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
@@ -322,10 +323,13 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         cbm_vars = setup_cbm_vars(sit)
 
-        # since the sort is by age, the first record will be fully disturbed
-        # and the second will be split into 1 and 4 hectare stands.
+        # 1 tonnes C/ha * 10 ha total = 10 tonnes C
+        cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
         pre_dynamics_func = get_pre_dynamics_func(
             sit, mock_on_unrealized, get_parameters_factory())
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [3, 3])
