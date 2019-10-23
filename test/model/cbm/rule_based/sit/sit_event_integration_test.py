@@ -14,6 +14,9 @@ from libcbm.model.cbm.rule_based.sit import sit_event_processor
 from libcbm.model.cbm import cbm_defaults
 from libcbm import resources
 
+FIRE_ID = 1
+CLEARCUT_ID = 3
+DEFORESTATION_ID = 7
 
 def get_parameters_factory():
     """overrides selected default parameters for testing purposes.
@@ -133,7 +136,8 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
-def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None):
+def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None,
+                          random_func=None):
 
     sit_events = sit_cbm_factory.initialize_events(sit)
     cbm = sit_cbm_factory.initialize_cbm(
@@ -147,7 +151,7 @@ def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None):
         compute_functions=cbm.compute_functions,
         cbm_defaults_ref=sit.defaults,
         classifier_filter_builder=classifier_filter,
-        random_generator=np.random.rand,
+        random_generator=random_func,
         on_unrealized_event=on_unrealized)
     return sit_event_processor.get_pre_dynamics_func(
         processor, sit_events)
@@ -164,7 +168,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "disturbance_year": 1}
+             "target": 10, "disturbance_type": "fire", "time_step": 1}
         ])
 
         # records 0, 2, and 3 match, and 1 does not.  The target is 10, so
@@ -188,7 +192,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [1, 0, 0, 1])
+            list(cbm_vars_result.params.disturbance_type) ==
+                [FIRE_ID, 0, 0, FIRE_ID])
 
     def test_rule_based_area_target_age_sort_unrealized(self):
         """Test a rule based event with area target, and age sort where no
@@ -200,7 +205,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = initialize_events(sit, [
             {"admin": "a2", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "disturbance_year": 1}
+             "target": 10, "disturbance_type": "fire", "time_step": 1}
         ])
 
         # record at index 1 is the only eligible record meaning the above event
@@ -242,10 +247,10 @@ class SITEventIntegrationTest(unittest.TestCase):
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
              "target": 10, "disturbance_type": "clearcut",
-             "disturbance_year": 1},
+             "time_step": 1},
             {"admin": "?", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "disturbance_year": 1},
+             "target": 10, "disturbance_type": "fire", "time_step": 1},
         ])
         # the second of the above events will match all records, and it will
         # occur first since fire happens before clearcut
@@ -268,7 +273,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [1, 1, 0, 3, 3])
+            list(cbm_vars_result.params.disturbance_type) ==
+            [FIRE_ID, FIRE_ID, 0, CLEARCUT_ID, CLEARCUT_ID])
 
     def test_rule_based_area_target_age_sort_split(self):
         """Test a rule based event with area target, and age sort where no
@@ -279,7 +285,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 6, "disturbance_type": "fire", "disturbance_year": 1}
+             "target": 6, "disturbance_type": "fire", "time_step": 1}
         ])
         # since the target is 6, one of the 2 inventory records below needs to
         # be split
@@ -298,7 +304,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [1, 1, 0])
+            list(cbm_vars_result.params.disturbance_type) == [FIRE_ID, FIRE_ID, 0])
 
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
@@ -314,7 +320,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
              "target": 10, "disturbance_type": "clearcut",
-             "disturbance_year": 1}
+             "time_step": 1}
         ])
 
         sit.sit_data.inventory = initialize_inventory(sit, [
@@ -333,7 +339,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [3, 3])
+            list(cbm_vars_result.params.disturbance_type) ==
+            [CLEARCUT_ID, CLEARCUT_ID])
 
     def test_rule_based_merch_target_age_sort_unrealized(self):
         mock_on_unrealized = Mock()
@@ -343,7 +350,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
              "target": 10, "disturbance_type": "clearcut",
-             "disturbance_year": 1}
+             "time_step": 1}
         ])
 
         sit.sit_data.inventory = initialize_inventory(sit, [
@@ -354,8 +361,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         cbm_vars = setup_cbm_vars(sit)
 
-        # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event, with
-        # target = 10, therefore the expected shortfall is 1
+        # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event,
+        # with target = 10, therefore the expected shortfall is 1
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100, 98])
 
@@ -364,10 +371,12 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [3, 3, 3])
+            list(cbm_vars_result.params.disturbance_type) ==
+            [CLEARCUT_ID, CLEARCUT_ID, CLEARCUT_ID])
 
         mock_args, _ = mock_on_unrealized.call_args
-        self.assertTrue(mock_args[0] == 1) # confirm expected shortfall (in tonnes C)
+        # confirm expected shortfall (in tonnes C)
+        self.assertTrue(mock_args[0] == 1)
         expected = sit.sit_data.disturbance_events.to_dict("records")[0]
         expected["disturbance_type_id"] = 3
         diff = set(mock_args[1].items()) ^ set(expected.items())
@@ -381,7 +390,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
              "target": 7, "disturbance_type": "clearcut",
-             "disturbance_year": 1}
+             "time_step": 4}
         ])
 
         sit.sit_data.inventory = initialize_inventory(sit, [
@@ -399,12 +408,51 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         pre_dynamics_func = get_pre_dynamics_func(
             sit, mock_on_unrealized, get_parameters_factory())
-        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+        cbm_vars_result = pre_dynamics_func(time_step=4, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [3, 3, 0])
+            list(cbm_vars_result.params.disturbance_type) ==
+            [CLEARCUT_ID, CLEARCUT_ID, 0])
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
         self.assertTrue(cbm_vars.state.shape[0] == 3)
         # note the age sort order caused the first record to split
         self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
+
+    def test_rule_based_multiple_target_types(self):
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "MERCHCSORT_TOTAL", "target_type": "Merchantable",
+             "target": 100, "disturbance_type": "clearcut",
+             "time_step": 100},
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 20, "disturbance_type": "deforestation",
+             "time_step": 100},
+            # this event will occur first
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "RANDOMSORT", "target_type": "Area",
+             "target": 20, "disturbance_type": "fire",
+             "time_step": 100},
+        ])
+
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 1000},
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        cbm_vars.pools.HardwoodMerch = 1.0
+        cbm_vars.state.age = np.array([50])
+
+        pre_dynamics_func = get_pre_dynamics_func(
+            sit, mock_on_unrealized, get_parameters_factory(),
+            random_func=lambda x: np.ones(x))
+        cbm_vars_result = pre_dynamics_func(time_step=100, cbm_vars=cbm_vars)
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) ==
+            [FIRE_ID, CLEARCUT_ID, DEFORESTATION_ID, 0])
+        self.assertTrue(list(cbm_vars.inventory.area) == [20, 100, 20, 860])
