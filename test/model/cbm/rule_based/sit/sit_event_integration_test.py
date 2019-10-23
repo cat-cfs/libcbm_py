@@ -16,11 +16,18 @@ from libcbm import resources
 
 
 def get_parameters_factory():
+    """overrides selected default parameters for testing purposes.
 
+    For example since rule based disturbances use the matrix flows into the
+    "Products" pool, set up disturbance matrices so that this is predictable.
+
+    Returns:
+        func: a function to be passed to initialize CBM default parameters
+    """
     parameters = cbm_defaults.load_cbm_parameters(
         resources.get_cbm_defaults_path())
     disturbance_matrix_value = cbm_defaults.parameter_as_dataframe(
-        parameters["disturbance_matrix_value"])
+        parameters["disturbance_matrix_values"])
 
     # since for the purposes of rule based disturbances we are
     # only really interested in production results of disturbance matrices
@@ -35,11 +42,12 @@ def get_parameters_factory():
     hw_stem_snag = pool_ids["HardwoodStemSnag"]
     products = pool_ids["Products"]
     non_source_pools = [
-        pool["id"] for pool in pools if pool not in
-        ["SoftwoodMerch","HardwoodMerch", "SoftwoodStemSnag",
-         "HardwoodStemSnag"]]
+        pool["id"] for pool in pools if pool["name"] not in
+        ["SoftwoodMerch", "HardwoodMerch", "SoftwoodStemSnag",
+         "HardwoodStemSnag", "Input", "CO2", "CO", "CH4", "N2O", "Products"]]
+    # set up a matrix where all merch and snags flow into the products pool
     matrix_sources = [
-        sw_merch, sw_merch, sw_stem_snag, hw_stem_snag] + non_source_pools
+        sw_merch, hw_merch, sw_stem_snag, hw_stem_snag] + non_source_pools
     matrix_sinks = [products]*4 + non_source_pools
     matrix_values = [1.0] * len(matrix_sources)
     new_matrix = pd.DataFrame()
@@ -54,6 +62,10 @@ def get_parameters_factory():
                 columns=[
                     "disturbance_matrix_id", "source_pool_id", "sink_pool_id",
                     "proportion"]))
+    new_matrix = new_matrix.reset_index(drop=True)
+
+    parameters["disturbance_matrix_values"] = \
+        cbm_defaults.dataframe_as_parameter(new_matrix)
 
     def parameters_factory():
         return parameters
@@ -313,8 +325,6 @@ class SITEventIntegrationTest(unittest.TestCase):
         # since the sort is by age, the first record will be fully disturbed
         # and the second will be split into 1 and 4 hectare stands.
         cbm_vars.state.age = np.array([99, 100])
-
-
 
         pre_dynamics_func = get_pre_dynamics_func(
             sit, mock_on_unrealized, get_parameters_factory())
