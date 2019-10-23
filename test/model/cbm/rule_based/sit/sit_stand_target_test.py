@@ -343,7 +343,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=4,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=mock_production.Total,
             efficiency=100,
@@ -383,7 +383,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=23,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=expected_sort_value,
             efficiency=0.1,
@@ -423,7 +423,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=31,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=expected_sort_value,
             efficiency=0.99,
@@ -464,7 +464,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=31,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=mock_random_gen(mock_pools.shape[0]),
             efficiency=0.99,
@@ -501,7 +501,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=37,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             # simply confirm the '+' operator is used on the correct pools
             sort_value=(
@@ -539,7 +539,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=47,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=mock_pools.SoftwoodStemSnag,
             efficiency=1.1,
@@ -574,7 +574,7 @@ class SITStandTargetTest(unittest.TestCase):
             mock_disturbance_production_func=mock_disturbance_production_func
         ).sorted_merch_target.assert_called_once_with(
             carbon_target=97,
-            disturbance_production=mock_production.Total,
+            disturbance_production=mock_production,
             inventory="inventory",
             sort_value=mock_pools.HardwoodStemSnag,
             efficiency=2.1,
