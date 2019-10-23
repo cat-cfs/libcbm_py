@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 import sqlite3
 from libcbm.model.cbm import cbm_defaults_queries
 
@@ -63,6 +64,40 @@ def load_cbm_parameters(sqlite_path):
             }
 
     return result
+
+
+def parameter_as_dataframe(parameters):
+    """Return one of the values stored in the dictionary returned by
+    :py:func:`load_cbm_parameters` as a DataFrame
+
+    Args:
+        parameters (dict): a dictionary with keys:
+
+          - column_map: a dictionary of name (key) to column index (value)
+          - data: list of lists of values in the table
+    """
+    colmap = parameters["column_map"]
+    keys = sorted(colmap, key=colmap.get)
+    colnames = []
+    for key in keys:
+        colnames.append(colmap[key])
+    return pd.DataFrame(
+        data=parameters["data"],
+        columns=colnames)
+
+
+def dataframe_as_parameter(df):
+    """Convert a dataframe into a dictionary table format like the
+    dictionary values returned by the function
+    :py:func:`load_cbm_parameters`
+
+    Args:
+        df (pandas.DataFrame): a dataframe to convert to the data/col_map
+            scheme
+    """
+    return {
+        "column_map": {x: i for i, x in enumerate(df.columns)},
+        "data": df.values.tolist()}
 
 
 def load_cbm_pools(sqlite_path):
