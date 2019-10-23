@@ -183,7 +183,7 @@ class LibCBMWrapper():
                 by this function according to the definition of flux
                 indicators in the configuration and the flows that occur in
                 the specified operations.
-            enabled ([type], optional): optional int vector of length
+            enabled (ndarray, optional): optional int vector of length
                 n_stands. If specified, enables or disables flows for each
                 stand, based on the value at each stand index. A value of 0
                 indicates a disabled stand index, and any other value is an
