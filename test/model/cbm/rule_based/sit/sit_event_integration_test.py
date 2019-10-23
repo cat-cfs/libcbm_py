@@ -11,8 +11,53 @@ from libcbm.model.cbm import cbm_variables
 
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 from libcbm.model.cbm.rule_based.sit import sit_event_processor
-
+from libcbm.model.cbm import cbm_defaults
 from libcbm import resources
+
+
+def get_parameters_factory():
+
+    parameters = cbm_defaults.load_cbm_parameters(
+        resources.get_cbm_defaults_path())
+    disturbance_matrix_value = cbm_defaults.parameter_as_dataframe(
+        parameters["disturbance_matrix_value"])
+
+    # since for the purposes of rule based disturbances we are
+    # only really interested in production results of disturbance matrices
+    # set some easy to work with DM values.
+    dmids = list(disturbance_matrix_value.disturbance_matrix_id.unique())
+
+    pools = cbm_defaults.load_cbm_pools(resources.get_cbm_defaults_path())
+    pool_ids = {pool["name"]: pool["id"] for pool in pools}
+    sw_merch = pool_ids["SoftwoodMerch"]
+    hw_merch = pool_ids["HardwoodMerch"]
+    sw_stem_snag = pool_ids["SoftwoodStemSnag"]
+    hw_stem_snag = pool_ids["HardwoodStemSnag"]
+    products = pool_ids["Products"]
+    non_source_pools = [
+        pool["id"] for pool in pools if pool not in
+        ["SoftwoodMerch","HardwoodMerch", "SoftwoodStemSnag",
+         "HardwoodStemSnag"]]
+    matrix_sources = [
+        sw_merch, sw_merch, sw_stem_snag, hw_stem_snag] + non_source_pools
+    matrix_sinks = [products]*4 + non_source_pools
+    matrix_values = [1.0] * len(matrix_sources)
+    new_matrix = pd.DataFrame()
+    for dmid in dmids:
+        new_matrix = new_matrix.append(
+            pd.DataFrame(
+                data={
+                    "disturbance_matrix_id": dmid,
+                    "source_pool_id": matrix_sources,
+                    "sink_pool_id": matrix_sinks,
+                    "proportion": matrix_values},
+                columns=[
+                    "disturbance_matrix_id", "source_pool_id", "sink_pool_id",
+                    "proportion"]))
+
+    def parameters_factory():
+        return parameters
+    return parameters_factory
 
 
 def get_test_data_dir():
@@ -75,10 +120,11 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
-def get_pre_dynamics_func(sit, on_unrealized):
+def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None):
 
     sit_events = sit_cbm_factory.initialize_events(sit)
-    cbm = sit_cbm_factory.initialize_cbm(sit)
+    cbm = sit_cbm_factory.initialize_cbm(
+        sit, parameters_factory=parameters_factory)
     classifier_filter = ClassifierFilter(
         classifiers_config=sit_cbm_factory.get_classifiers(
             sit.sit_data.classifiers, sit.sit_data.classifier_values),
@@ -166,7 +212,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [0, 1, 0, 0])
-        # mock_on_unrealized.assert_called_once()
+
         mock_args, _ = mock_on_unrealized.call_args
         self.assertTrue(mock_args[0] == 5)
         expected = sit.sit_data.disturbance_events.to_dict("records")[0]
@@ -211,7 +257,6 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [1, 1, 0, 3, 3])
 
-
     def test_rule_based_area_target_age_sort_split(self):
         """Test a rule based event with area target, and age sort where no
         splitting occurs
@@ -247,3 +292,30 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(cbm_vars.state.shape[0] == 3)
         # note the age sort order caused the first record to split
         self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
+
+    def test_rule_based_merch_target_age_sort(self):
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
+             "target": 6, "disturbance_type": "fire", "disturbance_year": 1}
+        ])
+        # since the target is 6, one of the 2 inventory records below needs to
+        # be split
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        # since the sort is by age, the first record will be fully disturbed
+        # and the second will be split into 1 and 4 hectare stands.
+        cbm_vars.state.age = np.array([99, 100])
+
+
+
+        pre_dynamics_func = get_pre_dynamics_func(
+            sit, mock_on_unrealized, get_parameters_factory())
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
