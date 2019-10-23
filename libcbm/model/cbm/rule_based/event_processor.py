@@ -85,9 +85,10 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
-        updated_inventory.area[split_index] = \
-            updated_inventory.area[split_index] * \
-            target_area_proportions[splits].array
+        updated_inv_idx = updated_inventory.index[split_index]
+        updated_inventory.loc[updated_inv_idx, "area"] = \
+            updated_inventory.loc[updated_inv_idx, "area"] * \
+            target_area_proportions[splits].to_numpy()
 
         # set the split inventory as the remaining undisturbed area
         split_inventory.area = \
