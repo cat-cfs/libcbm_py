@@ -155,6 +155,9 @@ def get_pre_dynamics_func(sit, on_unrealized, parameters_factory=None):
 
 class SITEventIntegrationTest(unittest.TestCase):
 
+    def setUp(self):
+        self.parameter_factory = get_parameters_factory()
+
     def test_rule_based_area_target_age_sort(self):
         """Test a rule based event with area target, and age sort where no
         splitting occurs
@@ -328,8 +331,45 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([99, 100])
 
         pre_dynamics_func = get_pre_dynamics_func(
-            sit, mock_on_unrealized, get_parameters_factory())
+            sit, mock_on_unrealized, self.parameter_factory)
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [3, 3])
+
+    def test_rule_based_merch_target_age_sort_unrealized(self):
+        mock_on_unrealized = Mock()
+        sit = load_sit_data()
+
+        sit.sit_data.disturbance_events = initialize_events(sit, [
+            {"admin": "a1", "eco": "?", "species": "sp",
+             "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
+             "target": 10, "disturbance_type": "clearcut",
+             "disturbance_year": 1}
+        ])
+
+        sit.sit_data.inventory = initialize_inventory(sit, [
+            {"admin": "a1", "eco": "e1", "species": "sp", "area": 3},
+            {"admin": "a1", "eco": "e2", "species": "sp", "area": 4}
+        ])
+
+        cbm_vars = setup_cbm_vars(sit)
+
+        # 1 tonnes C/ha * (3+4) ha total = 7 tonnes C available for event, with
+        # target = 10, therefore the expected shortfall is 3
+        cbm_vars.pools.SoftwoodMerch = 1.0
+        cbm_vars.state.age = np.array([99, 100])
+
+        pre_dynamics_func = get_pre_dynamics_func(
+            sit, mock_on_unrealized, self.parameter_factory)
+        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+
+        self.assertTrue(
+            list(cbm_vars_result.params.disturbance_type) == [3, 3])
+
+        mock_args, _ = mock_on_unrealized.call_args
+        self.assertTrue(mock_args[0] == 3)
+        expected = sit.sit_data.disturbance_events.to_dict("records")[0]
+        expected["disturbance_type_id"] = 3
+        diff = set(mock_args[1].items()) ^ set(expected.items())
+        self.assertTrue(len(diff) == 0)
