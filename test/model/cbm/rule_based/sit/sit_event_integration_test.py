@@ -313,7 +313,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
-             "target": 10, "disturbance_type": "clearcut", "disturbance_year": 1}
+             "target": 10, "disturbance_type": "clearcut",
+             "disturbance_year": 1}
         ])
 
         sit.sit_data.inventory = initialize_inventory(sit, [
