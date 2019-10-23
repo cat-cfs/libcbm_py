@@ -80,7 +80,7 @@ def parameter_as_dataframe(parameters):
     keys = sorted(colmap, key=colmap.get)
     colnames = []
     for key in keys:
-        colnames.append(colmap[key])
+        colnames.append(key)
     return pd.DataFrame(
         data=parameters["data"],
         columns=colnames)
