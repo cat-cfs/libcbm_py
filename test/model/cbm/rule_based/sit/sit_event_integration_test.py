@@ -451,7 +451,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         pre_dynamics_func = get_pre_dynamics_func(
             sit, mock_on_unrealized, get_parameters_factory(),
-            random_func=lambda x: np.ones(x))
+            random_func=np.ones)
         cbm_vars_result = pre_dynamics_func(time_step=100, cbm_vars=cbm_vars)
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==

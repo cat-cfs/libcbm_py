@@ -6,8 +6,7 @@ from libcbm.wrapper.libcbm_handle import LibCBMHandle
 
 
 def create(dll_path, dll_config_factory, cbm_parameters_factory,
-           merch_volume_to_biomass_factory, classifiers_factory,
-           transitions_factory=lambda: []):
+           merch_volume_to_biomass_factory, classifiers_factory):
     """Create and initialize an instance of the CBM model
 
     Args:
@@ -21,7 +20,6 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         classifiers_factory (func): function that creates a valid classifier
             configuration for CBM (see:
             :py:func:`libcbm.model.cbm.cbm_config.classifier_config`)
-        transitions_factory: ???
 
     In the following example a CBM instance is built with a single growth
     curve, and classifier set.  The :py:mod:`libcbm.model.cbm.cbm_defaults`
@@ -79,7 +77,6 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         "merch_volume_to_biomass": merch_volume_to_biomass_config,
         "classifiers": classifiers_config["classifiers"],
         "classifier_values": classifiers_config["classifier_values"],
-        "transitions": transitions_factory()
     }
 
     cbm_config_string = json.dumps(cbm_config)

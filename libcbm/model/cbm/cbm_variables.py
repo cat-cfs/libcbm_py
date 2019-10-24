@@ -135,7 +135,7 @@ def initialize_spinup_variables(n_stands):
 
 
 def initialize_cbm_parameters(n_stands, disturbance_type=0,
-                              transition_id=0, mean_annual_temp=None):
+                              reset_age=-1, mean_annual_temp=None):
     """Create CBM parameters as a collection of variable vectors
 
     The variables here are all of length N stands and are row-aligned with
@@ -154,11 +154,18 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
             type id which references the disturbance types defined in the
             libCBM configuration.  By convention, a negative or 0 value
             indicates no disturbance. Defaults to 0.
-        transition_id (numpy.ndarray, int, optional): The transition id which
-            references the transition rules defined in the libCBM
-            configuration.  By convention, a negative or 0 value indicates no
-            transition. Defaults to 0.
-        mean_annual_temp (numpy.ndarray, int, optional): A value, in degrees
+        reset_age (numpy.ndarray, int, optional): The post disturbance reset
+            age. By convention, a negative value indicates a null reset_age.
+            If the null reset_age value is specified the post disturbance age
+            will be determined by the following decision:
+
+                - if the disturbance type results in no biomass after the
+                  disturbance matrix is applied, the age is reset to zero.
+                - otherwise, the age is not modified from the pre-disturbance
+                  age.
+
+            Defaults to -1
+        mean_annual_temp (numpy.ndarray, float, optional): A value, in degrees
             Celsius, that defines this timestep's mean annual temperature for
             each stand. Defaults to None.
 
@@ -172,8 +179,8 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
     parameters = SimpleNamespace()
     parameters.disturbance_type = data_helpers.promote_scalar(
         disturbance_type, n_stands, dtype=np.int32)
-    parameters.transition_rule_id = data_helpers.promote_scalar(
-        transition_id, n_stands, dtype=np.int32)
+    parameters.reset_age = data_helpers.promote_scalar(
+        reset_age, n_stands, dtype=np.int32)
     parameters.mean_annual_temp = data_helpers.promote_scalar(
         mean_annual_temp, n_stands, dtype=np.float)
     return parameters

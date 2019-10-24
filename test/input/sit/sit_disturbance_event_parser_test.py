@@ -3,6 +3,7 @@ import pandas as pd
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_format
 
+
 class SITDisturbanceEventParserTest(unittest.TestCase):
 
     def get_mock_classifiers(self):
@@ -284,5 +285,3 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                 e, classifiers, classifier_values, aggregates,
                 self.get_mock_disturbance_types(),
                 self.get_mock_age_classes())
-
-

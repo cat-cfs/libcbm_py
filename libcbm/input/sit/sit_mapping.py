@@ -356,7 +356,7 @@ class SITMapping():
             - historical disturbance type column in sit inventory
             - last pass disturbance type column in sit inventory
             - disturbance type column in sit disturbance events
-            - disturbacne type column in sit transition rules
+            - disturbance type column in sit transition rules
 
         Args:
             disturbance_type (pandas.Series): A series of disturbance types
