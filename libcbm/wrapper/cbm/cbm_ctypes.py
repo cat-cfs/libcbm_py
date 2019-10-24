@@ -31,7 +31,7 @@ def initialize_CBM_ctypes(dll):
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # disturbance_types (length n)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
-        # transition_rule_ids (length n)
+        # reset_age (length n)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # last_disturbance_type (length n) (return value)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),

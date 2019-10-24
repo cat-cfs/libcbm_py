@@ -75,17 +75,7 @@ class CBMWrapper(LibCBM_ctypes):
                                 ]
                             }
                         ]
-                    },
-                    "transitions": [
-                        {
-                            "id": 1,
-                            "classifier_set": {
-                                'type': 'name', 'values': ['a1','b2','?']
-                            },
-                            "regeneration_delay": 0,
-                            "reset_age": 0
-                        }
-                    ]
+                    }
                 }
     """
     def __init__(self, handle, config):
@@ -122,7 +112,7 @@ class CBMWrapper(LibCBM_ctypes):
 
         self.handle.call(
             "LibCBM_AdvanceStandState", n, classifiersMat,
-            i.spatial_unit, p.disturbance_type, p.transition_rule_id,
+            i.spatial_unit, p.disturbance_type, p.reset_age,
             v.last_disturbance_type, v.time_since_last_disturbance,
             v.time_since_land_class_change, v.growth_enabled, v.enabled,
             v.land_class, v.regeneration_delay, v.age)
