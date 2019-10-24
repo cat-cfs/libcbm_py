@@ -304,7 +304,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) == [FIRE_ID, FIRE_ID, 0])
+            list(cbm_vars_result.params.disturbance_type) ==
+            [FIRE_ID, FIRE_ID, 0])
 
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)

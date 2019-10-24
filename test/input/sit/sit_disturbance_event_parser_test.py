@@ -112,6 +112,8 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
         result = sit_disturbance_event_parser.parse(
             e, classifiers, classifier_values, aggregates,
             self.get_mock_disturbance_types(), self.get_mock_age_classes())
+        self.assertTrue(list(result.classifier1) == ["1"])
+        self.assertTrue(list(result.classifier2) == ["2.0"])
 
     def test_incorrect_number_of_classifiers_error(self):
         """checks that the format has the correct number of columns

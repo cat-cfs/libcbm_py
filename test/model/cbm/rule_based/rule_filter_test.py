@@ -1,7 +1,6 @@
 import unittest
 from types import SimpleNamespace
 import pandas as pd
-import numpy as np
 from libcbm.model.cbm.rule_based import rule_filter
 
 

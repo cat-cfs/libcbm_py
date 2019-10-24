@@ -1,5 +1,4 @@
 import unittest
-from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 from mock import Mock

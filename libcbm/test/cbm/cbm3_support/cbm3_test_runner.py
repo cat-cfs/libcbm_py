@@ -1,9 +1,5 @@
 import os
-import json
-import shutil
 import datetime
-from types import SimpleNamespace
-import pandas as pd
 from libcbm.test.cbm.cbm3_support import cbm3_test_io
 
 from libcbm.test.cbm.cbm3_support import cbm3_simulator
