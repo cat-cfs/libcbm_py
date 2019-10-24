@@ -74,10 +74,10 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
     target_index = target["disturbed_index"]
     target_area_proportions = target["area_proportions"]
 
-    updated_inventory = inventory.copy()
-    updated_classifiers = classifiers.copy()
-    updated_state_variables = state_variables.copy()
-    updated_pools = pools.copy()
+    updated_inventory = inventory
+    updated_classifiers = classifiers
+    updated_state_variables = state_variables
+    updated_pools = pools
 
     splits = target_area_proportions < 1.0
     split_index = target_index[splits]
