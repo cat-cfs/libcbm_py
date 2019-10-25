@@ -163,6 +163,25 @@ def initialize_events(sit):
         sit.sit_mapping.get_disturbance_type_id(sit_events.disturbance_type)
     return sit_events
 
+def initialize_transition_rules(sit):
+    """Returns a copy of the parsed sit transition rules with the disturbance
+    type id resulting from the SIT configuration.
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+
+    Returns:
+        pandas.DataFrame: the transition rules with an added
+            "disturbance_type_id" column.
+    """
+    if sit.sit_data.transition_rules is None:
+        return None
+    transition_rules = sit.sit_data.transition_rules.copy()
+    transition_rules["disturbance_type_id"] = \
+        sit.sit_mapping.get_disturbance_type_id(
+            transition_rules.disturbance_type)
+    return transition_rules
+
 
 def read_sit_config(config_path):
     """Load SIT data and configuration from the json formatted configuration
