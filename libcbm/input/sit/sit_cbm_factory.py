@@ -163,6 +163,7 @@ def initialize_events(sit):
         sit.sit_mapping.get_disturbance_type_id(sit_events.disturbance_type)
     return sit_events
 
+
 def initialize_transition_rules(sit):
     """Returns a copy of the parsed sit transition rules with the disturbance
     type id resulting from the SIT configuration.

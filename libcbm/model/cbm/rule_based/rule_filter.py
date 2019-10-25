@@ -51,7 +51,8 @@ def create_filter(expression, data, columns, column_variable_map=None):
     Args:
         expression (str): a boolean expression in terms of the values in
             column_variable_map
-        data (pandas.DataFrame): the data to for which to create a filter
+        data (pandas.DataFrame, dict or object): the data to for which to
+            create a filter
         columns (list): the columns involved in the expression
         column_variable_map (dict, optional): a mapping of the column names
             to variable names in the expression. Default None. If None, the

@@ -3,6 +3,7 @@ from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_classifier_parser
 
+GROUPED_PERCENT_ERR_MAX = 0.00001
 
 def parse(transition_rules, classifiers, classifier_values,
           classifier_aggregates, disturbance_types, age_classes):
@@ -116,7 +117,7 @@ def parse(transition_rules, classifiers, classifier_values,
     group_cols = list(classifiers.name) + \
         ["min_age", "max_age", "disturbance_type"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
-    invalid_grouped = grouped[grouped.percent > 100]
+    invalid_grouped = grouped[grouped.percent > 100 + GROUPED_PERCENT_ERR_MAX]
     if len(invalid_grouped) > 0:
         invalid_percents = [x.Index for x in grouped.head().itertuples()]
         raise ValueError(

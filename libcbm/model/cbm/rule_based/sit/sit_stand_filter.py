@@ -165,5 +165,3 @@ def get_classifier_set(sit_data_row, classifiers):
     classifier_set = [
         sit_data_row[x] for x in classifiers]
     return classifier_set
-
-
