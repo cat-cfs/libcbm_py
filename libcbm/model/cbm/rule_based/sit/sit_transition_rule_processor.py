@@ -1,5 +1,6 @@
 from libcbm.input.sit import sit_transition_rule_parser
 
+
 def sit_transition_rule_iterator(sit_transitions, classifier_names):
     """Groups transition rules by classifiers, and eligibility criteria and
     yields the sequence of group_key, group.

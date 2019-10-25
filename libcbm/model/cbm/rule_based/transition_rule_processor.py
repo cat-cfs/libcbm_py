@@ -80,14 +80,14 @@ class TransitionRuleProcessor(object):
             result[classifier_name] = transition_id
         return result
 
-    def apply_transition_rule(self, tr_group_key, tr_group, transitioned,
+    def apply_transition_rule(self, tr_group_key, tr_group, transition_mask,
                               disturbance_type, classifiers, inventory, pools,
                               state_variables):
 
         filter_result = self.filter_stands(
             tr_group_key, inventory, disturbance_type)
 
-        if np.logical_and(transitioned, filter_result).any():
+        if np.logical_and(transition_mask, filter_result).any():
             # this indicates that a transition rule has collided with another
             # transition rule, which is possible when overlapping criteria are
             # specified (wildcards, age ranges etc.)  This is a simplistic,
@@ -98,7 +98,7 @@ class TransitionRuleProcessor(object):
                 f"{tr_group_key}")
 
         # sets the transitioned array with the transition filter result
-        transitioned = np.logical_or(transitioned, filter_result)
+        transition_mask = np.logical_or(transition_mask, filter_result)
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
@@ -107,8 +107,14 @@ class TransitionRuleProcessor(object):
         transition_inventory_result = pd.DataFrame()
         transition_pool_result = pd.DataFrame()
         transition_state_variable_result = pd.DataFrame()
+        transition_output = pd.DataFrame({
+            "regeneration_delay": np.zeros(inventory.shape[0], dtype=np.int),
+            "reset_age": np.ones(inventory.shape[0], dtype=np.int) * -1
+        })
+
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
+
                 # for the first index use the existing matched records
                 transition_classifier_ids = self.get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
@@ -117,22 +123,32 @@ class TransitionRuleProcessor(object):
                 if proportion < 1.0:
                     inventory.loc[filter_result, "area"] = \
                         inventory.loc[filter_result, "area"] * proportion
+
+                transition_output.loc[filter_result, "regeneration_delay"] = \
+                    tr_group.iloc[i_proportion].regeneration_delay
+                transition_output.loc[filter_result, "reset_age"] = \
+                    tr_group.iloc[i_proportion].reset_age
+
             elif i_proportion == tr_group.shape[0]:
-                # if a proportion was created for the 100-grouped percentage
-                # remainder, then make a copy with no transition
+                # if a proportion was created for a less than 100% remainder,
+                # then make a copy with no transition
                 transition_classifier_result = \
                     transition_classifier_result.append(
                         classifiers[filter_result].copy())
+
                 transition_inventory = inventory[filter_result].copy()
                 transition_inventory.area = \
                     transition_inventory.area * proportion
                 transition_inventory_result = \
                     transition_inventory_result.append(transition_inventory)
+
                 transition_pool_result = transition_pool_result.append(
                     pools[filter_result].copy())
+
                 transition_state_variable_result = \
                     transition_state_variable_result.append(
                         state_variables[filter_result].copy())
+
             else:
                 transition_classifier_ids = self.get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
@@ -141,16 +157,27 @@ class TransitionRuleProcessor(object):
                     transition_classifiers[classifier_name] = value_id
                 transition_classifier_result = \
                     transition_classifier_result.append(transition_classifiers)
+
                 transition_inventory = inventory[filter_result].copy()
                 transition_inventory.area = \
                     transition_inventory.area * proportion
                 transition_inventory_result = \
                     transition_inventory_result.append(transition_inventory)
+
                 transition_pool_result = transition_pool_result.append(
                     pools[filter_result].copy())
+
                 transition_state_variable_result = \
                     transition_state_variable_result.append(
                         state_variables[filter_result].copy())
+
+                transition_output = transition_output.append(
+                    pd.DataFrame({
+                        "regeneration_delay": np.zeros(
+                            filter_result.shape[0], dtype=np.int),
+                        "reset_age": np.ones(
+                            filter_result.shape[0], dtype=np.int) * -1
+                    }))
 
         if len(proportions) > 1:
             classifiers = classifiers.append(
@@ -161,5 +188,8 @@ class TransitionRuleProcessor(object):
                 transition_pool_result).reset_index(drop=True)
             state_variables = state_variables.append(
                 transition_state_variable_result).reset_index(drop=True)
+            transition_output = transition_output.reset_index(drop=True)
 
-        return transitioned, classifiers, inventory, pools, state_variables
+        return (
+            transition_mask, transition_output, classifiers, inventory, pools,
+            state_variables)
