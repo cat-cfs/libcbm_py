@@ -1,4 +1,3 @@
-
 import unittest
 import pandas as pd
 from libcbm.model.cbm.rule_based import transition_rule_processor

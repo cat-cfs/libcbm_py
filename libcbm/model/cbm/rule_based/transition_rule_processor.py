@@ -51,7 +51,8 @@ class TransitionRuleProcessor(object):
                        disturbance_type):
 
         disturbance_type_target = tr_group_key["disturbance_type"]
-        classifier_set = [tr_group_key[x] for x in classifiers.columns.tolist()]
+        classifier_set = [
+            tr_group_key[x] for x in classifiers.columns.tolist()]
         tr_filter = rule_filter.merge_filters(
             self.state_variable_filter_func(tr_group_key, state_variables),
             self.classifier_filter_builder.create_classifiers_filter(
@@ -80,8 +81,48 @@ class TransitionRuleProcessor(object):
     def apply_transition_rule(self, tr_group_key, tr_group, transition_mask,
                               disturbance_type, classifiers, inventory, pools,
                               state_variables):
+        """Apply the specified transition rule group to the simulation
+        variables, updating classifier values, and returning the transition
+        rule variables reset age, and regeneration delay.  For each member of
+        the transition rule group a split of the simulation variables will
+        occur with area being reduced according to the "percent" column in
+        the member transition rules.
 
-        filter_result = self.filter_stands(
+        Args:
+            tr_group_key (dict): the common key for the grouped transition
+                rules.
+            tr_group (pandas.DataFrame): the grouped transition rules, where
+                each row is a member.
+            transition_mask (numpy.ndarray): a boolean mask indicating when
+                true that the correspoding index has already been transitioned.
+                This is used to detect transition rule criteria collisions.
+            disturbance_type (numpy.ndarray): the array of disturbance types
+                being applied to the inventory in the current timestep.
+            classifiers (pandas.DataFrame): CBM classifier values
+            inventory (pandas.DataFrame): CBM inventory
+            pools (pandas.DataFrame): CBM simulation pools
+            state_variables (pandas.DataFrame): CBM simulation state variables
+
+        Raises:
+            ValueError: a transition rule criteria resulted in the selection of
+                stands targetted by at least one other transition rule
+
+        Returns:
+            tuple:
+
+                - transition_mask: the specified transition_mask parameter is
+                    returned altered with the indices transitioned by this
+                    function call.
+                - transition_output: a dataframe of the regeneration delay and
+                    age reset variables along the inventory n_stands dimension
+                - classifiers: updated and potentially split classifier values
+                - inventory: updated and potentially split inventory
+                - pools: the original specified pools or potentially split pools
+                - state_variables: the original specified state_variables or
+                    potentially split state_variables
+
+        """
+        filter_result = self._filter_stands(
             tr_group_key, state_variables, classifiers, disturbance_type)
 
         if np.logical_and(transition_mask, filter_result).any():
@@ -113,7 +154,7 @@ class TransitionRuleProcessor(object):
             if i_proportion == 0:
 
                 # for the first index use the existing matched records
-                transition_classifier_ids = self.get_transition_classifier_set(
+                transition_classifier_ids = self._get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
                 for classifier_name, value_id in transition_classifier_ids:
                     classifiers.loc[filter_result, classifier_name] = value_id
@@ -147,7 +188,7 @@ class TransitionRuleProcessor(object):
                         state_variables[filter_result].copy())
 
             else:
-                transition_classifier_ids = self.get_transition_classifier_set(
+                transition_classifier_ids = self._get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
                 transition_classifiers = classifiers[filter_result].copy()
                 for classifier_name, value_id in transition_classifier_ids:
