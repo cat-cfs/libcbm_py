@@ -1,4 +1,17 @@
 from libcbm.input.sit import sit_transition_rule_parser
+from libcbm.model.cbm.rule_based.sit import sit_stand_filter
+from libcbm.model.cbm.rule_based import rule_filter
+
+
+def state_variable_filter_func(tr_group_key, state_variables):
+
+    state_filter_expression, state_filter_cols = \
+        sit_stand_filter.create_state_filter_expression(
+            tr_group_key, True)
+    return rule_filter.create_filter(
+        expression=state_filter_expression,
+        data={"age": state_variables.age},
+        columns=state_filter_cols)
 
 
 def sit_transition_rule_iterator(sit_transitions, classifier_names):
@@ -29,4 +42,3 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
                 "Greater than 100 percent sum for percent field in "
                 f"grouped transition rules with: {group_key_dict}")
         yield group_key_dict, group
-

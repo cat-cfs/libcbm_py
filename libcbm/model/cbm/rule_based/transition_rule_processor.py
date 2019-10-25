@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based import rule_filter
 
 
@@ -27,8 +26,12 @@ def create_split_proportions(tr_group_key, tr_group, group_error_max):
 
 class TransitionRuleProcessor(object):
 
-    def __init__(self, classifier_filter_builder, classifiers_config,
-                 grouped_percent_err_max):
+    def __init__(self, classifier_filter_builder, state_variable_filter_func,
+                 classifiers_config, grouped_percent_err_max, wildcard,
+                 transition_classifier_postfix):
+        self.wildcard = wildcard
+        self.transition_classifier_postfix = transition_classifier_postfix
+        self.state_variable_filter_func = state_variable_filter_func
         self.classifier_filter_builder = classifier_filter_builder
         self.grouped_percent_err_max = grouped_percent_err_max
         self.classifiers_config = classifiers_config
@@ -44,21 +47,15 @@ class TransitionRuleProcessor(object):
             in self.classifiers_config["classifier_values"]
             if x["classifier_id"] == classifier_id}
 
-    def filter_stands(self, tr_group_key, inventory, disturbance_type):
-        state_filter_expression, state_filter_cols = \
-            sit_stand_filter.create_state_filter_expression(
-                tr_group_key, True)
+    def _filter_stands(self, tr_group_key, state_variables, classifiers,
+                       disturbance_type):
 
-        classifiers = inventory.classifiers
         disturbance_type_target = tr_group_key["disturbance_type"]
+        classifier_set = [tr_group_key[x] for x in classifiers.columns.tolist()]
         tr_filter = rule_filter.merge_filters(
-            rule_filter.create_filter(
-                expression=state_filter_expression,
-                data={"age": inventory.age},
-                columns=state_filter_cols),
+            self.state_variable_filter_func(tr_group_key, state_variables),
             self.classifier_filter_builder.create_classifiers_filter(
-                sit_stand_filter.get_classifier_set(
-                    tr_group_key, classifiers.columns.tolist()),
+                classifier_set,
                 classifiers),
             rule_filter.create_filter(
                 expression=f"(disturbance_type == {disturbance_type_target})",
@@ -68,12 +65,12 @@ class TransitionRuleProcessor(object):
         filter_result = rule_filter.evaluate_filter(tr_filter)
         return filter_result
 
-    def get_transition_classifier_set(self, transition_rule):
+    def _get_transition_classifier_set(self, transition_rule):
         result = {}
         for classifier_name in self.classifier_names:
             transition_classifier_value = transition_rule[
-                classifier_name + "_tr"]
-            if transition_classifier_value == "?":
+                classifier_name + self.transition_classifier_postfix]
+            if transition_classifier_value == self.wildcard:
                 continue
             transition_id = self.classifier_value_lookup[
                 classifier_name][transition_classifier_value]
@@ -85,7 +82,7 @@ class TransitionRuleProcessor(object):
                               state_variables):
 
         filter_result = self.filter_stands(
-            tr_group_key, inventory, disturbance_type)
+            tr_group_key, state_variables, classifiers, disturbance_type)
 
         if np.logical_and(transition_mask, filter_result).any():
             # this indicates that a transition rule has collided with another
