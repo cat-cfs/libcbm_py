@@ -68,6 +68,18 @@ class TransitionRuleProcessor(object):
         filter_result = rule_filter.evaluate_filter(tr_filter)
         return filter_result
 
+    def get_transition_classifier_set(self, transition_rule):
+        result = {}
+        for classifier_name in self.classifier_names:
+            transition_classifier_value = transition_rule[
+                classifier_name + "_tr"]
+            if transition_classifier_value == "?":
+                continue
+            transition_id = self.classifier_value_lookup[
+                classifier_name][transition_classifier_value]
+            result[classifier_name] = transition_id
+        return result
+
     def apply_transition_rule(self, tr_group_key, tr_group, transitioned,
                               disturbance_type, classifiers, inventory, pools,
                               state_variables):
@@ -91,37 +103,63 @@ class TransitionRuleProcessor(object):
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
 
-        transitioned_classifier_rows = classifiers[filter_result].copy()
-        transition_classifier_append_result = pd.DataFrame()
+        transition_classifier_result = pd.DataFrame()
+        transition_inventory_result = pd.DataFrame()
+        transition_pool_result = pd.DataFrame()
+        transition_state_variable_result = pd.DataFrame()
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
-                # for the first index use the existing matched inventory record
-                transition_clasifier_ids = self.get_transition_classifier_set(
+                # for the first index use the existing matched records
+                transition_classifier_ids = self.get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
-                for k, v in transition_clasifier_ids:
-                    classifiers.loc[filter_result, k] = v
-
+                for classifier_name, value_id in transition_classifier_ids:
+                    classifiers.loc[filter_result, classifier_name] = value_id
+                if proportion < 1.0:
+                    inventory.loc[filter_result, "area"] = \
+                        inventory.loc[filter_result, "area"] * proportion
             elif i_proportion == tr_group.shape[0]:
                 # if a proportion was created for the 100-grouped percentage
                 # remainder, then make a copy with no transition
-                transition_classifier_append_result = \
-                    transition_classifier_append_result.append(
-                        transitioned_classifier_rows)
+                transition_classifier_result = \
+                    transition_classifier_result.append(
+                        classifiers[filter_result].copy())
+                transition_inventory = inventory[filter_result].copy()
+                transition_inventory.area = \
+                    transition_inventory.area * proportion
+                transition_inventory_result = \
+                    transition_inventory_result.append(transition_inventory)
+                transition_pool_result = transition_pool_result.append(
+                    pools[filter_result].copy())
+                transition_state_variable_result = \
+                    transition_state_variable_result.append(
+                        state_variables[filter_result].copy())
             else:
-                transition_clasifier_ids = self.get_transition_classifier_set(
+                transition_classifier_ids = self.get_transition_classifier_set(
                     transition_rule=tr_group.iloc[i_proportion])
-                transition_copy_rows = transitioned_classifier_rows.copy()
-                for k, v in transition_clasifier_ids:
-                    transition_copy_rows[k] = v
+                transition_classifiers = classifiers[filter_result].copy()
+                for classifier_name, value_id in transition_classifier_ids:
+                    transition_classifiers[classifier_name] = value_id
+                transition_classifier_result = \
+                    transition_classifier_result.append(transition_classifiers)
+                transition_inventory = inventory[filter_result].copy()
+                transition_inventory.area = \
+                    transition_inventory.area * proportion
+                transition_inventory_result = \
+                    transition_inventory_result.append(transition_inventory)
+                transition_pool_result = transition_pool_result.append(
+                    pools[filter_result].copy())
+                transition_state_variable_result = \
+                    transition_state_variable_result.append(
+                        state_variables[filter_result].copy())
 
-    def get_transition_classifier_set(self, transition_rule):
-        result = {}
-        for classifier_name in self.classifier_names:
-            transition_classifier_value = transition_rule[
-                classifier_name + "_tr"]
-            if transition_classifier_value == "?":
-                continue
-            transition_id = self.classifier_value_lookup[
-                classifier_name][transition_classifier_value]
-            result[classifier_name] = transition_id
-        return result
+        if len(proportions) > 1:
+            classifiers = classifiers.append(
+                transition_classifier_result).reset_index(drop=True)
+            inventory = inventory.append(
+                transition_inventory_result).reset_index(drop=True)
+            pools = pools.append(
+                transition_pool_result).reset_index(drop=True)
+            state_variables = state_variables.append(
+                transition_state_variable_result).reset_index(drop=True)
+
+        return transitioned, classifiers, inventory, pools, state_variables
