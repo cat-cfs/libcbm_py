@@ -96,10 +96,11 @@ class TransitionRuleProcessor(object):
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
                 # for the first index use the existing matched inventory record
-                self.transition_classifier_set(
-                    transition_rule=tr_group.iloc[i_proportion],
-                    filter_result=filter_result,
-                    classifiers=classifiers)
+                transition_clasifier_ids = self.get_transition_classifier_set(
+                    transition_rule=tr_group.iloc[i_proportion])
+                for k, v in transition_clasifier_ids:
+                    classifiers.loc[filter_result, k] = v
+
             elif i_proportion == tr_group.shape[0]:
                 # if a proportion was created for the 100-grouped percentage
                 # remainder, then make a copy with no transition
@@ -107,7 +108,11 @@ class TransitionRuleProcessor(object):
                     transition_classifier_append_result.append(
                         transitioned_classifier_rows)
             else:
+                transition_clasifier_ids = self.get_transition_classifier_set(
+                    transition_rule=tr_group.iloc[i_proportion])
                 transition_copy_rows = transitioned_classifier_rows.copy()
+                for k, v in transition_clasifier_ids:
+                    transition_copy_rows[k] = v
 
     def get_transition_classifier_set(self, transition_rule):
         result = {}
