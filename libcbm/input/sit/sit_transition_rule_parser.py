@@ -116,7 +116,7 @@ def parse(transition_rules, classifiers, classifier_values,
     group_cols = list(classifiers.name) + \
         ["min_age", "max_age", "disturbance_type"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
-    invalid_grouped = grouped[grouped.percent > 100.0001]
+    invalid_grouped = grouped[grouped.percent > 100]
     if len(invalid_grouped) > 0:
         invalid_percents = [x.Index for x in grouped.head().itertuples()]
         raise ValueError(
