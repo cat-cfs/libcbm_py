@@ -50,7 +50,7 @@ class TransitionRuleProcessor(object):
     def _filter_stands(self, tr_group_key, state_variables, classifiers,
                        disturbance_type):
 
-        disturbance_type_target = tr_group_key["disturbance_type"]
+        dist_type_target = tr_group_key["disturbance_type_id"]
         classifier_set = [
             tr_group_key[x] for x in classifiers.columns.tolist()]
         tr_filter = rule_filter.merge_filters(
@@ -59,15 +59,14 @@ class TransitionRuleProcessor(object):
                 classifier_set,
                 classifiers),
             rule_filter.create_filter(
-                expression=f"(disturbance_type == {disturbance_type_target})",
-                data={"disturbance_type": disturbance_type},
-                columns=["disturbance_type"]))
+                expression=f"(disturbance_type_id == {dist_type_target})",
+                data={"disturbance_type_id": disturbance_type},
+                columns=["disturbance_type_id"]))
 
         filter_result = rule_filter.evaluate_filter(tr_filter)
         return filter_result
 
     def _get_transition_classifier_set(self, transition_rule):
-        result = {}
         for classifier_name in self.classifier_names:
             transition_classifier_value = transition_rule[
                 classifier_name + self.transition_classifier_postfix]
@@ -75,8 +74,7 @@ class TransitionRuleProcessor(object):
                 continue
             transition_id = self.classifier_value_lookup[
                 classifier_name][transition_classifier_value]
-            result[classifier_name] = transition_id
-        return result
+            yield classifier_name, transition_id
 
     def apply_transition_rule(self, tr_group_key, tr_group, transition_mask,
                               disturbance_type, classifiers, inventory, pools,
@@ -97,7 +95,7 @@ class TransitionRuleProcessor(object):
                 true that the correspoding index has already been transitioned.
                 This is used to detect transition rule criteria collisions.
             disturbance_type (numpy.ndarray): the array of disturbance types
-                being applied to the inventory in the current timestep.
+                ids being applied to the inventory in the current timestep.
             classifiers (pandas.DataFrame): CBM classifier values
             inventory (pandas.DataFrame): CBM inventory
             pools (pandas.DataFrame): CBM simulation pools
