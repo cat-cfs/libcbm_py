@@ -55,11 +55,13 @@ class CBM:
 
         self.op_processes = get_op_processes()
 
-    def spinup(self, inventory, pools, variables, parameters, debug=False):
+    def spinup(self, classifiers, inventory, pools, variables, parameters,
+              debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
         Args:
+            classifiers (pandas.DataFrame):
             inventory (object): Data comprised of classifier sets
                 and cbm inventory data. Will not be modified by this function.
                 See:
@@ -89,13 +91,13 @@ class CBM:
         n_stands = pools.shape[0]
 
         ops = {
-            x: self.compute_functions.AllocateOp(n_stands)
+            x: self.compute_functions.allocate_op(n_stands)
             for x in self.op_names}
 
-        self.model_functions.GetTurnoverOps(
+        self.model_functions.get_turnover_ops(
             ops["snag_turnover"], ops["biomass_turnover"], inventory)
 
-        self.model_functions.GetDecayOps(
+        self.model_functions.get_decay_ops(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
             inventory, parameters, historical_mean_annual_temp=True)
 
@@ -115,24 +117,24 @@ class CBM:
 
         while True:
 
-            n_finished = self.model_functions.AdvanceSpinupState(
+            n_finished = self.model_functions.advance_spinup_state(
                 inventory, variables, parameters)
 
             if n_finished == n_stands:
                 break
 
-            self.model_functions.GetMerchVolumeGrowthOps(
-                ops["growth"], ops["overmature_decline"], inventory, pools,
-                variables)
+            self.model_functions.get_merch_volume_growth_ops(
+                ops["growth"], ops["overmature_decline"], classifiers,
+                inventory, pools, variables)
 
-            self.model_functions.GetDisturbanceOps(
+            self.model_functions.get_disturbance_ops(
                 ops["disturbance"], inventory, variables)
 
-            self.compute_functions.ComputePools(
+            self.compute_functions.compute_pools(
                 [ops[x] for x in op_schedule], pools,
                 variables.enabled)
 
-            self.model_functions.EndSpinupStep(pools, variables)
+            self.model_functions.end_spinup_step(pools, variables)
 
             if debug:
                 debug_output = data_helpers.append_simulation_result(
@@ -152,7 +154,7 @@ class CBM:
             iteration = iteration + 1
 
         for x in self.op_names:
-            self.compute_functions.FreeOp(ops[x])
+            self.compute_functions.free_op(ops[x])
         return debug_output
 
     def init(self, inventory, pools, state_variables):
@@ -197,10 +199,11 @@ class CBM:
         #    attempt to throw an error if this situation is detected.
         state_variables.land_class = inventory.land_class
 
-        self.model_functions.InitializeLandState(
+        self.model_functions.initialize_land_state(
             inventory, pools, state_variables)
 
-    def step(self, inventory, pools, flux, state_variables, parameters):
+    def step(self, classifiers, inventory, pools, flux, state_variables,
+             parameters):
         """Advances the specified CBM variables through one time step of CBM
         simulation.
 
@@ -243,7 +246,7 @@ class CBM:
         n_stands = pools.shape[0]
 
         ops = {
-            x: self.compute_functions.AllocateOp(n_stands)
+            x: self.compute_functions.allocate_op(n_stands)
             for x in self.op_names}
 
         annual_process_op_schedule = [
@@ -257,13 +260,13 @@ class CBM:
             "slow_mixing"
             ]
 
-        self.model_functions.AdvanceStandState(
-            inventory, state_variables, parameters)
+        self.model_functions.advance_stand_state(
+            classifiers, inventory, state_variables, parameters)
 
-        self.model_functions.GetDisturbanceOps(
+        self.model_functions.get_disturbance_ops(
             ops["disturbance"], inventory, parameters)
 
-        self.compute_functions.ComputeFlux(
+        self.compute_functions.compute_flux(
             [ops["disturbance"]], [self.op_processes["disturbance"]],
             pools, flux, enabled=None)
 
@@ -272,24 +275,24 @@ class CBM:
         # stands can be disturbed despite having all other C-dynamics processes
         # disabled (which happens in peatland)
 
-        self.model_functions.GetMerchVolumeGrowthOps(
-            ops["growth"], ops["overmature_decline"], inventory, pools,
-            state_variables)
+        self.model_functions.get_merch_volume_growth_ops(
+            ops["growth"], ops["overmature_decline"], classifiers, inventory,
+            pools, state_variables)
 
-        self.model_functions.GetTurnoverOps(
+        self.model_functions.get_turnover_ops(
             ops["snag_turnover"], ops["biomass_turnover"],
             inventory)
 
-        self.model_functions.GetDecayOps(
+        self.model_functions.get_decay_ops(
             ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
             inventory, parameters)
 
-        self.compute_functions.ComputeFlux(
+        self.compute_functions.compute_flux(
             [ops[x] for x in annual_process_op_schedule],
             [self.op_processes[x] for x in annual_process_op_schedule],
             pools, flux, state_variables.enabled)
 
-        self.model_functions.EndStep(state_variables)
+        self.model_functions.end_step(state_variables)
 
         for x in self.op_names:
-            self.compute_functions.FreeOp(ops[x])
+            self.compute_functions.free_op(ops[x])

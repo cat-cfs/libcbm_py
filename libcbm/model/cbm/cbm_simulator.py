@@ -87,12 +87,13 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
         classifiers, inventory, pool_codes, flux_indicator_codes)
 
     cbm.spinup(
-        cbm_vars.inventory, cbm_vars.pools, spinup_variables, spinup_params)
+        cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
+        spinup_variables, spinup_params)
     cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)
     for time_step in range(1, n_steps + 1):
         cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm.step(
-            cbm_vars.inventory, cbm_vars.pools, cbm_vars.flux_indicators,
-            cbm_vars.state, cbm_vars.params)
+            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
+            cbm_vars.flux_indicators, cbm_vars.state, cbm_vars.params)
         reporting_func(time_step, cbm_vars)
