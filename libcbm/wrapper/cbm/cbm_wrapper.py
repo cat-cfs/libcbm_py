@@ -83,13 +83,14 @@ class CBMWrapper(LibCBM_ctypes):
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle.call("LibCBM_Initialize_CBM", p_config)
 
-    def AdvanceStandState(self, inventory, state_variables, parameters):
+    def advance_stand_state(self, classifiers, inventory, state_variables, parameters):
         """Advances CBM stand variables through a timestep based on the
         current simulation state.
 
         Args:
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Will not be modified by this function.
+            classifiers (pandas.DataFrame): classifier values associated with
+                the inventory
+            inventory (object): CBM inventory data. Will not be modified by this function.
                 See:
                 :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
@@ -107,8 +108,8 @@ class CBMWrapper(LibCBM_ctypes):
         v = data_helpers.unpack_ndarrays(state_variables)
         p = data_helpers.unpack_ndarrays(parameters)
 
-        n = i.classifiers.shape[0]
-        classifiersMat = LibCBM_Matrix_Int(i.classifiers)
+        n = i.age.shape[0]
+        classifiersMat = LibCBM_Matrix_Int(classifiers)
 
         self.handle.call(
             "LibCBM_AdvanceStandState", n, classifiersMat,
@@ -117,7 +118,7 @@ class CBMWrapper(LibCBM_ctypes):
             v.time_since_land_class_change, v.growth_enabled, v.enabled,
             v.land_class, v.regeneration_delay, v.age)
 
-    def EndStep(self, state_variables):
+    def end_step(self, state_variables):
         """Applies end-of-timestep changes to the CBM state
 
         Args:
@@ -135,14 +136,13 @@ class CBMWrapper(LibCBM_ctypes):
             v.regeneration_delay, v.time_since_last_disturbance,
             v.time_since_land_class_change)
 
-    def InitializeLandState(self, inventory, pools, state_variables):
+    def initialize_land_state(self, inventory, pools, state_variables):
         """Initializes CBM state to values appropriate for after running
         spinup and before starting CBM stepping
 
         Args:
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Will not be modified by this function.
-                See:
+            inventory (object): CBM inventory data. Will not be modified by
+                this function. See:
                 :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition.
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
@@ -169,13 +169,12 @@ class CBMWrapper(LibCBM_ctypes):
             v.time_since_land_class_change, v.growth_enabled, v.enabled,
             v.land_class, v.age)
 
-    def AdvanceSpinupState(self, inventory, variables, parameters):
+    def advance_spinup_state(self, inventory, variables, parameters):
         """Advances spinup state variables through one spinup step.
 
         Args:
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Will not be modified by this function.
-                See:
+            inventory (object): CBM inventory data. Will not be modified by
+                this function. See:
                 :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
             variables (object): Spinup working variables.  Defines all
@@ -220,7 +219,7 @@ class CBMWrapper(LibCBM_ctypes):
 
         return n_finished
 
-    def EndSpinupStep(self, pools, variables):
+    def end_spinup_step(self, pools, variables):
         """Applies end-of-timestep changes to the spinup state
 
         Args:
@@ -243,8 +242,9 @@ class CBMWrapper(LibCBM_ctypes):
             "LibCBM_EndSpinupStep", n, v.spinup_state, v.disturbance_type,
             poolMat, v.age, v.slow_pools, v.growth_enabled)
 
-    def GetMerchVolumeGrowthOps(self, growth_op, overmature_decline_op,
-                                inventory, pools, state_variables):
+    def get_merch_volume_growth_ops(self, growth_op, overmature_decline_op,
+                                    classifiers, inventory, pools,
+                                    state_variables):
         """Computes CBM merchantable growth as a bulk matrix operation.
 
         Args:
@@ -254,12 +254,11 @@ class CBMWrapper(LibCBM_ctypes):
             overmature_decline_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute merch volume growth operations.
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Used by this function to find correct
-                parameters from the set of merch volume growth parameters
-                passed to library initialization, and to find a yield curve
-                associated with inventory classifier sets. Will not be
-                modified by this function. See:
+            classifiers (pandas.DataFrame): matrix of classifier ids
+                associated with yield tables.
+            inventory (object): Used by this function to find correct spatial
+                parameters from the set of merch volume growth parameters.
+                Will not be modified by this function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition.
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
@@ -278,8 +277,8 @@ class CBMWrapper(LibCBM_ctypes):
 
         opIds = (ctypes.c_size_t * (2))(*[growth_op, overmature_decline_op])
         i = data_helpers.unpack_ndarrays(inventory)
-        classifiersMat = LibCBM_Matrix_Int(
-            data_helpers.get_ndarray(i.classifiers))
+        classifiers_mat = LibCBM_Matrix_Int(
+            data_helpers.get_ndarray(classifiers))
         v = data_helpers.unpack_ndarrays(state_variables)
 
         last_disturbance_type = data_helpers.get_nullable_ndarray(
@@ -292,11 +291,11 @@ class CBMWrapper(LibCBM_ctypes):
             v.growth_enabled, type=ctypes.c_int)
 
         self.handle.call(
-            "LibCBM_GetMerchVolumeGrowthOps", opIds, n, classifiersMat,
+            "LibCBM_GetMerchVolumeGrowthOps", opIds, n, classifiers_mat,
             poolMat, v.age, i.spatial_unit, last_disturbance_type,
             time_since_last_disturbance, growth_multiplier, growth_enabled)
 
-    def GetTurnoverOps(self, biomass_turnover_op, snag_turnover_op,
+    def get_turnover_ops(self, biomass_turnover_op, snag_turnover_op,
                        inventory):
         """Computes biomass turnovers and dead organic matter turnovers as
         bulk matrix operations.
@@ -308,10 +307,9 @@ class CBMWrapper(LibCBM_ctypes):
             snag_turnover_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute dom (specifically snags) turnover operations.
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Used by this function to find correct
-                parameters from the set of turnover parameters passed to
-                library initialization. Will not be modified by this
+            inventory (object): CBM inventory data. Used by this function
+                to find correct parameters from the set of turnover parameters
+                passed to library initialization. Will not be modified by this
                 function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition.
@@ -324,7 +322,7 @@ class CBMWrapper(LibCBM_ctypes):
         self.handle.call(
             "LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
 
-    def GetDecayOps(self, dom_decay_op, slow_decay_op, slow_mixing_op,
+    def get_decay_ops(self, dom_decay_op, slow_decay_op, slow_mixing_op,
                     inventory, parameters, historical_mean_annual_temp=False):
         """Prepares dead organic matter decay bulk matrix operations.
 
@@ -338,10 +336,9 @@ class CBMWrapper(LibCBM_ctypes):
             slow_mixing_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute slow pool mixing operations.
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Used by this function to find correct
-                parameters from the set of decay parameters passed to library
-                initialization. Will not be modified by this
+            inventory (object): CBM inventory data. Used by this function to
+                find correct parameters from the set of decay parameters
+                passed to library initialization. Will not be modified by this
                 function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
@@ -366,7 +363,7 @@ class CBMWrapper(LibCBM_ctypes):
             "LibCBM_GetDecayOps", opIds, n, spatial_unit,
             historical_mean_annual_temp, mean_annual_temp)
 
-    def GetDisturbanceOps(self, disturbance_op, inventory,
+    def get_disturbance_ops(self, disturbance_op, inventory,
                           parameters):
         """Sets up CBM disturbance matrices as a bulk matrix operations.
 
@@ -374,11 +371,11 @@ class CBMWrapper(LibCBM_ctypes):
             disturbance_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute disturbance event pool flows.
-            inventory (object): Data comprised of classifier sets
-                and cbm inventory data. Used by this function to find correct
-                parameters from the set of disturbance parameters passed to
-                library initialization. Will not be modified by this function.
-                See: :py:func:`libcbm.model.cbm_variables.initialize_inventory`
+            inventory (object): CBM inventory data. Used by this function to
+                find correct parameters from the set of disturbance parameters
+                passed to library initialization. Will not be modified by this
+                function. See:
+                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
             parameters (object): Read-only parameters used to set
                 disturbance type id to fetch the appropriate disturbance

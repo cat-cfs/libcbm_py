@@ -214,11 +214,9 @@ def initialize_cbm_state_variables(n_stands):
     return state_variables
 
 
-def initialize_inventory(classifiers, inventory):
-    """Creates inventory input for :class:`libcbm.model.cbm.cbm_model.CBM`
-    functions
-
-
+def initialize_inventory(inventory):
+    """Check fields and types of inventory input for
+    :class:`libcbm.model.cbm.cbm_model.CBM` functions
 
     Example Inventory table: (abbreviated column names)
 
@@ -230,25 +228,12 @@ def initialize_inventory(classifiers, inventory):
      0    30     42      1      0     1      5     -1
     ====  ==== =====  ======  =====  ====  =====  =====
 
-    Example classifiers table:
-
-    =============  =============  =============
-     classifier_1   classifier_2   classifier_3
-    =============  =============  =============
-     a1             b1             c2
-     a1             b2             c3
-     a2             b2             c3
-    =============  =============  =============
-
     Each row in both of the above tables corresponds to a CBM stand, and
     therefore both tables must have the same number of rows.  The number of
     columns in the classifiers table is equal to the number of classifiers.
 
     Args:
-        classifiers (pandas.DataFrame): dataframe of inventory classifier
-            sets. Column names are the name of the classifiers, and values
-            are the ids for each classifier value associated with the
-            inventory at each row.
+
         inventory (pandas.DataFrame): Data defining the inventory. Columns:
 
             - age: the inventory age at the start of CBM simulation
@@ -270,66 +255,20 @@ def initialize_inventory(classifiers, inventory):
             data are not the same.
 
     Returns:
-        object: an object containing the inventory and classifier
-            data.
+        pandas.DataFrame: dataframe containing the inventory data.
     """
-    n_stands = len(inventory.index)
-    if not len(classifiers.index) == n_stands:
-        raise ValueError(
-            ("number of inventory records: {inv} does not match number of "
-             "classifier sets: {c_sets}").format(
-                 inv=n_stands, c_sets=len(classifiers.index)))
-    i = SimpleNamespace()
-    i.classifiers = np.ascontiguousarray(classifiers).astype(np.int32)
-    i.classifier_names = list(classifiers)
-    i.age = inventory.age.to_numpy(dtype=np.int32)
-    i.area = inventory.area.to_numpy(dtype=np.float)
-    i.spatial_unit = inventory.spatial_unit.to_numpy(dtype=np.int32)
-    i.afforestation_pre_type_id = \
-        inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32)
-    i.land_class = inventory.land_class.to_numpy(dtype=np.int32)
-    i.historical_disturbance_type = \
-        inventory.historical_disturbance_type.to_numpy(dtype=np.int32)
-    i.last_pass_disturbance_type = \
-        inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32)
-    i.delay = inventory.delay.to_numpy(dtype=np.int32)
-
-    return i
-
-
-def inventory_to_df(inventory):
-    """converts a result returned by :py:func:`initialize_inventory` a tuple
-    of pandas.DataFrame
-
-    Args:
-        inventory (object): an object in the format returned by
-            :py:func:`initialize_inventory`
-
-    Returns:
-        object: a tuple containing:
-
-            1. classifier DataFrame
-            2. inventory DataFrame
-
-    """
-    inventory_data = pd.DataFrame(
-        data={
-            "age": inventory.age,
-            "area": inventory.area,
-            "spatial_unit": inventory.spatial_unit,
-            "afforestation_pre_type_id":
-                inventory.afforestation_pre_type_id,
-            "land_class": inventory.land_class,
-            "historical_disturbance_type":
-                inventory.historical_disturbance_type,
-            "last_pass_disturbance_type":
-                inventory.last_pass_disturbance_type,
-            "delay": inventory.delay,
-        })
-    classifiers = pd.DataFrame(
-        data=inventory.classifiers,
-        columns=inventory.classifier_names)
-    return classifiers, inventory_data
+    return pd.DataFrame({
+        "age": inventory.age.to_numpy(dtype=np.int32),
+        "area": inventory.area.to_numpy(dtype=np.float),
+        "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
+        "afforestation_pre_type_id":
+            inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32),
+        "land_class": inventory.land_class.to_numpy(dtype=np.int32),
+        "historical_disturbance_type":
+            inventory.historical_disturbance_type.to_numpy(dtype=np.int32),
+        "last_pass_disturbance_type":
+            inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32),
+        "delay": inventory.delay.to_numpy(dtype=np.int32)})
 
 
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
@@ -340,7 +279,6 @@ def initialize_simulation_variables(classifiers, inventory, pool_codes,
     i.flux_indicators = initialize_flux(n_stands, flux_indicator_codes)
     i.params = initialize_cbm_parameters(n_stands)
     i.state = initialize_cbm_state_variables(n_stands)
-    i.inventory = initialize_inventory(
-        classifiers=classifiers,
-        inventory=inventory)
+    i.inventory = initialize_inventory(inventory)
+    i.classifiers = classifiers
     return i
