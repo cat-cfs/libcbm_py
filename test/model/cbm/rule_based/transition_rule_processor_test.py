@@ -68,7 +68,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             mock_classifier_config, grouped_percent_err_max, wildcard,
             transition_classifier_postfix)
 
-        tr_group_key = {"disturbance_type": 10}
+        tr_group_key = {"disturbance_type_id": 10}
         tr_group = pd.DataFrame()
         transition_mask = np.array([True, True], dtype=bool)
         disturbance_type = np.ones(2)
@@ -86,3 +86,65 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 tr_processor.apply_transition_rule(
                     tr_group_key, tr_group, transition_mask, disturbance_type,
                     classifiers, inventory, pools, state_variables)
+
+    def test_single_record_transition(self):
+        mock_classifier_filter_builder = Mock()
+        mock_state_variable_filter_func = Mock()
+        mock_classifier_config = {
+            "classifiers": [
+                {"id": 1, "name": "a"},
+                {"id": 2, "name": "b"}],
+            "classifier_values": [
+                {"id": 1, "classifier_id": 1, "value": "a1"},
+                {"id": 2, "classifier_id": 1, "value": "a2"},
+                {"id": 3, "classifier_id": 2, "value": "b1"}]}
+        grouped_percent_err_max = 0.001
+        wildcard = "?"
+        transition_classifier_postfix = "_tr"
+        tr_processor = TransitionRuleProcessor(
+            mock_classifier_filter_builder, mock_state_variable_filter_func,
+            mock_classifier_config, grouped_percent_err_max, wildcard,
+            transition_classifier_postfix)
+
+        tr_group_key = {
+            "a": "a1", "b": "?", "disturbance_type_id": 55}
+        tr_group = pd.DataFrame({
+            "a": ["a1"],
+            "b": ["?"],
+            "disturbance_type_id": [55],
+            "a_tr": ["a2"],
+            "b_tr": ["?"],
+            "regeneration_delay": [0],
+            "reset_age": [-1],
+            "percent": [100]
+        })
+        transition_mask = np.array([False], dtype=bool)
+        disturbance_type = np.ones(2)
+        classifiers = pd.DataFrame({
+            "a": [1],
+            "b": [3]
+        })
+        inventory = pd.DataFrame({
+            "area": [1.0]
+        })
+        pools = pd.DataFrame({
+            "p0": [1],
+            "p1": [1]
+        })
+        state_variables = pd.DataFrame({
+            "age": [0],
+        })
+        with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
+            mock_rule_filter.evaluate_filter.side_effect = \
+                lambda filter_obj: np.array([True], dtype=bool)
+            (transition_mask,
+             transition_output,
+             classifiers,
+             inventory,
+             pools,
+             state_variables) = tr_processor.apply_transition_rule(
+                tr_group_key, tr_group, transition_mask, disturbance_type,
+                classifiers, inventory, pools, state_variables)
+            self.assertTrue(list(transition_mask) == [True])
+            self.assertTrue(list(transition_output.regeneration_delay) == [0])
+            self.assertTrue(list(transition_output.reset_age) == [-1])
