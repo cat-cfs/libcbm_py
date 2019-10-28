@@ -110,7 +110,8 @@ class CBMWrapper(LibCBM_ctypes):
         p = data_helpers.unpack_ndarrays(parameters)
 
         n = i.age.shape[0]
-        classifiersMat = LibCBM_Matrix_Int(classifiers)
+        classifiersMat = LibCBM_Matrix_Int(
+            data_helpers.get_ndarray(classifiers))
 
         self.handle.call(
             "LibCBM_AdvanceStandState", n, classifiersMat,
