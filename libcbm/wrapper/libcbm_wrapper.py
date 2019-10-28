@@ -13,7 +13,7 @@ class LibCBMWrapper():
     def __init__(self, handle):
         self.handle = handle
 
-    def AllocateOp(self, n):
+    def allocate_op(self, n):
         """Allocates storage for matrices, returning an id for the
         allocated block.
 
@@ -34,8 +34,8 @@ class LibCBMWrapper():
         op_id = self.handle.call("LibCBM_Allocate_Op", n)
         return op_id
 
-    def FreeOp(self, op_id):
-        """Deallocates a matrix block that was allocated by the AllocateOp method.
+    def free_op(self, op_id):
+        """Deallocates a matrix block that was allocated by the allocate_op method.
 
         Args:
             op_id (int): The id for an allocated block of matrices.
@@ -43,13 +43,13 @@ class LibCBMWrapper():
         """
         self.handle.call("LibCBM_Free_Op", op_id)
 
-    def SetOp(self, op_id, matrices, matrix_index):
+    def set_op(self, op_id, matrices, matrix_index):
         """Assigns values to an allocated block of matrices.
 
             Example::
 
                 n_stands = 3
-                op_id = AllocateOp(n_stands)
+                op_id = allocate_op(n_stands)
                 matrix_0 = np.array([
                     [0, 1, 0.5],
                     [0, 0, 1.0],
@@ -100,8 +100,8 @@ class LibCBMWrapper():
                  2           0
             ===========  ============
 
-            related functions: :py:func:`AllocateOp`, :py:func:`ComputePools`,
-                :py:func:`ComputeFlux`
+            related functions: :py:func:`allocate_op`, :py:func:`compute_pools`,
+                :py:func:`compute_flux`
 
         Args:
             op_id (int): The id for an allocated block of matrices
@@ -122,7 +122,7 @@ class LibCBMWrapper():
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
             matrix_index.shape[0])
 
-    def ComputePools(self, ops, pools, enabled=None):
+    def compute_pools(self, ops, pools, enabled=None):
         """Computes flows between pool values for all stands.
 
         Each value in the ops parameter is an id to a matrix block, and is also
@@ -140,7 +140,7 @@ class LibCBMWrapper():
 
         Args:
             ops (ndarray): list of matrix block ids as allocated by the
-                :py:func:`AllocateOp` function.
+                :py:func:`allocate_op` function.
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
@@ -162,7 +162,7 @@ class LibCBMWrapper():
             "LibCBM_ComputePools", ops_p, n_ops, poolMat,
             data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int))
 
-    def ComputeFlux(self, ops, op_processes, pools, flux, enabled=None):
+    def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
 
         Performs the same operation as ComputePools, except that the fluxes
@@ -171,7 +171,7 @@ class LibCBMWrapper():
 
         Args:
             ops (ndarray): list of matrix block ids as allocated by the
-                AllocateOp function.
+                allocate_op function.
             op_processes (ndarray): list of integers of length n_ops.
                 Ids referencing flux indicator process_id definition in the
                 Initialize method.

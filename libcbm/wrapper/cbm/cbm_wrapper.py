@@ -83,7 +83,8 @@ class CBMWrapper(LibCBM_ctypes):
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle.call("LibCBM_Initialize_CBM", p_config)
 
-    def advance_stand_state(self, classifiers, inventory, state_variables, parameters):
+    def advance_stand_state(self, classifiers, inventory, state_variables,
+                            parameters):
         """Advances CBM stand variables through a timestep based on the
         current simulation state.
 
@@ -302,10 +303,10 @@ class CBMWrapper(LibCBM_ctypes):
 
         Args:
             biomass_turnover_op (int): Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
+                allocated by the :py:func:`allocate_op` function. Used to
                 compute biomass turnover operations.
             snag_turnover_op (int): Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
+                allocated by the :py:func:`allocate_op` function. Used to
                 compute dom (specifically snags) turnover operations.
             inventory (object): CBM inventory data. Used by this function
                 to find correct parameters from the set of turnover parameters
@@ -323,18 +324,18 @@ class CBMWrapper(LibCBM_ctypes):
             "LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
 
     def get_decay_ops(self, dom_decay_op, slow_decay_op, slow_mixing_op,
-                    inventory, parameters, historical_mean_annual_temp=False):
+                      inventory, parameters, historical_mean_annual_temp=False):
         """Prepares dead organic matter decay bulk matrix operations.
 
         Args:
             dom_decay_op (int): Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
+                allocated by the :py:func:`allocate_op` function. Used to
                 compute dom decay operations.
             slow_decay_op (int): Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
+                allocated by the :py:func:`allocate_op` function. Used to
                 compute slow pool decay operations.
             slow_mixing_op (int): Handle for a block of matrices as
-                allocated by the :py:func:`AllocateOp` function. Used to
+                allocated by the :py:func:`allocate_op` function. Used to
                 compute slow pool mixing operations.
             inventory (object): CBM inventory data. Used by this function to
                 find correct parameters from the set of decay parameters
@@ -342,7 +343,7 @@ class CBMWrapper(LibCBM_ctypes):
                 function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_inventory`
                 for a compatible definition
-            parameters (object): [description]
+            parameters (object): parameters for this timestep
             historical_mean_annual_temp (bool, optional): If set to true, the
                 historical default mean annual temperature is used. This is
                 intended for spinup.  If explicit mean annual temperature
