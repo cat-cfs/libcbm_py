@@ -110,28 +110,28 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             "a": "a1", "b": "?", "disturbance_type_id": 55}
         tr_group = pd.DataFrame({
             "a": ["a1"],
-            "b": ["?"],
+            "b": ["b1"],
             "disturbance_type_id": [55],
             "a_tr": ["a2"],
             "b_tr": ["?"],
-            "regeneration_delay": [0],
-            "reset_age": [-1],
+            "regeneration_delay": [10],
+            "reset_age": [40],
             "percent": [100]
         })
         transition_mask = np.array([False], dtype=bool)
-        disturbance_type = np.ones(2)
-        classifiers = pd.DataFrame({
+        mock_disturbance_type = np.array([55])
+        mock_classifiers = pd.DataFrame({
             "a": [1],
             "b": [3]
         })
-        inventory = pd.DataFrame({
+        mock_inventory = pd.DataFrame({
             "area": [1.0]
         })
-        pools = pd.DataFrame({
+        mock_pools = pd.DataFrame({
             "p0": [1],
             "p1": [1]
         })
-        state_variables = pd.DataFrame({
+        mock_state_variables = pd.DataFrame({
             "age": [0],
         })
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
@@ -143,8 +143,21 @@ class TransitionRuleProcessorTest(unittest.TestCase):
              inventory,
              pools,
              state_variables) = tr_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, disturbance_type,
-                classifiers, inventory, pools, state_variables)
+                 tr_group_key, tr_group, transition_mask,
+                 mock_disturbance_type, mock_classifiers, mock_inventory,
+                 mock_pools, mock_state_variables)
             self.assertTrue(list(transition_mask) == [True])
-            self.assertTrue(list(transition_output.regeneration_delay) == [0])
-            self.assertTrue(list(transition_output.reset_age) == [-1])
+            self.assertTrue(list(transition_output.regeneration_delay) == [10])
+            self.assertTrue(list(transition_output.reset_age) == [40])
+
+            # note the changed classifier id
+            self.assertTrue(list(classifiers.a) == [2])
+
+            # note unchanged since "?" was used for transition classifier value
+            self.assertTrue(list(classifiers.b) == [3])
+
+            self.assertTrue(inventory.equals(mock_inventory))
+            self.assertTrue(pools.equals(mock_pools))
+            self.assertTrue(state_variables.equals(state_variables))
+
+
