@@ -117,7 +117,8 @@ class TransitionRuleProcessor(object):
                     age reset variables along the inventory n_stands dimension
                 - classifiers: updated and potentially split classifier values
                 - inventory: updated and potentially split inventory
-                - pools: the original specified pools or potentially split pools
+                - pools: the original specified pools or potentially split
+                    pools
                 - state_variables: the original specified state_variables or
                     potentially split state_variables
 
@@ -154,8 +155,9 @@ class TransitionRuleProcessor(object):
             if i_proportion == 0:
 
                 # for the first index use the existing matched records
-                transition_classifier_ids = self._get_transition_classifier_set(
-                    transition_rule=tr_group.iloc[i_proportion])
+                transition_classifier_ids = \
+                    self._get_transition_classifier_set(
+                        transition_rule=tr_group.iloc[i_proportion])
                 for classifier_name, value_id in transition_classifier_ids:
                     classifiers.loc[filter_result, classifier_name] = value_id
                 if proportion < 1.0:
@@ -188,8 +190,9 @@ class TransitionRuleProcessor(object):
                         state_variables[filter_result].copy())
 
             else:
-                transition_classifier_ids = self._get_transition_classifier_set(
-                    transition_rule=tr_group.iloc[i_proportion])
+                transition_classifier_ids = \
+                    self._get_transition_classifier_set(
+                        transition_rule=tr_group.iloc[i_proportion])
                 transition_classifiers = classifiers[filter_result].copy()
                 for classifier_name, value_id in transition_classifier_ids:
                     transition_classifiers[classifier_name] = value_id
