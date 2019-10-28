@@ -228,10 +228,6 @@ def initialize_inventory(inventory):
      0    30     42      1      0     1      5     -1
     ====  ==== =====  ======  =====  ====  =====  =====
 
-    Each row in both of the above tables corresponds to a CBM stand, and
-    therefore both tables must have the same number of rows.  The number of
-    columns in the classifiers table is equal to the number of classifiers.
-
     Args:
 
         inventory (pandas.DataFrame): Data defining the inventory. Columns:
@@ -250,9 +246,6 @@ def initialize_inventory(inventory):
               for the final disturbance in the spinup routine.
             - delay: number of steps to simulate dead organic matter decays
               after a last pass deforestation event occurs.
-    Raises:
-        ValueError: Raised if the number of rows for classifiers and
-            data are not the same.
 
     Returns:
         pandas.DataFrame: dataframe containing the inventory data.
@@ -271,6 +264,12 @@ def initialize_inventory(inventory):
         "delay": inventory.delay.to_numpy(dtype=np.int32)})
 
 
+def initialize_classifiers(classifiers):
+    """converts classifiers table to required type"""
+    return pd.DataFrame(
+        data=classifiers.to_numpy(dtype=np.int32),
+        columns=list(classifiers))
+
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
                                     flux_indicator_codes):
     n_stands = inventory.shape[0]
@@ -280,5 +279,5 @@ def initialize_simulation_variables(classifiers, inventory, pool_codes,
     i.params = initialize_cbm_parameters(n_stands)
     i.state = initialize_cbm_state_variables(n_stands)
     i.inventory = initialize_inventory(inventory)
-    i.classifiers = classifiers
+    i.classifiers = initialize_classifiers(classifiers)
     return i
