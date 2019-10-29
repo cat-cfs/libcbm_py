@@ -103,10 +103,9 @@ def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
             cbm_vars.flux_indicators.iloc[split_index].copy()
             ).reset_index(drop=True)
 
-        # TODO: other parameters need to be expanded here too
-        # extend the disturbance type array by the number of splits
-        cbm_vars.params.disturbance_type = np.concatenate(
-            [cbm_vars.params.disturbance_type,
-             np.zeros(n_splits, dtype=np.int32)])
+        new_params = cbm_vars.params.iloc[split_index].copy()
+        new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)
+        cbm_vars.params = cbm_vars.params.append(
+            new_params).reset_index(drop=True)
 
     return cbm_vars
