@@ -120,7 +120,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 self.assertTrue(cbm_vars.inventory.equals(mock_inventory))
                 self.assertTrue(cbm_vars.pools.equals(mock_pools))
                 self.assertTrue(
-                    cbm_vars.state_variables.equals(mock_state_variables))
+                    cbm_vars.state.equals(mock_state_variables))
 
                 return cbm_vars
 
@@ -179,6 +179,6 @@ class SITEventProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars_result.inventory.equals(mock_inventory))
             self.assertTrue(cbm_vars_result.pools.equals(mock_pools))
             self.assertTrue(
-                cbm_vars_result.state_variables.equals(mock_state_variables))
+                cbm_vars_result.equals(mock_state_variables))
             self.assertTrue(
                 cbm_vars_result.params.equals(mock_params))

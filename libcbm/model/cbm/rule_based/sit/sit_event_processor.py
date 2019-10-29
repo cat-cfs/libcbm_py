@@ -118,7 +118,7 @@ class SITEventProcessor():
                 columns=pool_filter_cols),
             rule_filter.create_filter(
                 expression=state_filter_expression,
-                data=cbm_vars.state_variables,
+                data=cbm_vars.state,
                 columns=state_filter_cols),
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
