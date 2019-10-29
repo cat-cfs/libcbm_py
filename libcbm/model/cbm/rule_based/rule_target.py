@@ -88,7 +88,11 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     if disturbed.shape[0] == 0:
         if target > 0:
             on_unrealized(remaining_target)
-        return result
+        # create the empty dataframe result
+        return pd.DataFrame(
+            columns=[
+                "target_var", "sort_var", "disturbed_index",
+                "area_proportions"])
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
