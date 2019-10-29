@@ -83,7 +83,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 classifiers=mock_classifiers,
                 inventory=mock_inventory,
                 pools=mock_pools,
-                state_variables=mock_state_variables,
+                state=mock_state_variables,
                 params=mock_params)
             # mock filter
             rule_filter = mocks["rule_filter"]
@@ -179,6 +179,6 @@ class SITEventProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars_result.inventory.equals(mock_inventory))
             self.assertTrue(cbm_vars_result.pools.equals(mock_pools))
             self.assertTrue(
-                cbm_vars_result.equals(mock_state_variables))
+                cbm_vars_result.state.equals(mock_state_variables))
             self.assertTrue(
                 cbm_vars_result.params.equals(mock_params))

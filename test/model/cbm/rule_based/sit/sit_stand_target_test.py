@@ -24,7 +24,7 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
     mock_cbm_vars = SimpleNamespace(
         inventory=mock_inventory,
         pools=mock_pools,
-        state_variables=mock_state_variables)
+        state=mock_state_variables)
     create_target(
         cbm_vars=mock_cbm_vars,
         eligible=mock_eligible)
