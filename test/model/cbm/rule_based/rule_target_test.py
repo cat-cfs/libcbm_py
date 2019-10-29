@@ -280,7 +280,7 @@ class RuleTargetTest(unittest.TestCase):
         def mock_allocate_op(n_stands):
             self.assertTrue(n_stands == 3)
             return 999
-        compute_functions.AllocateOp = mock_allocate_op
+        compute_functions.allocate_op = mock_allocate_op
 
         def mock_compute_flux(ops, op_processes, pools, flux, enabled):
             self.assertTrue(op_processes == [
