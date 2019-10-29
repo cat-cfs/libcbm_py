@@ -126,7 +126,6 @@ class SITEventProcessor():
                 cbm_vars.classifiers))
 
         return event_processor.process_event(
-            filter_evaluator=rule_filter.evaluate_filter,
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
@@ -173,7 +172,7 @@ class SITEventProcessor():
 
         """
         n_stands = cbm_vars.inventory.shape[0]
-        cbm_vars.params.disturbance_types = np.zeros(n_stands, dtype=np.int32)
+        cbm_vars.params.disturbance_type = np.zeros(n_stands, dtype=np.int32)
         eligible = np.ones(n_stands, dtype=bool)
 
         for sit_event in self._event_iterator(time_step, sit_events):

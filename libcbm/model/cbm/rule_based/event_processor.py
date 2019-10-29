@@ -1,16 +1,13 @@
 import numpy as np
+from libcbm.model.cbm.rule_based import rule_filter
 
-
-def process_event(filter_evaluator, event_filter, undisturbed, target_func,
+def process_event(event_filter, undisturbed, target_func,
                   disturbance_type_id, cbm_vars):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
 
     Args:
-        filter_evaluator (object): function to evaluate the specified
-            event_filter parameter.
-            See :py:mod:`libcbm.model.cbm.rule_based.rule_filter`
         event_filter (object): a filter object containing information to deem
             stands eligible or ineligible for events
             See :py:mod:`libcbm.model.cbm.rule_based.rule_filter`
@@ -30,7 +27,7 @@ def process_event(filter_evaluator, event_filter, undisturbed, target_func,
             occurs. See the return value of :py:func:`apply_rule_based_event`
     """
 
-    filter_result = filter_evaluator(event_filter)
+    filter_result = rule_filter.evaluate_filter(event_filter)
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
@@ -106,6 +103,7 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
 
         # set the disturbance types for the disturbed indices, based on
         # the sit_event disturbance_type field.
+        # TODO: other parameters need to be expanded here too
         cbm_vars.params.disturbance_types[target_index] = disturbance_type_id
 
         # extend the disturbance type array by the number of splits
