@@ -37,10 +37,10 @@ def process_event(event_filter, undisturbed, target_func,
         cbm_vars, filter_result)
 
     return apply_rule_based_event(
-        target, undisturbed, disturbance_type_id, cbm_vars)
+        target, disturbance_type_id, cbm_vars)
 
 
-def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
+def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
     """Apply the specified target to the CBM simulation variables,
     splitting them if necessary.
 
@@ -49,9 +49,6 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
             records to disturbance and area split proportions.  See return
             value of methods in
             :py:mod:`libcbm.model.cbm.rule_based.rule_target`
-        undisturbed (pandas.Series): a boolean value series indicating each
-            specified index is eligible (True) or ineligible (False) for
-            disturbance.
         disturbance_type_id (int): the id for the disturbance event being
             applied.
         cbm_vars (object): an object containing dataframes that store cbm
@@ -72,10 +69,6 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
     cbm_vars.params.disturbance_type[target_index] = disturbance_type_id
-
-    # update undisturbed to false at the disturbed indices, since they are
-    # not eligible for the next event in this timestep.
-    undisturbed[target_index] = 0
 
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
@@ -110,14 +103,10 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
             cbm_vars.flux_indicators.iloc[split_index].copy()
             ).reset_index(drop=True)
 
-
         # TODO: other parameters need to be expanded here too
         # extend the disturbance type array by the number of splits
         cbm_vars.params.disturbance_type = np.concatenate(
             [cbm_vars.params.disturbance_type,
              np.zeros(n_splits, dtype=np.int32)])
-
-        # extend the undisturbed array by the number of splits
-        undisturbed = np.concatenate([undisturbed, np.ones(n_splits)])
 
     return cbm_vars

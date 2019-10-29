@@ -173,9 +173,9 @@ class SITEventProcessor():
         """
         n_stands = cbm_vars.inventory.shape[0]
         cbm_vars.params.disturbance_type = np.zeros(n_stands, dtype=np.int32)
-        eligible = np.ones(n_stands, dtype=bool)
 
         for sit_event in self._event_iterator(time_step, sit_events):
+            eligible = cbm_vars.params.disturbance_type <= 0
             cbm_vars = self._process_event(
                 eligible,
                 sit_event,
