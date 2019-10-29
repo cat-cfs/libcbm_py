@@ -160,4 +160,82 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(pools.equals(mock_pools))
             self.assertTrue(state_variables.equals(state_variables))
 
+    def test_single_record_split_remainder_transition(self):
+        mock_classifier_filter_builder = Mock()
+        mock_state_variable_filter_func = Mock()
+        mock_classifier_config = {
+            "classifiers": [
+                {"id": 1, "name": "a"},
+                {"id": 2, "name": "b"}],
+            "classifier_values": [
+                {"id": 1, "classifier_id": 1, "value": "a1"},
+                {"id": 2, "classifier_id": 1, "value": "a2"},
+                {"id": 3, "classifier_id": 2, "value": "b1"}]}
+        grouped_percent_err_max = 0.001
+        wildcard = "?"
+        transition_classifier_postfix = "_tr"
+        tr_processor = TransitionRuleProcessor(
+            mock_classifier_filter_builder, mock_state_variable_filter_func,
+            mock_classifier_config, grouped_percent_err_max, wildcard,
+            transition_classifier_postfix)
+
+        tr_group_key = {
+            "a": "a1", "b": "?", "disturbance_type_id": 55}
+        tr_group = pd.DataFrame({
+            "a": ["a1"],
+            "b": ["b1"],
+            "disturbance_type_id": [55],
+            "a_tr": ["a2"],
+            "b_tr": ["?"],
+            "regeneration_delay": [7],
+            "reset_age": [4],
+            "percent": [35.0]
+            # since the group's sum is less than 100, the inventory
+            # will be split in half, and the remainder is not transitioned
+        })
+        transition_mask = np.array([False], dtype=bool)
+        mock_disturbance_type = np.array([55])
+        mock_classifiers = pd.DataFrame({
+            "a": [1],
+            "b": [3]
+        })
+        mock_inventory = pd.DataFrame({
+            "area": [1.0]
+        })
+        mock_pools = pd.DataFrame({
+            "p0": [1],
+            "p1": [1]
+        })
+        mock_state_variables = pd.DataFrame({
+            "age": [0],
+        })
+        with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
+            mock_rule_filter.evaluate_filter.side_effect = \
+                lambda filter_obj: np.array([True], dtype=bool)
+            (transition_mask,
+             transition_output,
+             classifiers,
+             inventory,
+             pools,
+             state_variables) = tr_processor.apply_transition_rule(
+                 tr_group_key, tr_group, transition_mask,
+                 mock_disturbance_type, mock_classifiers, mock_inventory,
+                 mock_pools, mock_state_variables)
+            self.assertTrue(list(transition_mask) == [True, False])
+            self.assertTrue(
+                list(transition_output.regeneration_delay) == [7, 0])
+            self.assertTrue(list(transition_output.reset_age) == [4, -1])
+
+            # the transition portion is changed
+            self.assertTrue(list(classifiers.a) == [2, 1])
+
+            self.assertTrue(list(classifiers.b) == [3, 3])
+
+            self.assertTrue(list(inventory.area) == [35.0, 65.0])
+            self.assertTrue(pools.iloc[0].equals(mock_pools))
+            self.assertTrue(pools.iloc[1].equals(mock_pools))
+
+            self.assertTrue(state_variables.iloc[0].equals(state_variables))
+            self.assertTrue(state_variables.iloc[1].equals(state_variables))
+
 
