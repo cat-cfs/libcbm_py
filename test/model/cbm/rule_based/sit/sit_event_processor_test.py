@@ -21,75 +21,29 @@ class SITEventProcessorTest(unittest.TestCase):
         with patch(PATCH_PATH + ".cbm_variables") as cbm_variables:
 
             time_step = 10
-            cbm_variables.inventory_to_df = Mock()
-            cbm_variables.inventory_to_df.side_effect = \
-                lambda _: ("mock_classifiers", "mock_inventory")
-            cbm_variables.initialize_cbm_parameters = Mock()
-            cbm_variables.initialize_cbm_parameters.side_effect = \
-                lambda **kwargs: "mock_params"
-            cbm_variables.initialize_inventory = Mock()
 
-            def mock_initialize_inventory(classifiers, inventory):
-                self.assertTrue(classifiers == "mock_classifiers")
-                self.assertTrue(inventory.equals(pd.DataFrame({"a": [1]})))
-                return "mock_inventory_object_result"
-
-            cbm_variables.initialize_inventory.side_effect = \
-                mock_initialize_inventory
             cbm_variables.initialize_flux = Mock()
             cbm_variables.initialize_flux.side_effect = \
                 lambda **kwargs: "mock_flux_result"
 
-            cbm_vars = SimpleNamespace(
-                inventory="mock_inventory_object",
-                pools="mock_pools",
-                state="mock_state",
-                flux_indicators=pd.DataFrame({"a": [1], "b": [2], "c": [3]}))
+            mock_cbm_vars = "mock_cbm_vars"
 
             mock_sit_event_processor = Mock()
             mock_sit_event_processor.process_events = Mock()
             mock_sit_event_processor.process_events.side_effect = \
-                lambda **kwargs: (
-                    "mock_disturbance_types",
-                    "mock_classifiers",
-                    pd.DataFrame({"a": [1]}),  # .shape[0] is used internally
-                    "mock_pools_result",
-                    "mock_state_result"
-                )
+                lambda time_step, sit_events, cbm_vars: cbm_vars
 
             mock_sit_events = "mock_events"
             pre_dynamics_func = get_pre_dynamics_func(
                 mock_sit_event_processor, mock_sit_events)
-            cbm_vars_result = pre_dynamics_func(time_step, cbm_vars)
+            cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars)
 
             mock_sit_event_processor.process_events.assert_called_with(
                 time_step=time_step,
                 sit_events=mock_sit_events,
-                classifiers="mock_classifiers",
-                inventory="mock_inventory",
-                pools="mock_pools",
-                state_variables="mock_state")
+                cbm_vars=mock_cbm_vars)
 
-            cbm_variables.inventory_to_df.assert_called_with(
-                "mock_inventory_object")
-            cbm_variables.initialize_cbm_parameters.assert_called_with(
-                n_stands=1,
-                disturbance_type="mock_disturbance_types"
-            )
-            cbm_variables.initialize_inventory.assert_called()
-            cbm_variables.initialize_flux.assert_called_with(
-                n_stands=1,
-                flux_indicator_codes=["a", "b", "c"]
-            )
-
-            self.assertTrue(
-                cbm_vars_result.inventory == "mock_inventory_object_result")
-            self.assertTrue(
-                cbm_vars_result.pools == "mock_pools_result")
-            self.assertTrue(
-                cbm_vars_result.state == "mock_state_result")
-            self.assertTrue(
-                cbm_vars_result.flux_indicators == "mock_flux_result")
+            self.assertTrue(cbm_vars_result =="mock_cbm_vars")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
@@ -114,25 +68,6 @@ class SITEventProcessorTest(unittest.TestCase):
                     ]
                 })
 
-            # Going to model 2 events by setting time_step = 1, which
-            # corresponds to the the first 2 rows of the above mock_sit_events
-            # df.
-
-            # event 1 on timestep 1 will use this target, meaning:
-            #   - the index 0 is targeted to be fully disturbed
-            #   - the index 1 is targeted to be split in half
-            mock_target_1 = {
-                "area_proportions": pd.Series([1.0, 0.5]),
-                "disturbed_index": pd.Series([0, 1])
-            }
-            # event 2 on timestep 1 will use this target, meaning:
-            #   - the index 2 is targeted to be fully disturbed
-            #   - the index 3 is targeted to be split in half
-            mock_target_2 = {
-                "area_proportions": pd.Series([1.0, 0.5]),
-                "disturbed_index": pd.Series([2, 3])
-            }
-
             # since everything is thoroughly mocked, this data wont matter much
             # for the purposes of this test, other than the type is DataFrame,
             # and the lengths of the inventory array which is used to inform
@@ -142,7 +77,14 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_pools = pd.DataFrame({"pool1": [10, 20, 30, 40, 50, 60]})
             mock_state_variables = pd.DataFrame(
                 {"land_class": [0, 1, 0, 1, 0, 1]})
-
+            mock_params = pd.DataFrame(
+                {"disturbance_type": [0]*mock_inventory.shape[0]})
+            mock_cbm_vars = SimpleNamespace(
+                classifiers=mock_classifiers,
+                inventory=mock_inventory,
+                pools=mock_pools,
+                state_variables=mock_state_variables,
+                params=mock_params)
             # mock filter
             rule_filter = mocks["rule_filter"]
             rule_filter.merge_filters = Mock()
@@ -160,39 +102,27 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_event_processor = mocks["event_processor"]
             mock_event_processor.process_event = Mock()
 
-            def mock_process_event(filter_evaluator, event_filter,
-                                   undisturbed, target_func, classifiers,
-                                   inventory, pools, state_variables):
-
+            def mock_process_event(event_filter, undisturbed, target_func,
+                                   disturbance_type_id, cbm_vars):
                 call_count = mock_event_processor.process_event.call_count
-                # expecting 2 calls to this function, one for each of the
-                # events on timestep one in the mock sit events
-                mock_target = None
-                if call_count == 1:
-                    mock_target = mock_target_1
-                    # all records are undisturbed on first call
-                    self.assertTrue(
-                        list(undisturbed) == [1, 1, 1, 1, 1, 1])
-                elif call_count == 2:
-                    mock_target = mock_target_2
-                    # as of the second call to this function, the first 2
-                    # indices have been targeted for disturbance, and an
-                    # additional item has been added to the array to represent
-                    # the split record
-                    self.assertTrue(
-                        list(undisturbed) == [0, 0, 1, 1, 1, 1, 1])
 
-                self.assertTrue(filter_evaluator == "mock_evaluate_filter")
+                # using call count checks event sorting
+                if call_count == 1:
+                    self.assertTrue(disturbance_type_id == 1)
+                else:
+                    self.assertTrue(disturbance_type_id == 2)
+
+                n_stands = cbm_vars.inventory.shape[0]
+                self.assertTrue(list(undisturbed) == [True]*n_stands)
                 self.assertTrue(event_filter == "mock_merged_filter")
                 self.assertTrue(target_func == "mock_target_factory")
-                self.assertTrue(classifiers.equals(mock_classifiers))
-                self.assertTrue(inventory.equals(mock_inventory))
-                self.assertTrue(pools.equals(mock_pools))
-                self.assertTrue(state_variables.equals(state_variables))
+                self.assertTrue(cbm_vars.classifiers.equals(mock_classifiers))
+                self.assertTrue(cbm_vars.inventory.equals(mock_inventory))
+                self.assertTrue(cbm_vars.pools.equals(mock_pools))
+                self.assertTrue(
+                    cbm_vars.state_variables.equals(mock_state_variables))
 
-                return (
-                    mock_target, classifiers, inventory, pools,
-                    state_variables)
+                return cbm_vars
 
             mock_event_processor.process_event.side_effect = mock_process_event
 
@@ -237,22 +167,18 @@ class SITEventProcessorTest(unittest.TestCase):
                 random_generator=mock_random_generator,
                 on_unrealized_event=mock_on_unrealized_event)
 
-            (dist_types, classifiers, inventory, pools, state_variables) = \
-                sit_event_processor.process_events(
+            cbm_vars_result = sit_event_processor.process_events(
                     time_step=1,  # there are 2 mock events with t = 1
                     sit_events=mock_sit_events,
-                    classifiers=mock_classifiers,
-                    inventory=mock_inventory,
-                    pools=mock_pools,
-                    state_variables=mock_state_variables)
+                    cbm_vars=mock_cbm_vars)
 
             # all effects to these dataframes are mocked, so they should be
             # equal to the originals
-            self.assertTrue(classifiers.equals(mock_classifiers))
-            self.assertTrue(inventory.equals(mock_inventory))
-            self.assertTrue(pools.equals(mock_pools))
-            self.assertTrue(state_variables.equals(state_variables))
-
-            # note: the sort order took effect meaning the fire id was applied
-            # on the first iteration, and the harvest id on the second.
-            self.assertTrue(list(dist_types) == [1, 1, 2, 2, 0, 0, 0, 0])
+            self.assertTrue(
+                cbm_vars_result.classifiers.equals(mock_classifiers))
+            self.assertTrue(cbm_vars_result.inventory.equals(mock_inventory))
+            self.assertTrue(cbm_vars_result.pools.equals(mock_pools))
+            self.assertTrue(
+                cbm_vars_result.state_variables.equals(mock_state_variables))
+            self.assertTrue(
+                cbm_vars_result.params.equals(mock_params))
