@@ -63,8 +63,8 @@ def to_coordinate(matrix):
     return np.column_stack((coo.row, coo.col, coo.data))
 
 
-def ComputePools(pools, ops, op_indices):
-    """Runs the ComputePools libCBM function based on the specified numpy pool
+def compute_pools(pools, ops, op_indices):
+    """Runs the compute_pools libCBM function based on the specified numpy pool
     matrix, and the specified matrix ops.
 
     Args:
@@ -78,7 +78,7 @@ def ComputePools(pools, ops, op_indices):
             ops parameter.
 
     Returns:
-        numpy.ndarray: the result of the ComputePools libcbm operation
+        numpy.ndarray: the result of the compute_pools libcbm operation
     """
     pools = pools.copy()
     pooldef = create_pools([str(x) for x in range(pools.shape[1])])
@@ -88,15 +88,15 @@ def ComputePools(pools, ops, op_indices):
     })
     op_ids = []
     for i, op in enumerate(ops):
-        op_id = dll.AllocateOp(pools.shape[0])
+        op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
         # The set op function accepts a matrix of coordinate triples.
         # In LibCBM matrices are stored in a sparse format, so 0 values can be
         # omitted from the parameter.
-        dll.SetOp(op_id, [to_coordinate(x) for x in op],
+        dll.set_op(op_id, [to_coordinate(x) for x in op],
                   np.ascontiguousarray(op_indices[:, i]))
 
-    dll.ComputePools(op_ids, pools)
+    dll.compute_pools(op_ids, pools)
 
     return pools
 
@@ -121,9 +121,9 @@ def append_flux_indicator(collection, flux_indicator):
     collection.append(flux_indicator)
 
 
-def ComputeFlux(pools, poolnames, mats, op_indices, op_processes,
-                flux_indicators):
-    """Runs the libcbm ComputeFlux method for testing purposes
+def compute_flux(pools, poolnames, mats, op_indices, op_processes,
+                 flux_indicators):
+    """Runs the libcbm compute_flux method for testing purposes
 
     Args:
         pools (numpy.ndarray): a n_stands, by n_pools matrix of pool values
@@ -139,7 +139,7 @@ def ComputeFlux(pools, poolnames, mats, op_indices, op_processes,
 
     Returns:
         tuple: 1. the pool result (numpy.ndarray) and 2. the flux result
-            (numpy.ndarray) of the ComputeFlux libcbm method.
+            (numpy.ndarray) of the compute_flux libcbm method.
     """
     pools = pools.copy()
     flux = np.zeros((pools.shape[0], len(flux_indicators)))
@@ -158,11 +158,11 @@ def ComputeFlux(pools, poolnames, mats, op_indices, op_processes,
     })
     op_ids = []
     for i, matrix in enumerate(mats):
-        op_id = dll.AllocateOp(pools.shape[0])
+        op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
-        dll.SetOp(
+        dll.set_op(
             op_id, [to_coordinate(x) for x in matrix],
             np.ascontiguousarray(op_indices[:, i]))
 
-    dll.ComputeFlux(op_ids, op_processes, pools, flux)
+    dll.compute_flux(op_ids, op_processes, pools, flux)
     return pools, flux

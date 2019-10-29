@@ -44,12 +44,12 @@ class ComputeFluxTests(unittest.TestCase):
 
         # evenly assigns ops to the defined process ids
         op_processes = [x % len(unique_process_ids)+1 for x in range(n_ops)]
-        pools_test, flux_test = pool_flux_helpers.ComputeFlux(
+        pools_test, flux_test = pool_flux_helpers.compute_flux(
             pools, poolnames, mats, op_indices, op_processes,
             flux_indicator_config)
 
         # create the expected result using the numpy implementation
-        # this fully emulates the ComputeFlux function, and computes an
+        # this fully emulates the compute_flux function, and computes an
         # independent result against which we check differences
         identity = np.identity(n_pools)
         pools_working = pools.copy()  # working variable required

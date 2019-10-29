@@ -16,7 +16,7 @@ class ComputePoolTests(unittest.TestCase):
              [0, 0.0, 0, 0, 1]])
 
         op_indices = np.array([[0]], dtype=np.uintp)
-        pools_test = pool_flux_helpers.ComputePools(pools, [[mat]], op_indices)
+        pools_test = pool_flux_helpers.compute_pools(pools, [[mat]], op_indices)
 
         # create the expected result using the numpy implementation
         pools_expected = np.matmul(pools, mat)
@@ -39,7 +39,7 @@ class ComputePoolTests(unittest.TestCase):
              [0, 0.0, 0, 0, 1]])
 
         op_indices = np.zeros((n_ops, n_stands), dtype=np.uintp)
-        pools_test = pool_flux_helpers.ComputePools(pools, [[mat]], op_indices)
+        pools_test = pool_flux_helpers.compute_pools(pools, [[mat]], op_indices)
 
         # create the expected result using the numpy implementation
         pools_expected = np.zeros((10, 5))
@@ -106,7 +106,7 @@ class ComputePoolTests(unittest.TestCase):
             [1, 1]], dtype=np.uintp)
 
         # use the libcbm implementation
-        pools_test = pool_flux_helpers.ComputePools(pools, mats, op_indices)
+        pools_test = pool_flux_helpers.compute_pools(pools, mats, op_indices)
 
         # create the expected result using the numpy implementation
         pools_expected = np.zeros((n_stands, n_pools))
@@ -156,7 +156,7 @@ class ComputePoolTests(unittest.TestCase):
                 op_mats.append(np.random.rand(n_pools, n_pools)*1e5)
             mats.append(op_mats)
 
-        pools_test = pool_flux_helpers.ComputePools(pools, mats, op_indices)
+        pools_test = pool_flux_helpers.compute_pools(pools, mats, op_indices)
 
         # working variable required so the original value isn't overwritten
         pools_working = pools.copy()
