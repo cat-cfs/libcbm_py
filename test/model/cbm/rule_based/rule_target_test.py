@@ -273,7 +273,7 @@ class RuleTargetTest(unittest.TestCase):
             self.assertTrue(op == 999)
             self.assertTrue(inventory.equals(mock_inventory))
             self.assertTrue((disturbance_type == mock_disturbance_type).all()[0])
-        model_functions.GetDisturbanceOps = mock_get_disturbance_ops
+        model_functions.get_disturbance_ops = mock_get_disturbance_ops
 
         compute_functions = SimpleNamespace()
 
@@ -289,11 +289,11 @@ class RuleTargetTest(unittest.TestCase):
             self.assertTrue(pools.equals(mock_pools))
             self.assertTrue(list(enabled) == list(mock_eligible))
             flux[:] = 1
-        compute_functions.ComputeFlux = mock_compute_flux
+        compute_functions.compute_flux = mock_compute_flux
 
         def mock_free_op(op):
             self.assertTrue(op == 999)
-        compute_functions.FreeOp = mock_free_op
+        compute_functions.free_op = mock_free_op
         result = rule_target.compute_disturbance_production(
             model_functions, compute_functions, mock_pools, mock_inventory,
             mock_disturbance_type, mock_flux, mock_eligible)

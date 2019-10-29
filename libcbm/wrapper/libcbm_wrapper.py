@@ -165,7 +165,7 @@ class LibCBMWrapper():
     def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
 
-        Performs the same operation as ComputePools, except that the fluxes
+        Performs the same operation as compute_pools, except that the fluxes
         are tracked in the specified flux parameter, according to the
         flux_indicators configuration passed to the LibCBM initialize method.
 

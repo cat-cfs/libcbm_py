@@ -286,14 +286,14 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
     disturbance_type = pd.DataFrame({
         "disturbance_type":
             np.ones(n_stands, dtype=np.int32) * disturbance_type})
-    model_functions.GetDisturbanceOps(
+    model_functions.get_disturbance_ops(
         disturbance_op, inventory, disturbance_type)
 
     # compute the flux based on the specified disturbance type
-    compute_functions.ComputeFlux(
+    compute_functions.compute_flux(
         [disturbance_op], [disturbance_op_process_id],
         pools.copy(), flux, enabled=eligible)
-    compute_functions.FreeOp(disturbance_op)
+    compute_functions.free_op(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
     return pd.DataFrame(data={
