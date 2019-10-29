@@ -270,6 +270,7 @@ def initialize_classifiers(classifiers):
         data=classifiers.to_numpy(dtype=np.int32),
         columns=list(classifiers))
 
+
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
                                     flux_indicator_codes):
     n_stands = inventory.shape[0]

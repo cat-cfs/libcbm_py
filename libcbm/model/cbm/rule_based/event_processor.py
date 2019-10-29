@@ -2,7 +2,7 @@ import numpy as np
 
 
 def process_event(filter_evaluator, event_filter, undisturbed, target_func,
-                  classifiers, inventory, pools, state_variables):
+                  disturbance_type_id, cbm_vars):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -19,10 +19,10 @@ def process_event(filter_evaluator, event_filter, undisturbed, target_func,
             disturbance.
         target_func (func): a function for creating a disturbance target.
             See: :py:mod:`libcbm.model.cbm.rule_based.rule_target`
-        classifiers (pandas.DataFrame): CBM classifier values
-        inventory (pandas.DataFrame): CBM inventory
-        pools (pandas.DataFrame): CBM simulation pools
-        state_variables (pandas.DataFrame): CBM simulation state variables
+        disturbance_type_id (int): the id for the disturbance event being
+            processed.
+        cbm_vars (object): an object containing dataframes that store cbm
+            simulation state and variables
 
     Returns:
         tuple: The computed disturbance index and pools, state variables,
@@ -37,14 +37,13 @@ def process_event(filter_evaluator, event_filter, undisturbed, target_func,
     filter_result = np.logical_and(undisturbed, filter_result)
 
     target = target_func(
-        pools, inventory, state_variables, filter_result)
+        cbm_vars, filter_result)
 
     return apply_rule_based_event(
-        target, classifiers, inventory, pools, state_variables)
+        target, undisturbed, disturbance_type_id, cbm_vars)
 
 
-def apply_rule_based_event(target, classifiers, inventory, pools,
-                           state_variables):
+def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
     """Apply the specified target to the CBM simulation variables,
     splitting them if necessary.
 
@@ -53,41 +52,31 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
             records to disturbance and area split proportions.  See return
             value of methods in
             :py:mod:`libcbm.model.cbm.rule_based.rule_target`
-        classifiers (pandas.DataFrame): CBM classifier values
-        inventory (pandas.DataFrame): CBM inventory
-        pools (pandas.DataFrame): CBM simulation pools
-        state_variables (pandas.DataFrame): CBM simulation state variables
+        undisturbed (pandas.Series): a boolean value series indicating each
+            specified index is eligible (True) or ineligible (False) for
+            disturbance.
+        disturbance_type_id (int): the id for the disturbance event being
+            applied.
+        cbm_vars (object): an object containing dataframes that store cbm
+            simulation state and variables
 
     Returns:
-        tuple: tuple of target information and copies of the 4 input variables
-            with splits applied if necessary:
-
-            1. target (dict): a dictionary describing the computed disturbacne
-                target
-            2. classifiers (pandas.DataFrame): CBM classifier values
-            3. inventory (pandas.DataFrame): CBM inventory
-            4. pools (pandas.DataFrame): CBM simulation pools
-            5. state_variables (pandas.DataFrame): CBM simulation state
-               variables
+        object: updated and expanded cbm_vars
 
     """
     target_index = target["disturbed_index"]
     target_area_proportions = target["area_proportions"]
 
-    updated_inventory = inventory
-    updated_classifiers = classifiers
-    updated_state_variables = state_variables
-    updated_pools = pools
-
     splits = target_area_proportions < 1.0
+    n_splits = (splits).sum()
     split_index = target_index[splits]
-    split_inventory = updated_inventory.iloc[split_index].copy()
+    split_inventory = cbm_vars.inventory.iloc[split_index].copy()
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
-        updated_inv_idx = updated_inventory.index[split_index]
-        updated_inventory.loc[updated_inv_idx, "area"] = \
-            updated_inventory.loc[updated_inv_idx, "area"] * \
+        updated_inv_idx = cbm_vars.inventory.index[split_index]
+        cbm_vars.inventory.loc[updated_inv_idx, "area"] = \
+            cbm_vars.inventory.loc[updated_inv_idx, "area"] * \
             target_area_proportions[splits].to_numpy()
 
         # set the split inventory as the remaining undisturbed area
@@ -96,20 +85,39 @@ def apply_rule_based_event(target, classifiers, inventory, pools,
             (1.0 - target_area_proportions[splits].array)
 
         # create the updated inventory by appending the split records
-        updated_inventory = updated_inventory.append(
+        cbm_vars.inventory = cbm_vars.inventory.append(
             split_inventory).reset_index(drop=True)
 
-        # Since classifiers, pools, and state variables are not altered here
-        # (this is done in the model) splitting is just a matter of adding a
-        # copy of the split values.
-        updated_classifiers = updated_classifiers.append(
-            updated_classifiers.iloc[split_index].copy()
+        # Since classifiers, pools, flux, and state variables are not altered
+        # here (this is done in the model) splitting is just a matter of
+        # adding a copy of the split values.
+        cbm_vars.classifiers = cbm_vars.classifiers.append(
+            cbm_vars.classifiers.iloc[split_index].copy()
             ).reset_index(drop=True)
-        updated_state_variables = updated_state_variables.append(
-            updated_state_variables.iloc[split_index].copy()
+        cbm_vars.state_variables = cbm_vars.state_variables.append(
+            cbm_vars.state_variables.iloc[split_index].copy()
             ).reset_index(drop=True)
-        updated_pools = updated_pools.append(
-            updated_pools.iloc[split_index].copy()
+        cbm_vars.pools = cbm_vars.pools.append(
+            cbm_vars.pools.iloc[split_index].copy()
             ).reset_index(drop=True)
-    return (target, updated_classifiers, updated_inventory, updated_pools,
-            updated_state_variables)
+        cbm_vars.flux = cbm_vars.flux.append(
+            cbm_vars.flux.iloc[split_index].copy()
+            ).reset_index(drop=True)
+
+        # set the disturbance types for the disturbed indices, based on
+        # the sit_event disturbance_type field.
+        cbm_vars.params.disturbance_types[target_index] = disturbance_type_id
+
+        # extend the disturbance type array by the number of splits
+        cbm_vars.params.disturbance_types = np.concatenate(
+            [cbm_vars.params.disturbance_types,
+             np.zeros(n_splits, dtype=np.int32)])
+
+        # update undisturbed to false at the disturbed indices, since they are
+        # not eligible for the next event in this timestep.
+        undisturbed[target_index] = 0
+
+        # extend the undisturbed array by the number of splits
+        undisturbed = np.concatenate([undisturbed, np.ones(n_splits)])
+
+    return target, cbm_vars

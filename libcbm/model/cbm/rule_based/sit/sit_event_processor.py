@@ -40,39 +40,10 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 
     """
     def sit_events_pre_dynamics_func(time_step, cbm_vars):
-
-        classifiers, inventory = cbm_variables.inventory_to_df(
-            cbm_vars.inventory)
-
-        (disturbance_types,
-         _classifiers,
-         _inventory,
-         _pools,
-         _state) = sit_event_processor.process_events(
-             time_step=time_step,
-             sit_events=sit_events,
-             classifiers=classifiers,
-             inventory=inventory,
-             pools=cbm_vars.pools,
-             state_variables=cbm_vars.state)
-
-        n_stands = _inventory.shape[0]
-        cbm_vars.params = cbm_variables.initialize_cbm_parameters(
-            n_stands=n_stands,
-            disturbance_type=disturbance_types)
-
-        cbm_vars.inventory = cbm_variables.initialize_inventory(
-            classifiers=_classifiers,
-            inventory=_inventory)
-
-        cbm_vars.pools = _pools
-        cbm_vars.state = _state
-
-        # re-size the flux indicators array according to the number of stands
-        cbm_vars.flux_indicators = cbm_variables.initialize_flux(
-            n_stands=n_stands,
-            flux_indicator_codes=list(cbm_vars.flux_indicators))
-
+        cbm_vars = sit_event_processor.process_events(
+            time_step=time_step,
+            sit_events=sit_events,
+            cbm_vars=cbm_vars)
         return cbm_vars
 
     return sit_events_pre_dynamics_func
@@ -113,8 +84,7 @@ class SITEventProcessor():
 
         return compute_disturbance_production
 
-    def _process_event(self, eligible, sit_event, classifiers, inventory,
-                       pools, state_variables):
+    def _process_event(self, eligible, sit_event, cbm_vars):
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
@@ -144,26 +114,24 @@ class SITEventProcessor():
         event_filter = rule_filter.merge_filters(
             rule_filter.create_filter(
                 expression=pool_filter_expression,
-                data=pools,
+                data=cbm_vars.pools,
                 columns=pool_filter_cols),
             rule_filter.create_filter(
                 expression=state_filter_expression,
-                data=state_variables,
+                data=cbm_vars.state_variables,
                 columns=state_filter_cols),
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
-                    sit_event, classifiers.columns.tolist()),
-                classifiers))
+                    sit_event, cbm_vars.classifiers.columns.tolist()),
+                cbm_vars.classifiers))
 
         return event_processor.process_event(
             filter_evaluator=rule_filter.evaluate_filter,
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
-            classifiers=classifiers,
-            inventory=inventory,
-            pools=pools,
-            state_variables=state_variables)
+            disturbance_type_id=sit_event["disturbance_type_id"],
+            cbm_vars=cbm_vars)
 
     def _event_iterator(self, time_step, sit_events):
 
@@ -176,12 +144,11 @@ class SITEventProcessor():
         time_step_events = time_step_events.sort_values(
             by="disturbance_type_id",
             kind="mergesort")
-            # mergesort is a stable sort, and the default "quicksort" is not
+        # mergesort is a stable sort, and the default "quicksort" is not
         for _, time_step_event in time_step_events.iterrows():
             yield dict(time_step_event)
 
-    def process_events(self, time_step, sit_events, classifiers, inventory,
-                       pools, state_variables):
+    def process_events(self, time_step, sit_events, cbm_vars):
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
         timestep.
@@ -198,65 +165,21 @@ class SITEventProcessor():
             sit_events (pandas.DataFrame): table of SIT formatted events.
                 Expected format is the same as the return value of:
                 :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
-            classifiers (pandas.DataFrame): dataframe of classifier
-                value ids by stand (row), by classifier (columns).  Column
-                labels are the classifier names.
-            inventory (pandas.DataFrame): table of inventory data by
-                stand (rows)
-            pools (pandas.DataFrame): CBM pool values by stand (rows), by
-                classifier (columns).  Column labels are the pool names.
-            state_variables (pandas.DataFrame): table of CBM simulation state
-                variables by stand (rows)
+            cbm_vars (object): an object containing dataframes that store cbm
+                simulation state and variables
 
         Returns:
-            tuple: a tuple of the array of disturbance types for the specified
-                events and simulation state, and the modified simulation state.
-
-                1. disturbance_types (numpy.ndarray): array of CBM disturbance
-                   type ids for each inventory index
-                2. classifiers (pandas.DataFrame): updated CBM classifier
-                   values
-                3. inventory (pandas.DataFrame): updated CBM inventory
-                4. pools (pandas.DataFrame): updated CBM simulation pools
-                5. state_variables (pandas.DataFrame): updated CBM simulation
-                   state variables
+            object: expanded and updated cbm_vars
 
         """
-        disturbance_types = np.zeros(inventory.shape[0], dtype=np.int32)
-        eligible = np.ones(inventory.shape[0], dtype=bool)
-        _classifiers = classifiers
-        _inventory = inventory
-        _pools = pools
-        _state_variables = state_variables
+        n_stands = cbm_vars.inventory.shape[0]
+        cbm_vars.params.disturbance_types = np.zeros(n_stands, dtype=np.int32)
+        eligible = np.ones(n_stands, dtype=bool)
+
         for sit_event in self._event_iterator(time_step, sit_events):
-            target, _classifiers, _inventory, _pools, _state_variables = \
-                self._process_event(
-                    eligible,
-                    sit_event,
-                    _classifiers,
-                    _inventory,
-                    _pools,
-                    _state_variables)
+            cbm_vars = self._process_event(
+                eligible,
+                sit_event,
+                cbm_vars)
 
-            target_area_proportions = target["area_proportions"]
-
-            n_splits = (target_area_proportions < 1.0).sum()
-            # update eligible to false at the disturbed indices, since they are
-            # not eligible for the next event in this timestep.
-            eligible[target["disturbed_index"]] = 0
-
-            # extend the eligible array by the number of splits
-            eligible = np.concatenate([eligible, np.ones(n_splits)])
-
-            # set the disturbance types for the disturbed indices, based on
-            # the sit_event disturbance_type field.
-            disturbance_types[target["disturbed_index"]] = \
-                sit_event["disturbance_type_id"]
-
-            # extend the disturbance type array by the number of splits
-            disturbance_types = np.concatenate(
-                [disturbance_types, np.zeros(n_splits, dtype=np.int32)])
-
-        return (
-            disturbance_types, _classifiers, _inventory, _pools,
-            _state_variables)
+        return cbm_vars
