@@ -68,6 +68,15 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
     n_splits = (splits).sum()
     split_index = target_index[splits]
     split_inventory = cbm_vars.inventory.iloc[split_index].copy()
+
+    # set the disturbance types for the disturbed indices, based on
+    # the sit_event disturbance_type field.
+    cbm_vars.params.disturbance_type[target_index] = disturbance_type_id
+
+    # update undisturbed to false at the disturbed indices, since they are
+    # not eligible for the next event in this timestep.
+    undisturbed[target_index] = 0
+
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
@@ -91,31 +100,24 @@ def apply_rule_based_event(target, undisturbed, disturbance_type_id, cbm_vars):
         cbm_vars.classifiers = cbm_vars.classifiers.append(
             cbm_vars.classifiers.iloc[split_index].copy()
             ).reset_index(drop=True)
-        cbm_vars.state_variables = cbm_vars.state_variables.append(
-            cbm_vars.state_variables.iloc[split_index].copy()
+        cbm_vars.state = cbm_vars.state.append(
+            cbm_vars.state.iloc[split_index].copy()
             ).reset_index(drop=True)
         cbm_vars.pools = cbm_vars.pools.append(
             cbm_vars.pools.iloc[split_index].copy()
             ).reset_index(drop=True)
-        cbm_vars.flux = cbm_vars.flux.append(
-            cbm_vars.flux.iloc[split_index].copy()
+        cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
+            cbm_vars.flux_indicators.iloc[split_index].copy()
             ).reset_index(drop=True)
 
-        # set the disturbance types for the disturbed indices, based on
-        # the sit_event disturbance_type field.
+
         # TODO: other parameters need to be expanded here too
-        cbm_vars.params.disturbance_types[target_index] = disturbance_type_id
-
         # extend the disturbance type array by the number of splits
-        cbm_vars.params.disturbance_types = np.concatenate(
-            [cbm_vars.params.disturbance_types,
+        cbm_vars.params.disturbance_type = np.concatenate(
+            [cbm_vars.params.disturbance_type,
              np.zeros(n_splits, dtype=np.int32)])
-
-        # update undisturbed to false at the disturbed indices, since they are
-        # not eligible for the next event in this timestep.
-        undisturbed[target_index] = 0
 
         # extend the undisturbed array by the number of splits
         undisturbed = np.concatenate([undisturbed, np.ones(n_splits)])
 
-    return target, cbm_vars
+    return cbm_vars
