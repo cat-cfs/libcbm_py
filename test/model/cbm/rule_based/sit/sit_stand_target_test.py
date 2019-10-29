@@ -21,11 +21,12 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
         on_unrealized=mock_unrealized,
         random_generator=mock_random_generator
         )
-
-    create_target(
-        pools=mock_pools,
+    mock_cbm_vars = SimpleNamespace(
         inventory=mock_inventory,
-        state_variables=mock_state_variables,
+        pools=mock_pools,
+        state_variables=mock_state_variables)
+    create_target(
+        cbm_vars=mock_cbm_vars,
         eligible=mock_eligible)
 
     return mock_rule_target
