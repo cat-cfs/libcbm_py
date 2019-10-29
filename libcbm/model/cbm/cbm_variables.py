@@ -170,19 +170,20 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
             each stand. Defaults to None.
 
     Returns:
-        object: an object with properties for each cbm parameter used by
-            the cbm step function.
+        pandas.DataFrame: dataframe with CBM timestep parameters as columns
+            and 1 row per stand.
     """
 
-    # favouring SimpleNamespace over pd.DataFrame here because these are
-    # potentially null variables, and DataFrame does not support null columns
-    parameters = SimpleNamespace()
-    parameters.disturbance_type = data_helpers.promote_scalar(
-        disturbance_type, n_stands, dtype=np.int32)
-    parameters.reset_age = data_helpers.promote_scalar(
-        reset_age, n_stands, dtype=np.int32)
-    parameters.mean_annual_temp = data_helpers.promote_scalar(
-        mean_annual_temp, n_stands, dtype=np.float)
+    data = {
+        "disturbance_type": data_helpers.promote_scalar(
+            disturbance_type, n_stands, dtype=np.int32),
+        "reset_age": data_helpers.promote_scalar(
+            reset_age, n_stands, dtype=np.int32)
+    }
+    if mean_annual_temp:
+        data["mean_annual_temp"] = data_helpers.promote_scalar(
+            mean_annual_temp, n_stands, dtype=np.float)
+    parameters = pd.DataFrame(data=data)
     return parameters
 
 

@@ -359,14 +359,18 @@ class CBMWrapper(LibCBM_ctypes):
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         spatial_unit = data_helpers.get_nullable_ndarray(
             i.spatial_unit, ctypes.c_int)
-        mean_annual_temp = data_helpers.get_nullable_ndarray(
-            p.mean_annual_temp)
+
+
+        mean_annual_temp = \
+            data_helpers.get_nullable_ndarray(
+                p.mean_annual_temp) \
+            if "mean_annual_temp" in p.__dict__ else None
         self.handle.call(
             "LibCBM_GetDecayOps", opIds, n, spatial_unit,
             historical_mean_annual_temp, mean_annual_temp)
 
     def get_disturbance_ops(self, disturbance_op, inventory,
-                          parameters):
+                            parameters):
         """Sets up CBM disturbance matrices as a bulk matrix operations.
 
         Args:
