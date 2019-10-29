@@ -224,8 +224,7 @@ def initialize_inventory(cases, classifier_name, ref):
         ref.get_land_class_id("UNFCCC_CL_R_CL")
 
     inventory = cbm_variables.initialize_inventory(
-        classifiers=classifiers,
-        inventory=pd.DataFrame({
+        pd.DataFrame({
             "age": np.array([c["age"] for c in cases], dtype=np.int32),
             "area": np.array([c["area"] for c in cases], dtype=np.float),
             "spatial_unit": spatial_units,
@@ -235,7 +234,7 @@ def initialize_inventory(cases, classifier_name, ref):
             "last_pass_disturbance_type": last_pass_disturbance_type,
             "delay": np.array([c["delay"] for c in cases], dtype=np.int32)
         }))
-    return inventory
+    return classifiers, inventory
 
 
 def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
@@ -296,11 +295,12 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
     cbm_params = cbm_variables.initialize_cbm_parameters(n_stands)
     cbm_state = cbm_variables.initialize_cbm_state_variables(n_stands)
 
-    inventory = initialize_inventory(
+    classifiers, inventory = initialize_inventory(
         cases, classifier_name, ref)
 
     # run CBM spinup
     spinup_debug_output = cbm.spinup(
+        classifiers=classifiers,
         inventory=inventory,
         pools=pools,
         variables=spinup_vars,
@@ -346,8 +346,8 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
                 cbm_params.disturbance_type[k] = v[t]
 
         cbm.step(
-            inventory=inventory, pools=pools, flux=flux,
-            state_variables=cbm_state, parameters=cbm_params)
+            classifiers=classifiers, inventory=inventory, pools=pools,
+            flux=flux, state_variables=cbm_state, parameters=cbm_params)
 
         pool_result = data_helpers.append_simulation_result(
             pool_result, pools.multiply(inventory.area, axis=0), t)
