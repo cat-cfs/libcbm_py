@@ -280,7 +280,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
     n_stands = inventory.shape[0]
 
     # allocate space for computing the Carbon flows
-    disturbance_op = compute_functions.AllocateOp(n_stands)
+    disturbance_op = compute_functions.allocate_op(n_stands)
 
     # set the disturbance type for all records
     disturbance_type = pd.DataFrame({
