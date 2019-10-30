@@ -47,20 +47,20 @@ class TransitionRuleProcessor(object):
             in self.classifiers_config["classifier_values"]
             if x["classifier_id"] == classifier_id}
 
-    def _filter_stands(self, tr_group_key, state_variables, classifiers,
-                       disturbance_type):
+    def _filter_stands(self, tr_group_key, cbm_vars):
 
         dist_type_target = tr_group_key["disturbance_type_id"]
         classifier_set = [
-            tr_group_key[x] for x in classifiers.columns.tolist()]
+            tr_group_key[x]
+            for x in cbm_vars.classifiers.columns.tolist()]
         tr_filter = rule_filter.merge_filters(
-            self.state_variable_filter_func(tr_group_key, state_variables),
+            self.state_variable_filter_func(tr_group_key, cbm_vars.state),
             self.classifier_filter_builder.create_classifiers_filter(
                 classifier_set,
-                classifiers),
+                cbm_vars.classifiers),
             rule_filter.create_filter(
                 expression=f"(disturbance_type_id == {dist_type_target})",
-                data={"disturbance_type_id": disturbance_type},
+                data={"disturbance_type_id": cbm_vars.params.disturbance_type},
                 columns=["disturbance_type_id"]))
 
         filter_result = rule_filter.evaluate_filter(tr_filter)
@@ -77,8 +77,7 @@ class TransitionRuleProcessor(object):
             yield classifier_name, transition_id
 
     def apply_transition_rule(self, tr_group_key, tr_group, transition_mask,
-                              disturbance_type, classifiers, inventory, pools,
-                              state_variables):
+                              cbm_vars):
         """Apply the specified transition rule group to the simulation
         variables, updating classifier values, and returning the transition
         rule variables reset age, and regeneration delay.  For each member of
@@ -121,8 +120,7 @@ class TransitionRuleProcessor(object):
                     potentially split state_variables
 
         """
-        filter_result = self._filter_stands(
-            tr_group_key, state_variables, classifiers, disturbance_type)
+        filter_result = self._filter_stands(tr_group_key, cbm_vars)
 
         if np.logical_and(transition_mask, filter_result).any():
             # this indicates that a transition rule has collided with another
@@ -140,14 +138,13 @@ class TransitionRuleProcessor(object):
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
 
-        transition_classifier_result = pd.DataFrame()
-        transition_inventory_result = pd.DataFrame()
-        transition_pool_result = pd.DataFrame()
-        transition_state_variable_result = pd.DataFrame()
-        transition_output = pd.DataFrame({
-            "regeneration_delay": np.zeros(inventory.shape[0], dtype=np.int),
-            "reset_age": np.ones(inventory.shape[0], dtype=np.int) * -1
-        })
+        # storage for split records
+        classifier_split = pd.DataFrame()
+        inventory_split = pd.DataFrame()
+        pool_split = pd.DataFrame()
+        state_split = pd.DataFrame()
+        params_split = pd.DataFrame()
+        flux_split = pd.DataFrame()
 
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
@@ -157,78 +154,73 @@ class TransitionRuleProcessor(object):
                     self._get_transition_classifier_set(
                         transition_rule=tr_group.iloc[i_proportion])
                 for classifier_name, value_id in transition_classifier_ids:
-                    classifiers.loc[filter_result, classifier_name] = value_id
+                    cbm_vars.classifiers.loc[
+                        filter_result, classifier_name] = value_id
                 if proportion < 1.0:
-                    inventory.loc[filter_result, "area"] = \
-                        inventory.loc[filter_result, "area"] * proportion
+                    cbm_vars.inventory.loc[filter_result, "area"] = \
+                        cbm_vars.inventory.loc[filter_result, "area"] * \
+                        proportion
 
-                transition_output.loc[filter_result, "regeneration_delay"] = \
+                cbm_vars.state.loc[filter_result, "regeneration_delay"] = \
                     tr_group.iloc[i_proportion].regeneration_delay
-                transition_output.loc[filter_result, "reset_age"] = \
+
+                cbm_vars.params.loc[filter_result, "reset_age"] = \
                     tr_group.iloc[i_proportion].reset_age
 
-            elif i_proportion == tr_group.shape[0]:
-                # if a proportion was created for a less than 100% remainder,
-                # then make a copy with no transition
-                transition_classifier_result = \
-                    transition_classifier_result.append(
-                        classifiers[filter_result].copy())
-
-                transition_inventory = inventory[filter_result].copy()
-                transition_inventory.area = \
-                    transition_inventory.area * proportion
-                transition_inventory_result = \
-                    transition_inventory_result.append(transition_inventory)
-
-                transition_pool_result = transition_pool_result.append(
-                    pools[filter_result].copy())
-
-                transition_state_variable_result = \
-                    transition_state_variable_result.append(
-                        state_variables[filter_result].copy())
-
             else:
-                transition_classifier_ids = \
-                    self._get_transition_classifier_set(
-                        transition_rule=tr_group.iloc[i_proportion])
-                transition_classifiers = classifiers[filter_result].copy()
-                for classifier_name, value_id in transition_classifier_ids:
-                    transition_classifiers[classifier_name] = value_id
-                transition_classifier_result = \
-                    transition_classifier_result.append(transition_classifiers)
+                # in this case we need to make a copy of each of the state
+                # variables to split off the percentage for the current
+                # group member
+                pools = cbm_vars.pools[filter_result].copy()
+                flux = cbm_vars.flux_indicators[filter_result].copy()
+                params = cbm_vars.params[filter_result].copy()
+                state = cbm_vars.params[filter_result].copy()
+                inventory = cbm_vars.inventory[filter_result].copy()
+                classifiers = cbm_vars.inventory[filter_result].copy()
 
-                transition_inventory = inventory[filter_result].copy()
-                transition_inventory.area = \
-                    transition_inventory.area * proportion
-                transition_inventory_result = \
-                    transition_inventory_result.append(transition_inventory)
+                # set the area for the split portion according to the current
+                # group member proportion
+                inventory.area = inventory.area * proportion
 
-                transition_pool_result = transition_pool_result.append(
-                    pools[filter_result].copy())
+                # if the current proportion is the remainder of 100 minus the
+                # group's percentage sums, then this split portion will not be
+                # transitioned, meaning the classifier set is not changed, and
+                # the reset age, regeneration delay parameters will not take
+                # effect for this split portion
+                is_transition_split = i_proportion < tr_group.shape[0]
+                if is_transition_split:
 
-                transition_state_variable_result = \
-                    transition_state_variable_result.append(
-                        state_variables[filter_result].copy())
+                    transition_classifier_ids = \
+                        self._get_transition_classifier_set(
+                            transition_rule=tr_group.iloc[i_proportion])
+                    # update the split classifiers with the transitioned value
+                    for classifier_name, value_id in transition_classifier_ids:
+                        classifiers[classifier_name] = value_id
 
-                transition_output = transition_output.append(
-                    pd.DataFrame({
-                        "regeneration_delay": np.zeros(
-                            filter_result.shape[0], dtype=np.int),
-                        "reset_age": np.ones(
-                            filter_result.shape[0], dtype=np.int) * -1
-                    }))
+                    state.regeneration_delay = \
+                        tr_group.iloc[i_proportion].regeneration_delay
+
+                    params.reset_age = tr_group.iloc[i_proportion].reset_age
+
+                classifier_split = classifier_split.append(classifiers)
+                inventory_split = inventory_split.append(inventory)
+                pool_split = pool_split.append(pools)
+                state_split = state_split.append(state)
+                params_split = params_split.append(params)
+                flux_split = flux_split.append(flux)
 
         if len(proportions) > 1:
-            classifiers = classifiers.append(
-                transition_classifier_result).reset_index(drop=True)
-            inventory = inventory.append(
-                transition_inventory_result).reset_index(drop=True)
-            pools = pools.append(
-                transition_pool_result).reset_index(drop=True)
-            state_variables = state_variables.append(
-                transition_state_variable_result).reset_index(drop=True)
-            transition_output = transition_output.reset_index(drop=True)
+            cbm_vars.classifiers = cbm_vars.classifiers.append(
+                classifier_split).reset_index(drop=True)
+            cbm_vars.inventory = cbm_vars.inventory.append(
+                inventory_split).reset_index(drop=True)
+            cbm_vars.pools = cbm_vars.pools.append(
+                pool_split).reset_index(drop=True)
+            cbm_vars.state = cbm_vars.state.append(
+                state_split).reset_index(drop=True)
+            cbm_vars.params = cbm_vars.params.append(
+                params_split).reset_index(drop=True)
+            cbm_vars.flux = cbm_vars.flux.append(
+                flux_split).reset_index(drop=True)
 
-        return (
-            transition_mask, transition_output, classifiers, inventory, pools,
-            state_variables)
+        return transition_mask, cbm_vars
