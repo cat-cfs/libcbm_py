@@ -2,7 +2,12 @@ import unittest
 import numpy as np
 import pandas as pd
 from mock import Mock
+from unittest.mock import patch
+from types import SimpleNamespace
 from libcbm.model.cbm.rule_based import event_processor
+
+# used in patching (overriding) module imports in the module being tested
+PATCH_PATH = "libcbm.model.cbm.rule_based.event_processor"
 
 
 class EventProcessorTest(unittest.TestCase):
@@ -11,82 +16,105 @@ class EventProcessorTest(unittest.TestCase):
         """A test of the overall flow and a few of the internal calls
         of the process_event function.
         """
-        mock_pools = pd.DataFrame([
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1],
-            [1, 1, 1, 1]
-        ], columns=["a", "b", "c", "d"])
 
-        mock_state_variables = pd.DataFrame([
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1],
-            [1, 1, 1]
-        ], columns=["i", "j", "k"])
+        with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
+            mock_pools = pd.DataFrame([
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1],
+                [1, 1, 1, 1]
+            ], columns=["a", "b", "c", "d"])
 
-        mock_classifiers = pd.DataFrame([
-            [1, 1],
-            [1, 1],
-            [1, 1],
-            [1, 1]
-        ], columns=["c1", "c2"])
+            mock_state_variables = pd.DataFrame([
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1]
+            ], columns=["i", "j", "k"])
 
-        mock_inventory = pd.DataFrame([
-            [1, 1],
-            [1, 1],
-            [1, 1],
-            [1, 1]
-        ], columns=["age", "area"])
+            mock_classifiers = pd.DataFrame([
+                [1, 1],
+                [1, 1],
+                [1, 1],
+                [1, 1]
+            ], columns=["c1", "c2"])
 
-        mock_evaluate_filter_return = [False, True, True, False]
-        mock_evaluate_filter = Mock()
-        mock_evaluate_filter.side_effect = \
-            lambda _: mock_evaluate_filter_return
+            mock_inventory = pd.DataFrame([
+                [1, 1],
+                [1, 1],
+                [1, 1],
+                [1, 1]
+            ], columns=["age", "area"])
 
-        mock_event_filter = "mock_event_filter"
+            mock_params = pd.DataFrame(
+                {"disturbance_type": [0, 0, 0, 0]})
 
-        mock_undisturbed = [True, True, True, True]
+            mock_flux_indicators = pd.DataFrame([
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [0, 0]
+            ], columns=["f1", "f2"])
 
-        mock_target_func = Mock()
-
-        def target_func(pool, inventory, state, eligible):
-            self.assertTrue(list(eligible) == list(np.logical_and(
-                mock_evaluate_filter_return, mock_undisturbed)))
-            self.assertTrue(pool.equals(mock_pools))
-            self.assertTrue(inventory.equals(mock_inventory))
-            self.assertTrue(state.equals(mock_state_variables))
-            # mocks a disturbance target that fully disturbs inventory records
-            # at index 1, 2
-            return {
-                "disturbed_index": pd.Series([1, 2]),
-                "area_proportions": pd.Series([1.0, 1.0])
-            }
-
-        mock_target_func.side_effect = target_func
-
-        target, classifiers, inventory, pools, state_variables = \
-            event_processor.process_event(
-                filter_evaluator=mock_evaluate_filter,
-                event_filter=mock_event_filter,
-                undisturbed=mock_undisturbed,
-                target_func=mock_target_func,
+            mock_cbm_vars = SimpleNamespace(
                 classifiers=mock_classifiers,
                 inventory=mock_inventory,
+                state=mock_state_variables,
                 pools=mock_pools,
-                state_variables=mock_state_variables)
+                flux_indicators=mock_flux_indicators,
+                params=mock_params
+            )
+            disturbance_type_id = 5
 
-        mock_evaluate_filter.assert_called_once_with("mock_event_filter")
-        mock_target_func.assert_called_once()
+            mock_evaluate_filter_return = \
+                [False, True, True, False]
+            mock_rule_filter.evaluate_filter = Mock()
+            mock_rule_filter.evaluate_filter.side_effect = \
+                lambda _: mock_evaluate_filter_return
 
-        self.assertTrue(target["disturbed_index"].equals(pd.Series([1, 2])))
-        self.assertTrue(
-            target["area_proportions"].equals(pd.Series([1.0, 1.0])))
-        # no splits occurred here, so the inputs are returned
-        self.assertTrue(classifiers.equals(mock_classifiers))
-        self.assertTrue(inventory.equals(mock_inventory))
-        self.assertTrue(pools.equals(mock_pools))
-        self.assertTrue(state_variables.equals(mock_state_variables))
+            mock_event_filter = "mock_event_filter"
+
+            mock_undisturbed = [True, True, True, True]
+
+            mock_target_func = Mock()
+
+            def target_func(cbm_vars, eligible):
+                self.assertTrue(list(eligible) == list(np.logical_and(
+                    mock_evaluate_filter_return, mock_undisturbed)))
+                # mocks a disturbance target that fully disturbs inventory records
+                # at index 1, 2
+                return {
+                    "disturbed_index": pd.Series([1, 2]),
+                    "area_proportions": pd.Series([1.0, 1.0])
+                }
+
+            mock_target_func.side_effect = target_func
+
+            cbm_vars_result = event_processor.process_event(
+                    event_filter=mock_event_filter,
+                    undisturbed=mock_undisturbed,
+                    target_func=mock_target_func,
+                    disturbance_type_id=disturbance_type_id,
+                    cbm_vars=mock_cbm_vars
+                    )
+
+            mock_rule_filter.evaluate_filter.assert_called_once_with(
+                "mock_event_filter")
+            mock_target_func.assert_called_once()
+
+            # no splits occurred here, so the inputs are returned
+            self.assertTrue(
+                cbm_vars_result.classifiers.equals(mock_classifiers))
+            self.assertTrue(
+                cbm_vars_result.inventory.equals(mock_inventory))
+            self.assertTrue(
+                cbm_vars_result.pools.equals(mock_pools))
+            self.assertTrue(
+                cbm_vars_result.state.equals(mock_state_variables))
+            self.assertTrue(
+                cbm_vars_result.flux_indicators.equals(mock_flux_indicators))
+            self.assertTrue(
+                cbm_vars_result.params.equals(mock_params))
 
     def test_apply_rule_based_event_expected_result_with_no_split(self):
 

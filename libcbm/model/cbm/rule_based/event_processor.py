@@ -1,6 +1,7 @@
 import numpy as np
 from libcbm.model.cbm.rule_based import rule_filter
 
+
 def process_event(event_filter, undisturbed, target_func,
                   disturbance_type_id, cbm_vars):
     """Computes a CBM rule based event by filtering and targeting a subset of
