@@ -1,10 +1,22 @@
+import numpy as np
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based import rule_filter
 
 
 def state_variable_filter_func(tr_group_key, state_variables):
+    """Create a filter based on transition rule state criteria for setting
+    stands eligible or ineligible for transition.
 
+    Args:
+        tr_group_key (dict): dictionary of values common to a transition rule
+            group
+        state_variables (pandas.DataFrame): table of state values for the
+            current simulation for which to create a filter.
+
+    Returns:
+        object: a filter object
+    """
     state_filter_expression, state_filter_cols = \
         sit_stand_filter.create_state_filter_expression(
             tr_group_key, True)
@@ -42,3 +54,22 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
                 "Greater than 100 percent sum for percent field in "
                 f"grouped transition rules with: {group_key_dict}")
         yield group_key_dict, group
+
+
+class SITTransitionRuleProcessor:
+
+    def __init__(self, transition_rule_processor):
+        self.transition_rule_processor = transition_rule_processor
+
+    def process_transition_rules(self, sit_transitions, cbm_vars):
+
+        classifiers = cbm_vars.classifiers
+        n_stands = classifiers.shape[0]
+        classifier_names = classifiers.columns.tolist()
+        transition_iterator = sit_transition_rule_iterator(
+            sit_transitions, classifier_names)
+        transition_mask = np.zeros(n_stands, dtype=bool)
+        for tr_group_key, tr_group in transition_iterator:
+            transition_mask, cbm_vars = \
+                self.transition_rule_processor.apply_transition_rule(
+                    tr_group_key, tr_group, transition_mask, cbm_vars)
