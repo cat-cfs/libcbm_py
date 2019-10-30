@@ -213,7 +213,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         })
         mock_pools = pd.DataFrame({
             "p0": [1],
-            "p1": [1]
+            "p1": [4]
         })
         mock_state_variables = pd.DataFrame({
             "age": [0],

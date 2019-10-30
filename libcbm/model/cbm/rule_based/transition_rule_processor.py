@@ -21,7 +21,7 @@ def create_split_proportions(tr_group_key, tr_group, group_error_max):
     else:
         remainder = 100 - percent_sum
         appended_percent = tr_group.percent.append(pd.Series([remainder]))
-        return appended_percent / appended_percent.sum()
+        return list(appended_percent / appended_percent.sum())
 
 
 class TransitionRuleProcessor(object):
@@ -137,67 +137,71 @@ class TransitionRuleProcessor(object):
 
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
+                continue
+                # the first proportion corresponds to teh source data
+                # for all remaining splits, so the must be updated last so
+                # those changes don't propagate into the splits.
 
-                # for the first index use the existing matched records
+            # For all proportions other than the first we need to make
+            # a copy of each of the state variables to split off the
+            # percentage for the current group member
+            pools = cbm_vars.pools[filter_result].copy()
+            flux = cbm_vars.flux_indicators[filter_result].copy()
+            params = cbm_vars.params[filter_result].copy()
+            state = cbm_vars.state[filter_result].copy()
+            inventory = cbm_vars.inventory[filter_result].copy()
+            classifiers = cbm_vars.classifiers[filter_result].copy()
+            transition_mask = np.concatenate([
+                transition_mask, transition_mask[filter_result].copy()])
+
+            # set the area for the split portion according to the current
+            # group member proportion
+            inventory.area = inventory.area * proportion
+
+            # if the current proportion is the remainder of 100 minus the
+            # group's percentage sums, then this split portion will not be
+            # transitioned, meaning the classifier set is not changed, and
+            # the reset age, regeneration delay parameters will not take
+            # effect for this split portion
+            is_transition_split = i_proportion < tr_group.shape[0]
+            if is_transition_split:
+
                 transition_classifier_ids = \
                     self._get_transition_classifier_set(
                         transition_rule=tr_group.iloc[i_proportion])
+                # update the split classifiers with the transitioned value
                 for classifier_name, value_id in transition_classifier_ids:
-                    cbm_vars.classifiers.loc[
-                        filter_result, classifier_name] = value_id
-                if proportion < 1.0:
-                    cbm_vars.inventory.loc[filter_result, "area"] = \
-                        cbm_vars.inventory.loc[filter_result, "area"] * \
-                        proportion
+                    classifiers[classifier_name] = value_id
 
-                cbm_vars.state.loc[filter_result, "regeneration_delay"] = \
+                state.regeneration_delay = \
                     tr_group.iloc[i_proportion].regeneration_delay
 
-                cbm_vars.params.loc[filter_result, "reset_age"] = \
-                    tr_group.iloc[i_proportion].reset_age
+                params.reset_age = tr_group.iloc[i_proportion].reset_age
 
-            else:
-                # in this case we need to make a copy of each of the state
-                # variables to split off the percentage for the current
-                # group member
-                pools = cbm_vars.pools[filter_result].copy()
-                flux = cbm_vars.flux_indicators[filter_result].copy()
-                params = cbm_vars.params[filter_result].copy()
-                state = cbm_vars.params[filter_result].copy()
-                inventory = cbm_vars.inventory[filter_result].copy()
-                classifiers = cbm_vars.inventory[filter_result].copy()
-                transition_mask = transition_mask[filter_result].copy()
+            classifier_split = classifier_split.append(classifiers)
+            inventory_split = inventory_split.append(inventory)
+            pool_split = pool_split.append(pools)
+            state_split = state_split.append(state)
+            params_split = params_split.append(params)
+            flux_split = flux_split.append(flux)
 
-                # set the area for the split portion according to the current
-                # group member proportion
-                inventory.area = inventory.area * proportion
+        # for the first index use the existing matched records
+        transition_classifier_ids = \
+            self._get_transition_classifier_set(
+                transition_rule=tr_group.iloc[0])
+        for classifier_name, value_id in transition_classifier_ids:
+            cbm_vars.classifiers.loc[
+                filter_result, classifier_name] = value_id
+        if proportions[0] < 1.0:
+            cbm_vars.inventory.loc[filter_result, "area"] = \
+                cbm_vars.inventory.loc[filter_result, "area"] * \
+                proportions[0]
 
-                # if the current proportion is the remainder of 100 minus the
-                # group's percentage sums, then this split portion will not be
-                # transitioned, meaning the classifier set is not changed, and
-                # the reset age, regeneration delay parameters will not take
-                # effect for this split portion
-                is_transition_split = i_proportion < tr_group.shape[0]
-                if is_transition_split:
+        cbm_vars.state.loc[filter_result, "regeneration_delay"] = \
+            tr_group.iloc[0].regeneration_delay
 
-                    transition_classifier_ids = \
-                        self._get_transition_classifier_set(
-                            transition_rule=tr_group.iloc[i_proportion])
-                    # update the split classifiers with the transitioned value
-                    for classifier_name, value_id in transition_classifier_ids:
-                        classifiers[classifier_name] = value_id
-
-                    state.regeneration_delay = \
-                        tr_group.iloc[i_proportion].regeneration_delay
-
-                    params.reset_age = tr_group.iloc[i_proportion].reset_age
-
-                classifier_split = classifier_split.append(classifiers)
-                inventory_split = inventory_split.append(inventory)
-                pool_split = pool_split.append(pools)
-                state_split = state_split.append(state)
-                params_split = params_split.append(params)
-                flux_split = flux_split.append(flux)
+        cbm_vars.params.loc[filter_result, "reset_age"] = \
+            tr_group.iloc[0].reset_age
 
         if len(proportions) > 1:
             cbm_vars.classifiers = cbm_vars.classifiers.append(
