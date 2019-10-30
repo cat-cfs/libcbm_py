@@ -77,13 +77,13 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
             transition rule rows exceeded 100%
     """
     group_cols = classifier_names + \
-        ["min_age", "max_age", "disturbance_type"]
+        ["min_age", "max_age", "disturbance_type_id"]
 
     # group transition rules by their filter criteria
     # (classifier set, age range, disturbance type)
-    grouping = sit_transitions.group_by(group_cols)
+    grouping = sit_transitions.groupby(group_cols)
     group_error_max = sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX
-    for group_key, group in dict(iter(grouping)):
+    for group_key, group in dict(list(grouping)).items():
         group_key_dict = dict(zip(group_cols, group_key))
         if group.percent.sum() > 100 + group_error_max:
             raise ValueError(
