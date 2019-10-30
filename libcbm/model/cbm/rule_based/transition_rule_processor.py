@@ -123,6 +123,7 @@ class TransitionRuleProcessor(object):
 
         # sets the transitioned array with the transition filter result
         transition_mask = np.logical_or(transition_mask, filter_result)
+        transition_mask_output = transition_mask.copy()
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
@@ -151,8 +152,9 @@ class TransitionRuleProcessor(object):
             state = cbm_vars.state[filter_result].copy()
             inventory = cbm_vars.inventory[filter_result].copy()
             classifiers = cbm_vars.classifiers[filter_result].copy()
-            transition_mask = np.concatenate([
-                transition_mask, transition_mask[filter_result].copy()])
+            transition_mask_output = np.concatenate([
+                transition_mask_output,
+                transition_mask[filter_result].copy()])
 
             # set the area for the split portion according to the current
             # group member proportion
@@ -217,4 +219,4 @@ class TransitionRuleProcessor(object):
             cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
                 flux_split).reset_index(drop=True)
 
-        return transition_mask, cbm_vars
+        return transition_mask_output, cbm_vars
