@@ -93,12 +93,7 @@ class TransitionRuleProcessor(object):
             transition_mask (numpy.ndarray): a boolean mask indicating when
                 true that the correspoding index has already been transitioned.
                 This is used to detect transition rule criteria collisions.
-            disturbance_type (numpy.ndarray): the array of disturbance types
-                ids being applied to the inventory in the current timestep.
-            classifiers (pandas.DataFrame): CBM classifier values
-            inventory (pandas.DataFrame): CBM inventory
-            pools (pandas.DataFrame): CBM simulation pools
-            state_variables (pandas.DataFrame): CBM simulation state variables
+            cbm_vars (object): CBM simulation variables and state
 
         Raises:
             ValueError: a transition rule criteria resulted in the selection of
@@ -110,14 +105,8 @@ class TransitionRuleProcessor(object):
                 - transition_mask: the specified transition_mask parameter is
                     returned altered with the indices transitioned by this
                     function call.
-                - transition_output: a dataframe of the regeneration delay and
-                    age reset variables along the inventory n_stands dimension
-                - classifiers: updated and potentially split classifier values
-                - inventory: updated and potentially split inventory
-                - pools: the original specified pools or potentially split
-                    pools
-                - state_variables: the original specified state_variables or
-                    potentially split state_variables
+                - cbm_vars: updated and potentially expanded cbm variables and
+                    state
 
         """
         filter_result = self._filter_stands(tr_group_key, cbm_vars)
