@@ -18,6 +18,7 @@ FIRE_ID = 1
 CLEARCUT_ID = 3
 DEFORESTATION_ID = 7
 
+
 def get_parameters_factory():
     """overrides selected default parameters for testing purposes.
 

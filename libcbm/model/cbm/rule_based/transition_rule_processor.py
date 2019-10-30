@@ -166,6 +166,7 @@ class TransitionRuleProcessor(object):
                 state = cbm_vars.params[filter_result].copy()
                 inventory = cbm_vars.inventory[filter_result].copy()
                 classifiers = cbm_vars.inventory[filter_result].copy()
+                transition_mask = transition_mask[filter_result].copy()
 
                 # set the area for the split portion according to the current
                 # group member proportion
@@ -209,7 +210,7 @@ class TransitionRuleProcessor(object):
                 state_split).reset_index(drop=True)
             cbm_vars.params = cbm_vars.params.append(
                 params_split).reset_index(drop=True)
-            cbm_vars.flux = cbm_vars.flux.append(
+            cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
                 flux_split).reset_index(drop=True)
 
         return transition_mask, cbm_vars
