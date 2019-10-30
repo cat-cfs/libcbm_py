@@ -2,6 +2,7 @@ import unittest
 from mock import Mock
 from unittest.mock import patch
 from types import SimpleNamespace
+import pandas as pd
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 
 # used in patching (overriding) module imports in the module being tested
@@ -59,3 +60,30 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                 data={"age": "mock_age"},
                 columns="mock_state_filter_cols"
             )
+
+    def test_sit_transition_rule_iterator(self):
+        mock_sit_transitions = pd.DataFrame({
+            "c1": ["a1", "a1", "a2", "a2", "a3"],
+            "c2": ["b1", "b1", "b2", "b2", "b3"],
+            "min_age": [0, 0, 1, 1, 2],
+            "max_age": [10, 10, 100, 100, 5],
+            "disturbance_type_id": [1, 1, 2, 2, 3],
+            "reset_age": [1, 2, 3, 4, 5],
+            "percent": [50, 50, 30, 70, 100]
+        })
+        classifier_names = ["c1", "c2"]
+        result = sit_transition_rule_processor.sit_transition_rule_iterator(
+            mock_sit_transitions, classifier_names
+        )
+        list_result = list(result)
+        self.assertTrue(
+            list_result[0][0] == {
+                "c1": "a1",
+                "c2": "b1",
+                "min_age": 0,
+                "max_age": 10,
+                "disturbance_type_id": 1})
+
+
+    def test_sit_transition_rule_iterator_error(self):
+        pass
