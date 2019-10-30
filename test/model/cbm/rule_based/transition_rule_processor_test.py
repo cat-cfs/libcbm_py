@@ -331,7 +331,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
 
             self.assertTrue(list(transition_mask) == [True, True])
-            self.assertTrue(list(cbm_vars.state.regeneration_delay) == [10, -1])
+            self.assertTrue(
+                list(cbm_vars.state.regeneration_delay) == [10, -1])
             self.assertTrue(list(cbm_vars.state.age) == [0, 0])
             self.assertTrue(list(cbm_vars.params.reset_age) == [40, 21])
             self.assertTrue(list(cbm_vars.classifiers.a) == [2, 1])
@@ -354,7 +355,9 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 {"id": 2, "classifier_id": 1, "value": "a2"},
                 {"id": 3, "classifier_id": 1, "value": "a3"},
                 {"id": 4, "classifier_id": 2, "value": "b1"},
-                {"id": 5, "classifier_id": 2, "value": "b2"}]}
+                {"id": 5, "classifier_id": 2, "value": "b2"},
+                {"id": 6, "classifier_id": 2, "value": "b3"}]}
+
         grouped_percent_err_max = 0.001
         wildcard = "?"
         transition_classifier_postfix = "_tr"
@@ -378,10 +381,11 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         transition_mask = np.array([False], dtype=bool)
         mock_classifiers = pd.DataFrame({
             "a": [1, 2, 1],
-            "b": [3, 4, 4]
+            "b": [3, 6, 4]
         })
         mock_inventory = pd.DataFrame({
-            "area": [1.0, 1.0, 10.0]
+            "index": [0, 1, 2],
+            "area": [1.0, 5.0, 10.0]
         })
         mock_pools = pd.DataFrame({
             "p0": [33, 22, 11],
@@ -413,22 +417,88 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
 
+            result = cbm_vars.inventory \
+                .join(cbm_vars.classifiers) \
+                .join(cbm_vars.state) \
+                .join(cbm_vars.params) \
+                .join(cbm_vars.pools) \
+                .join(cbm_vars.flux_indicators) \
+                .join(
+                    pd.DataFrame(
+                        {"transition_mask": transition_mask}))
+
+            transitioned_1 = result[result["index"] == 0]
+            non_transitioned = result[result["index"] == 1]
+            transitioned_2 = result[result["index"] == 2]
+
             self.assertTrue(
-                list(transition_mask) ==
-                [True, False, True] + [True]*6)
+                ((transitioned_1.f1 == 10) & (transitioned_1.f2 == 100) &
+                 (transitioned_1.p0 == 33) & (transitioned_1.p1 == 11) &
+                 (transitioned_1.transition_mask.all())).all())
             self.assertTrue(
-                list(cbm_vars.state.regeneration_delay) ==
-                [1, 0, 1, 2, 3, 0, 2, 3, 0])
+                ((non_transitioned.f1 == 20) & (non_transitioned.f2 == 90) &
+                 (non_transitioned.p0 == 22) & (non_transitioned.p1 == 0) &
+                 (~non_transitioned.transition_mask.all())).all())
             self.assertTrue(
-                list(cbm_vars.state.age) ==
-                [0, 1, 2, 0, 0, 0, 2, 2, 2])
-            self.assertTrue(
-                list(cbm_vars.params.reset_age) ==
-                [1, -1, 1, 2, 3, -1, 2, 3, -1])
-            self.assertTrue(list(cbm_vars.classifiers.a) == [2, 1])
-            self.assertTrue(list(cbm_vars.classifiers.b) == [3, 4])
-            self.assertTrue(list(cbm_vars.inventory.area) == [0.35, 0.65])
-            self.assertTrue(list(cbm_vars.pools.p0) == [33, 33])
-            self.assertTrue(list(cbm_vars.pools.p1) == [11, 11])
-            self.assertTrue(list(cbm_vars.flux_indicators.f1) == [10, 10])
-            self.assertTrue(list(cbm_vars.flux_indicators.f2) == [100, 100])
+                ((transitioned_2.f1 == 30) & (transitioned_2.f2 == 80) &
+                 (transitioned_2.p0 == 11) & (transitioned_2.p1 == -11) &
+                 (transitioned_2.transition_mask.all())).all())
+
+            self.assertTrue(transitioned_1.shape[0] == 4)
+            self.assertTrue(transitioned_1.area.sum() == 1.0)
+
+            self.assertTrue(non_transitioned.shape[0] == 1)
+            self.assertTrue(non_transitioned.area.sum() == 5.0)
+
+            self.assertTrue(transitioned_2.shape[0] == 4)
+            self.assertTrue(transitioned_2.area.sum() == 10.0)
+
+            transitioned_1_v1 = transitioned_1[
+                transitioned_1.regeneration_delay == 1]
+            self.assertTrue(transitioned_1_v1.area.sum() == 1.0/10.0)
+            self.assertTrue(transitioned_1_v1.reset_age.sum() == 1)
+            self.assertTrue(transitioned_1_v1.a.sum() == 2)
+            self.assertTrue(transitioned_1_v1.b.sum() == 3)
+            transitioned_1_v2 = transitioned_1[
+                transitioned_1.regeneration_delay == 2]
+            self.assertTrue(transitioned_1_v2.area.sum() == 1.0/10.0)
+            self.assertTrue(transitioned_1_v2.reset_age.sum() == 2)
+            self.assertTrue(transitioned_1_v2.a.sum() == 1)
+            self.assertTrue(transitioned_1_v2.b.sum() == 4)
+            transitioned_1_v3 = transitioned_1[
+                transitioned_1.regeneration_delay == 3]
+            self.assertTrue(transitioned_1_v3.area.sum() == 1.0/10.0)
+            self.assertTrue(transitioned_1_v3.reset_age.sum() == 3)
+            self.assertTrue(transitioned_1_v3.a.sum() == 3)
+            self.assertTrue(transitioned_1_v3.b.sum() == 5)
+            transitioned_1_v4 = transitioned_1[
+                transitioned_1.regeneration_delay == 0]
+            self.assertTrue(transitioned_1_v4.area.sum() == 1.0 - (3.0 / 10.0))
+            self.assertTrue(transitioned_1_v4.reset_age.sum() == -1)
+            self.assertTrue(transitioned_1_v4.a.sum() == 1)
+            self.assertTrue(transitioned_1_v4.b.sum() == 3)
+
+            transitioned_2_v1 = transitioned_2[
+                transitioned_2.regeneration_delay == 1]
+            self.assertTrue(transitioned_2_v1.area.sum() == 1.0)
+            self.assertTrue(transitioned_2_v1.reset_age.sum() == 1)
+            self.assertTrue(transitioned_2_v1.a.sum() == 2)
+            self.assertTrue(transitioned_2_v1.b.sum() == 4)
+            transitioned_2_v2 = transitioned_2[
+                transitioned_2.regeneration_delay == 2]
+            self.assertTrue(transitioned_2_v2.area.sum() == 1.0)
+            self.assertTrue(transitioned_2_v2.reset_age.sum() == 2)
+            self.assertTrue(transitioned_2_v2.a.sum() == 1)
+            self.assertTrue(transitioned_2_v2.b.sum() == 4)
+            transitioned_2_v3 = transitioned_2[
+                transitioned_2.regeneration_delay == 3]
+            self.assertTrue(transitioned_2_v3.area.sum() == 1.0)
+            self.assertTrue(transitioned_2_v3.reset_age.sum() == 3)
+            self.assertTrue(transitioned_2_v3.a.sum() == 3)
+            self.assertTrue(transitioned_2_v3.b.sum() == 5)
+            transitioned_2_v4 = transitioned_2[
+                transitioned_2.regeneration_delay == 0]
+            self.assertTrue(transitioned_2_v4.area.sum() == 10.0 - 3.0)
+            self.assertTrue(transitioned_2_v4.reset_age.sum() == -1)
+            self.assertTrue(transitioned_2_v4.a.sum() == 1)
+            self.assertTrue(transitioned_2_v4.b.sum() == 4)
