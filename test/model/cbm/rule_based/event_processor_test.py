@@ -141,13 +141,13 @@ class EventProcessorTest(unittest.TestCase):
             cbm_vars.inventory.equals(
                 pd.DataFrame({"area": [1, 2, 3, 4]})))
         self.assertTrue(
-            cbm_vars.state_variables.equals(
+            cbm_vars.state.equals(
                 pd.DataFrame({"s1": [1, 2, 3, 4]})))
         self.assertTrue(
             cbm_vars.pools.equals(
                 pd.DataFrame({"p1": [1, 2, 3, 4]})))
         self.assertTrue(
-            cbm_vars.flux.equals(
+            cbm_vars.flux_indicators.equals(
                 pd.DataFrame({"f1": [1, 2, 3, 4]})))
         self.assertTrue(
             cbm_vars.params.equals(
@@ -155,26 +155,29 @@ class EventProcessorTest(unittest.TestCase):
 
     def test_apply_rule_based_event_expected_result_with_split(self):
 
-        target, classifiers, inventory, pools, state_variables = \
-            event_processor.apply_rule_based_event(
-                target=pd.DataFrame({
-                    "disturbed_index": pd.Series([0, 1, 2]),
-                    "area_proportions": pd.Series([1.0, 0.85, 0.9])}),
-                classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
-                inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
-                pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
-                state_variables=pd.DataFrame({"s1": [1, 2, 3, 4]}))
+        mock_cbm_vars = SimpleNamespace(
+            classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
+            inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
+            state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
+            pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
+            flux_indicators=pd.DataFrame({"f1": [1, 2, 3, 4]}),
+            params=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+        )
 
-        self.assertTrue(target["disturbed_index"].equals(pd.Series([0, 1, 2])))
-        self.assertTrue(target["area_proportions"].equals(
-            pd.Series([1.0, 0.85, 0.9])))
+        disturbance_type_id = 9000
+        cbm_vars_result = event_processor.apply_rule_based_event(
+            target=pd.DataFrame({
+                "disturbed_index": pd.Series([0, 1, 2]),
+                "area_proportions": pd.Series([1.0, 0.85, 0.9])}),
+            disturbance_type_id=disturbance_type_id,
+            cbm_vars=mock_cbm_vars)
 
         self.assertTrue(
-            classifiers.equals(pd.DataFrame(
+            cbm_vars_result.classifiers.equals(pd.DataFrame(
                 {"classifier1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(
             np.allclose(
-                inventory.area,
+                cbm_vars_result.inventory.area,
                 [
                     1,
                     2 * 0.85,  # index=1 is split at 0.85
@@ -183,7 +186,18 @@ class EventProcessorTest(unittest.TestCase):
                     2 * 0.15,  # the remainder of index=1
                     3 * 0.1    # the remainder of index=2
                 ]))
+
         self.assertTrue(
-            pools.equals(pd.DataFrame({"p1": [1, 2, 3, 4, 2, 3]})))
+            cbm_vars_result.pools.equals(
+                pd.DataFrame({"p1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(
-            state_variables.equals(pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})))
+            cbm_vars_result.state.equals(
+                pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})))
+        self.assertTrue(
+            cbm_vars_result.flux_indicators.equals(
+                pd.DataFrame({"f1": [1, 2, 3, 4, 2, 3]})))
+        self.assertTrue(
+            cbm_vars_result.params.equals(
+                pd.DataFrame(
+                    {"disturbance_type": [
+                        9000, 9000, 9000, 0, 0, 0]})))
