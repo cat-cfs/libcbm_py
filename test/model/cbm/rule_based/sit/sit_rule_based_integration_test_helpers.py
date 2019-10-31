@@ -17,6 +17,7 @@ from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.transition_rule_processor import \
     TransitionRuleProcessor
 
+
 def get_parameters_factory():
     """overrides selected default parameters for testing purposes.
 
@@ -107,6 +108,12 @@ def df_from_template_row(template_row, row_dicts):
 
         result = result.append(new_row)
     return result.reset_index(drop=True)
+
+
+def initialize_transitions(sit, transition_data):
+    return df_from_template_row(
+        template_row=sit.sit_data.transition_rules.iloc[0],
+        row_dicts=transition_data)
 
 
 def initialize_events(sit, event_data):
