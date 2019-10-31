@@ -13,24 +13,24 @@
         "species": {
             "species_classifier": "species",
             "species_mapping": [
-				{"user_species": "Balsam Fir",
-				 "default_species": "Balsam fir"},
-				{"user_species": "Black Spruce",
-				 "default_species": "Black spruce"},
-				{"user_species": "Western Larch",
-				 "default_species": "Western larch"},
-				{"user_species": "Jack Pine",
-				 "default_species": "Jack pine"},
-				{"user_species": "Other Spruce",
-				 "default_species": "Other spruce"},
-				{"user_species": "Red Pine",
-				 "default_species": "Red pine"},
-				{"user_species": "Unspecified Softwood",
-				 "default_species": "Unspecified softwood species"},
-				{"user_species": "Larch",
-				 "default_species": "Tamarack/larch"},
-				{"user_species": "White Spruce",
-				 "default_species": "White spruce"}
+                {"user_species": "Balsam Fir",
+                 "default_species": "Balsam fir"},
+                {"user_species": "Black Spruce",
+                 "default_species": "Black spruce"},
+                {"user_species": "Western Larch",
+                 "default_species": "Western larch"},
+                {"user_species": "Jack Pine",
+                 "default_species": "Jack pine"},
+                {"user_species": "Other Spruce",
+                 "default_species": "Other spruce"},
+                {"user_species": "Red Pine",
+                 "default_species": "Red pine"},
+                {"user_species": "Unspecified Softwood",
+                 "default_species": "Unspecified softwood species"},
+                {"user_species": "Larch",
+                 "default_species": "Tamarack/larch"},
+                {"user_species": "White Spruce",
+                 "default_species": "White spruce"}
             ]
         },
         "spatial_units": {
@@ -49,13 +49,12 @@
             },
             {
                 "user_dist_type": "Senescence",
-                "default_dist_type": "Stand-replacing natural succession"
+                "default_dist_type": "Stand–replacing natural succession"
             },
-			{
+            {
                 "user_dist_type": "Mountain pine beetle infestation",
                 "default_dist_type": "Insect disturbance"
             }
-			
         ]
     }
 }
