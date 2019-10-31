@@ -11,7 +11,7 @@
     "mapping_config": {
         "nonforest": null,
         "species": {
-            "species_classifier": "species",
+            "species_classifier": "Working Species Or Leading Species",
             "species_mapping": [
                 {"user_species": "Balsam Fir",
                  "default_species": "Balsam fir"},
@@ -36,7 +36,7 @@
         "spatial_units": {
             "mapping_mode": "SingleDefaultSpatialUnit",
             "admin_boundary": "Ontario",
-			"eco_boundary": "Boreal Shield East"
+            "eco_boundary": "Boreal Shield East"
         },
         "disturbance_types": [
             {
