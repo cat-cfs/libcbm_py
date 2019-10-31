@@ -109,3 +109,4 @@ class SITTransitionRuleProcessor:
             transition_mask, cbm_vars = \
                 self.transition_rule_processor.apply_transition_rule(
                     tr_group_key, tr_group, transition_mask, cbm_vars)
+        return cbm_vars
