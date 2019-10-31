@@ -6,10 +6,14 @@ CBM Input and Variables
 
 .. currentmodule:: libcbm.model.cbm.cbm_variables
 
+.. autofunction::initialize_simulation_variables
+
 Inventory
 ---------
 
 .. autofunction:: initialize_inventory
+
+.. autofunction:: initialize_classifiers
 
 Pools
 -----
@@ -41,6 +45,8 @@ CBM state variables
 -------------------
 
 .. autofunction:: initialize_cbm_state_variables
+
+
 
 
 Classifiers
