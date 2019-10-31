@@ -6,7 +6,7 @@
         "inventory":         {"type": "csv", "params": {"path": "sit_inventory.csv"}},
         "yield":             {"type": "csv", "params": {"path": "sit_yield.csv"}},
         "events":            {"type": "csv", "params": {"path": "sit_events.csv"}},
-        "transitions": null
+        "transitions": 	     {"type": "csv", "params": {"path": "sit_transition_rules.csv"}}
     },
     "mapping_config": {
         "nonforest": null,

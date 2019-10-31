@@ -187,5 +187,7 @@ def get_transition_rules_pre_dynamics_func(sit):
         grouped_percent_err_max=group_err_max,
         wildcard=sit_classifier_parser.get_wildcard_keyword(),
         transition_classifier_postfix=classifier_value_post_fix)
+    sit_tr_processor = \
+        sit_transition_rule_processor.SITTransitionRuleProcessor(tr_processor)
     return sit_transition_rule_processor.get_pre_dynamics_func(
-        tr_processor, sit_transition_rules)
+        sit_tr_processor, sit_transition_rules)
