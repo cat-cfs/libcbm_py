@@ -153,17 +153,7 @@ construction of the “cbm_defaults” value, and
                 <span class="p">]</span>
             <span class="p">}</span>
         <span class="p">]</span>
-    <span class="p">},</span>
-    <span class="s2">&quot;transitions&quot;</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;classifier_set&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a1&#39;</span><span class="p">,</span><span class="s1">&#39;b2&#39;</span><span class="p">,</span><span class="s1">&#39;?&#39;</span><span class="p">]</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;regeneration_delay&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;reset_age&quot;</span><span class="p">:</span> <span class="mi">0</span>
-        <span class="p">}</span>
-    <span class="p">]</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -172,15 +162,14 @@ construction of the “cbm_defaults” value, and
 </dd>
 </dl>
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceSpinupState">
-<code class="sig-name descname">AdvanceSpinupState</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceSpinupState" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state">
+<code class="sig-name descname">advance_spinup_state</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances spinup state variables through one spinup step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Will not be modified by this function.
-See:
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Will not be modified by
+this function. See:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_inventory" title="libcbm.model.cbm.cbm_variables.initialize_inventory"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_inventory()</span></code></a>
 for a compatible definition</p></li>
 <li><p><strong>variables</strong> (<em>object</em>) – Spinup working variables.  Defines all
@@ -203,15 +192,16 @@ as of the end of this call.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceStandState">
-<code class="sig-name descname">AdvanceStandState</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceStandState" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state">
+<code class="sig-name descname">advance_stand_state</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances CBM stand variables through a timestep based on the
 current simulation state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Will not be modified by this function.
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – classifier values associated with
+the inventory</p></li>
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Will not be modified by this function.
 See:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_inventory" title="libcbm.model.cbm.cbm_variables.initialize_inventory"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_inventory()</span></code></a>
 for a compatible definition</p></li>
@@ -230,8 +220,8 @@ for a compatible definition.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndSpinupStep">
-<code class="sig-name descname">EndSpinupStep</code><span class="sig-paren">(</span><em class="sig-param">pools</em>, <em class="sig-param">variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndSpinupStep" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step">
+<code class="sig-name descname">end_spinup_step</code><span class="sig-paren">(</span><em class="sig-param">pools</em>, <em class="sig-param">variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies end-of-timestep changes to the spinup state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -252,8 +242,8 @@ for a compatible definition</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndStep">
-<code class="sig-name descname">EndStep</code><span class="sig-paren">(</span><em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndStep" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step">
+<code class="sig-name descname">end_step</code><span class="sig-paren">(</span><em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies end-of-timestep changes to the CBM state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -268,29 +258,28 @@ for a compatible definition</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDecayOps">
-<code class="sig-name descname">GetDecayOps</code><span class="sig-paren">(</span><em class="sig-param">dom_decay_op</em>, <em class="sig-param">slow_decay_op</em>, <em class="sig-param">slow_mixing_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em>, <em class="sig-param">historical_mean_annual_temp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDecayOps" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops">
+<code class="sig-name descname">get_decay_ops</code><span class="sig-paren">(</span><em class="sig-param">dom_decay_op</em>, <em class="sig-param">slow_decay_op</em>, <em class="sig-param">slow_mixing_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em>, <em class="sig-param">historical_mean_annual_temp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares dead organic matter decay bulk matrix operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>dom_decay_op</strong> (<em>int</em>) – Handle for a block of matrices as
-allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code> function. Used to
 compute dom decay operations.</p></li>
 <li><p><strong>slow_decay_op</strong> (<em>int</em>) – Handle for a block of matrices as
-allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code> function. Used to
 compute slow pool decay operations.</p></li>
 <li><p><strong>slow_mixing_op</strong> (<em>int</em>) – Handle for a block of matrices as
-allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code> function. Used to
 compute slow pool mixing operations.</p></li>
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Used by this function to find correct
-parameters from the set of decay parameters passed to library
-initialization. Will not be modified by this
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Used by this function to
+find correct parameters from the set of decay parameters
+passed to library initialization. Will not be modified by this
 function. See:
 <code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm_variables.initialize_inventory()</span></code>
 for a compatible definition</p></li>
-<li><p><strong>parameters</strong> (<em>object</em>) – [description]</p></li>
+<li><p><strong>parameters</strong> (<em>object</em>) – parameters for this timestep</p></li>
 <li><p><strong>historical_mean_annual_temp</strong> (<em>bool</em><em>, </em><em>optional</em>) – If set to true, the
 historical default mean annual temperature is used. This is
 intended for spinup.  If explicit mean annual temperature
@@ -303,8 +292,8 @@ Defaults to False.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDisturbanceOps">
-<code class="sig-name descname">GetDisturbanceOps</code><span class="sig-paren">(</span><em class="sig-param">disturbance_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDisturbanceOps" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops">
+<code class="sig-name descname">get_disturbance_ops</code><span class="sig-paren">(</span><em class="sig-param">disturbance_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up CBM disturbance matrices as a bulk matrix operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -312,11 +301,11 @@ Defaults to False.</p></li>
 <li><p><strong>disturbance_op</strong> (<em>int</em>) – Handle for a block of matrices as
 allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
 compute disturbance event pool flows.</p></li>
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Used by this function to find correct
-parameters from the set of disturbance parameters passed to
-library initialization. Will not be modified by this function.
-See: <code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm_variables.initialize_inventory()</span></code>
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Used by this function to
+find correct parameters from the set of disturbance parameters
+passed to library initialization. Will not be modified by this
+function. See:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm_variables.initialize_inventory()</span></code>
 for a compatible definition</p></li>
 <li><p><strong>parameters</strong> (<em>object</em>) – Read-only parameters used to set
 disturbance type id to fetch the appropriate disturbance
@@ -329,8 +318,8 @@ for a compatible definition.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetMerchVolumeGrowthOps">
-<code class="sig-name descname">GetMerchVolumeGrowthOps</code><span class="sig-paren">(</span><em class="sig-param">growth_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetMerchVolumeGrowthOps" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops">
+<code class="sig-name descname">get_merch_volume_growth_ops</code><span class="sig-paren">(</span><em class="sig-param">growth_op</em>, <em class="sig-param">overmature_decline_op</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes CBM merchantable growth as a bulk matrix operation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -338,12 +327,14 @@ for a compatible definition.</p></li>
 <li><p><strong>growth_op</strong> (<em>int</em>) – Handle for a block of matrices as allocated by
 the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to compute merch
 volume growth operations.</p></li>
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Used by this function to find correct
-parameters from the set of merch volume growth parameters
-passed to library initialization, and to find a yield curve
-associated with inventory classifier sets. Will not be
-modified by this function. See:
+<li><p><strong>overmature_decline_op</strong> (<em>int</em>) – Handle for a block of matrices as
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+compute merch volume growth operations.</p></li>
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – matrix of classifier ids
+associated with yield tables.</p></li>
+<li><p><strong>inventory</strong> (<em>object</em>) – Used by this function to find correct spatial
+parameters from the set of merch volume growth parameters.
+Will not be modified by this function. See:
 <code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm_variables.initialize_inventory()</span></code>
 for a compatible definition.</p></li>
 <li><p><strong>pools</strong> (<em>numpy.ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape
@@ -362,23 +353,22 @@ for a compatible definition</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetTurnoverOps">
-<code class="sig-name descname">GetTurnoverOps</code><span class="sig-paren">(</span><em class="sig-param">biomass_turnover_op</em>, <em class="sig-param">snag_turnover_op</em>, <em class="sig-param">inventory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetTurnoverOps" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops">
+<code class="sig-name descname">get_turnover_ops</code><span class="sig-paren">(</span><em class="sig-param">biomass_turnover_op</em>, <em class="sig-param">snag_turnover_op</em>, <em class="sig-param">inventory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes biomass turnovers and dead organic matter turnovers as
 bulk matrix operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>biomass_turnover_op</strong> (<em>int</em>) – Handle for a block of matrices as
-allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code> function. Used to
 compute biomass turnover operations.</p></li>
 <li><p><strong>snag_turnover_op</strong> (<em>int</em>) – Handle for a block of matrices as
-allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code> function. Used to
+allocated by the <code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code> function. Used to
 compute dom (specifically snags) turnover operations.</p></li>
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Used by this function to find correct
-parameters from the set of turnover parameters passed to
-library initialization. Will not be modified by this
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Used by this function
+to find correct parameters from the set of turnover parameters
+passed to library initialization. Will not be modified by this
 function. See:
 <code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm_variables.initialize_inventory()</span></code>
 for a compatible definition.</p></li>
@@ -388,16 +378,15 @@ for a compatible definition.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.InitializeLandState">
-<code class="sig-name descname">InitializeLandState</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.InitializeLandState" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state">
+<code class="sig-name descname">initialize_land_state</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializes CBM state to values appropriate for after running
 spinup and before starting CBM stepping</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
-and cbm inventory data. Will not be modified by this function.
-See:
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Will not be modified by
+this function. See:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_inventory" title="libcbm.model.cbm.cbm_variables.initialize_inventory"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_inventory()</span></code></a>
 for a compatible definition.</p></li>
 <li><p><strong>pools</strong> (<em>numpy.ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape

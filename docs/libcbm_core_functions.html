@@ -215,7 +215,6 @@ valued array as raw memory to LibCBM.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>ValueError</strong> – matrix must have either 2 dimensions or be a scalar</p></li>
-<li><p><strong>ValueError</strong> – matrix must be C_CONTIGUOUS</p></li>
 <li><p><strong>ValueError</strong> – matrix must be of the correct type</p></li>
 </ul>
 </dd>
@@ -258,8 +257,8 @@ libcbm functions.</p>
 </dl>
 </div></blockquote>
 <dl class="method">
-<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp">
-<code class="sig-name descname">AllocateOp</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op">
+<code class="sig-name descname">allocate_op</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocates storage for matrices, returning an id for the
 allocated block.</p>
 <dl class="field-list simple">
@@ -286,17 +285,17 @@ be processed with this matrix block</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux">
-<code class="sig-name descname">ComputeFlux</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">op_processes</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_flux">
+<code class="sig-name descname">compute_flux</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">op_processes</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_flux" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes and tracks flows between pool values for all stands.</p>
-<p>Performs the same operation as ComputePools, except that the fluxes
+<p>Performs the same operation as compute_pools, except that the fluxes
 are tracked in the specified flux parameter, according to the
 flux_indicators configuration passed to the LibCBM initialize method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ops</strong> (<em>ndarray</em>) – list of matrix block ids as allocated by the
-AllocateOp function.</p></li>
+allocate_op function.</p></li>
 <li><p><strong>op_processes</strong> (<em>ndarray</em>) – list of integers of length n_ops.
 Ids referencing flux indicator process_id definition in the
 Initialize method.</p></li>
@@ -308,7 +307,7 @@ by n_flux_indicators. The values in this matrix are updated
 by this function according to the definition of flux
 indicators in the configuration and the flows that occur in
 the specified operations.</p></li>
-<li><p><strong>enabled</strong> (<em>[</em><em>type</em><em>]</em><em>, </em><em>optional</em>) – optional int vector of length
+<li><p><strong>enabled</strong> (<em>ndarray</em><em>, </em><em>optional</em>) – optional int vector of length
 n_stands. If specified, enables or disables flows for each
 stand, based on the value at each stand index. A value of 0
 indicates a disabled stand index, and any other value is an
@@ -324,8 +323,8 @@ enabled. Defaults to None.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools">
-<code class="sig-name descname">ComputePools</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">pools</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_pools">
+<code class="sig-name descname">compute_pools</code><span class="sig-paren">(</span><em class="sig-param">ops</em>, <em class="sig-param">pools</em>, <em class="sig-param">enabled=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes flows between pool values for all stands.</p>
 <p>Each value in the ops parameter is an id to a matrix block, and is also
 conceptually a list of matrixes of length n stands.</p>
@@ -342,7 +341,7 @@ matrix for the op, stand index combination.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ops</strong> (<em>ndarray</em>) – list of matrix block ids as allocated by the
-<a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp"><code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code></a> function.</p></li>
+<a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code></a> function.</p></li>
 <li><p><strong>pools</strong> (<em>numpy.ndarray</em><em> or </em><em>pandas.DataFrame</em>) – matrix of shape
 n_stands by n_pools. The values in this matrix are updated by
 this function.</p></li>
@@ -358,9 +357,9 @@ enabled. Defaults to None.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.FreeOp">
-<code class="sig-name descname">FreeOp</code><span class="sig-paren">(</span><em class="sig-param">op_id</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.FreeOp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Deallocates a matrix block that was allocated by the AllocateOp method.</p>
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.free_op">
+<code class="sig-name descname">free_op</code><span class="sig-paren">(</span><em class="sig-param">op_id</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.free_op" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deallocates a matrix block that was allocated by the allocate_op method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>op_id</strong> (<em>int</em>) – The id for an allocated block of matrices.</p>
@@ -369,13 +368,13 @@ enabled. Defaults to None.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.SetOp">
-<code class="sig-name descname">SetOp</code><span class="sig-paren">(</span><em class="sig-param">op_id</em>, <em class="sig-param">matrices</em>, <em class="sig-param">matrix_index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.SetOp" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.set_op">
+<code class="sig-name descname">set_op</code><span class="sig-paren">(</span><em class="sig-param">op_id</em>, <em class="sig-param">matrices</em>, <em class="sig-param">matrix_index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.set_op" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assigns values to an allocated block of matrices.</p>
 <blockquote>
 <div><p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_stands</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">op_id</span> <span class="o">=</span> <span class="n">AllocateOp</span><span class="p">(</span><span class="n">n_stands</span><span class="p">)</span>
+<span class="n">op_id</span> <span class="o">=</span> <span class="n">allocate_op</span><span class="p">(</span><span class="n">n_stands</span><span class="p">)</span>
 <span class="n">matrix_0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
     <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
@@ -506,7 +505,7 @@ are of dimension N by N where N is defined by the call to
 </tbody>
 </table>
 <dl class="simple">
-<dt>related functions: <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp"><code class="xref py py-func docutils literal notranslate"><span class="pre">AllocateOp()</span></code></a>, <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools"><code class="xref py py-func docutils literal notranslate"><span class="pre">ComputePools()</span></code></a>,</dt><dd><p><a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux"><code class="xref py py-func docutils literal notranslate"><span class="pre">ComputeFlux()</span></code></a></p>
+<dt>related functions: <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op"><code class="xref py py-func docutils literal notranslate"><span class="pre">allocate_op()</span></code></a>, <a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_pools" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_pools"><code class="xref py py-func docutils literal notranslate"><span class="pre">compute_pools()</span></code></a>,</dt><dd><p><a class="reference internal" href="#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_flux" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_flux"><code class="xref py py-func docutils literal notranslate"><span class="pre">compute_flux()</span></code></a></p>
 </dd>
 </dl>
 </div></blockquote>

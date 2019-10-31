@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CBM core functionality" href="cbm_core_functions.html" />
-    <link rel="prev" title="Standard Import tool Example" href="sit_example.html" /> 
+    <link rel="prev" title="libcbm run of tutorial 2 from CBM-CFS3" href="cbm3_tutorial2.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -30,7 +30,7 @@
           <a href="cbm_core_functions.html" title="CBM core functionality"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sit_example.html" title="Standard Import tool Example"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
@@ -52,8 +52,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="sit_example.html"
-                        title="previous chapter">Standard Import tool Example</a></p>
+  <p class="topless"><a href="cbm3_tutorial2.html"
+                        title="previous chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="cbm_core_functions.html"
                         title="next chapter">CBM core functionality</a></p>
@@ -409,7 +409,7 @@ test cases</p></li>
 
 <dl class="function">
 <dt id="libcbm.test.cbm.test_case_simulator.run_test_cases">
-<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">run_test_cases</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">db_path=None</em>, <em class="sig-param">dll_path=None</em>, <em class="sig-param">spinup_debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.test.cbm.test_case_simulator.</code><code class="sig-name descname">run_test_cases</code><span class="sig-paren">(</span><em class="sig-param">cases</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">db_path=None</em>, <em class="sig-param">dll_path=None</em>, <em class="sig-param">spinup_debug=False</em>, <em class="sig-param">do_cbm3_rounding=True</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.test.cbm.test_case_simulator.run_test_cases" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run CBM simulation test cases with libcbm</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -424,6 +424,9 @@ If unspecified, a package default is used.</p></li>
 <li><p><strong>spinup_debug</strong> (<em>bool</em><em>, </em><em>optional</em>) – if specified, and True extra spinup
 debugging information is generated and returned (causes
 performance drop). Defaults to False.</p></li>
+<li><p><strong>do_cbm3_rounding</strong> (<em>bool</em><em>, </em><em>optional</em>) – if true pool rounding matching
+the number of digits carried by cbm-cfs3 will be used after spinup
+runs, otherwise no rounding will occur.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1448,7 +1451,7 @@ descending by the “abs_total_diff” column/</p>
           <a href="cbm_core_functions.html" title="CBM core functionality"
              >next</a> |</li>
         <li class="right" >
-          <a href="sit_example.html" title="Standard Import tool Example"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>

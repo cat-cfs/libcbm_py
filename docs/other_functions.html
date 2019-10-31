@@ -145,10 +145,8 @@ to the larger simulation result in the “timestep” column</p></li>
 <dt id="libcbm.data_helpers.get_ndarray">
 <code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_ndarray</code><span class="sig-paren">(</span><em class="sig-param">a</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_ndarray" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method to deal with numpy arrays stored in pandas objects.
-Returns specified value if it is already an np.ndarray instance, and
-otherwise gets a reference to the underlying numpy.ndarray storage
-from a pandas.DataFrame or pandas.Series.  If None is specified, None is
-returned.</p>
+Gets a reference to the underlying numpy.ndarray storage from a
+pandas.DataFrame or pandas.Series.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>a</strong> (<em>None</em><em>, </em><em>ndarray</em><em>, </em><em>pandas.DataFrame</em><em>, or </em><em>pandas.Series</em>) – data to
@@ -156,13 +154,13 @@ potentially convert to ndarray</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>the specified ndarray, the ndarray storage of a</dt><dd><p>specified pandas object, or None</p>
+<dt>the specified value, or the ndarray storage of a</dt><dd><p>specified pandas object</p>
 </dd>
 </dl>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>ndarray, or None</p>
+<dd class="field-odd"><p>any</p>
 </dd>
 </dl>
 </dd></dl>

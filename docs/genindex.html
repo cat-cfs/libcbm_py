@@ -64,21 +64,26 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  
 </div>
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceSpinupState">AdvanceSpinupState() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state">advance_spinup_state() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
 </li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.AdvanceStandState">AdvanceStandState() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state">advance_stand_state() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+</li>
+      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.allocate_op">allocate_op() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.AllocateOp">AllocateOp() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
-</li>
       <li><a href="other_functions.html#libcbm.data_helpers.append_simulation_result">append_simulation_result() (in module libcbm.data_helpers)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.event_processor.apply_rule_based_event">apply_rule_based_event() (in module libcbm.model.cbm.rule_based.event_processor)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.transition_rule_processor.TransitionRuleProcessor.apply_transition_rule">apply_transition_rule() (libcbm.model.cbm.rule_based.transition_rule_processor.TransitionRuleProcessor method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -96,25 +101,41 @@
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier">classifier() (in module libcbm.model.cbm.cbm_config)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier_config">classifier_config() (in module libcbm.model.cbm.cbm_config)</a>
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier_value">classifier_value() (in module libcbm.model.cbm.cbm_config)</a>
 </li>
-      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputeFlux">ComputeFlux() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter">ClassifierFilter (class in libcbm.model.cbm.rule_based.classifier_filter)</a>
 </li>
-      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.ComputePools">ComputePools() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.compute_disturbance_production">compute_disturbance_production() (in module libcbm.model.cbm.rule_based.rule_target)</a>
+</li>
+      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_flux">compute_flux() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
+</li>
+      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.compute_pools">compute_pools() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
 </li>
       <li><a href="cbm_model.html#libcbm.model.cbm.cbm_factory.create">create() (in module libcbm.model.cbm.cbm_factory)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter.create_classifiers_filter">create_classifiers_filter() (libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter method)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_filter.create_filter">create_filter() (in module libcbm.model.cbm.rule_based.rule_filter)</a>
+</li>
       <li><a href="cbm_model.html#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func">create_in_memory_reporting_func() (in module libcbm.model.cbm.cbm_simulator)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_stand_filter.create_pool_filter_expression">create_pool_filter_expression() (in module libcbm.model.cbm.rule_based.sit.sit_stand_filter)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_stand_filter.create_state_filter_expression">create_state_filter_expression() (in module libcbm.model.cbm.rule_based.sit.sit_stand_filter)</a>
 </li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults.dataframe_as_parameter">dataframe_as_parameter() (in module libcbm.model.cbm.cbm_defaults)</a>
+</li>
+  </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_testing.html#libcbm.test.cbm.result_comparison.diff_result">diff_result() (in module libcbm.test.cbm.result_comparison)</a>
 </li>
@@ -124,11 +145,13 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndSpinupStep">EndSpinupStep() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step">end_spinup_step() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+</li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step">end_step() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.EndStep">EndStep() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_filter.evaluate_filter">evaluate_filter() (in module libcbm.model.cbm.rule_based.rule_filter)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory">expand_age_class_inventory() (in module libcbm.input.sit.sit_inventory_parser)</a>
 </li>
@@ -138,7 +161,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.FreeOp">FreeOp() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
+      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.free_op">free_op() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -157,6 +180,8 @@
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_age_class_format">get_age_class_format() (in module libcbm.input.sit.sit_format)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_age_eligibility_columns">get_age_eligibility_columns() (in module libcbm.input.sit.sit_format)</a>
+</li>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_biomass_pools">get_biomass_pools() (libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference method)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.flux_comparison.get_cbm3_annual_process_flux">get_cbm3_annual_process_flux() (in module libcbm.test.cbm.flux_comparison)</a>
 </li>
@@ -184,6 +209,8 @@
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_classifier_parser.get_classifier_keyword">get_classifier_keyword() (in module libcbm.input.sit.sit_classifier_parser)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_stand_filter.get_classifier_set">get_classifier_set() (in module libcbm.model.cbm.rule_based.sit.sit_stand_filter)</a>
+</li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.test_case_simulator.get_classifier_value_lookup">get_classifier_value_lookup() (in module libcbm.test.cbm.test_case_simulator)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.case_generation.get_classifier_value_name">get_classifier_value_name() (in module libcbm.test.cbm.case_generation)</a>
@@ -192,11 +219,17 @@
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_config_path">get_config_path() (in module libcbm.test.cbm.cbm3_support.cbm3_simulator)</a>
 </li>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_dead_organic_matter_pools">get_dead_organic_matter_pools() (libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference method)</a>
+</li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops">get_decay_ops() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+</li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_test_runner.get_default_cbm3_paths">get_default_cbm3_paths() (in module libcbm.test.cbm.cbm3_support.cbm3_test_runner)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_disturbance_eligibility_columns">get_disturbance_eligibility_columns() (in module libcbm.input.sit.sit_format)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_disturbance_event_format">get_disturbance_event_format() (in module libcbm.input.sit.sit_format)</a>
+</li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops">get_disturbance_ops() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_disturbance_type_format">get_disturbance_type_format() (in module libcbm.input.sit.sit_format)</a>
 </li>
@@ -240,15 +273,17 @@
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.flux_comparison.get_libcbm_flux_disturbance_cols">get_libcbm_flux_disturbance_cols() (in module libcbm.test.cbm.flux_comparison)</a>
 </li>
-      <li><a href="cbm_testing.html#libcbm.test.cbm.pool_comparison.get_libcbm_pools">get_libcbm_pools() (in module libcbm.test.cbm.pool_comparison)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cbm_testing.html#libcbm.test.cbm.pool_comparison.get_libcbm_pools">get_libcbm_pools() (in module libcbm.test.cbm.pool_comparison)</a>
+</li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.result_comparison.get_libcbm_result_suffix">get_libcbm_result_suffix() (in module libcbm.test.cbm.result_comparison)</a>
 </li>
       <li><a href="other_functions.html#libcbm.resources.get_local_dir">get_local_dir() (in module libcbm.resources)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_inventory_parser.get_map_land_class_func">get_map_land_class_func() (in module libcbm.input.sit.sit_inventory_parser)</a>
+</li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops">get_merch_volume_growth_ops() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_cbm_factory.get_merch_volumes">get_merch_volumes() (in module libcbm.input.sit.sit_cbm_factory)</a>
 </li>
@@ -272,6 +307,12 @@
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_pools">get_pools() (libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference method)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_event_processor.get_pre_dynamics_func">get_pre_dynamics_func() (in module libcbm.model.cbm.rule_based.sit.sit_event_processor)</a>
+
+      <ul>
+        <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.get_pre_dynamics_func">(in module libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor)</a>
+</li>
+      </ul></li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_project_path">get_project_path() (in module libcbm.test.cbm.cbm3_support.cbm3_simulator)</a>
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_queries.get_query">get_query() (in module libcbm.model.cbm.cbm_defaults_queries)</a>
@@ -304,6 +345,10 @@
       </ul></li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species_id">get_species_id() (libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference method)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_stand_filter.get_state_variable_age_filter_mappings">get_state_variable_age_filter_mappings() (in module libcbm.model.cbm.rule_based.sit.sit_stand_filter)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_stand_filter.get_state_variable_filter_mappings">get_state_variable_filter_mappings() (in module libcbm.model.cbm.rule_based.sit.sit_stand_filter)</a>
+</li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.case_generation.get_step_func">get_step_func() (in module libcbm.test.cbm.case_generation)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.result_comparison.get_summarized_diff_plot">get_summarized_diff_plot() (in module libcbm.test.cbm.result_comparison)</a>
@@ -322,6 +367,8 @@
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_transition_rules_format">get_transition_rules_format() (in module libcbm.input.sit.sit_format)</a>
 </li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops">get_turnover_ops() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+</li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_simulator.get_unfccc_land_class_id_ref">get_unfccc_land_class_id_ref() (in module libcbm.test.cbm.cbm3_support.cbm3_simulator)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_test_io.get_version_number">get_version_number() (in module libcbm.test.cbm.cbm3_support.cbm3_test_io)</a>
@@ -330,17 +377,9 @@
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_format.get_yield_format">get_yield_format() (in module libcbm.input.sit.sit_format)</a>
 </li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDecayOps">GetDecayOps() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
-</li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetDisturbanceOps">GetDisturbanceOps() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
-</li>
       <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_error.LibCBM_Error.getError">getError() (libcbm.wrapper.libcbm_error.LibCBM_Error method)</a>
 </li>
       <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_error.LibCBM_Error.getErrorMessage">getErrorMessage() (libcbm.wrapper.libcbm_error.LibCBM_Error method)</a>
-</li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetMerchVolumeGrowthOps">GetMerchVolumeGrowthOps() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
-</li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.GetTurnoverOps">GetTurnoverOps() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -360,6 +399,10 @@
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables">initialize_cbm_state_variables() (in module libcbm.model.cbm.cbm_variables)</a>
 </li>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_classifiers">initialize_classifiers() (in module libcbm.model.cbm.cbm_variables)</a>
+</li>
+      <li><a href="cbm_sit.html#libcbm.input.sit.sit_cbm_factory.initialize_events">initialize_events() (in module libcbm.input.sit.sit_cbm_factory)</a>
+</li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_flux">initialize_flux() (in module libcbm.model.cbm.cbm_variables)</a>
 </li>
   </ul></td>
@@ -372,6 +415,8 @@
         <li><a href="cbm_testing.html#libcbm.test.cbm.test_case_simulator.initialize_inventory">(in module libcbm.test.cbm.test_case_simulator)</a>
 </li>
       </ul></li>
+      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state">initialize_land_state() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+</li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_pools">initialize_pools() (in module libcbm.model.cbm.cbm_variables)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects">initialize_sit_objects() (in module libcbm.input.sit.sit_cbm_factory)</a>
@@ -380,7 +425,7 @@
 </li>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_spinup_variables">initialize_spinup_variables() (in module libcbm.model.cbm.cbm_variables)</a>
 </li>
-      <li><a href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.InitializeLandState">InitializeLandState() (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper method)</a>
+      <li><a href="cbm_sit.html#libcbm.input.sit.sit_cbm_factory.initialize_transition_rules">initialize_transition_rules() (in module libcbm.input.sit.sit_cbm_factory)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -420,8 +465,26 @@
 </li>
       <li><a href="cbm_model.html#module-libcbm.model.cbm.cbm_simulator">libcbm.model.cbm.cbm_simulator (module)</a>
 </li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.event_processor">libcbm.model.cbm.rule_based.event_processor (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.rule_filter">libcbm.model.cbm.rule_based.rule_filter (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.rule_target">libcbm.model.cbm.rule_based.rule_target (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.sit.sit_event_processor">libcbm.model.cbm.rule_based.sit.sit_event_processor (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.sit.sit_stand_filter">libcbm.model.cbm.rule_based.sit.sit_stand_filter (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.sit.sit_stand_target">libcbm.model.cbm.rule_based.sit.sit_stand_target (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor">libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor (module)</a>
+</li>
+      <li><a href="rule_based.html#module-libcbm.model.cbm.rule_based.transition_rule_processor">libcbm.model.cbm.rule_based.transition_rule_processor (module)</a>
+</li>
       <li><a href="other_functions.html#module-libcbm.resources">libcbm.resources (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_testing.html#module-libcbm.test.cbm.case_generation">libcbm.test.cbm.case_generation (module)</a>
 </li>
       <li><a href="cbm_testing.html#module-libcbm.test.cbm.cbm3_support.cbm3_simulator">libcbm.test.cbm.cbm3_support.cbm3_simulator (module)</a>
@@ -430,8 +493,6 @@
 </li>
       <li><a href="cbm_testing.html#module-libcbm.test.cbm.cbm3_support.cbm3_test_runner">libcbm.test.cbm.cbm3_support.cbm3_test_runner (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_testing.html#module-libcbm.test.cbm.flux_comparison">libcbm.test.cbm.flux_comparison (module)</a>
 </li>
       <li><a href="cbm_testing.html#module-libcbm.test.cbm.pool_comparison">libcbm.test.cbm.pool_comparison (module)</a>
@@ -482,9 +543,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.merch_volume_curve">merch_volume_curve() (in module libcbm.model.cbm.cbm_config)</a>
 </li>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.merch_volume_to_biomass_config">merch_volume_to_biomass_config() (in module libcbm.model.cbm.cbm_config)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.merch_volume_to_biomass_config">merch_volume_to_biomass_config() (in module libcbm.model.cbm.cbm_config)</a>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_filter.merge_filters">merge_filters() (in module libcbm.model.cbm.rule_based.rule_filter)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.result_comparison.merge_result">merge_result() (in module libcbm.test.cbm.result_comparison)</a>
 </li>
@@ -494,6 +557,8 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_defaults.parameter_as_dataframe">parameter_as_dataframe() (in module libcbm.model.cbm.cbm_defaults)</a>
+</li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_age_class_parser.parse">parse() (in module libcbm.input.sit.sit_age_class_parser)</a>
 
       <ul>
@@ -518,7 +583,13 @@
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.state_comparison.prepare_cbm3_state">prepare_cbm3_state() (in module libcbm.test.cbm.state_comparison)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.event_processor.process_event">process_event() (in module libcbm.model.cbm.rule_based.event_processor)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events">process_events() (libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor method)</a>
+</li>
       <li><a href="other_functions.html#libcbm.data_helpers.promote_scalar">promote_scalar() (in module libcbm.data_helpers)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.proportion_area_target">proportion_area_target() (in module libcbm.model.cbm.rule_based.rule_target)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -544,21 +615,45 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cbm_testing.html#libcbm.test.cbm.cbm3_support.cbm3_test_io.save_cbm_cfs3_test">save_cbm_cfs3_test() (in module libcbm.test.cbm.cbm3_support.cbm3_test_io)</a>
 </li>
-      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.SetOp">SetOp() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
+      <li><a href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper.set_op">set_op() (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper method)</a>
 </li>
       <li><a href="cbm_model.html#libcbm.model.cbm.cbm_simulator.simulate">simulate() (in module libcbm.model.cbm.cbm_simulator)</a>
 </li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.sit_transition_rule_iterator">sit_transition_rule_iterator() (in module libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor">SITEventProcessor (class in libcbm.model.cbm.rule_based.sit.sit_event_processor)</a>
+</li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_mapping.SITMapping">SITMapping (class in libcbm.input.sit.sit_mapping)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor">SITTransitionRuleProcessor (class in libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.sorted_area_target">sorted_area_target() (in module libcbm.model.cbm.rule_based.rule_target)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.sorted_disturbance_target">sorted_disturbance_target() (in module libcbm.model.cbm.rule_based.rule_target)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.sorted_merch_target">sorted_merch_target() (in module libcbm.model.cbm.rule_based.rule_target)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.rule_target.spatially_indexed_target">spatially_indexed_target() (in module libcbm.model.cbm.rule_based.rule_target)</a>
+</li>
       <li><a href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM.spinup">spinup() (libcbm.model.cbm.cbm_model.CBM method)</a>
+</li>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.state_variable_filter_func">state_variable_filter_func() (in module libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor)</a>
 </li>
       <li><a href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM.step">step() (libcbm.model.cbm.cbm_model.CBM method)</a>
 </li>
       <li><a href="cbm_sit.html#libcbm.input.sit.sit_parser.substitute_using_age_class_rows">substitute_using_age_class_rows() (in module libcbm.input.sit.sit_parser)</a>
 </li>
       <li><a href="cbm_testing.html#libcbm.test.cbm.result_comparison.summarize_diffs_by_identifier">summarize_diffs_by_identifier() (in module libcbm.test.cbm.result_comparison)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="rule_based.html#libcbm.model.cbm.rule_based.transition_rule_processor.TransitionRuleProcessor">TransitionRuleProcessor (class in libcbm.model.cbm.rule_based.transition_rule_processor)</a>
 </li>
   </ul></td>
 </tr></table>

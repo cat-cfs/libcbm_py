@@ -1,7 +1,7 @@
 libcbm
 ======
 
-version 0.1.2
+version 0.2.1
 
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
@@ -27,6 +27,7 @@ Requirements
  - numpy
  - pandas
  - sqlite3
+ - numexpr
 
 In order to run the CBM-CFS3 tests there are additional requirements:
  - Windows OS (CBM-CFS3 is windows only)
@@ -47,9 +48,10 @@ Code Documentation
    :caption: Contents:
 
    cbm_model
+   rule_based
    cbm_input_and_variables
    cbm_sit
-   sit_example
+   cbm3_tutorial2
    cbm_testing
    cbm_core_functions
    libcbm_core_functions

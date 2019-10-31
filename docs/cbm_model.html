@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="CBM Input and Variables" href="cbm_input_and_variables.html" />
+    <link rel="next" title="CBM rule based disturbances and transition rules" href="rule_based.html" />
     <link rel="prev" title="libcbm" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="libcbm"
@@ -51,8 +51,8 @@
   <p class="topless"><a href="index.html"
                         title="previous chapter">libcbm</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="cbm_input_and_variables.html"
-                        title="next chapter">CBM Input and Variables</a></p>
+  <p class="topless"><a href="rule_based.html"
+                        title="next chapter">CBM rule based disturbances and transition rules</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -86,7 +86,7 @@
 <p>A CBM instance can be initialized by using a composed factory method.</p>
 <span class="target" id="module-libcbm.model.cbm.cbm_factory"></span><dl class="function">
 <dt id="libcbm.model.cbm.cbm_factory.create">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_factory.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">dll_path</em>, <em class="sig-param">dll_config_factory</em>, <em class="sig-param">cbm_parameters_factory</em>, <em class="sig-param">merch_volume_to_biomass_factory</em>, <em class="sig-param">classifiers_factory</em>, <em class="sig-param">transitions_factory=&lt;function &lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_factory.create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_factory.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">dll_path</em>, <em class="sig-param">dll_config_factory</em>, <em class="sig-param">cbm_parameters_factory</em>, <em class="sig-param">merch_volume_to_biomass_factory</em>, <em class="sig-param">classifiers_factory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_factory.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create and initialize an instance of the CBM model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -101,8 +101,6 @@ valid merchantable volume to biomass configuration for CBM (see:
 <li><p><strong>classifiers_factory</strong> (<em>func</em>) – function that creates a valid classifier
 configuration for CBM (see:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_config.classifier_config" title="libcbm.model.cbm.cbm_config.classifier_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_config.classifier_config()</span></code></a>)</p></li>
-<li><p><strong>transitions_factory</strong> – <p>???</p>
-</p></li>
 </ul>
 </dd>
 </dl>
@@ -246,12 +244,13 @@ for a compatible definition</p></li>
 
 <dl class="method">
 <dt id="libcbm.model.cbm.cbm_model.CBM.spinup">
-<code class="sig-name descname">spinup</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em>, <em class="sig-param">debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.spinup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">spinup</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em>, <em class="sig-param">debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.spinup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the CBM-CFS3 spinup function on an array of stands,
 initializing the specified variables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – </p></li>
 <li><p><strong>inventory</strong> (<em>object</em>) – Data comprised of classifier sets
 and cbm inventory data. Will not be modified by this function.
 See:
@@ -288,7 +287,7 @@ False.</p></li>
 
 <dl class="method">
 <dt id="libcbm.model.cbm.cbm_model.CBM.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances the specified CBM variables through one time step of CBM
 simulation.</p>
 <dl class="field-list simple">
@@ -332,17 +331,22 @@ for a compatible definition.</p></li>
 <span id="simulator"></span><h2>Simulator<a class="headerlink" href="#module-libcbm.model.cbm.cbm_simulator" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><em class="sig-param">density=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create storage and a function for simulation results.  The function
 return value can be passed to <a class="reference internal" href="#libcbm.model.cbm.cbm_simulator.simulate" title="libcbm.model.cbm.cbm_simulator.simulate"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate()</span></code></a> to track simultion
 results.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><p>a pair of values:</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>density</strong> (<em>bool</em><em>, </em><em>optional</em>) – if set to true pool and flux indicators will
+be computed as area densities (tonnes C/ha). By default, pool and
+flux outputs are computed as mass (tonnes C) based on the area of
+each stand. Defaults to False.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>a pair of values:</p>
 <blockquote>
-<div><ol class="arabic simple">
-<li><p>types.SimpleNameSpace: an object with properties:</p></li>
-</ol>
+<div><ol class="arabic">
+<li><p>types.SimpleNameSpace: an object with properties:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>pool_indicators a pandas.DataFrame for storing pools</p></li>
@@ -350,14 +354,18 @@ results.</p>
 <li><p>state_indicators a pandas.DataFrame for storing state</p></li>
 </ul>
 </div></blockquote>
-<ol class="arabic simple" start="2">
-<li><p>func: a function for appending to the above results dataframes</p></li>
+</li>
+<li><dl class="simple">
+<dt>func: a function for appending to the above results</dt><dd><p>DataFrames</p>
+</dd>
+</dl>
+</li>
 </ol>
 </div></blockquote>
 </p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>tuple</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -380,13 +388,18 @@ state of the simulation</p></li>
 <li><p><strong>pool_codes</strong> (<em>list</em>) – a list of strings describing each of the CBM pools</p></li>
 <li><p><strong>flux_indicator_codes</strong> (<em>list</em>) – a list of strings describing the CBM flux
 indicators.</p></li>
-<li><p><strong>pre_dynamics_func</strong> (<em>function</em>) – A function which both accepts and
-returns all CBM variables.  The layout of the CBM variables is the
-same as the return value of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p></li>
-<li><p><strong>reporting_func</strong> (<em>function</em>) – a function which accepts all CBM variables.
-The layout of the CBM variables is the same as the return value of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p></li>
+<li><p><strong>pre_dynamics_func</strong> (<em>function</em>) – A function which accepts the simulation
+timestep and all CBM variables, and which is called prior to
+computing C dynamics  The layout of the CBM variables is the same
+as the return value of:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code>
+The function returns all CBM variables which will then be passed
+into the current CBM timestep.</p></li>
+<li><p><strong>reporting_func</strong> (<em>function</em>) – a function which accepts the simulation
+timestep and all CBM variables for reporting results by timestep.
+The layout of the CBM variables is the same as the return value of:
+<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code>
+The function returns None.</p></li>
 </ul>
 </dd>
 </dl>
@@ -411,7 +424,7 @@ The layout of the CBM variables is the same as the return value of
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="libcbm"

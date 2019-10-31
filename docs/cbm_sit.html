@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Standard Import tool Example" href="sit_example.html" />
+    <link rel="next" title="libcbm run of tutorial 2 from CBM-CFS3" href="cbm3_tutorial2.html" />
     <link rel="prev" title="CBM Input and Variables" href="cbm_input_and_variables.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sit_example.html" title="Standard Import tool Example"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
@@ -59,8 +59,8 @@
   <p class="topless"><a href="cbm_input_and_variables.html"
                         title="previous chapter">CBM Input and Variables</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="sit_example.html"
-                        title="next chapter">Standard Import tool Example</a></p>
+  <p class="topless"><a href="cbm3_tutorial2.html"
+                        title="next chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -1095,7 +1095,8 @@ columns.  Use the return value of:
 <dl class="function">
 <dt id="libcbm.input.sit.sit_disturbance_event_parser.get_target_types">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">get_target_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.get_target_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the CBM standard import tool target type id/name pairs as a dictionary</p>
+<dd><p>Gets the CBM standard import tool target type id/name pairs as a
+dictionary</p>
 </dd></dl>
 
 <dl class="function">
@@ -1447,7 +1448,7 @@ disturbance event format</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>classifier_names</strong> (<em>int</em>) – a list of the names of classifiers</p></li>
+<li><p><strong>classifier_names</strong> – a list of the names of classifiers</p></li>
 <li><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in disturbance data.  This
 is required because the format has a varying number of optional
 columns.</p></li>
@@ -1655,7 +1656,7 @@ SITMapping used to validate species classifier and fetch species id</p></li>
 
 <dl class="function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_cbm">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_cbm</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">dll_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_cbm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_cbm</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">dll_path=None</em>, <em class="sig-param">parameters_factory=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_cbm" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Create an initialized instance of</dt><dd><p><a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_model.CBM</span></code></a> based on SIT input</p>
 </dd>
@@ -1673,6 +1674,28 @@ specified a default value is used.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM">libcbm.model.cbm.cbm_model.CBM</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.initialize_events">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_events</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the parsed sit events with the disturbance type id
+resulting from the SIT configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>the disturbance events with an added</dt><dd><p>”disturbance_type_id” column.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1696,15 +1719,40 @@ specified a default value is used.</p></li>
 
 <dl class="function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_sit_objects">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_sit_objects</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_sit_objects</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">db_path=None</em>, <em class="sig-param">locale_code='en-CA'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load and attach objects required for the SIT to the specified namespace</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sit</strong> (<em>types.SimpleNamespace</em>) – [description]</p></li>
+<li><p><strong>sit</strong> (<em>types.SimpleNamespace</em>) – object with parsed SIT data, such as the
+return value of <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.read_sit_config" title="libcbm.input.sit.sit_cbm_factory.read_sit_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_sit_config()</span></code></a>.</p></li>
 <li><p><strong>db_path</strong> (<em>str</em><em>, </em><em>optional</em>) – path to a cbm_defaults database. If None, the
 default database is used. Defaults to None.</p></li>
+<li><p><strong>locale_code</strong> (<em>str</em><em>, </em><em>optional</em>) – a locale code used to fetch the
+corresponding translated version of default parameter strings</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.initialize_transition_rules">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_transition_rules</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_transition_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the parsed sit transition rules with the disturbance
+type id resulting from the SIT configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>the transition rules with an added</dt><dd><p>”disturbance_type_id” column.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1897,7 +1945,7 @@ disturbance types, and the SIT mapping.  Used to encode any of:</p>
 <li><p>historical disturbance type column in sit inventory</p></li>
 <li><p>last pass disturbance type column in sit inventory</p></li>
 <li><p>disturbance type column in sit disturbance events</p></li>
-<li><p>disturbacne type column in sit transition rules</p></li>
+<li><p>disturbance type column in sit transition rules</p></li>
 </ul>
 </div></blockquote>
 <dl class="field-list simple">
@@ -2015,6 +2063,8 @@ classifier values definition. Use the return value of:
 <li><p><strong>KeyError</strong> – a classifier value is not mapped to a default value</p></li>
 <li><p><strong>ValueError</strong> – a classifier value was not defined in the
     classifier/classifier value metadata</p></li>
+<li><p><strong>ValueError</strong> – the mapped species is not present in the defined
+    classifiers</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns</dt>
@@ -2051,7 +2101,7 @@ classifier values definition. Use the return value of:
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="sit_example.html" title="Standard Import tool Example"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              >next</a> |</li>
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
