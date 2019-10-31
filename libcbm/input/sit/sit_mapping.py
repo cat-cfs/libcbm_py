@@ -224,13 +224,19 @@ class SITMapping():
         """
         mapping_mode = self.config["spatial_units"]["mapping_mode"]
         if mapping_mode == "SingleDefaultSpatialUnit":
-            default_spuid = self.config["spatial_units"]["default_spuid"]
-            try:
-                self.cbm_defaults_ref.get_spatial_unit(default_spuid)
-            except KeyError:
-                raise KeyError(
-                    "specified spatial unit id not found in defaults: "
-                    f"{default_spuid}")
+            if "default_spuid" in self.config["spatial_units"]:
+                default_spuid = self.config["spatial_units"]["default_spuid"]
+                try:
+                    self.cbm_defaults_ref.get_spatial_unit(default_spuid)
+                except KeyError:
+                    raise KeyError(
+                        "specified spatial unit id not found in defaults: "
+                        f"{default_spuid}")
+            else:
+                default_spuid = self.cbm_defaults_ref.get_spatial_unit_id(
+                    self.config["spatial_units"]["admin_boundary"],
+                    self.config["spatial_units"]["eco_boundary"]
+                )
 
             data = np.ones(inventory.shape[0], dtype=np.int32)
             return pd.Series(data * default_spuid)

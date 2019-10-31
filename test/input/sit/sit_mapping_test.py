@@ -164,6 +164,37 @@ class SITMappingTest(unittest.TestCase):
                 inventory, classifiers, classifier_values)
         self.assertTrue(ref.get_spatial_unit.called)
 
+    def test_single_default_spatial_unit_admin_eco_specified(self):
+        """Checks that an error is raised when the default mapping of spatial
+        unit does not match a defined value in the defaults reference.
+        """
+        mapping = {
+            "spatial_units": {
+                "mapping_mode": "SingleDefaultSpatialUnit",
+                "admin_boundary": "a1",
+                "eco_boundary": "e1"
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+
+        def mock_get_spatial_unit_id(admin_boundary, eco_boundary):
+            self.assertTrue(admin_boundary == "a1")
+            self.assertTrue(eco_boundary == "e1")
+            return 1
+
+        ref.get_spatial_unit_id.side_effect = mock_get_spatial_unit_id
+        classifiers, classifier_values = self.get_mock_classifiers()
+        inventory = pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+        sit_mapping = SITMapping(mapping, ref)
+        result = sit_mapping.get_spatial_unit(
+            inventory, classifiers, classifier_values)
+        self.assertTrue((result == 1).all())
+        self.assertTrue(len(result) == inventory.shape[0])
+        ref.get_spatial_unit_id.assert_called_once()
+
     def test_undefined_admin_eco_default_spatial_unit_error(self):
         """Checks that an error is raised when the default mapping of spatial
         unit does not match a defined value in the defaults reference in
