@@ -5,10 +5,6 @@ import numpy as np
 import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers \
     as helpers
 
-FIRE_ID = 1
-CLEARCUT_ID = 3
-DEFORESTATION_ID = 7
-
 
 class SITEventIntegrationTest(unittest.TestCase):
 
@@ -46,8 +42,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-                [FIRE_ID, 0, 0, FIRE_ID])
+            list(cbm_vars_result.params.disturbance_type) == [
+                helpers.FIRE_ID, 0, 0, helpers.FIRE_ID])
 
     def test_rule_based_area_target_age_sort_unrealized(self):
         """Test a rule based event with area target, and age sort where no
@@ -77,7 +73,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit, mock_on_unrealized)
+        pre_dynamics_func = helpers.get_events_pre_dynamics_func(
+            sit, mock_on_unrealized)
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         # records 0 and 3 are the disturbed records: both are eligible, they
@@ -88,7 +85,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         mock_args, _ = mock_on_unrealized.call_args
         self.assertTrue(mock_args[0] == 5)
         expected = sit.sit_data.disturbance_events.to_dict("records")[0]
-        expected["disturbance_type_id"] = 1
+        expected["disturbance_type_id"] = helpers.FIRE_ID
         diff = set(mock_args[1].items()) ^ set(expected.items())
         self.assertTrue(len(diff) == 0)
 
@@ -129,7 +126,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [FIRE_ID, FIRE_ID, 0, CLEARCUT_ID, CLEARCUT_ID])
+            [helpers.FIRE_ID, helpers.FIRE_ID, 0, helpers.CLEARCUT_ID,
+             helpers.CLEARCUT_ID])
 
     def test_rule_based_area_target_age_sort_split(self):
         """Test a rule based event with area target, and age sort where no
@@ -155,12 +153,13 @@ class SITEventIntegrationTest(unittest.TestCase):
         # and the second will be split into 1 and 4 hectare stands.
         cbm_vars.state.age = np.array([99, 100])
 
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit, mock_on_unrealized)
+        pre_dynamics_func = helpers.get_events_pre_dynamics_func(
+            sit, mock_on_unrealized)
         cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [FIRE_ID, FIRE_ID, 0])
+            [helpers.FIRE_ID, helpers.FIRE_ID, 0])
 
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
@@ -196,7 +195,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [CLEARCUT_ID, CLEARCUT_ID])
+            [helpers.CLEARCUT_ID, helpers.CLEARCUT_ID])
 
     def test_rule_based_merch_target_age_sort_unrealized(self):
         mock_on_unrealized = Mock()
@@ -228,7 +227,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [CLEARCUT_ID, CLEARCUT_ID, CLEARCUT_ID])
+            [helpers.CLEARCUT_ID, helpers.CLEARCUT_ID, helpers.CLEARCUT_ID])
 
         mock_args, _ = mock_on_unrealized.call_args
         # confirm expected shortfall (in tonnes C)
@@ -268,7 +267,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [CLEARCUT_ID, CLEARCUT_ID, 0])
+            [helpers.CLEARCUT_ID, helpers.CLEARCUT_ID, 0])
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
         self.assertTrue(cbm_vars.state.shape[0] == 3)
@@ -310,5 +309,6 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars_result = pre_dynamics_func(time_step=100, cbm_vars=cbm_vars)
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [FIRE_ID, CLEARCUT_ID, DEFORESTATION_ID, 0])
+            [helpers.FIRE_ID, helpers.CLEARCUT_ID, helpers.DEFORESTATION_ID,
+             0])
         self.assertTrue(list(cbm_vars.inventory.area) == [20, 100, 20, 860])
