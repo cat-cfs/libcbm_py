@@ -139,7 +139,6 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
         mock_transition_rule_processor.apply_transition_rule = \
             mock_apply_transition_rule
 
-
         def test_apply_transition_rule(tr_group_key, tr_group,
                                        transition_mask, cbm_vars):
             self.assertTrue(

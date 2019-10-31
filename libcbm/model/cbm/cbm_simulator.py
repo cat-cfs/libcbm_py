@@ -73,8 +73,8 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
             The function returns all CBM variables which will then be passed
             into the current CBM timestep.
         reporting_func (function): a function which accepts the simulation
-            timestep and all CBM variables. The layout of the CBM variables is
-            the same as the return value of:
+            timestep and all CBM variables for reporting results by timestep.
+            The layout of the CBM variables is the same as the return value of:
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
             The function returns None.
     """
