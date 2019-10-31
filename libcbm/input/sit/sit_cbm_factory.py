@@ -210,7 +210,7 @@ def read_sit_config(config_path):
                 otherwise it is None.
     """
     sit = SimpleNamespace()
-    with open(config_path, 'r') as config_file:
+    with open(config_path, 'r', encoding="utf-8") as config_file:
         sit.config = json.load(config_file)
         config_path = config_path
         if "import_config" in sit.config:
