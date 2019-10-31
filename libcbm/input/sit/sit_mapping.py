@@ -29,6 +29,8 @@ class SITMapping():
             KeyError: a classifier value is not mapped to a default value
             ValueError: a classifier value was not defined in the
                 classifier/classifier value metadata
+            ValueError: the mapped species is not present in the defined
+                classifiers
 
         Returns:
             pandas.Series: a series of integer species ids.  The length of
@@ -65,8 +67,13 @@ class SITMapping():
             species_map[user_species] = species_id
 
         species_classifier = self.config["species"]["species_classifier"]
-        species_values = merged_classifiers.loc[
-            merged_classifiers["name_classifier"] == species_classifier]
+        species_value_filter = \
+            merged_classifiers["name_classifier"] == species_classifier
+        if not species_value_filter.any():
+            raise ValueError(
+                f"specified mapped species {species_classifier} not found in "
+                "defined sit classifiers")
+        species_values = merged_classifiers.loc[species_value_filter]
 
         def get_default_species(species_classifier_value):
             if species_classifier_value in species_map:

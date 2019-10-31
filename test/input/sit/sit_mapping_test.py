@@ -95,6 +95,37 @@ class SITMappingTest(unittest.TestCase):
             species, classifiers, classifier_values)
         self.assertTrue(list(result) == [999, -999, 999, -999])
 
+    def test_get_species_error_on_undefined_classifier(self):
+        """checks that an error is thrown if an undefined species classifier
+        is used
+        """
+        config = {
+            "species": {
+                "species_classifier": "undefined",
+                "species_mapping": [
+                    {"user_species": "a", "default_species": "Spruce"},
+                    {"user_species": "b", "default_species": "Oak"},
+                    {"user_species": "nonforest",
+                     "default_species": "Gleysolic"},
+                ]
+            }
+        }
+        ref = Mock(spec=CBMDefaultsReference)
+        classifiers, classifier_values = self.get_mock_classifiers()
+        pd.DataFrame({
+            "classifier1": ["a", "b"],
+            "classifier2": ["a", "a"],
+        })
+
+        species = pd.Series(["a", "b", "a", "b"])
+        ref.get_afforestation_pre_types.side_effect = lambda: [
+            {"afforestation_pre_type_name": "Gleysolic"}]
+        sit_mapping = SITMapping(config, ref)
+        with self.assertRaises(ValueError):
+            sit_mapping.get_species(
+                species, classifiers, classifier_values)
+
+
     def test_undefined_default_nonforest_type_error(self):
         """Checks that an error is raised when the default mapping of
         non-forest type does not match a defined value in the defaults
