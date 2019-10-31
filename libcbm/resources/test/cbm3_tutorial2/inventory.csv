@@ -1,3 +1,4 @@
+c1,c2,c3,c4,using_age_class,age,area,delay,landclass,historic_disturbance,last_pass_disturbance
 BF,GOOD,D1,W,TRUE,AGEID0,200,0,0,DISTID1,DISTID1
 BF,GOOD,D1,W,TRUE,AGEID1,1000,0,0,DISTID1,DISTID1
 BF,GOOD,D1,W,TRUE,AGEID2,1000,0,0,DISTID1,DISTID1

@@ -1,3 +1,4 @@
+c1,c2,c3,c4,using_age_class,min_softwood_age,max_softwood_age,min_hardwood_age,max_hardwood_age,MinYearsSinceDist,MaxYearsSinceDist,LastDistTypeID,MinTotBiomassC,MaxTotBiomassC,MinSWMerchBiomassC,MaxSWMerchBiomassC,MinHWMerchBiomassC,MaxHWMerchBiomassC,MinTotalStemSnagC,MaxTotalStemSnagC,MinSWStemSnagC,MaxSWStemSnagC,MinHWStemSnagC,MaxHWStemSnagC,MinTotalStemSnagMerchC,MaxTotalStemSnagMerchC,MinSWMerchStemSnagC,MaxSWMerchStemSnagC,MinHWMerchStemSnagC,MaxHWMerchStemSnagC,efficiency,sort_type,target_type,target,disturbance_type,disturbance_year
 BF,GOOD,D1,W,FALSE,80,200,80,200,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,200,DISTID4,1
 BF,GOOD,D1,W,FALSE,80,200,80,200,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,200,DISTID4,2
 BF,GOOD,D1,W,FALSE,80,200,80,200,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,1,3,A,200,DISTID4,3

@@ -1,1 +1,2 @@
-BF,GOOD,D1,W,TRUE,AGEID20,AGEID20,AGEID20,AGEID20,DISTID4,BF,GOOD,D1,W,0,0,100
+c1,c2,c3,c4,using_age_class,min_softwood_age,max_softwood_age,min_hardwood_age,max_hardwood_age,disturbance_type,c1_tr,c2_tr,c3_tr,c4_tr,species_tr,regeneration_delay,reset_age,percent
+BF,GOOD,D1,W,TRUE,AGEID20,AGEID20,AGEID20,AGEID20,DISTID4,BF,GOOD,D1,W,0,0,100,
