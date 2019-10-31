@@ -1,6 +1,7 @@
 import os
 from setuptools import setup
 from setuptools import find_packages
+from pathlib import Path
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
@@ -28,12 +29,29 @@ ubuntu_18_04_x86_64_bin = [
     for x in ["cbm.a", "core.a", "libcbm.so", "volume_to_biomass.a"]
 ]
 
+
+test_resources = [
+    os.path.join(resources_dir, "test", "cbm3_tutorial2", x)
+    for x in [
+        "age_classes.csv", "classifiers.csv", "disturbance_events.csv",
+        "disturbance_types.csv", "growth_and_yield.csv", "inventory.csv",
+        "sit_config.json", "transition_rules.csv"] 
+] + [
+    os.path.join(resources_dir, "test", "sit_rule_based_events", x)
+    for x in [
+        "sit_age_classes.csv", "sit_classifiers.csv", "sit_events.csv",
+        "sit_disturbance_types.csv", "sit_yield.csv", "sit_inventory.csv",
+        "sit_config.json", "sit_transition_rules.csv"]
+]
+       
+
+
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(
     name="libcbm",
-    version="0.2.0",
+    version="0.2.1",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
@@ -49,7 +67,7 @@ setup(
     package_data={
         "libcbm":
             cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin +
-            cbm_defaults_queries
+            cbm_defaults_queries + test_resources
     },
     install_requires=requirements
 )
