@@ -7,6 +7,7 @@ def merge_filters(*filters):
 
     Args:
         filters (iterable): a list of objects with properties:
+
             - expression (str): a boolean expression to filter the values
                 in local_dict. The variables are defined as the keys in
                 local_dict.
@@ -20,6 +21,7 @@ def merge_filters(*filters):
     Returns:
         object: the merge of the specified filters, with the same properties
             as the input objects
+
     """
     if not filters:
         return None
@@ -86,6 +88,7 @@ def evaluate_filter(filter_obj):
 
     Args:
         filter_obj (object): object with properties:
+
             - expression (str): a boolean expression to filter the values
                 in local_dict. The variables are defined as the keys in
                 local_dict.
@@ -94,6 +97,7 @@ def evaluate_filter(filter_obj):
 
     Returns:
         np.ndarray: filter result
+
     """
     if not filter_obj or not filter_obj.expression:
         return None
