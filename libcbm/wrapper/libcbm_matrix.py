@@ -38,7 +38,7 @@ class LibCBM_Matrix_Base(ctypes.Structure):
                     matrix.dtype
                 ))
         if not matrix.flags["C_CONTIGUOUS"]:
-            matrix = np.ascontiguousarray(matrix)
+            raise ValueError("specified matrix is not C_CONTIGUOUS")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(matrix_c_type))
 
 

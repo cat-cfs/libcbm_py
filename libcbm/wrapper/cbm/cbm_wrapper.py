@@ -206,16 +206,16 @@ class CBMWrapper(LibCBM_ctypes):
         # set by the user, ignore the spatial unit, which is used to set
         # default value for these 3 variables.
         return_interval = data_helpers.get_nullable_ndarray(
-            p.return_interval, type=ctypes.c_int)
+            p.return_interval, dtype=ctypes.c_int)
         min_rotations = data_helpers.get_nullable_ndarray(
-            p.min_rotations, type=ctypes.c_int)
+            p.min_rotations, dtype=ctypes.c_int)
         max_rotations = data_helpers.get_nullable_ndarray(
-            p.max_rotations, type=ctypes.c_int)
+            p.max_rotations, dtype=ctypes.c_int)
         spatial_unit = None
         if return_interval is None or min_rotations is None \
            or max_rotations is None:
             spatial_unit = data_helpers.get_nullable_ndarray(
-                i.spatial_unit, type=ctypes.c_int)
+                i.spatial_unit, dtype=ctypes.c_int)
 
         n_finished = self.handle.call(
             "LibCBM_AdvanceSpinupState", n, spatial_unit, return_interval,
@@ -289,13 +289,13 @@ class CBMWrapper(LibCBM_ctypes):
         v = data_helpers.unpack_ndarrays(state_variables)
 
         last_disturbance_type = data_helpers.get_nullable_ndarray(
-            v.last_disturbance_type, type=ctypes.c_int)
+            v.last_disturbance_type, dtype=ctypes.c_int)
         time_since_last_disturbance = data_helpers.get_nullable_ndarray(
-            v.time_since_last_disturbance, type=ctypes.c_int)
+            v.time_since_last_disturbance, dtype=ctypes.c_int)
         growth_multiplier = data_helpers.get_nullable_ndarray(
-            v.growth_multiplier, type=ctypes.c_double)
+            v.growth_multiplier, dtype=ctypes.c_double)
         growth_enabled = data_helpers.get_nullable_ndarray(
-            v.growth_enabled, type=ctypes.c_int)
+            v.growth_enabled, dtype=ctypes.c_int)
 
         self.handle.call(
             "LibCBM_GetMerchVolumeGrowthOps", opIds, n, classifiers_mat,
@@ -303,7 +303,7 @@ class CBMWrapper(LibCBM_ctypes):
             time_since_last_disturbance, growth_multiplier, growth_enabled)
 
     def get_turnover_ops(self, biomass_turnover_op, snag_turnover_op,
-                       inventory):
+                         inventory):
         """Computes biomass turnovers and dead organic matter turnovers as
         bulk matrix operations.
 
@@ -363,8 +363,7 @@ class CBMWrapper(LibCBM_ctypes):
         opIds = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op])
         spatial_unit = data_helpers.get_nullable_ndarray(
-            i.spatial_unit, ctypes.c_int)
-
+            i.spatial_unit, dtype=ctypes.c_int)
 
         mean_annual_temp = \
             data_helpers.get_nullable_ndarray(

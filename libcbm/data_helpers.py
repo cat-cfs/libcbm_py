@@ -63,15 +63,19 @@ def get_ndarray(a):
         return a
 
 
-def get_nullable_ndarray(a, type=ctypes.c_double):
+def get_nullable_ndarray(a, dtype=ctypes.c_double):
     """Helper method for wrapper parameters that can be specified either as
-    null pointers or pointers to numpy memory
+    null pointers or pointers to numpy memory.  Return a pointer to float64
+    or int32 memory for use with ctypes wrapped functions, or None if None
+    is specified.
 
     Args:
         a (numpy.ndarray, None): array to convert to pointer, if None is
             specified None is returned.
         type (object, optional): type supported by ctypes.POINTER. Defaults
-            to ctypes.c_double.
+            to ctypes.c_double.  Since libcbm only currently uses int32, or
+            float 64, the only valid values are those that equal
+            ctypes.c_double, or ctypes.c_int32
 
     Returns:
         None or ctypes.POINTER: if the specified argument is None, None is
@@ -81,8 +85,21 @@ def get_nullable_ndarray(a, type=ctypes.c_double):
     if a is None:
         return None
     else:
-        result = get_ndarray(a.astype(type)).ctypes.data_as(ctypes.POINTER(type))
-        return result
+        result = get_ndarray(a)
+        if dtype == ctypes.c_double:
+            if result.dtype != np.dtype("float64"):
+                raise ValueError(
+                    f"specified array is of type {result.dtype} "
+                    f"and cannot be converted to {dtype}.")
+        elif dtype == ctypes.c_int32:
+            if result.dtype != np.dtype("int32"):
+                raise ValueError(
+                    f"specified array is of type {result.dtype} "
+                    f"and cannot be converted to {dtype}.")
+        else:
+            raise ValueError(f"unsupported type {dtype}")
+        p_result = result.ctypes.data_as(ctypes.POINTER(dtype))
+        return p_result
 
 
 def promote_scalar(value, size, dtype):

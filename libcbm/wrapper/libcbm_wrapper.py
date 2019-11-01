@@ -166,7 +166,7 @@ class LibCBMWrapper():
 
         self.handle.call(
             "LibCBM_ComputePools", ops_p, n_ops, poolMat,
-            data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int))
+            data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int))
 
     def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
@@ -217,7 +217,7 @@ class LibCBMWrapper():
         op_process_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t))
-        enabled = data_helpers.get_nullable_ndarray(enabled, type=ctypes.c_int)
+        enabled = data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int)
 
         self.handle.call(
             "LibCBM_ComputeFlux", ops_p, op_process_p, n_ops, poolMat,
