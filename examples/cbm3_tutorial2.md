@@ -199,15 +199,3 @@ sit.sit_data.yield_table
 ```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
 ```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
