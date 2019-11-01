@@ -69,4 +69,4 @@ class SITIntegrationTest(unittest.TestCase):
             pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
             reporting_func=reporting_func)
         # there should be 2 rows, timestep 0 and timestep 1
-        self.assertTrue(results.pool_indicators.shape[0] == 2)
+        self.assertTrue(results.pools.shape[0] == 2)

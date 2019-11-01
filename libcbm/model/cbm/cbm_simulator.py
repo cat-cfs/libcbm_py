@@ -10,9 +10,9 @@ from libcbm.model.cbm import cbm_variables
 
 
 def create_in_memory_reporting_func(density=False):
-    """Create storage and a function for simulation results.  The function
-    return value can be passed to :py:func:`simulate` to track simultion
-    results.
+    """Create storage and a function for complete simulation results.  The
+    function return value can be passed to :py:func:`simulate` to track
+    simulation results.
 
     Args:
         density (bool, optional): if set to true pool and flux indicators will
@@ -25,33 +25,45 @@ def create_in_memory_reporting_func(density=False):
 
                 1. types.SimpleNameSpace: an object with properties:
 
-                    - pool_indicators a pandas.DataFrame for storing pools
-                    - flux_indicators a pandas.DataFrame for storing fluxes
-                    - state_indicators a pandas.DataFrame for storing state
+                    - pool (pandas.DataFrame) pool results storage
+                    - flux (pandas.DataFrame) flux results storage
+                    - state (pandas.DataFrame) state results storage
+                    - classifiers (pandas.DataFrame) classifiers results
+                        storage
+                    - params (pandas.DataFrame) cbm params storage
+                    - inventory (pandas.DataFrame) inventory storage
 
                 2. func: a function for appending to the above results
-                    DataFrames
+                    DataFrames for each timestep
     """
 
     results = SimpleNamespace()
-    results.pool_indicators = None
-    results.flux_indicators = None
-    results.state_indicators = None
+    results.pools = None
+    results.flux = None
+    results.state = None
+    results.classifiers = None
+    results.params = None
+    results.inventory = None
 
     def append_simulation_result(timestep, cbm_vars):
         timestep_pools = cbm_vars.pools if density else \
             cbm_vars.pools.multiply(cbm_vars.inventory.area, axis=0)
-        results.pool_indicators = data_helpers.append_simulation_result(
-            results.pool_indicators, timestep_pools, timestep)
+        results.pools = data_helpers.append_simulation_result(
+            results.pools, timestep_pools, timestep)
         if timestep > 0:
             timestep_flux = cbm_vars.flux_indicators \
                 if density else cbm_vars.flux_indicators.multiply(
                     cbm_vars.inventory.area, axis=0)
-            results.flux_indicators = data_helpers.append_simulation_result(
-                results.flux_indicators, timestep_flux, timestep)
-        results.state_indicators = data_helpers.append_simulation_result(
-            results.state_indicators, cbm_vars.state, timestep)
-
+            results.flux = data_helpers.append_simulation_result(
+                results.flux, timestep_flux, timestep)
+        results.state = data_helpers.append_simulation_result(
+            results.state, cbm_vars.state, timestep)
+        results.classifiers = data_helpers.append_simulation_result(
+            results.classifiers, cbm_vars.classifiers, timestep)
+        results.inventory = data_helpers.append_simulation_result(
+            results.inventory, cbm_vars.inventory, timestep)
+        results.params = data_helpers.append_simulation_result(
+            results.params, cbm_vars.params, timestep)
     return results, append_simulation_result
 
 

@@ -44,8 +44,6 @@ test_resources = [
         "sit_config.json", "sit_transition_rules.csv"]
 ]
 
-
-
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
