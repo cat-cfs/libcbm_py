@@ -1,9 +1,16 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+"""
+
 from types import SimpleNamespace
 from libcbm.input.sit import sit_classifier_parser
 
 
 class ClassifierFilter():
-    """Creates a classifier filter
+    """ClassifierFilter creates a filter for deeming stands
+    eligible or ineligible for disturbance or transition.
     """
     def __init__(self, classifiers_config, classifier_aggregates):
         self.wildcard_keyword = sit_classifier_parser.get_wildcard_keyword()

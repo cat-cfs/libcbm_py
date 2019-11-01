@@ -1,4 +1,8 @@
-
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+"""
 
 class LibCBM_SpinupState:
     """Wrapper for low level enum of the same name defined in LibCBM C/C++ code

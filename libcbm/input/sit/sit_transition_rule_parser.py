@@ -1,9 +1,16 @@
+"""
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+"""
+
 import numpy as np
 from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_classifier_parser
 
 GROUPED_PERCENT_ERR_MAX = 0.00001
+
 
 def parse(transition_rules, classifiers, classifier_values,
           classifier_aggregates, disturbance_types, age_classes):
@@ -117,7 +124,8 @@ def parse(transition_rules, classifiers, classifier_values,
     group_cols = list(classifiers.name) + \
         ["min_age", "max_age", "disturbance_type"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
-    invalid_grouped = grouped[grouped.percent > 100 + GROUPED_PERCENT_ERR_MAX]
+    invalid_grouped = grouped[
+        grouped.percent > (100 + GROUPED_PERCENT_ERR_MAX)]
     if len(invalid_grouped) > 0:
         invalid_percents = [x.Index for x in grouped.head().itertuples()]
         raise ValueError(
