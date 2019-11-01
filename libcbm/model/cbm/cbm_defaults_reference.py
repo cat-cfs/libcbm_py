@@ -6,7 +6,7 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
 import sqlite3
-import libcbm.model.cbm.cbm_defaults_queries as queries
+import libcbm.resources.cbm_defaults_queries as queries
 
 
 class CBMDefaultsReference:

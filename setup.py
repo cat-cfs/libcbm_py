@@ -14,7 +14,7 @@ cbm_defaults_db = [
     for x in ["cbm_defaults_2018.db", "cbm_defaults_2019.db"]]
 
 cbm_defaults_queries = [
-    os.path.join("model", "cbm", "cbm_defaults_queries", "*.sql")
+    os.path.join("resources", "cbm_defaults_queries", "*.sql")
 ]
 
 win_x86_64_bin = [
@@ -35,7 +35,7 @@ test_resources = [
     for x in [
         "age_classes.csv", "classifiers.csv", "disturbance_events.csv",
         "disturbance_types.csv", "growth_and_yield.csv", "inventory.csv",
-        "sit_config.json", "transition_rules.csv"] 
+        "sit_config.json", "transition_rules.csv"]
 ] + [
     os.path.join(resources_dir, "test", "sit_rule_based_events", x)
     for x in [
@@ -43,7 +43,7 @@ test_resources = [
         "sit_disturbance_types.csv", "sit_yield.csv", "sit_inventory.csv",
         "sit_config.json", "sit_transition_rules.csv"]
 ]
-       
+
 
 
 with open('requirements.txt') as f:

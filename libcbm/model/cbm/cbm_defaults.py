@@ -7,7 +7,7 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import os
 import pandas as pd
 import sqlite3
-from libcbm.model.cbm import cbm_defaults_queries
+from libcbm.resources import cbm_defaults_queries
 
 
 def load_cbm_parameters(sqlite_path):
