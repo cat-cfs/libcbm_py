@@ -277,6 +277,27 @@ def initialize_classifiers(classifiers):
         data=classifiers.to_numpy(dtype=np.int32),
         columns=list(classifiers))
 
+def _make_contiguous(df):
+    if not df.values.flags["C_CONTIGUOUS"]:
+        return pd.DataFrame(
+            columns=df.columns.tolist(),
+            data=np.ascontiguousarray(df))
+    return df
+
+def prepare(cbm_vars):
+    """prepares, validates the specified cbm_vars object for use with low
+    level functions
+    
+    Args:
+        cbm_vars (object): the cbm variables to validate and prepare
+    """
+    
+    for field in ["pools", "flux_indicators", "classifiers"]:
+        if field in cbm_vars.__dict__:
+            cbm_vars.__dict__[field] = \
+                _make_contiguous(cbm_vars.__dict__[field])
+    
+    return cbm_vars
 
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
                                     flux_indicator_codes):
