@@ -286,17 +286,22 @@ class RuleTargetTest(unittest.TestCase):
             self.assertTrue(op_processes == [
                 cbm_model.get_op_processes()["disturbance"]])
             self.assertTrue(ops == [999])
-            self.assertTrue(pools.equals(mock_pools))
+            self.assertTrue((pools == mock_pools.values).all())
             self.assertTrue(list(enabled) == list(mock_eligible))
             flux[:] = 1
         compute_functions.compute_flux = mock_compute_flux
 
         def mock_free_op(op):
             self.assertTrue(op == 999)
+        
+        mock_cbm_vars = SimpleNamespace(
+            pools=mock_pools,
+            flux_indicators=mock_flux,
+            inventory=mock_inventory)
         compute_functions.free_op = mock_free_op
         result = rule_target.compute_disturbance_production(
-            model_functions, compute_functions, mock_pools, mock_inventory,
-            mock_disturbance_type, mock_flux, mock_eligible)
+            model_functions, compute_functions, mock_cbm_vars,
+            mock_disturbance_type, mock_eligible)
         for flux_code in flux_indicator_codes:
             self.assertTrue(list(result[flux_code]) == [1, 1, 1])
         self.assertTrue(list(result["Total"]) == [3, 3, 3])

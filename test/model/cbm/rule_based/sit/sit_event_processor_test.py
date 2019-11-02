@@ -126,12 +126,6 @@ class SITEventProcessorTest(unittest.TestCase):
 
             mock_event_processor.process_event.side_effect = mock_process_event
 
-            # mock cbm defaults reference
-            mock_cbm_defaults_ref = Mock()
-            mock_cbm_defaults_ref.get_flux_indicators = Mock()
-            mock_cbm_defaults_ref.get_flux_indicators.side_effect = \
-                lambda: ["a", "b", "c"]
-
             # mock classifier filter
             mock_classifier_filter_builder = Mock()
             mock_classifier_filter_builder.create_classifiers_filter = Mock()
@@ -162,7 +156,6 @@ class SITEventProcessorTest(unittest.TestCase):
             sit_event_processor = SITEventProcessor(
                 model_functions=mock_model_functions,
                 compute_functions=mock_compute_functions,
-                cbm_defaults_ref=mock_cbm_defaults_ref,
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator,
                 on_unrealized_event=mock_on_unrealized_event)

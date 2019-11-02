@@ -62,11 +62,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 2)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         get_test_function(
@@ -94,11 +93,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 4000)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         # tests that the + operator is used for the correct production fields
@@ -131,11 +129,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 100)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         # tests that the + operator is used for the correct production fields
@@ -290,11 +287,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 90)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         get_test_function(
@@ -324,11 +320,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 99)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         get_test_function(
@@ -359,11 +354,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars,  disturbance_type_id):
             self.assertTrue(disturbance_type_id == 45)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         # tests that the + operator is used for the correct production fields
@@ -399,11 +393,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 73)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools == "pools")
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
         # tests that the + operator is used for the correct production fields
@@ -445,11 +438,10 @@ class SITStandTargetTest(unittest.TestCase):
             DisturbanceHardProduction=[1, 1, 1, 1],
             DisturbanceDOMProduction=[1, 1, 1, 1])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 43)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(list(pools.a) == [12, 3, 4, 5])
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(list(cbm_vars.pools.a) == [12, 3, 4, 5])
             return mock_production
 
         get_test_function(
@@ -477,12 +469,11 @@ class SITStandTargetTest(unittest.TestCase):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 15)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
-            self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools.SoftwoodStemSnag == [1, 2, 3])
+            self.assertTrue(cbm_vars.pools.HardwoodStemSnag == [1, 2, 3])
             return mock_production
 
         mock_pools = SimpleNamespace(
@@ -517,11 +508,10 @@ class SITStandTargetTest(unittest.TestCase):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 57)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools.SoftwoodStemSnag == [1, 2, 3])
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools.SoftwoodStemSnag == [1, 2, 3])
             return mock_production
 
         mock_pools = SimpleNamespace(
@@ -552,11 +542,10 @@ class SITStandTargetTest(unittest.TestCase):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
-        def mock_disturbance_production_func(pools, inventory,
-                                             disturbance_type_id):
+        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 9)
-            self.assertTrue(inventory == "inventory")
-            self.assertTrue(pools.HardwoodStemSnag == [1, 2, 3])
+            self.assertTrue(cbm_vars.inventory == "inventory")
+            self.assertTrue(cbm_vars.pools.HardwoodStemSnag == [1, 2, 3])
             return mock_production
 
         mock_pools = SimpleNamespace(

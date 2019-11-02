@@ -159,7 +159,6 @@ def get_events_pre_dynamics_func(sit, on_unrealized, parameters_factory=None,
     processor = sit_event_processor.SITEventProcessor(
         model_functions=cbm.model_functions,
         compute_functions=cbm.compute_functions,
-        cbm_defaults_ref=sit.defaults,
         classifier_filter_builder=classifier_filter,
         random_generator=random_func,
         on_unrealized_event=on_unrealized)
