@@ -7,7 +7,7 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_model
-
+from libcbm.model.cbm import cbm_variables
 
 def spatially_indexed_target(identifier, inventory):
     """return a target for a single inventory record identified by the
@@ -248,20 +248,17 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
     return result
 
 
-def compute_disturbance_production(model_functions, compute_functions, pools,
-                                   inventory, disturbance_type,
-                                   flux, eligible):
+def compute_disturbance_production(model_functions, compute_functions,
+                                   cbm_vars, disturbance_type, eligible):
     """Computes a series of disturbance production values based on
 
     Args:
         model_functions (object): Model specific functions. Used for computing
             disturbance flows based on the specified disturbance type.
         compute_functions (object): Functions for computing pool flows.
-        pools (pandas.DataFrame): The current pool values.
-        inventory (pandas.DataFrame): The inventory DataFrame.
+        cbm_vars (object): object containing current simulation state
         disturbance_type (int): The integer code specifying the disturbance
             type.
-        flux (pandas.DataFrame): Storage for flux computation
         eligible (numpy.ndarray): Bit values where True specifies the index is
             eligible for the disturbance, and false the opposite. In the
             returned result False indices will be set with 0's.
@@ -287,7 +284,7 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
     # The number of stands is the number of rows in the inventory table.
     # The set of inventory here is assumed to be the eligible for disturbance
     # filtered subset of records
-    n_stands = inventory.shape[0]
+    n_stands = cbm_vars.inventory.shape[0]
 
     # allocate space for computing the Carbon flows
     disturbance_op = compute_functions.allocate_op(n_stands)
@@ -297,25 +294,30 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
         "disturbance_type":
             np.ones(n_stands, dtype=np.int32) * disturbance_type})
     model_functions.get_disturbance_ops(
-        disturbance_op, inventory, disturbance_type)
+        disturbance_op, cbm_vars.inventory, disturbance_type)
 
-    # copy the pools data and make contiguous
-    pools_copy = pd.DataFrame(
-        columns=pools.columns.tolist(),
-        data=np.ascontiguousarray(pools))
+    # zero the flux indicators
+    cbm_vars.flux_indicators.values[:] = 0
+
+    cbm_vars = cbm_variables.prepare(cbm_vars)
 
     # compute the flux based on the specified disturbance type
     compute_functions.compute_flux(
         [disturbance_op], [disturbance_op_process_id],
-        pools_copy, flux, enabled=eligible.astype(np.int32))
+        cbm_vars.pools.to_numpy(copy=True), cbm_vars.flux_indicators,
+        enabled=eligible.astype(np.int32))
+
     compute_functions.free_op(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
     return pd.DataFrame(data={
-        "DisturbanceSoftProduction": flux["DisturbanceSoftProduction"],
-        "DisturbanceHardProduction": flux["DisturbanceHardProduction"],
-        "DisturbanceDOMProduction": flux["DisturbanceDOMProduction"],
+        "DisturbanceSoftProduction":
+            cbm_vars.flux_indicators["DisturbanceSoftProduction"],
+        "DisturbanceHardProduction":
+            cbm_vars.flux_indicators["DisturbanceHardProduction"],
+        "DisturbanceDOMProduction":
+            cbm_vars.flux_indicators["DisturbanceDOMProduction"],
         "Total":
-            flux["DisturbanceSoftProduction"] +
-            flux["DisturbanceHardProduction"] +
-            flux["DisturbanceDOMProduction"]})
+            cbm_vars.flux_indicators["DisturbanceSoftProduction"] +
+            cbm_vars.flux_indicators["DisturbanceHardProduction"] +
+            cbm_vars.flux_indicators["DisturbanceDOMProduction"]})

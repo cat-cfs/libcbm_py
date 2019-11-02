@@ -91,7 +91,7 @@ def create_sit_event_target(rule_target, sit_event_row,
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
     if _is_production_based(sit_event_row):
         production = disturbance_production_func(
-            cbm_vars.pools, cbm_vars.inventory,
+            cbm_vars,
             sit_event_row["disturbance_type_id"])
     rule_target_result = None
     if target_type == area_target_type and sort not in non_sorted:

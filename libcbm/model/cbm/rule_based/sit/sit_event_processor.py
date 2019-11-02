@@ -57,35 +57,28 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 
 class SITEventProcessor():
 
-    def __init__(self, model_functions,
-                 compute_functions, cbm_defaults_ref,
+    def __init__(self, model_functions, compute_functions,
                  classifier_filter_builder, random_generator,
                  on_unrealized_event):
 
         self.model_functions = model_functions
         self.compute_functions = compute_functions
-
         self.classifier_filter_builder = classifier_filter_builder
-        self.cbm_defaults_ref = cbm_defaults_ref
         self.random_generator = random_generator
-
         self.on_unrealized_event = on_unrealized_event
 
     def _get_compute_disturbance_production(self, model_functions,
                                             compute_functions,
-                                            eligible, flux_codes):
+                                            eligible):
 
-        def compute_disturbance_production(pools, inventory,
+        def compute_disturbance_production(cbm_vars,
                                            disturbance_type_id):
 
             return rule_target.compute_disturbance_production(
                 model_functions=model_functions,
                 compute_functions=compute_functions,
-                pools=pools,
-                inventory=inventory,
+                cbm_vars=cbm_vars,
                 disturbance_type=disturbance_type_id,
-                flux=cbm_variables.initialize_flux(
-                    inventory.shape[0], flux_codes),
                 eligible=eligible)
 
         return compute_disturbance_production
@@ -96,8 +89,7 @@ class SITEventProcessor():
             self._get_compute_disturbance_production(
                 model_functions=self.model_functions,
                 compute_functions=self.compute_functions,
-                eligible=eligible,
-                flux_codes=self.cbm_defaults_ref.get_flux_indicators())
+                eligible=eligible)
 
         # helper to indicate unrealized events to class user
         def on_unrealized(shortfall):
