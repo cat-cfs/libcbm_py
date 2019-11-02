@@ -86,6 +86,8 @@ def get_nullable_ndarray(a, dtype=ctypes.c_double):
         return None
     else:
         result = get_ndarray(a)
+        if not result.flags["C_CONTIGUOUS"]:
+            raise ValueError("specified array is not C_CONTIGUOUS")
         if dtype == ctypes.c_double:
             if result.dtype != np.dtype("float64"):
                 raise ValueError(
