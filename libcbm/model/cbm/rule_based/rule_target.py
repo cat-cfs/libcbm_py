@@ -299,10 +299,15 @@ def compute_disturbance_production(model_functions, compute_functions, pools,
     model_functions.get_disturbance_ops(
         disturbance_op, inventory, disturbance_type)
 
+    # copy the pools data and make contiguous
+    pools_copy = pd.DataFrame(
+        columns=pools.columns.tolist(),
+        data=np.ascontiguousarray(pools))
+
     # compute the flux based on the specified disturbance type
     compute_functions.compute_flux(
         [disturbance_op], [disturbance_op_process_id],
-        pools.copy(), flux, enabled=eligible)
+        pools_copy, flux, enabled=eligible.astype(np.int32))
     compute_functions.free_op(disturbance_op)
     # computes C harvested by applying the disturbance matrix to the specified
     # carbon pools
