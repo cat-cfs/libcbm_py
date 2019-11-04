@@ -12,8 +12,6 @@ from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
-from libcbm.model.cbm import cbm_variables
-
 
 def get_pre_dynamics_func(sit_event_processor, sit_events):
     """Gets a function for applying SIT rule based events in a CBM

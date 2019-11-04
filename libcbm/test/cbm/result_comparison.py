@@ -84,7 +84,8 @@ def merge_result(cbm3_result, libcbm_result, value_cols):
 
 
 def diff_result(merged):
-    """Produce a diff table for a merge of CBM-CFS3 values versus LibCBM values.
+    """Produce a diff table for a merge of CBM-CFS3 values versus LibCBM
+    values.
 
     Args:
         merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
@@ -102,9 +103,9 @@ def diff_result(merged):
     value_cols = [x for x in all_col if x.endswith("_cbm3")]
     value_cols = [x[:-(len("_cbm3"))] for x in value_cols]
     for flux in value_cols:
-        l = f"{flux}{get_libcbm_result_suffix()}"
-        r = f"{flux}{get_cbm3_result_suffix()}"
-        diffs[flux] = (merged[l] - merged[r])
+        left = f"{flux}{get_libcbm_result_suffix()}"
+        right = f"{flux}{get_cbm3_result_suffix()}"
+        diffs[flux] = (merged[left] - merged[right])
         diffs["abs_total_diff"] += diffs[flux].abs()
     return diffs
 

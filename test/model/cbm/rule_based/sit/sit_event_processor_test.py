@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import patch
 from unittest.mock import DEFAULT
+from types import SimpleNamespace
 import pandas as pd
 from mock import Mock
-from types import SimpleNamespace
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
     import SITEventProcessor
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
@@ -18,32 +18,27 @@ class SITEventProcessorTest(unittest.TestCase):
     def test_get_pre_dynamics_func(self):
         """tests get_pre_dynamics_func and also calls the function returned
         """
-        with patch(PATCH_PATH + ".cbm_variables") as cbm_variables:
 
-            time_step = 10
+        time_step = 10
 
-            cbm_variables.initialize_flux = Mock()
-            cbm_variables.initialize_flux.side_effect = \
-                lambda **kwargs: "mock_flux_result"
+        mock_cbm_vars = "mock_cbm_vars"
 
-            mock_cbm_vars = "mock_cbm_vars"
+        mock_sit_event_processor = Mock()
+        mock_sit_event_processor.process_events = Mock()
+        mock_sit_event_processor.process_events.side_effect = \
+            lambda time_step, sit_events, cbm_vars: cbm_vars
 
-            mock_sit_event_processor = Mock()
-            mock_sit_event_processor.process_events = Mock()
-            mock_sit_event_processor.process_events.side_effect = \
-                lambda time_step, sit_events, cbm_vars: cbm_vars
+        mock_sit_events = "mock_events"
+        pre_dynamics_func = get_pre_dynamics_func(
+            mock_sit_event_processor, mock_sit_events)
+        cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars)
 
-            mock_sit_events = "mock_events"
-            pre_dynamics_func = get_pre_dynamics_func(
-                mock_sit_event_processor, mock_sit_events)
-            cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars)
+        mock_sit_event_processor.process_events.assert_called_with(
+            time_step=time_step,
+            sit_events=mock_sit_events,
+            cbm_vars=mock_cbm_vars)
 
-            mock_sit_event_processor.process_events.assert_called_with(
-                time_step=time_step,
-                sit_events=mock_sit_events,
-                cbm_vars=mock_cbm_vars)
-
-            self.assertTrue(cbm_vars_result =="mock_cbm_vars")
+        self.assertTrue(cbm_vars_result == "mock_cbm_vars")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
@@ -57,8 +52,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 rule_filter=DEFAULT,
                 rule_target=DEFAULT,
                 sit_stand_filter=DEFAULT,
-                sit_stand_target=DEFAULT,
-                cbm_variables=DEFAULT) as mocks:
+                sit_stand_target=DEFAULT) as mocks:
 
             mock_sit_events = pd.DataFrame(
                 data={

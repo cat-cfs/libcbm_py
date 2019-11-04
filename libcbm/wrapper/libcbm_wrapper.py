@@ -19,12 +19,12 @@ class LibCBMWrapper():
     def __init__(self, handle):
         self.handle = handle
 
-    def allocate_op(self, n):
+    def allocate_op(self, size):
         """Allocates storage for matrices, returning an id for the
         allocated block.
 
         Args:
-            n (int): The number of elements in the allocated matrix block
+            size (int): The number of elements in the allocated matrix block
                 index, which corresponds to the number of stands that can
                 be processed with this matrix block
 
@@ -37,11 +37,12 @@ class LibCBMWrapper():
         Returns:
             int: the id for an allocated block of matrices
         """
-        op_id = self.handle.call("LibCBM_Allocate_Op", n)
+        op_id = self.handle.call("LibCBM_Allocate_Op", size)
         return op_id
 
     def free_op(self, op_id):
-        """Deallocates a matrix block that was allocated by the allocate_op method.
+        """Deallocates a matrix block that was allocated by the allocate_op
+        method.
 
         Args:
             op_id (int): The id for an allocated block of matrices.
@@ -106,8 +107,8 @@ class LibCBMWrapper():
                  2           0
             ===========  ============
 
-            related functions: :py:func:`allocate_op`, :py:func:`compute_pools`,
-                :py:func:`compute_flux`
+            related functions: :py:func:`allocate_op`,
+                :py:func:`compute_pools`, :py:func:`compute_flux`
 
         Args:
             op_id (int): The id for an allocated block of matrices
@@ -121,8 +122,8 @@ class LibCBMWrapper():
 
         """
         matrices_array = (LibCBM_Matrix * len(matrices))()
-        for i, x in enumerate(matrices):
-            matrices_array[i] = LibCBM_Matrix(x)
+        for i_matrix, matrix in enumerate(matrices):
+            matrices_array[i_matrix] = LibCBM_Matrix(matrix)
         matrices_p = ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
         self.handle.call(
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
@@ -159,13 +160,13 @@ class LibCBMWrapper():
 
         """
         n_ops = len(ops)
-        p = data_helpers.get_ndarray(pools)
-        poolMat = LibCBM_Matrix(p)
+        nd_pools = data_helpers.get_ndarray(pools)
+        pool_mat = LibCBM_Matrix(nd_pools)
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
 
         self.handle.call(
-            "LibCBM_ComputePools", ops_p, n_ops, poolMat,
+            "LibCBM_ComputePools", ops_p, n_ops, pool_mat,
             data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int))
 
     def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
@@ -206,19 +207,20 @@ class LibCBMWrapper():
         n_ops = len(ops)
         if len(op_processes) != n_ops:
             raise ValueError("ops and op_processes must be of equal length")
-        p = data_helpers.get_ndarray(pools)
-        poolMat = LibCBM_Matrix(p)
+        nd_pools = data_helpers.get_ndarray(pools)
+        pools_mat = LibCBM_Matrix(nd_pools)
 
-        f = data_helpers.get_ndarray(flux)
-        fluxMat = LibCBM_Matrix(f)
+        nd_flux = data_helpers.get_ndarray(flux)
+        flux_mat = LibCBM_Matrix(nd_flux)
 
         ops_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
         op_process_p = ctypes.cast(
             (ctypes.c_size_t*n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t))
-        enabled = data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int)
+        enabled = data_helpers.get_nullable_ndarray(
+            enabled, dtype=ctypes.c_int)
 
         self.handle.call(
-            "LibCBM_ComputeFlux", ops_p, op_process_p, n_ops, poolMat,
-            fluxMat, enabled)
+            "LibCBM_ComputeFlux", ops_p, op_process_p, n_ops, pools_mat,
+            flux_mat, enabled)

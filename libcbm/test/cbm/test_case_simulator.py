@@ -2,13 +2,12 @@
 This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at https://mozilla.org/MPL/2.0/.
-"""
 
-"""This module contains functions for running LibCBM test cases as generated
+This module contains functions for running LibCBM test cases as generated
 by libcbm.test.casegeneration.  This is used for side-by-side comparison of
 simulations which can be run on the same test case format in CBM-CFS3 using
-libcbm.test.cbm3_support.cbm3_simulator"""
-
+libcbm.test.cbm3_support.cbm3_simulator
+"""
 import numpy as np
 import pandas as pd
 
@@ -73,11 +72,11 @@ def get_test_case_merch_volume_factory(cases, db_path, cbm_defaults_ref):
             dict: merch volume config
         """
         curves = []
-        for c in cases:
+        for case in cases:
             classifier_set = [
-                case_generation.get_classifier_value_name(c["id"])]
+                case_generation.get_classifier_value_name(case["id"])]
             merch_volumes = []
-            for component in c["components"]:
+            for component in case["components"]:
                 merch_volumes.append({
                     "species_id": cbm_defaults_ref.get_species_id(
                         component["species"]),
@@ -138,19 +137,20 @@ def get_disturbances(cases, ref):
                 }
     """
     disturbances = {}
-    for i_c, c in enumerate(cases):
-        for e in c["events"]:
-            time_step = e["time_step"]
-            dist_type_id = ref.get_disturbance_type_id(e["disturbance_type"])
-            if i_c in disturbances:
-                if time_step in disturbances[i_c]:
+    for i_case, case in enumerate(cases):
+        for _event in case["events"]:
+            time_step = _event["time_step"]
+            dist_type_id = ref.get_disturbance_type_id(
+                _event["disturbance_type"])
+            if i_case in disturbances:
+                if time_step in disturbances[i_case]:
                     raise ValueError(
                         "more than one event found for index {0}, timestep {1}"
-                        .format(i_c, time_step))
+                        .format(i_case, time_step))
                 else:
-                    disturbances[i_c][time_step] = dist_type_id
+                    disturbances[i_case][time_step] = dist_type_id
             else:
-                disturbances[i_c] = {time_step: dist_type_id}
+                disturbances[i_case] = {time_step: dist_type_id}
     return disturbances
 
 
@@ -172,8 +172,9 @@ def get_classifier_value_lookup(cases, classifier_name):
         cases, classifier_name)()
 
     classifier_value_lookup = {}
-    for cv in classifiers_config["classifier_values"]:
-        classifier_value_lookup[cv["value"]] = cv["id"]
+    for classifier_value in classifiers_config["classifier_values"]:
+        classifier_value_lookup[classifier_value["value"]] = \
+            classifier_value["id"]
     return classifier_value_lookup
 
 
@@ -215,10 +216,11 @@ def initialize_inventory(cases, classifier_name, ref):
         dtype=np.int32)
 
     afforestation_pre_type_ids = []
-    for c in cases:
-        if not c["afforestation_pre_type"] is None:
+    for case in cases:
+        if not case["afforestation_pre_type"] is None:
             afforestation_pre_type_ids.append(
-                ref.get_afforestation_pre_type_id(c["afforestation_pre_type"]))
+                ref.get_afforestation_pre_type_id(
+                    case["afforestation_pre_type"]))
         else:
             afforestation_pre_type_ids.append(0)
 
@@ -341,26 +343,26 @@ def run_test_cases(cases, n_steps, db_path=None, dll_path=None,
     disturbances = get_disturbances(cases, ref)
 
     # run CBM for n_steps
-    for t in range(1, n_steps+1):
+    for time_step in range(1, n_steps+1):
 
         # clear the disturbance events for this timestep
         cbm_params.disturbance_type[:] = 0
 
         # fetch the disturbance events for each index for this timestep
-        for k, v in disturbances.items():
-            if t in v:
-                cbm_params.disturbance_type[k] = v[t]
+        for key, value in disturbances.items():
+            if time_step in value:
+                cbm_params.disturbance_type[key] = value[time_step]
 
         cbm.step(
             classifiers=classifiers, inventory=inventory, pools=pools,
             flux=flux, state_variables=cbm_state, parameters=cbm_params)
 
         pool_result = data_helpers.append_simulation_result(
-            pool_result, pools.multiply(inventory.area, axis=0), t)
+            pool_result, pools.multiply(inventory.area, axis=0), time_step)
         flux_result = data_helpers.append_simulation_result(
-            flux_result, flux.multiply(inventory.area, axis=0), t)
+            flux_result, flux.multiply(inventory.area, axis=0), time_step)
         state_variable_result = data_helpers.append_simulation_result(
-            state_variable_result, cbm_state, t)
+            state_variable_result, cbm_state, time_step)
 
     return {
         "pools": pool_result,

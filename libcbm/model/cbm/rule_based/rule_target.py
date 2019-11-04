@@ -9,6 +9,7 @@ import numpy as np
 from libcbm.model.cbm import cbm_model
 from libcbm.model.cbm import cbm_variables
 
+
 def spatially_indexed_target(identifier, inventory):
     """return a target for a single inventory record identified by the
     specified identifier
