@@ -125,7 +125,8 @@ class SITClassifierParserTest(unittest.TestCase):
             sit_classifier_parser.parse(sit_classifiers_table)
 
         self.assertTrue(list(classifiers.id) == [1, 2])
-        self.assertTrue(list(classifiers.name) == ["classifier1", "classifier2"])
+        self.assertTrue(
+            list(classifiers.name) == ["classifier1", "classifier2"])
 
         self.assertTrue(list(classifier_values.classifier_id) == [1, 1, 2])
         self.assertTrue(list(classifier_values.name) == ["a", "b", "a"])
@@ -153,7 +154,6 @@ class SITClassifierParserTest(unittest.TestCase):
                 'description': 'agg1',
                 'classifier_values': ['a']})
 
-
     def test_expected_result_with_numeric_values(self):
         """checks that numeric values are converted to strings
         """
@@ -169,7 +169,7 @@ class SITClassifierParserTest(unittest.TestCase):
                 (2, 5, "a", np.nan, np.nan),
                 (2, 6, "agg1", "5", np.nan)])
 
-        classifiers, classifier_values, classifier_aggregates = \
+        classifiers, _, _ = \
             sit_classifier_parser.parse(sit_classifiers_table)
 
         self.assertTrue(list(classifiers.id) == [1, 2])

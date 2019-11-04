@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
+
 def get_mock_classifiers_config():
     return {
             "classifiers": [

@@ -59,7 +59,8 @@ class SITParserTest(unittest.TestCase):
             sit_parser.unpack_table(
                 table=pd.DataFrame([(-1,)]),
                 column_descriptions=[
-                    {"index": 0, "name": "col0", "type": np.int, "min_value": 0}],
+                    {"index": 0, "name": "col0", "type": np.int,
+                     "min_value": 0}],
                 table_name="")
 
     def test_unpack_column_raises_on_max_value_violation(self):
@@ -69,7 +70,8 @@ class SITParserTest(unittest.TestCase):
             sit_parser.unpack_table(
                 table=pd.DataFrame([(1,)]),
                 column_descriptions=[
-                    {"index": 0, "name": "col0", "type": np.int, "max_value": 0}],
+                    {"index": 0, "name": "col0", "type": np.int,
+                     "max_value": 0}],
                 table_name="")
 
     def test_parse_bool_func(self):

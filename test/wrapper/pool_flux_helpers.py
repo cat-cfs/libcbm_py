@@ -93,8 +93,9 @@ def compute_pools(pools, ops, op_indices):
         # The set op function accepts a matrix of coordinate triples.
         # In LibCBM matrices are stored in a sparse format, so 0 values can be
         # omitted from the parameter.
-        dll.set_op(op_id, [to_coordinate(x) for x in op],
-                  np.ascontiguousarray(op_indices[:, i]))
+        dll.set_op(
+            op_id, [to_coordinate(x) for x in op],
+            np.ascontiguousarray(op_indices[:, i]))
 
     dll.compute_pools(op_ids, pools)
 

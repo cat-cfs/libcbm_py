@@ -5,6 +5,7 @@ import numpy as np
 from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm import cbm_model
 
+
 class RuleTargetTest(unittest.TestCase):
 
     def test_sorted_disturbance_target_error_on_less_than_zero_target(self):
@@ -272,7 +273,9 @@ class RuleTargetTest(unittest.TestCase):
         def mock_get_disturbance_ops(op, inventory, disturbance_type):
             self.assertTrue(op == 999)
             self.assertTrue(inventory.equals(mock_inventory))
-            self.assertTrue((disturbance_type == mock_disturbance_type).all()[0])
+            self.assertTrue(
+                (disturbance_type == mock_disturbance_type).all()[0])
+
         model_functions.get_disturbance_ops = mock_get_disturbance_ops
 
         compute_functions = SimpleNamespace()
@@ -293,7 +296,7 @@ class RuleTargetTest(unittest.TestCase):
 
         def mock_free_op(op):
             self.assertTrue(op == 999)
-        
+
         mock_cbm_vars = SimpleNamespace(
             pools=mock_pools,
             flux_indicators=mock_flux,

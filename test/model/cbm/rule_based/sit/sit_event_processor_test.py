@@ -155,9 +155,9 @@ class SITEventProcessorTest(unittest.TestCase):
                 on_unrealized_event=mock_on_unrealized_event)
 
             cbm_vars_result = sit_event_processor.process_events(
-                    time_step=1,  # there are 2 mock events with t = 1
-                    sit_events=mock_sit_events,
-                    cbm_vars=mock_cbm_vars)
+                time_step=1,  # there are 2 mock events with t = 1
+                sit_events=mock_sit_events,
+                cbm_vars=mock_cbm_vars)
 
             # all effects to these dataframes are mocked, so they should be
             # equal to the originals

@@ -85,7 +85,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                 "max_age": 10,
                 "disturbance_type_id": 1})
         self.assertTrue(
-            list_result[0][1].equals(mock_sit_transitions.iloc[[0,1]])
+            list_result[0][1].equals(mock_sit_transitions.iloc[[0, 1]])
         )
 
         self.assertTrue(
@@ -96,7 +96,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                 "max_age": 100,
                 "disturbance_type_id": 2})
         self.assertTrue(
-            list_result[1][1].equals(mock_sit_transitions.iloc[[2,3]])
+            list_result[1][1].equals(mock_sit_transitions.iloc[[2, 3]])
         )
 
         self.assertTrue(

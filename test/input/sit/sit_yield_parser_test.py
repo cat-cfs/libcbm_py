@@ -31,7 +31,6 @@ class SITYieldParserTest(unittest.TestCase):
             columns=["name", "class_size", "start_year", "end_year"]
         )
 
-           
     def test_expected_result_with_numeric_classifiers(self):
         """Checks that numeric classifiers that appear in yield data
         are parsed as strings

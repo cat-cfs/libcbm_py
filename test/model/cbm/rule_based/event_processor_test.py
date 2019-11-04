@@ -1,9 +1,10 @@
 import unittest
-import numpy as np
-import pandas as pd
-from mock import Mock
 from unittest.mock import patch
 from types import SimpleNamespace
+from mock import Mock
+import numpy as np
+import pandas as pd
+
 from libcbm.model.cbm.rule_based import event_processor
 
 # used in patching (overriding) module imports in the module being tested
@@ -78,11 +79,11 @@ class EventProcessorTest(unittest.TestCase):
 
             mock_target_func = Mock()
 
-            def target_func(cbm_vars, eligible):
+            def target_func(_, eligible):
                 self.assertTrue(list(eligible) == list(np.logical_and(
                     mock_evaluate_filter_return, mock_undisturbed)))
-                # mocks a disturbance target that fully disturbs inventory records
-                # at index 1, 2
+                # mocks a disturbance target that fully disturbs inventory
+                # records at index 1, 2
                 return {
                     "disturbed_index": pd.Series([1, 2]),
                     "area_proportions": pd.Series([1.0, 1.0])
@@ -91,12 +92,12 @@ class EventProcessorTest(unittest.TestCase):
             mock_target_func.side_effect = target_func
 
             cbm_vars_result = event_processor.process_event(
-                    event_filter=mock_event_filter,
-                    undisturbed=mock_undisturbed,
-                    target_func=mock_target_func,
-                    disturbance_type_id=disturbance_type_id,
-                    cbm_vars=mock_cbm_vars
-                    )
+                event_filter=mock_event_filter,
+                undisturbed=mock_undisturbed,
+                target_func=mock_target_func,
+                disturbance_type_id=disturbance_type_id,
+                cbm_vars=mock_cbm_vars
+                )
 
             mock_rule_filter.evaluate_filter.assert_called_once_with(
                 "mock_event_filter")

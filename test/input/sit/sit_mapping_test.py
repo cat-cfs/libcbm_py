@@ -125,7 +125,6 @@ class SITMappingTest(unittest.TestCase):
             sit_mapping.get_species(
                 species, classifiers, classifier_values)
 
-
     def test_undefined_default_nonforest_type_error(self):
         """Checks that an error is raised when the default mapping of
         non-forest type does not match a defined value in the defaults

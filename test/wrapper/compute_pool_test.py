@@ -16,7 +16,8 @@ class ComputePoolTests(unittest.TestCase):
              [0, 0.0, 0, 0, 1]])
 
         op_indices = np.array([[0]], dtype=np.uintp)
-        pools_test = pool_flux_helpers.compute_pools(pools, [[mat]], op_indices)
+        pools_test = pool_flux_helpers.compute_pools(
+            pools, [[mat]], op_indices)
 
         # create the expected result using the numpy implementation
         pools_expected = np.matmul(pools, mat)
@@ -39,7 +40,8 @@ class ComputePoolTests(unittest.TestCase):
              [0, 0.0, 0, 0, 1]])
 
         op_indices = np.zeros((n_ops, n_stands), dtype=np.uintp)
-        pools_test = pool_flux_helpers.compute_pools(pools, [[mat]], op_indices)
+        pools_test = pool_flux_helpers.compute_pools(
+            pools, [[mat]], op_indices)
 
         # create the expected result using the numpy implementation
         pools_expected = np.zeros((10, 5))

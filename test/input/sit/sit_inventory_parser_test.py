@@ -88,7 +88,6 @@ class SITInventoryParserTest(unittest.TestCase):
             inventory_table, classifiers, classifier_values, None, age_classes)
         self.assertTrue((result.classifier1 == ["1", "2.0", "1"]).all())
 
-
     def test_expected_result_with_using_zeroth_age_class(self):
         """Checks the age class expansion feature "using_age_class"
         """

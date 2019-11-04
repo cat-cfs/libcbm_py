@@ -27,5 +27,3 @@ class SITDisturbanceTypeParserTest(unittest.TestCase):
                     (1, "clearcut"),
                     ("3", "clearcut")
                 ]))
-
-

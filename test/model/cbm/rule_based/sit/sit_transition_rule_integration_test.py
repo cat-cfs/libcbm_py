@@ -1,5 +1,4 @@
 import unittest
-import numpy as np
 
 import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers \
     as helpers
