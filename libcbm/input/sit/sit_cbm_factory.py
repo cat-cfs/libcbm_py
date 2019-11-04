@@ -331,7 +331,6 @@ def create_sit_rule_based_pre_dynamics_func(sit, cbm, on_unrealized,
     event_processor = sit_event_processor.SITEventProcessor(
         model_functions=cbm.model_functions,
         compute_functions=cbm.compute_functions,
-        cbm_defaults_ref=sit.defaults,
         classifier_filter_builder=classifier_filter,
         random_generator=random_func,
         on_unrealized_event=on_unrealized)
