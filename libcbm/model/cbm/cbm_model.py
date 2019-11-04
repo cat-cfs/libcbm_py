@@ -62,7 +62,7 @@ class CBM:
         self.op_processes = get_op_processes()
 
     def spinup(self, classifiers, inventory, pools, variables, parameters,
-              debug=False):
+               debug=False):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
@@ -159,8 +159,8 @@ class CBM:
 
             iteration = iteration + 1
 
-        for x in self.op_names:
-            self.compute_functions.free_op(ops[x])
+        for op_name in self.op_names:
+            self.compute_functions.free_op(ops[op_name])
         return debug_output
 
     def init(self, inventory, pools, state_variables):
@@ -300,5 +300,5 @@ class CBM:
 
         self.model_functions.end_step(state_variables)
 
-        for x in self.op_names:
-            self.compute_functions.free_op(ops[x])
+        for op_name in self.op_names:
+            self.compute_functions.free_op(ops[op_name])

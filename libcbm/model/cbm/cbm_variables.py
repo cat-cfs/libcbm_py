@@ -277,36 +277,67 @@ def initialize_classifiers(classifiers):
         data=classifiers.to_numpy(dtype=np.int32),
         columns=list(classifiers))
 
+
 def _make_contiguous(df):
+    """Orders the underlying memory in a numpy-backed dataframe as C contiguous
+    (row major ordering)
+
+    Args:
+        df (pandas.DataFrame): a pandas dataframe
+
+    Returns:
+        pandas.DataFrame: a C contiguous copy of the input data frame.
+    """
+
     if not df.values.flags["C_CONTIGUOUS"]:
         return pd.DataFrame(
             columns=df.columns.tolist(),
             data=np.ascontiguousarray(df))
     return df
 
+
 def prepare(cbm_vars):
     """prepares, validates the specified cbm_vars object for use with low
     level functions
-    
+
     Args:
         cbm_vars (object): the cbm variables to validate and prepare
     """
-    
+
     for field in ["pools", "flux_indicators", "classifiers"]:
         if field in cbm_vars.__dict__:
             cbm_vars.__dict__[field] = \
                 _make_contiguous(cbm_vars.__dict__[field])
-    
+
     return cbm_vars
+
 
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
                                     flux_indicator_codes):
+    """Packages and initializes the cbm variables (cbm_vars) as an object with
+    named properties
+
+    Args:
+        classifiers (pandas.DataFrame): DataFrame of integer classifier value
+            ids.  Rows are stands and cols are classifiers
+        inventory (pandas.DataFrame): The inventory to simulate. Each row
+            represents a stand. See :py:func:`initialize_inventory` for a
+            description of the required columns.
+        pool_codes (list): the list of string pool names which act as column
+            labels for the resulting cbm_vars.pools DataFrame.
+        flux_indicator_codes (list): the list of string flux indicator names
+            which act as column labels for the resulting
+            cbm_vars.flux_indicators DataFrame.
+
+    Returns:
+        object: Returns the cbm_vars object for simulating CBM.
+    """
     n_stands = inventory.shape[0]
-    i = SimpleNamespace()
-    i.pools = initialize_pools(n_stands, pool_codes)
-    i.flux_indicators = initialize_flux(n_stands, flux_indicator_codes)
-    i.params = initialize_cbm_parameters(n_stands)
-    i.state = initialize_cbm_state_variables(n_stands)
-    i.inventory = initialize_inventory(inventory)
-    i.classifiers = initialize_classifiers(classifiers)
-    return i
+    cbm_vars = SimpleNamespace()
+    cbm_vars.pools = initialize_pools(n_stands, pool_codes)
+    cbm_vars.flux_indicators = initialize_flux(n_stands, flux_indicator_codes)
+    cbm_vars.params = initialize_cbm_parameters(n_stands)
+    cbm_vars.state = initialize_cbm_state_variables(n_stands)
+    cbm_vars.inventory = initialize_inventory(inventory)
+    cbm_vars.classifiers = initialize_classifiers(classifiers)
+    return cbm_vars
