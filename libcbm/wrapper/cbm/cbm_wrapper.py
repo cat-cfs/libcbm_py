@@ -96,8 +96,8 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             classifiers (pandas.DataFrame): classifier values associated with
                 the inventory
-            inventory (object): CBM inventory data. Will not be modified by this function.
-                See:
+            inventory (object): CBM inventory data. Will not be modified by
+                this function. See:
                 :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
                 for a compatible definition
             state_variables (pandas.DataFrame): simulation variables which
@@ -330,7 +330,8 @@ class CBMWrapper(LibCBM_ctypes):
             "LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
 
     def get_decay_ops(self, dom_decay_op, slow_decay_op, slow_mixing_op,
-                      inventory, parameters, historical_mean_annual_temp=False):
+                      inventory, parameters,
+                      historical_mean_annual_temp=False):
         """Prepares dead organic matter decay bulk matrix operations.
 
         Args:
