@@ -1,0 +1,12 @@
+classifier_id,name,description
+1,_CLASSIFIER,Species
+1,HP,Hispaniolan pine
+1,NF,Nonforest
+1,IPS,Improved pine stock
+2,_CLASSIFIER,Site quality
+2,Good,Good
+2,Poor,Poor
+3,_CLASSIFIER,Forest type
+3,AF,Afforestation
+3,Natfor,Natural forest
+3,C,Control

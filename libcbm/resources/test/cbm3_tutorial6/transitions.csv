@@ -1,0 +1,2 @@
+Classifier1,Classifier2,Classifier3,UsingID,SWStart,SWEnd,HWDStart,HWEnd,DistType,Classifier1,Classifier2,Classifier3,RegenDelay,ResetAge,Percent
+NF,Poor,AF,FALSE,0,999,0,999,DISTID4,IPS,Poor,AF,0,0,100
