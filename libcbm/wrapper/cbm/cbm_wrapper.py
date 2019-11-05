@@ -222,7 +222,8 @@ class CBMWrapper(LibCBM_ctypes):
             min_rotations, max_rotations, i.age, i.delay, v.slow_pools,
             i.historical_disturbance_type, i.last_pass_disturbance_type,
             i.afforestation_pre_type_id, v.spinup_state, v.disturbance_type,
-            v.rotation, v.step, v.last_rotation_slow_C, v.enabled)
+            v.rotation, v.step, v.last_rotation_slow_C, v.growth_enabled,
+            v.enabled)
 
         return n_finished
 

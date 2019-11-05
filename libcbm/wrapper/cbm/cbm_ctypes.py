@@ -144,6 +144,8 @@ def initialize_CBM_ctypes(dll):
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # last rotation slow (length n stands, return value)
         ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"),
+        # growth_enabled (length n stands, return value)
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # enabled (length n stands, return value)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
     )
