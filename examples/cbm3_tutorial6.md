@@ -13,7 +13,7 @@ jupyter:
     name: python3
 ---
 
-# libcbm run of tutorial 2 from CBM-CFS3
+# libcbm run of tutorial 6 from CBM-CFS3
 
 ```python
 import os, json
@@ -37,7 +37,7 @@ from libcbm import resources
 Load the standard import tool configuration at the specified path.  This configuration encompasses the data source for the various sit inputs (sit_inventory, sit_classifiers etc.) and also the relationships of classifiers, and disturbance types to the default CBM parameters.
 
 ```python
-config_path = os.path.join(resources.get_test_resources_dir(), "cbm3_tutorial2", "sit_config.json")
+config_path = os.path.join(r"C:\Users\smorken\dev\libcbm\libcbm_py\libcbm\resources\test", "cbm3_tutorial6", "sit_config.json")
 sit = sit_cbm_factory.load_sit(config_path)
 ```
 
@@ -45,6 +45,7 @@ Initialize and validate the inventory in the sit dataset
 
 ```python
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+
 ```
 
 Initialize an instance of the CBM model
@@ -66,7 +67,7 @@ rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(
 ```
 
 ## Simulation
-The following line of code spins up the CBM inventory and runs it through 200 timesteps. 
+The following line of code spins up the CBM inventory and runs it through 100 timesteps. 
 
 ```python
 cbm_simulator.simulate(
@@ -84,7 +85,7 @@ cbm_simulator.simulate(
 ## Pool Results
 
 ```python
-pi = results.pools
+pi = results.pool_indicators
 ```
 
 ```python
@@ -116,7 +117,7 @@ annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,160),yli
 ## State Variable Results
 
 ```python
-si = results.state
+si = results.state_indicators
 ```
 
 ```python
@@ -132,7 +133,7 @@ si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ## Flux Indicators
 
 ```python
-fi = results.flux
+fi = results.flux_indicators
 ```
 
 ```python

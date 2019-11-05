@@ -86,14 +86,14 @@ def ComputePools(pools, ops, op_indices):
     })
     op_ids = []
     for i,op in enumerate(ops):
-        op_id = dll.AllocateOp(pools.shape[0])
+        op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
         #The set op function accepts a matrix of coordinate triples.  
         #In LibCBM matrices are stored in a sparse format, so 0 values can be omitted from the parameter
-        dll.SetOp(op_id, [to_coordinate(x) for x in op], 
+        dll.set_op(op_id, [to_coordinate(x) for x in op], 
                   np.ascontiguousarray(op_indices[:,i]))
         
-    dll.ComputePools(op_ids, pools)
+    dll.compute_pools(op_ids, pools)
     
     return pools
         
@@ -319,12 +319,12 @@ def ComputeFlux(pools, poolnames, ops, op_indices, op_processes, flux_indicators
     })
     op_ids = []
     for i,op in enumerate(ops):
-        op_id = dll.AllocateOp(pools.shape[0])
+        op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
-        dll.SetOp(op_id, [to_coordinate(x) for x in op], 
+        dll.set_op(op_id, [to_coordinate(x) for x in op], 
                   np.ascontiguousarray(op_indices[:,i]))
         
-    dll.ComputeFlux(op_ids, op_processes, pools, flux)
+    dll.compute_flux(op_ids, op_processes, pools, flux)
     return pools, flux
 
 ```
@@ -393,8 +393,4 @@ print("flux mean difference: {}".format((flux_expected-flux_test).mean()))
 print("flux summed difference: {}".format((flux_expected-flux_test).sum()))
 print("flux max difference: {}".format((flux_expected-flux_test).max()))
 print("flux allclose[rtol=1e-12, atol=1e-15]: {}".format(np.allclose(flux_expected,flux_test,rtol=1e-12, atol=1e-15)))
-```
-
-```python
-
 ```

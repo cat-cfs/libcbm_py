@@ -76,7 +76,7 @@ cbm_simulator.simulate(
 ## Pool Results
 
 ```python
-pi = results.pool_indicators
+pi = results.pools
 ```
 
 ```python
@@ -98,7 +98,7 @@ pi[pi.identifier==2][['timestep']+dom_pools].groupby("timestep").sum().plot(figs
 ## State Variable Results
 
 ```python
-si = results.state_indicators
+si = results.state
 ```
 
 ```python
@@ -110,7 +110,7 @@ si[si.identifier==1][state_variables].groupby('timestep').sum().plot(figsize=(10
 ## Flux Indicators
 
 ```python
-fi = results.flux_indicators
+fi = results.flux
 ```
 
 ```python

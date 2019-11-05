@@ -86,9 +86,6 @@ spinup_variables = cbm_variables.initialize_spinup_variables(n_stands)
 cbm_params = cbm_variables.initialize_cbm_parameters(n_stands)
 cbm_state = cbm_variables.initialize_cbm_state_variables(n_stands)
 inventory = cbm_variables.initialize_inventory(
-    classifiers=pd.DataFrame({
-        "c1": np.ones(n_stands, dtype=np.int) * 1
-    }),
     inventory=pd.DataFrame({
         "age": np.random.randint(low=0, high=300, size=n_stands, dtype=np.int),
         "area": np.ones(n_stands),
@@ -99,10 +96,13 @@ inventory = cbm_variables.initialize_inventory(
         "last_pass_disturbance_type": np.ones(n_stands, dtype=np.int) * 1,
         "delay": np.ones(n_stands, dtype=np.int) * 0,
     }))
+classifiers = classifiers=pd.DataFrame({
+        "c1": np.ones(n_stands, dtype=np.int) * 1
+    })
 ```
 
 ```python
-cProfile.run('cbm.spinup(inventory, pools, spinup_variables, spinup_params)')
+cProfile.run('cbm.spinup(classifiers, inventory, pools, spinup_variables, spinup_params)')
 ```
 
 ```python
@@ -110,7 +110,7 @@ cProfile.run('cbm.init(inventory, pools, cbm_state)')
 ```
 
 ```python
-cProfile.run('for i in range(0,200): cbm.step(inventory, pools, flux_indicators, cbm_state, cbm_params)')
+cProfile.run('for i in range(0,200): cbm.step(classifiers, inventory, pools, flux_indicators, cbm_state, cbm_params)')
 ```
 
 # total time used for numeric processing of 1000 stands 
