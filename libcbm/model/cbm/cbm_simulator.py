@@ -9,7 +9,7 @@ from libcbm import data_helpers
 from libcbm.model.cbm import cbm_variables
 
 
-def create_in_memory_reporting_func(density=False):
+def create_in_memory_reporting_func(density=False, classifier_map=None):
     """Create storage and a function for complete simulation results.  The
     function return value can be passed to :py:func:`simulate` to track
     simulation results.
@@ -19,6 +19,11 @@ def create_in_memory_reporting_func(density=False):
             be computed as area densities (tonnes C/ha). By default, pool and
             flux outputs are computed as mass (tonnes C) based on the area of
             each stand. Defaults to False.
+        classifier_map (dict, optional): a classifier map for subsituting the
+            internal classifier id values with classifier value names.
+            If specified, the names associated with each id in the map are the
+            values in the  the classifiers result DataFrame  If set to None the
+            id values will be returned.
 
     Returns:
             tuple: a pair of values:
@@ -58,8 +63,15 @@ def create_in_memory_reporting_func(density=False):
                 results.flux, timestep_flux, timestep)
         results.state = data_helpers.append_simulation_result(
             results.state, cbm_vars.state, timestep)
-        results.classifiers = data_helpers.append_simulation_result(
-            results.classifiers, cbm_vars.classifiers, timestep)
+        if classifier_map is None:
+            results.classifiers = data_helpers.append_simulation_result(
+                results.classifiers, cbm_vars.classifiers, timestep)
+        else:
+            results.classifiers = data_helpers.append_simulation_result(
+                results.classifiers,
+                cbm_vars.classifiers.applymap(
+                    classifier_map.__getitem__),
+                timestep)
         results.inventory = data_helpers.append_simulation_result(
             results.inventory, cbm_vars.inventory, timestep)
         results.params = data_helpers.append_simulation_result(

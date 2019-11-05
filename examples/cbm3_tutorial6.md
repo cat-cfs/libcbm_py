@@ -45,7 +45,10 @@ Initialize and validate the inventory in the sit dataset
 
 ```python
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+```
 
+```python
+sit.sit_data.classifier_values
 ```
 
 Initialize an instance of the CBM model
@@ -57,7 +60,13 @@ cbm = sit_cbm_factory.initialize_cbm(sit)
 Create storage and a function for storing CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
 
 ```python
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
+classifier_config = sit_cbm_factory.get_classifiers(
+    sit.sit_data.classifiers, sit.sit_data.classifier_values)
+
+results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
+    classifier_map={
+        x["id"]: x["value"]
+        for x in classifier_config["classifier_values"]})
 ```
 
 Create a function to apply rule based disturbance events and transition rules based on the SIT input
@@ -67,7 +76,7 @@ rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(
 ```
 
 ## Simulation
-The following line of code spins up the CBM inventory and runs it through 100 timesteps. 
+The following line of code spins up the CBM inventory and runs it through 200 timesteps. 
 
 ```python
 cbm_simulator.simulate(
@@ -82,14 +91,18 @@ cbm_simulator.simulate(
 )
 ```
 
+```python
+results.classifiers
+```
+
 ## Pool Results
 
 ```python
-pi = results.pool_indicators
+pi = results.pools.merge(results.classifiers)
 ```
 
 ```python
-pi.head()
+list(pi)
 ```
 
 ```python
@@ -198,5 +211,17 @@ sit.sit_data.yield_table
 ```
 
 ```python
+sit.sit_data.disturbance_events
+```
+
+```python
+sit.sit_data.transition_rules
+```
+
+```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
+```
+
+```python
+
 ```
