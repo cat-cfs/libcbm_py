@@ -62,6 +62,7 @@ class SITMapping():
                 # cover types, but we are not interested in these for the
                 # purpose of this function, exclude this from the result,
                 # but don't raise an error here.
+                species_map[user_species] = -1
                 continue
             try:
                 species_id = self.cbm_defaults_ref.get_species_id(

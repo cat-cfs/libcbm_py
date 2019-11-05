@@ -73,11 +73,23 @@ class SITMappingTest(unittest.TestCase):
             }
         }
         ref = Mock(spec=CBMDefaultsReference)
-        classifiers, classifier_values = self.get_mock_classifiers()
-        pd.DataFrame({
-            "classifier1": ["a", "b"],
-            "classifier2": ["a", "a"],
-        })
+        classifiers = pd.DataFrame(
+            data=[
+                (1, "classifier1"),
+                (2, "classifier2")
+            ],
+            columns=["id", "name"]
+        )
+
+        classifier_values = pd.DataFrame(
+            data=[
+                (1, "a", "a"),
+                (1, "b", "b"),
+                (1, "nonforest", "nonforest"),
+                (2, "a", "a")
+            ],
+            columns=["classifier_id", "name", "description"]
+        )
 
         def mock_get_species_id(species_name):
             if species_name == "Spruce":
