@@ -304,7 +304,21 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 
 def create_sit_rule_based_pre_dynamics_func(sit, cbm, on_unrealized,
                                             random_func=np.random.rand):
+    """Assembles a function for processing SIT rule based disturbances.
 
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+        cbm (object): initialized instance of the CBM model
+        on_unrealized (func): a function of: (shortfall (numeric), sit_event)
+            called if the sit_event results in an unachieveable target.
+        random_func (func, optional): A function of a single integer that
+            returns a numeric 1d array whose length is the integer argument.
+            Defaults to np.random.rand.
+
+    Returns:
+        func: a function of (timestep, cbm_vars) which computes rule based
+            disturbances for a given time step and simulation state
+    """
     sit_events = initialize_events(sit)
     sit_transition_rules = initialize_transition_rules(sit)
     classifiers_config = get_classifiers(
