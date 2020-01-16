@@ -32,3 +32,6 @@ class SITCBMFactoryTest(unittest.TestCase):
             flux_indicator_codes=sit.defaults.get_flux_indicators(),
             pre_dynamics_func=rule_based_event_func,
             reporting_func=reporting_func)
+        self.assertTrue(
+            results.pools[results.pools.timestep == 0].shape[0]
+            == inventory.shape[0])

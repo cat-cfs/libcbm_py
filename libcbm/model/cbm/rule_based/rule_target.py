@@ -46,8 +46,7 @@ def spatially_indexed_target(identifier, inventory):
     return result
 
 
-def sorted_disturbance_target(target_var, sort_var, target, eligible,
-                              on_unrealized):
+def sorted_disturbance_target(target_var, sort_var, target, eligible):
     """Given a target variable, a sort variable, and a cumulative
     target, produce a table of index, area proportions that will
     satisfy exactly a rule based disturbance target.
@@ -61,9 +60,6 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
         target (float): the cumulative target.
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
-        on_unrealized (func): a function called when the specified parameters
-            will result in an unrealized disturbance. target - sum(target_var)
-            is passed as the single parameter.
 
     Raises:
         ValueError: specified target was less than 0
@@ -93,8 +89,6 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
-        if target > 0:
-            on_unrealized(remaining_target)
         # create the empty dataframe result
         return pd.DataFrame(
             columns=[
@@ -120,9 +114,11 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
 
     partial_disturb = disturbed[disturbed.target_var_sums > target]
 
+    num_splits = 0
     if partial_disturb.shape[0] > 0 and remaining_target > 0:
         # for merch C and area targets a final record is split to meet target
         # exactly
+        num_splits = 1
         split_record = partial_disturb.iloc[0]
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
@@ -134,14 +130,24 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible,
                 "disturbed_index": int(split_record["index"]),
                 "area_proportions": [proportion]
             }))
-    if remaining_target > 0:
-        on_unrealized(remaining_target)
+
     result = result.reset_index(drop=True)
-    return result
+
+    stats = {
+        "total_eligible_value": disturbed["target_var"].sum(),
+        "total_achieved": target - remaining_target,
+        "shortfall": remaining_target,
+        "num_records_disturbed": result.shape[0],
+        "num_splits": num_splits,
+        "num_eligible": eligible.sum(),
+        "min_disturbed": disturbed["target_var"].min(),
+        "min_disturbed": disturbed["target_var"].max(),
+        "min_disturbed": disturbed["target_var"].mean()
+    }
+    return result, stats
 
 
-def proportion_area_target(area_target_value, inventory, eligible,
-                           on_unrealized):
+def proportion_area_target(area_target_value, inventory, eligible):
     """create a disturbance target which disturbs that proportion of all
     eligible records that such that the sum of all eligible record
     areas multiplied by the proportion equals the area target exactly.
@@ -152,16 +158,11 @@ def proportion_area_target(area_target_value, inventory, eligible,
             disturbance.
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
-        on_unrealized (func): a function called when the specified parameters
-            will result in an unrealized disturbance.
-            area_target_value - sum(inventory.area[eligible]) is passed as the
-            single parameter.
     """
     raise NotImplementedError()
 
 
-def sorted_area_target(area_target_value, sort_value, inventory, eligible,
-                       on_unrealized):
+def sorted_area_target(area_target_value, sort_value, inventory, eligible):
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
 
@@ -174,10 +175,6 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible,
             disturbance.
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
-        on_unrealized (func): a function called when the specified parameters
-            will result in an unrealized disturbance.
-            area_target_value - sum(inventory.area[eligible]) is passed as the
-            single parameter.
 
     pandas.DataFrame: a data frame specifying the sorted disturbance event
         area target. Has the same format as the return value of
@@ -191,17 +188,16 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible,
         target_var=inventory.area,
         sort_var=sort_value,
         target=area_target_value,
-        eligible=eligible,
-        on_unrealized=on_unrealized)
+        eligible=eligible)
 
 
 def proportion_merch_target(carbon_target, disturbance_production, inventory,
-                            efficiency, eligible, on_unrealized):
+                            efficiency, eligible):
     raise NotImplementedError()
 
 
 def sorted_merch_target(carbon_target, disturbance_production, inventory,
-                        sort_value, efficiency, eligible, on_unrealized):
+                        sort_value, efficiency, eligible):
     """create a sorted sequence of areas/proportions for meeting a merch C
     target exactly.
 
@@ -221,10 +217,6 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
             records
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
-        on_unrealized (func): a function called when the specified parameters
-            will result in an unrealized disturbance.
-            carbon_target - sum(eligible production) is passed as the single
-            parameter.
 
     Returns:
         pandas.DataFrame: a data frame specifying the sorted disturbance event
@@ -243,8 +235,7 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
         target_var=production_c,
         sort_var=sort_value,
         target=carbon_target,
-        eligible=eligible,
-        on_unrealized=on_unrealized)
+        eligible=eligible)
     result.area_proportions = result.area_proportions * efficiency
     return result
 
