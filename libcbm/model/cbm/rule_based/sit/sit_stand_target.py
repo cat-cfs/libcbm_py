@@ -66,20 +66,18 @@ def _get_sort_value(sort_type, pools, state_variables, random_generator):
 
 def create_sit_event_target_factory(rule_target, sit_event_row,
                                     disturbance_production_func,
-                                    random_generator, on_unrealized):
+                                    random_generator):
 
     def factory(cbm_vars, eligible):
         return create_sit_event_target(
             rule_target, sit_event_row, cbm_vars,
-            disturbance_production_func, eligible, random_generator,
-            on_unrealized)
+            disturbance_production_func, eligible, random_generator)
     return factory
 
 
 def create_sit_event_target(rule_target, sit_event_row,
                             cbm_vars, disturbance_production_func,
-                            eligible, random_generator,
-                            on_unrealized):
+                            eligible, random_generator):
 
     sort = sit_event_row["sort_type"]
     target_type = sit_event_row["target_type"]
@@ -100,8 +98,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 area_target_value=target,
                 sort_value=_get_production_sort_value(sort, production),
                 inventory=cbm_vars.inventory,
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
         else:
             rule_target_result = rule_target.sorted_area_target(
                 area_target_value=target,
@@ -109,8 +106,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                     sort, cbm_vars.pools, cbm_vars.state,
                     random_generator),
                 inventory=cbm_vars.inventory,
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
     elif target_type == merchantable_target_type and sort not in non_sorted:
         if _is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_merch_target(
@@ -119,8 +115,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                 inventory=cbm_vars.inventory,
                 sort_value=_get_production_sort_value(sort, production),
                 efficiency=sit_event_row["efficiency"],
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
         else:
             rule_target_result = rule_target.sorted_merch_target(
                 carbon_target=target,
@@ -130,8 +125,7 @@ def create_sit_event_target(rule_target, sit_event_row,
                     sort, cbm_vars.pools, cbm_vars.state,
                     random_generator),
                 efficiency=sit_event_row["efficiency"],
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
     elif target == proportional_target_type:
         if sort != "PROPORTION_OF_EVERY_RECORD" or sort != "SVOID":
             raise ValueError(
@@ -142,16 +136,14 @@ def create_sit_event_target(rule_target, sit_event_row,
             rule_target_result = rule_target.proportion_area_target(
                 area_target_value=target,
                 inventory=cbm_vars.inventory,
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
         elif target_type == merchantable_target_type:
             rule_target_result = rule_target.proportion_merch_target(
                 carbon_target=target,
                 disturbance_production=production.Total,
                 inventory=cbm_vars.inventory,
                 efficiency=sit_event_row["efficiency"],
-                eligible=eligible,
-                on_unrealized=on_unrealized)
+                eligible=eligible)
     elif sort == "SVOID":
         rule_target_result = rule_target.spatially_indexed_target(
             identifier=sit_event_row["spatial_reference"],

@@ -145,14 +145,12 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_model_functions = "mock_model_functions"
             mock_compute_functions = "mock_compute_functions"
             mock_random_generator = "mock_random_generator"
-            mock_on_unrealized_event = "mock_unrealized_event"
 
             sit_event_processor = SITEventProcessor(
                 model_functions=mock_model_functions,
                 compute_functions=mock_compute_functions,
                 classifier_filter_builder=mock_classifier_filter_builder,
-                random_generator=mock_random_generator,
-                on_unrealized_event=mock_on_unrealized_event)
+                random_generator=mock_random_generator)
 
             cbm_vars_result = sit_event_processor.process_events(
                 time_step=1,  # there are 2 mock events with t = 1

@@ -14,8 +14,7 @@ class RuleTargetTest(unittest.TestCase):
                 target_var=pd.Series([10, 1000, 0]),
                 sort_var=pd.Series([1, 2, 3]),
                 target=-10,
-                eligible=pd.Series([True, True, True]),
-                on_unrealized=lambda x: None)
+                eligible=pd.Series([True, True, True]))
 
     def test_sorted_disturbance_target_error_on_lt_zero_target_var(self):
         with self.assertRaises(ValueError):
@@ -23,42 +22,35 @@ class RuleTargetTest(unittest.TestCase):
                 target_var=pd.Series([-1, 1000, 0]),
                 sort_var=pd.Series([1, 2, 3]),
                 target=10,
-                eligible=pd.Series([True, True, True]),
-                on_unrealized=lambda x: None)
+                eligible=pd.Series([True, True, True]))
 
     def test_sorted_disturbance_target_unrealized_on_zero_target_var_sum(self):
-        def on_unrealized(remaining):
-            self.assertTrue(remaining == 10)
+
         rule_target.sorted_disturbance_target(
             target_var=pd.Series([0, 0, 0]),
             sort_var=pd.Series([1, 2, 3]),
             target=10,
-            eligible=pd.Series([True, True, True]),
-            on_unrealized=lambda x: on_unrealized)
+            eligible=pd.Series([True, True, True]))
 
     def test_sorted_disturbance_target_on_unrealized_target(self):
-        def on_unrealized(remaining):
-            self.assertTrue(remaining == 1)
+
         result = rule_target.sorted_disturbance_target(
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=100,
-            eligible=pd.Series([True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True]))
         self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
         self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
         self.assertTrue(list(result.target_var) == [33, 33, 33])
         self.assertTrue(list(result.sort_var) == [3, 2, 1])
 
     def test_sorted_disturbance_target_expected_result_with_exact_target(self):
-        def on_unrealized(_):
-            self.fail()
+
         result = rule_target.sorted_disturbance_target(
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=99,
-            eligible=pd.Series([True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True]))
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
         self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
@@ -66,14 +58,12 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(list(result.sort_var) == [3, 2, 1])
 
     def test_sorted_disturbance_target_expected_result_with_less_target(self):
-        def on_unrealized(_):
-            self.fail()
+
         result = rule_target.sorted_disturbance_target(
             target_var=pd.Series([33, 33, 33]),
             sort_var=pd.Series([1, 2, 3]),
             target=34,
-            eligible=pd.Series([True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True]))
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.disturbed_index) == [2, 1])
         self.assertTrue(list(result.area_proportions) == [1.0, 1/33])
@@ -81,8 +71,7 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(list(result.sort_var) == [3, 2])
 
     def test_sorted_area_target_expected_result(self):
-        def on_unrealized(_):
-            self.fail()
+
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [1.5, 2.0, 2.0, 3.0]
@@ -91,8 +80,7 @@ class RuleTargetTest(unittest.TestCase):
             area_target_value=5.1,
             sort_value=mock_inventory.age,
             inventory=mock_inventory,
-            eligible=pd.Series([True, True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True, True]))
         self.assertTrue(list(result.disturbed_index) == [3, 1, 2])
         self.assertTrue(list(result.target_var) == [3.0, 2.0, 2.0])
         self.assertTrue(list(result.sort_var) == [30, 20, 10])
@@ -100,8 +88,7 @@ class RuleTargetTest(unittest.TestCase):
             np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0]))
 
     def test_sorted_area_target_error_on_dimension_mismatch(self):
-        def on_unrealized(_):
-            self.fail()
+
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [1.5, 2.0, 2.0, 3.0]
@@ -112,12 +99,9 @@ class RuleTargetTest(unittest.TestCase):
                 area_target_value=5.1,
                 sort_value=pd.Series([1, 2, 3]),
                 inventory=mock_inventory,
-                eligible=pd.Series([True, True, True, True]),
-                on_unrealized=on_unrealized)
+                eligible=pd.Series([True, True, True, True]))
 
     def test_sorted_merch_target_expected_result(self):
-        def on_unrealized(_):
-            self.fail()
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [2.0, 2.0, 2.0, 2.0]
@@ -134,8 +118,7 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0,
-            eligible=pd.Series([True, True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True, True]))
         self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
         self.assertTrue(list(result.target_var) == [20, 20, 20])
         self.assertTrue(list(result.sort_var) == [4, 3, 2])
@@ -143,8 +126,6 @@ class RuleTargetTest(unittest.TestCase):
             np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
 
     def test_sorted_merch_target_expected_result_unrealized(self):
-        def on_unrealized(amount):
-            self.assertTrue(amount == 5)
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [2.0, 2.0, 2.0, 2.0]
@@ -156,16 +137,15 @@ class RuleTargetTest(unittest.TestCase):
         # 20,20,20,20 tonnes using the above area multipliers
 
         # since the last index is not eligible maning the total production
-        # available is 60 tonnes, and the target is 65, on_unrealized should
-        # be called with 5
+        # available is 60 tonnes, and the target is 65
         result = rule_target.sorted_merch_target(
             carbon_target=65,
             disturbance_production=mock_disturbance_production,
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0,
-            eligible=pd.Series([True, True, True, False]),  # note ineligible
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True, False])),  # note ineligible
+
         self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
         self.assertTrue(list(result.target_var) == [20, 20, 20])
         self.assertTrue(list(result.sort_var) == [4, 3, 2])
@@ -173,8 +153,7 @@ class RuleTargetTest(unittest.TestCase):
             np.allclose(result.area_proportions, [1.0, 1.0, 1.0]))
 
     def test_sorted_merch_target_error_on_dimension_mismatch1(self):
-        def on_unrealized(_):
-            self.fail()
+
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [2.0, 2.0, 2.0, 2.0]
@@ -191,12 +170,10 @@ class RuleTargetTest(unittest.TestCase):
                 inventory=mock_inventory,
                 sort_value=pd.Series([4, 3, 2, 1]),
                 efficiency=1.0,
-                eligible=pd.Series([True, True, True, True]),
-                on_unrealized=on_unrealized)
+                eligible=pd.Series([True, True, True, True]))
 
     def test_sorted_merch_target_error_on_dimension_mismatch2(self):
-        def on_unrealized(_):
-            self.fail()
+
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [2.0, 2.0, 2.0, 2.0]
@@ -213,12 +190,9 @@ class RuleTargetTest(unittest.TestCase):
                 inventory=mock_inventory,
                 sort_value=pd.Series([4, 3, 2, 1, 15]),  # extra here
                 efficiency=1.0,
-                eligible=pd.Series([True, True, True, True]),
-                on_unrealized=on_unrealized)
+                eligible=pd.Series([True, True, True, True]))
 
     def test_sorted_merch_target_expected_result_with_efficiency(self):
-        def on_unrealized(_):
-            self.fail()
         mock_inventory = pd.DataFrame({
             "age": [0, 20, 10, 30],
             "area": [1.0, 2.0, 1.0, 1.0]
@@ -234,8 +208,7 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=0.8,
-            eligible=pd.Series([True, True, True, True]),
-            on_unrealized=on_unrealized)
+            eligible=pd.Series([True, True, True, True]))
         self.assertTrue(list(result.disturbed_index) == [0, 1, 2, 3])
 
         # efficiency*production causes this

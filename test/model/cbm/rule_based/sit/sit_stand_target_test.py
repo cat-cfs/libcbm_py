@@ -11,14 +11,12 @@ def get_test_function(mock_sit_event_row, mock_state_variables, mock_pools,
                       mock_disturbance_production_func=None):
     mock_rule_target = Mock(spec=rule_target)
 
-    mock_unrealized = "on_unrealized"
     mock_inventory = "inventory"
     mock_eligible = "eligible"
     create_target = sit_stand_target.create_sit_event_target_factory(
         rule_target=mock_rule_target,
         sit_event_row=mock_sit_event_row,
         disturbance_production_func=mock_disturbance_production_func,
-        on_unrealized=mock_unrealized,
         random_generator=mock_random_generator
         )
     mock_cbm_vars = SimpleNamespace(
@@ -51,7 +49,6 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=13,
             inventory="inventory",
             eligible="eligible",
-            on_unrealized="on_unrealized"
         )
 
     def test_create_sit_event_target_merch_total_sort_area_target(self):
@@ -83,7 +80,6 @@ class SITStandTargetTest(unittest.TestCase):
             sort_value=mock_production.Total,
             inventory="inventory",
             eligible="eligible",
-            on_unrealized="on_unrealized"
         )
 
     def test_create_sit_event_target_merch_sw_sort_area_target(self):
@@ -119,7 +115,6 @@ class SITStandTargetTest(unittest.TestCase):
             sort_value=expected_sort_value,
             inventory="inventory",
             eligible="eligible",
-            on_unrealized="on_unrealized"
         )
 
     def test_create_sit_event_target_merch_hw_sort_area_target(self):
@@ -154,9 +149,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=19,
             sort_value=expected_sort_value,
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
-        )
+            eligible="eligible")
 
     def test_create_sit_event_target_random_sort_area_target(self):
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
@@ -177,8 +170,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=11,
             sort_value=mock_random_gen(mock_pools.shape[0]),
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_total_stem_snag_sort_area_target(self):
@@ -200,8 +192,7 @@ class SITStandTargetTest(unittest.TestCase):
             # just check that the '+' operater was used.
             sort_value=[1, 2, 3, 4] + [5, 6, 7, 8],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_sw_stem_snag_sort_area_target(self):
@@ -218,8 +209,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=1,
             sort_value=[1, 2, 3, 4],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_hw_stem_snag_sort_area_target(self):
@@ -236,8 +226,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=1,
             sort_value=[1, 2, 3, 4],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_swage_sort_area_target(self):
@@ -256,8 +245,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_hwage_sort_area_target(self):
@@ -276,8 +264,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_proportion_sort_merch_target(self):
@@ -309,8 +296,7 @@ class SITStandTargetTest(unittest.TestCase):
             disturbance_production=mock_production.Total,
             inventory="inventory",
             efficiency=55,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_merch_total_sort_merch_target(self):
@@ -343,8 +329,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=mock_production.Total,
             efficiency=100,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_merch_sw_sort_merch_target(self):
@@ -382,8 +367,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=expected_sort_value,
             efficiency=0.1,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_merch_hw_sort_merch_target(self):
@@ -421,8 +405,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=expected_sort_value,
             efficiency=0.99,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_random_sort_merch_target(self):
@@ -461,8 +444,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=mock_random_gen(mock_pools.shape[0]),
             efficiency=0.99,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_total_stem_snag_sort_merch_target(self):
@@ -500,8 +482,7 @@ class SITStandTargetTest(unittest.TestCase):
                 mock_pools.SoftwoodStemSnag +
                 mock_pools.HardwoodStemSnag),
             efficiency=1.0,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_sw_stem_snag_sort_merch_target(self):
@@ -534,8 +515,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=mock_pools.SoftwoodStemSnag,
             efficiency=1.1,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_hw_stem_snag_sort_merch_target(self):
@@ -568,8 +548,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             sort_value=mock_pools.HardwoodStemSnag,
             efficiency=2.1,
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_proportion_sort_proportion_target(self):
@@ -585,8 +564,7 @@ class SITStandTargetTest(unittest.TestCase):
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
-            eligible="eligible",
-            on_unrealized="on_unrealized"
+            eligible="eligible"
         )
 
     def test_create_sit_event_target_svoid_sort_proportion_target(self):

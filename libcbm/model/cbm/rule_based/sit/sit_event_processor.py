@@ -56,14 +56,12 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 class SITEventProcessor():
 
     def __init__(self, model_functions, compute_functions,
-                 classifier_filter_builder, random_generator,
-                 on_unrealized_event):
+                 classifier_filter_builder, random_generator):
 
         self.model_functions = model_functions
         self.compute_functions = compute_functions
         self.classifier_filter_builder = classifier_filter_builder
         self.random_generator = random_generator
-        self.on_unrealized_event = on_unrealized_event
 
     def _get_compute_disturbance_production(self, model_functions,
                                             compute_functions,
@@ -89,16 +87,11 @@ class SITEventProcessor():
                 compute_functions=self.compute_functions,
                 eligible=eligible)
 
-        # helper to indicate unrealized events to class user
-        def on_unrealized(shortfall):
-            self.on_unrealized_event(shortfall, sit_event)
-
         target_factory = sit_stand_target.create_sit_event_target_factory(
             rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
-            random_generator=self.random_generator,
-            on_unrealized=on_unrealized)
+            random_generator=self.random_generator)
 
         pool_filter_expression, pool_filter_cols = \
             sit_stand_filter.create_pool_filter_expression(

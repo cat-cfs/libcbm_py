@@ -302,15 +302,13 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     return cbm
 
 
-def create_sit_rule_based_pre_dynamics_func(sit, cbm, on_unrealized,
+def create_sit_rule_based_pre_dynamics_func(sit, cbm,
                                             random_func=np.random.rand):
     """Assembles a function for processing SIT rule based disturbances.
 
     Args:
         sit (object): sit instance as returned by :py:func:`load_sit`
         cbm (object): initialized instance of the CBM model
-        on_unrealized (func): a function of: (shortfall (numeric), sit_event)
-            called if the sit_event results in an unachieveable target.
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
             Defaults to np.random.rand.
@@ -346,8 +344,7 @@ def create_sit_rule_based_pre_dynamics_func(sit, cbm, on_unrealized,
         model_functions=cbm.model_functions,
         compute_functions=cbm.compute_functions,
         classifier_filter_builder=classifier_filter,
-        random_generator=random_func,
-        on_unrealized_event=on_unrealized)
+        random_generator=random_func)
 
     sit_tr_processor = \
         sit_transition_rule_processor.SITTransitionRuleProcessor(tr_processor)

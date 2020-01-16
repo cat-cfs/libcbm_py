@@ -146,7 +146,7 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
-def get_events_pre_dynamics_func(sit, on_unrealized, parameters_factory=None,
+def get_events_pre_dynamics_func(sit, parameters_factory=None,
                                  random_func=None):
 
     sit_events = sit_cbm_factory.initialize_events(sit)
@@ -160,8 +160,7 @@ def get_events_pre_dynamics_func(sit, on_unrealized, parameters_factory=None,
         model_functions=cbm.model_functions,
         compute_functions=cbm.compute_functions,
         classifier_filter_builder=classifier_filter,
-        random_generator=random_func,
-        on_unrealized_event=on_unrealized)
+        random_generator=random_func)
     return sit_event_processor.get_pre_dynamics_func(
         processor, sit_events)
 
