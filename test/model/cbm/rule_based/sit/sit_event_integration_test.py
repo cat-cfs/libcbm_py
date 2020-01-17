@@ -35,14 +35,23 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
         def stats_func(stats):
-            pass
+            stats_row = stats.iloc[0]
+            self.assertTrue(stats_row["total_eligible_value"] == 15.0)
+            self.assertTrue(stats_row["total_achieved"] == 10.0)
+            self.assertTrue(stats_row["shortfall"] == 0.0)
+            self.assertTrue(stats_row["num_records_disturbed"] == 2)
+            self.assertTrue(stats_row["num_splits"] == 0)
+            self.assertTrue(stats_row["num_eligible"] == 3)
+            self.assertTrue(stats_row["min_disturbed_target"] == 5)
+            self.assertTrue(stats_row["max_disturbed_target"] == 5)
+            self.assertTrue(stats_row["mean_disturbed_target"] == 5)
 
         mock_stats_func = Mock()
         mock_stats_func.side_effect = stats_func
 
         pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit)
         cbm_vars_result = pre_dynamics_func(
-            time_step=1, cbm_vars=cbm_vars, stats_func=stats_func)
+            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
 
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
@@ -78,9 +87,25 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
+        def stats_func(stats):
+            stats_row = stats.iloc[0]
+            self.assertTrue(stats_row["total_eligible_value"] == 15.0)
+            self.assertTrue(stats_row["total_achieved"] == 10.0)
+            self.assertTrue(stats_row["shortfall"] == 0.0)
+            self.assertTrue(stats_row["num_records_disturbed"] == 2)
+            self.assertTrue(stats_row["num_splits"] == 0)
+            self.assertTrue(stats_row["num_eligible"] == 3)
+            self.assertTrue(stats_row["min_disturbed_target"] == 5)
+            self.assertTrue(stats_row["max_disturbed_target"] == 5)
+            self.assertTrue(stats_row["mean_disturbed_target"] == 5)
+
+        mock_stats_func = Mock()
+        mock_stats_func.side_effect = stats_func
+
         pre_dynamics_func = helpers.get_events_pre_dynamics_func(
             sit)
-        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+        cbm_vars_result = pre_dynamics_func(
+            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
 
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
