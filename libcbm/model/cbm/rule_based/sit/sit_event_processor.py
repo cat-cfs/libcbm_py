@@ -5,6 +5,7 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 """
 
 import numpy as np
+import pandas as pd
 
 from libcbm.model.cbm.rule_based import event_processor
 from libcbm.model.cbm.rule_based import rule_filter
@@ -13,7 +14,7 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
-def get_pre_dynamics_func(sit_event_processor, sit_events):
+def get_pre_dynamics_func(sit_event_processor, sit_events, stats_func):
     """Gets a function for applying SIT rule based events in a CBM
     timestep loop.
 
@@ -28,7 +29,9 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
         sit_events (pandas.DataFrame): table of SIT formatted events.
             Expected format is the same as the return value of:
             :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
-
+        stats_func (func): a function called with the summary statistics
+            dataframe of the rule based events for a timestep for debugging
+            or other uses.
     Returns:
         func: a function of 2 parameters:
 
@@ -44,10 +47,11 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 
     """
     def sit_events_pre_dynamics_func(time_step, cbm_vars):
-        cbm_vars = sit_event_processor.process_events(
+        cbm_vars, stats_df = sit_event_processor.process_events(
             time_step=time_step,
             sit_events=sit_events,
             cbm_vars=cbm_vars)
+        stats_func(stats_df)
         return cbm_vars
 
     return sit_events_pre_dynamics_func
@@ -79,7 +83,7 @@ class SITEventProcessor():
 
         return compute_disturbance_production
 
-    def _process_event(self, eligible, sit_event, cbm_vars):
+    def _process_event(self, eligible, sit_event, sit_event_idx, cbm_vars):
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
@@ -114,27 +118,34 @@ class SITEventProcessor():
                     sit_event, cbm_vars.classifiers.columns.tolist()),
                 cbm_vars.classifiers))
 
-        return event_processor.process_event(
+        stats_row_list = []
+
+        def stats_func(event_stats):
+            event_stats.update({"sit_event_index": sit_event_idx})
+            stats_row_list.append(event_stats)
+
+        stats_df = pd.DataFrame(stats_row_list)
+
+        cbm_vars = event_processor.process_event(
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
             cbm_vars=cbm_vars)
 
-    def _event_iterator(self, time_step, sit_events):
+        return cbm_vars, stats_df
+
+    def _event_iterator(self, sit_events):
 
         # TODO: In CBM-CFS3 events are sorted by default disturbance type id
         # (ascending) In libcbm, sort order needs to be explicitly defined in
         # cbm_defaults (or other place)
-        time_step_events = sit_events[
-            sit_events.time_step == time_step].copy()
-
-        time_step_events = time_step_events.sort_values(
+        sorted_events = sit_events.sort_values(
             by="disturbance_type_id",
             kind="mergesort")
         # mergesort is a stable sort, and the default "quicksort" is not
-        for _, time_step_event in time_step_events.iterrows():
-            yield dict(time_step_event)
+        for idx, sorted_event in sorted_events.iterrows():
+            yield idx, dict(sorted_event)
 
     def process_events(self, time_step, sit_events, cbm_vars):
         """Process sit_events for the start of the given timestep, computing a
@@ -163,11 +174,15 @@ class SITEventProcessor():
         n_stands = cbm_vars.inventory.shape[0]
         cbm_vars.params.disturbance_type = np.zeros(n_stands, dtype=np.int32)
 
-        for sit_event in self._event_iterator(time_step, sit_events):
+        time_step_events = sit_events[
+            sit_events.time_step == time_step].copy()
+
+        for idx, sit_event in self._event_iterator(time_step_events):
             eligible = cbm_vars.params.disturbance_type <= 0
-            cbm_vars = self._process_event(
+            cbm_vars, stats_df = self._process_event(
                 eligible,
                 sit_event,
+                idx,
                 cbm_vars)
 
-        return cbm_vars
+        return cbm_vars, stats_df

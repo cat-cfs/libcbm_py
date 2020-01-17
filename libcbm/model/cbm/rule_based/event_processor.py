@@ -9,7 +9,7 @@ from libcbm.model.cbm.rule_based import rule_filter
 
 
 def process_event(event_filter, undisturbed, target_func,
-                  disturbance_type_id, cbm_vars):
+                  disturbance_type_id, cbm_vars, stats_func):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -29,6 +29,8 @@ def process_event(event_filter, undisturbed, target_func,
             processed.
         cbm_vars (object): an object containing dataframes that store cbm
             simulation state and variables
+        stats_func (func): a function called with the summary statistics of the
+            rule based event, for debugging or other uses.
 
     Returns:
         tuple: The computed disturbance index and pools, state variables,
@@ -44,6 +46,8 @@ def process_event(event_filter, undisturbed, target_func,
 
     rule_target_result = target_func(
         cbm_vars, filter_result)
+
+    stats_func(rule_target_result.statistics)
 
     return apply_rule_based_event(
         rule_target_result.target, disturbance_type_id, cbm_vars)
