@@ -84,10 +84,10 @@ class EventProcessorTest(unittest.TestCase):
                     mock_evaluate_filter_return, mock_undisturbed)))
                 # mocks a disturbance target that fully disturbs inventory
                 # records at index 1, 2
-                return {
+                return SimpleNamespace(target={
                     "disturbed_index": pd.Series([1, 2]),
                     "area_proportions": pd.Series([1.0, 1.0])
-                }
+                })
 
             mock_target_func.side_effect = target_func
 
