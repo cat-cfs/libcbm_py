@@ -84,20 +84,27 @@ class EventProcessorTest(unittest.TestCase):
                     mock_evaluate_filter_return, mock_undisturbed)))
                 # mocks a disturbance target that fully disturbs inventory
                 # records at index 1, 2
-                return SimpleNamespace(target={
-                    "disturbed_index": pd.Series([1, 2]),
-                    "area_proportions": pd.Series([1.0, 1.0])
-                })
+                return SimpleNamespace(
+                    target={
+                        "disturbed_index": pd.Series([1, 2]),
+                        "area_proportions": pd.Series([1.0, 1.0])
+                    },
+                    statistics="mock_statistics")
 
             mock_target_func.side_effect = target_func
+
+            stats_func = Mock()
 
             cbm_vars_result = event_processor.process_event(
                 event_filter=mock_event_filter,
                 undisturbed=mock_undisturbed,
                 target_func=mock_target_func,
                 disturbance_type_id=disturbance_type_id,
-                cbm_vars=mock_cbm_vars
+                cbm_vars=mock_cbm_vars,
+                stats_func=stats_func
                 )
+
+            stats_func.assert_called_once_with("mock_statistics")
 
             mock_rule_filter.evaluate_filter.assert_called_once_with(
                 "mock_event_filter")
