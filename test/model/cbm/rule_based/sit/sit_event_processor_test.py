@@ -22,16 +22,19 @@ class SITEventProcessorTest(unittest.TestCase):
         time_step = 10
 
         mock_cbm_vars = "mock_cbm_vars"
-
+        mock_stats_result = "mock_stats_result"
         mock_sit_event_processor = Mock()
         mock_sit_event_processor.process_events = Mock()
         mock_sit_event_processor.process_events.side_effect = \
-            lambda time_step, sit_events, cbm_vars: cbm_vars
+            lambda time_step, sit_events, cbm_vars: (
+                cbm_vars, mock_stats_result)
 
         mock_sit_events = "mock_events"
+
+        mock_stats_func = Mock()
         pre_dynamics_func = get_pre_dynamics_func(
             mock_sit_event_processor, mock_sit_events)
-        cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars)
+        cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars, mock_stats_func)
 
         mock_sit_event_processor.process_events.assert_called_with(
             time_step=time_step,
@@ -39,6 +42,7 @@ class SITEventProcessorTest(unittest.TestCase):
             cbm_vars=mock_cbm_vars)
 
         self.assertTrue(cbm_vars_result == "mock_cbm_vars")
+        mock_stats_func.assert_called_once_with("mock_stats_result")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
@@ -97,7 +101,7 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_event_processor.process_event = Mock()
 
             def mock_process_event(event_filter, undisturbed, target_func,
-                                   disturbance_type_id, cbm_vars):
+                                   disturbance_type_id, cbm_vars, stats_func):
                 call_count = mock_event_processor.process_event.call_count
 
                 # using call count checks event sorting
@@ -152,7 +156,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator)
 
-            cbm_vars_result = sit_event_processor.process_events(
+            cbm_vars_result, stats = sit_event_processor.process_events(
                 time_step=1,  # there are 2 mock events with t = 1
                 sit_events=mock_sit_events,
                 cbm_vars=mock_cbm_vars)

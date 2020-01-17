@@ -34,14 +34,22 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
+        def stats_func(stats):
+            pass
+
+        mock_stats_func = Mock()
+        mock_stats_func.side_effect = stats_func
+
         pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit)
-        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+        cbm_vars_result = pre_dynamics_func(
+            time_step=1, cbm_vars=cbm_vars, stats_func=stats_func)
 
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [
                 helpers.FIRE_ID, 0, 0, helpers.FIRE_ID])
+        mock_stats_func.assert_called_once()
 
     def test_rule_based_area_target_age_sort_unrealized(self):
         """Test a rule based event with area target, and age sort where no
