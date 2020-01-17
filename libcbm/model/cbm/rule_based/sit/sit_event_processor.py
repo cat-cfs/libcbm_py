@@ -14,7 +14,7 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
-def get_pre_dynamics_func(sit_event_processor, sit_events, stats_func):
+def get_pre_dynamics_func(sit_event_processor, sit_events):
     """Gets a function for applying SIT rule based events in a CBM
     timestep loop.
 
@@ -29,9 +29,6 @@ def get_pre_dynamics_func(sit_event_processor, sit_events, stats_func):
         sit_events (pandas.DataFrame): table of SIT formatted events.
             Expected format is the same as the return value of:
             :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
-        stats_func (func): a function called with the summary statistics
-            dataframe of the rule based events for a timestep for debugging
-            or other uses.
     Returns:
         func: a function of 2 parameters:
 
@@ -46,7 +43,7 @@ def get_pre_dynamics_func(sit_event_processor, sit_events, stats_func):
             specified timestep.
 
     """
-    def sit_events_pre_dynamics_func(time_step, cbm_vars):
+    def sit_events_pre_dynamics_func(time_step, cbm_vars, stats_func):
         cbm_vars, stats_df = sit_event_processor.process_events(
             time_step=time_step,
             sit_events=sit_events,
@@ -124,14 +121,15 @@ class SITEventProcessor():
             event_stats.update({"sit_event_index": sit_event_idx})
             stats_row_list.append(event_stats)
 
-        stats_df = pd.DataFrame(stats_row_list)
-
         cbm_vars = event_processor.process_event(
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
-            cbm_vars=cbm_vars)
+            cbm_vars=cbm_vars,
+            stats_func=stats_func)
+
+        stats_df = pd.DataFrame(stats_row_list)
 
         return cbm_vars, stats_df
 

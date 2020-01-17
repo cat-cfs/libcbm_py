@@ -302,7 +302,7 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     return cbm
 
 
-def create_sit_rule_based_pre_dynamics_func(sit, cbm,
+def create_sit_rule_based_pre_dynamics_func(sit, cbm, disturbance_stats_func,
                                             random_func=np.random.rand):
     """Assembles a function for processing SIT rule based disturbances.
 
@@ -356,7 +356,7 @@ def create_sit_rule_based_pre_dynamics_func(sit, cbm,
         event_processor, sit_events)
 
     def pre_dynamic_func(time_step, cbm_vars):
-        cbm_vars = dist_func(time_step, cbm_vars)
+        cbm_vars = dist_func(time_step, cbm_vars, disturbance_stats_func)
         cbm_vars = tr_func(time_step, cbm_vars)
         return cbm_vars
 
