@@ -22,7 +22,9 @@ def process_event(event_filter, undisturbed, target_func,
             specified index is eligible (True) or ineligible (False) for
             disturbance.
         target_func (func): a function for creating a disturbance target.
-            See: :py:mod:`libcbm.model.cbm.rule_based.rule_target`
+            See: :py:mod:`libcbm.model.cbm.rule_based.rule_target`.
+            The function return value is:
+            :py:class:`libcbm.model.cbm.rule_based.rule_target.RuleTargetResult`
         disturbance_type_id (int): the id for the disturbance event being
             processed.
         cbm_vars (object): an object containing dataframes that store cbm
@@ -40,11 +42,11 @@ def process_event(event_filter, undisturbed, target_func,
     # eligibility
     filter_result = np.logical_and(undisturbed, filter_result)
 
-    target = target_func(
+    rule_target_result = target_func(
         cbm_vars, filter_result)
 
     return apply_rule_based_event(
-        target, disturbance_type_id, cbm_vars)
+        rule_target_result.target, disturbance_type_id, cbm_vars)
 
 
 def apply_rule_based_event(target, disturbance_type_id, cbm_vars):

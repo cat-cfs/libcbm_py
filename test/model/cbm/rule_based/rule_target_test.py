@@ -39,10 +39,11 @@ class RuleTargetTest(unittest.TestCase):
             sort_var=pd.Series([1, 2, 3]),
             target=100,
             eligible=pd.Series([True, True, True]))
-        self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
-        self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
-        self.assertTrue(list(result.target_var) == [33, 33, 33])
-        self.assertTrue(list(result.sort_var) == [3, 2, 1])
+        self.assertTrue(list(result.target.disturbed_index) == [2, 1, 0])
+        self.assertTrue(
+            list(result.target.area_proportions) == [1.0, 1.0, 1.0])
+        self.assertTrue(list(result.target.target_var) == [33, 33, 33])
+        self.assertTrue(list(result.target.sort_var) == [3, 2, 1])
 
     def test_sorted_disturbance_target_expected_result_with_exact_target(self):
 
@@ -52,10 +53,10 @@ class RuleTargetTest(unittest.TestCase):
             target=99,
             eligible=pd.Series([True, True, True]))
         # cbm sorts descending for disturbance targets (oldest first, etc.)
-        self.assertTrue(list(result.disturbed_index) == [2, 1, 0])
-        self.assertTrue(list(result.area_proportions) == [1.0, 1.0, 1.0])
-        self.assertTrue(list(result.target_var) == [33, 33, 33])
-        self.assertTrue(list(result.sort_var) == [3, 2, 1])
+        self.assertTrue(list(result.target.disturbed_index) == [2, 1, 0])
+        self.assertTrue(list(result.target.area_proportions) == [1.0, 1.0, 1.0])
+        self.assertTrue(list(result.target.target_var) == [33, 33, 33])
+        self.assertTrue(list(result.target.sort_var) == [3, 2, 1])
 
     def test_sorted_disturbance_target_expected_result_with_less_target(self):
 
@@ -65,10 +66,10 @@ class RuleTargetTest(unittest.TestCase):
             target=34,
             eligible=pd.Series([True, True, True]))
         # cbm sorts descending for disturbance targets (oldest first, etc.)
-        self.assertTrue(list(result.disturbed_index) == [2, 1])
-        self.assertTrue(list(result.area_proportions) == [1.0, 1/33])
-        self.assertTrue(list(result.target_var) == [33, 33])
-        self.assertTrue(list(result.sort_var) == [3, 2])
+        self.assertTrue(list(result.target.disturbed_index) == [2, 1])
+        self.assertTrue(list(result.target.area_proportions) == [1.0, 1/33])
+        self.assertTrue(list(result.target.target_var) == [33, 33])
+        self.assertTrue(list(result.target.sort_var) == [3, 2])
 
     def test_sorted_area_target_expected_result(self):
 
@@ -81,11 +82,11 @@ class RuleTargetTest(unittest.TestCase):
             sort_value=mock_inventory.age,
             inventory=mock_inventory,
             eligible=pd.Series([True, True, True, True]))
-        self.assertTrue(list(result.disturbed_index) == [3, 1, 2])
-        self.assertTrue(list(result.target_var) == [3.0, 2.0, 2.0])
-        self.assertTrue(list(result.sort_var) == [30, 20, 10])
+        self.assertTrue(list(result.target.disturbed_index) == [3, 1, 2])
+        self.assertTrue(list(result.target.target_var) == [3.0, 2.0, 2.0])
+        self.assertTrue(list(result.target.sort_var) == [30, 20, 10])
         self.assertTrue(
-            np.allclose(result.area_proportions, [1.0, 1.0, 0.1/2.0]))
+            np.allclose(result.target.area_proportions, [1.0, 1.0, 0.1/2.0]))
 
     def test_sorted_area_target_error_on_dimension_mismatch(self):
 
@@ -119,11 +120,11 @@ class RuleTargetTest(unittest.TestCase):
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0,
             eligible=pd.Series([True, True, True, True]))
-        self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
-        self.assertTrue(list(result.target_var) == [20, 20, 20])
-        self.assertTrue(list(result.sort_var) == [4, 3, 2])
+        self.assertTrue(list(result.target.disturbed_index) == [0, 1, 2])
+        self.assertTrue(list(result.target.target_var) == [20, 20, 20])
+        self.assertTrue(list(result.target.sort_var) == [4, 3, 2])
         self.assertTrue(
-            np.allclose(result.area_proportions, [1.0, 1.0, 15/20]))
+            np.allclose(result.target.area_proportions, [1.0, 1.0, 15/20]))
 
     def test_sorted_merch_target_expected_result_unrealized(self):
         mock_inventory = pd.DataFrame({
@@ -144,13 +145,13 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=1.0,
-            eligible=pd.Series([True, True, True, False])),  # note ineligible
+            eligible=pd.Series([True, True, True, False]))  # note ineligible
 
-        self.assertTrue(list(result.disturbed_index) == [0, 1, 2])
-        self.assertTrue(list(result.target_var) == [20, 20, 20])
-        self.assertTrue(list(result.sort_var) == [4, 3, 2])
+        self.assertTrue(list(result.target.disturbed_index) == [0, 1, 2])
+        self.assertTrue(list(result.target.target_var) == [20, 20, 20])
+        self.assertTrue(list(result.target.sort_var) == [4, 3, 2])
         self.assertTrue(
-            np.allclose(result.area_proportions, [1.0, 1.0, 1.0]))
+            np.allclose(result.target.area_proportions, [1.0, 1.0, 1.0]))
 
     def test_sorted_merch_target_error_on_dimension_mismatch1(self):
 
@@ -209,12 +210,12 @@ class RuleTargetTest(unittest.TestCase):
             sort_value=pd.Series([4, 3, 2, 1]),
             efficiency=0.8,
             eligible=pd.Series([True, True, True, True]))
-        self.assertTrue(list(result.disturbed_index) == [0, 1, 2, 3])
+        self.assertTrue(list(result.target.disturbed_index) == [0, 1, 2, 3])
 
         # efficiency*production causes this
-        self.assertTrue(list(result.target_var) == [8, 16, 8, 8])
+        self.assertTrue(list(result.target.target_var) == [8, 16, 8, 8])
 
-        self.assertTrue(list(result.sort_var) == [4, 3, 2, 1])
+        self.assertTrue(list(result.target.sort_var) == [4, 3, 2, 1])
 
         # (0.8 * 10 + 0.8 * 20 + 0.8 * 10) == 32
         # (10 * x) == 33 - 32 == 1
@@ -222,7 +223,7 @@ class RuleTargetTest(unittest.TestCase):
 
         # carbon_target = 0.8 * 3 * 10 + 1/10 = 25
         self.assertTrue(
-            np.allclose(result.area_proportions, [0.8, 0.8, 0.8, 1/10]))
+            np.allclose(result.target.area_proportions, [0.8, 0.8, 0.8, 1/10]))
 
     def test_compute_disturbance_production_expected_result(self):
 

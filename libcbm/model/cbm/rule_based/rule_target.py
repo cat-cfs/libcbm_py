@@ -10,6 +10,28 @@ from libcbm.model.cbm import cbm_model
 from libcbm.model.cbm import cbm_variables
 
 
+class RuleTargetResult():
+    """
+    Standard return value for the functions in this module.
+
+    Args:
+        target (pandas.DataFrame): dataframe containing:
+
+            - target_var: the disturbed amount for each disturbed record
+                (in target units)
+            - sort_var: the variable used to sort values for disturbance
+            - disturbed_index: the index of each disturbed record
+            - area_proportions: the proportions for each record to disturb
+
+        statistics (dict): dictionary describing the statistics involved in
+            the disturbance target
+
+    """
+    def __init__(self, target, statistics):
+        self.target = target
+        self.statistics = statistics
+
+
 def spatially_indexed_target(identifier, inventory):
     """return a target for a single inventory record identified by the
     specified identifier
@@ -43,7 +65,7 @@ def spatially_indexed_target(identifier, inventory):
         "sort_var": [0.0],
         "disturbed_index": [match_index[0]],
         "area_proportions":  [1.0]})
-    return result
+    return RuleTargetResult(target=result, statistics=None)
 
 
 def sorted_disturbance_target(target_var, sort_var, target, eligible):
@@ -140,11 +162,11 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         "num_records_disturbed": result.shape[0],
         "num_splits": num_splits,
         "num_eligible": eligible.sum(),
-        "min_disturbed": disturbed["target_var"].min(),
-        "min_disturbed": disturbed["target_var"].max(),
-        "min_disturbed": disturbed["target_var"].mean()
+        "min_disturbed_target": disturbed["target_var"].min(),
+        "max_disturbed_target": disturbed["target_var"].max(),
+        "mean_disturbed_target": disturbed["target_var"].mean()
     }
-    return result, stats
+    return RuleTargetResult(target=result, statistics=stats)
 
 
 def proportion_area_target(area_target_value, inventory, eligible):
@@ -236,7 +258,8 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
         sort_var=sort_value,
         target=carbon_target,
         eligible=eligible)
-    result.area_proportions = result.area_proportions * efficiency
+    result.target.area_proportions = \
+        result.target.area_proportions * efficiency
     return result
 
 
