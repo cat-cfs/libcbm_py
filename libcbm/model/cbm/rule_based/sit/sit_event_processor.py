@@ -115,11 +115,11 @@ class SITEventProcessor():
                     sit_event, cbm_vars.classifiers.columns.tolist()),
                 cbm_vars.classifiers))
 
-        stats_row_list = []
+        stats_row = []
 
         def stats_func(event_stats):
             event_stats.update({"sit_event_index": sit_event_idx})
-            stats_row_list.append(event_stats)
+            stats_row.append( event_stats)
 
         cbm_vars = event_processor.process_event(
             event_filter=event_filter,
@@ -129,9 +129,7 @@ class SITEventProcessor():
             cbm_vars=cbm_vars,
             stats_func=stats_func)
 
-        stats_df = pd.DataFrame(stats_row_list)
-
-        return cbm_vars, stats_df
+        return cbm_vars, stats_row[0]
 
     def _event_iterator(self, sit_events):
 
@@ -175,12 +173,15 @@ class SITEventProcessor():
         time_step_events = sit_events[
             sit_events.time_step == time_step].copy()
 
+        stats_rows = []
         for idx, sit_event in self._event_iterator(time_step_events):
             eligible = cbm_vars.params.disturbance_type <= 0
-            cbm_vars, stats_df = self._process_event(
+            cbm_vars, stats_row = self._process_event(
                 eligible,
                 sit_event,
                 idx,
                 cbm_vars)
+            stats_rows.append(stats_row)
 
+        stats_df = pd.DataFrame(stats_rows)
         return cbm_vars, stats_df
