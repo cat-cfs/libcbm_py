@@ -161,10 +161,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         "shortfall": remaining_target,
         "num_records_disturbed": result.shape[0],
         "num_splits": num_splits,
-        "num_eligible": eligible.sum(),
-        "min_disturbed_target": disturbed["target_var"].min(),
-        "max_disturbed_target": disturbed["target_var"].max(),
-        "mean_disturbed_target": disturbed["target_var"].mean()
+        "num_eligible": eligible.sum()
     }
     return RuleTargetResult(target=result, statistics=stats)
 

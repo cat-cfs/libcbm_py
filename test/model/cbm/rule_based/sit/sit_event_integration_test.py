@@ -42,9 +42,6 @@ class SITEventIntegrationTest(unittest.TestCase):
             self.assertTrue(stats_row["num_records_disturbed"] == 2)
             self.assertTrue(stats_row["num_splits"] == 0)
             self.assertTrue(stats_row["num_eligible"] == 3)
-            self.assertTrue(stats_row["min_disturbed_target"] == 5)
-            self.assertTrue(stats_row["max_disturbed_target"] == 5)
-            self.assertTrue(stats_row["mean_disturbed_target"] == 5)
 
         mock_stats_func = Mock()
         mock_stats_func.side_effect = stats_func
@@ -95,9 +92,6 @@ class SITEventIntegrationTest(unittest.TestCase):
             self.assertTrue(stats_row["num_records_disturbed"] == 1)
             self.assertTrue(stats_row["num_splits"] == 0)
             self.assertTrue(stats_row["num_eligible"] == 1)
-            self.assertTrue(stats_row["min_disturbed_target"] == 5)
-            self.assertTrue(stats_row["max_disturbed_target"] == 5)
-            self.assertTrue(stats_row["mean_disturbed_target"] == 5)
 
         mock_stats_func = Mock()
         mock_stats_func.side_effect = stats_func
@@ -145,17 +139,22 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([100, 99, 98, 97, 96])
 
         def stats_func(stats):
-            stats_row = stats.iloc[0]
-            self.assertTrue(stats_row["sit_event_index"] == 1)
-            self.assertTrue(stats_row["total_eligible_value"] == 25.0)
-            self.assertTrue(stats_row["total_achieved"] == 10.0)
-            self.assertTrue(stats_row["shortfall"] == 0.0)
-            self.assertTrue(stats_row["num_records_disturbed"] == 2)
-            self.assertTrue(stats_row["num_splits"] == 0)
-            self.assertTrue(stats_row["num_eligible"] == 5)
-            self.assertTrue(stats_row["min_disturbed_target"] == 5)
-            self.assertTrue(stats_row["max_disturbed_target"] == 5)
-            self.assertTrue(stats_row["mean_disturbed_target"] == 5)
+            self.assertTrue(stats.iloc[0]["sit_event_index"] == 1)
+            self.assertTrue(stats.iloc[0]["total_eligible_value"] == 25.0)
+            self.assertTrue(stats.iloc[0]["total_achieved"] == 10.0)
+            self.assertTrue(stats.iloc[0]["shortfall"] == 0.0)
+            self.assertTrue(stats.iloc[0]["num_records_disturbed"] == 2)
+            self.assertTrue(stats.iloc[0]["num_splits"] == 0)
+            self.assertTrue(stats.iloc[0]["num_eligible"] == 5)
+
+            self.assertTrue(stats.iloc[1]["sit_event_index"] == 0)
+            # less area is available as a result of the first event
+            self.assertTrue(stats.iloc[1]["total_eligible_value"] == 10.0)
+            self.assertTrue(stats.iloc[1]["total_achieved"] == 10.0)
+            self.assertTrue(stats.iloc[1]["shortfall"] == 0.0)
+            self.assertTrue(stats.iloc[1]["num_records_disturbed"] == 2)
+            self.assertTrue(stats.iloc[1]["num_splits"] == 0)
+            self.assertTrue(stats.iloc[1]["num_eligible"] == 2)
 
         mock_stats_func = Mock()
         mock_stats_func.side_effect = stats_func
@@ -194,8 +193,21 @@ class SITEventIntegrationTest(unittest.TestCase):
         # and the second will be split into 1 and 4 hectare stands.
         cbm_vars.state.age = np.array([99, 100])
 
+        def stats_func(stats):
+            stats_row = stats.iloc[0]
+            self.assertTrue(stats_row["total_eligible_value"] == 10.0)
+            self.assertTrue(stats_row["total_achieved"] == 6.0)
+            self.assertTrue(stats_row["shortfall"] == 0.0)
+            self.assertTrue(stats_row["num_records_disturbed"] == 2)
+            self.assertTrue(stats_row["num_splits"] == 1)
+            self.assertTrue(stats_row["num_eligible"] == 2)
+
+        mock_stats_func = Mock()
+        mock_stats_func.side_effect = stats_func
+
         pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit)
-        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+        cbm_vars_result = pre_dynamics_func(
+            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
@@ -206,6 +218,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(cbm_vars.state.shape[0] == 3)
         # note the age sort order caused the first record to split
         self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
+
+        mock_stats_func.assert_called_once()
 
     def test_rule_based_merch_target_age_sort(self):
 
@@ -229,9 +243,22 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
+        def stats_func(stats):
+            stats_row = stats.iloc[0]
+            self.assertTrue(stats_row["total_eligible_value"] == 10.0)
+            self.assertTrue(stats_row["total_achieved"] == 6.0)
+            self.assertTrue(stats_row["shortfall"] == 0.0)
+            self.assertTrue(stats_row["num_records_disturbed"] == 2)
+            self.assertTrue(stats_row["num_splits"] == 1)
+            self.assertTrue(stats_row["num_eligible"] == 2)
+
+        mock_stats_func = Mock()
+        mock_stats_func.side_effect = stats_func
+
         pre_dynamics_func = helpers.get_events_pre_dynamics_func(
             sit, helpers.get_parameters_factory())
-        cbm_vars_result = pre_dynamics_func(time_step=1, cbm_vars=cbm_vars)
+        cbm_vars_result = pre_dynamics_func(
+            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==

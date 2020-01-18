@@ -119,7 +119,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 self.assertTrue(cbm_vars.pools.equals(mock_pools))
                 self.assertTrue(
                     cbm_vars.state.equals(mock_state_variables))
-
+                stats_func({})
                 return cbm_vars
 
             mock_event_processor.process_event.side_effect = mock_process_event
