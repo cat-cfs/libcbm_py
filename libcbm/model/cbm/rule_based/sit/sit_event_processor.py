@@ -119,7 +119,7 @@ class SITEventProcessor():
 
         def stats_func(event_stats):
             event_stats.update({"sit_event_index": sit_event_idx})
-            stats_row.append( event_stats)
+            stats_row.append(event_stats)
 
         cbm_vars = event_processor.process_event(
             event_filter=event_filter,
