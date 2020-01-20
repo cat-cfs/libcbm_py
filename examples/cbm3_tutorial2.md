@@ -62,7 +62,8 @@ results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
 Create a function to apply rule based disturbance events and transition rules based on the SIT input
 
 ```python
-rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(sit, cbm, lambda x: None)
+rule_based_stats = sit_cbm_factory.create_rule_based_stats()
+rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(sit, cbm, rule_based_stats.append_stats)
 ```
 
 ## Simulation
@@ -165,6 +166,12 @@ annual_process_fluxes = [
 
 ```python
 fi[["timestep"]+annual_process_fluxes].groupby("timestep").sum().plot(figsize=(15,10))
+```
+
+## Disturbance Statistics
+
+```python
+rule_based_stats.stats
 ```
 
 ## Appendix

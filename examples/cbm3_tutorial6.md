@@ -47,10 +47,6 @@ Initialize and validate the inventory in the sit dataset
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 ```
 
-```python
-sit.sit_data.classifier_values
-```
-
 Initialize an instance of the CBM model
 
 ```python
@@ -67,12 +63,18 @@ results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
     classifier_map={
         x["id"]: x["value"]
         for x in classifier_config["classifier_values"]})
+
+```
+
+```python
+rule_based_stats = sit_cbm_factory.create_rule_based_stats()
 ```
 
 Create a function to apply rule based disturbance events and transition rules based on the SIT input
 
 ```python
-rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(sit, cbm, lambda x: None)
+rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(
+    sit, cbm, rule_based_stats.append_stats)
 ```
 
 ## Simulation
@@ -92,7 +94,7 @@ cbm_simulator.simulate(
 ```
 
 ```python
-results.classifiers
+inventory
 ```
 
 ## Pool Results
@@ -130,7 +132,11 @@ annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,160),yli
 ## State Variable Results
 
 ```python
-si = results.state_indicators
+
+```
+
+```python
+si = results.state
 ```
 
 ```python
@@ -146,7 +152,7 @@ si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ## Flux Indicators
 
 ```python
-fi = results.flux_indicators
+fi = results.flux
 ```
 
 ```python
@@ -179,6 +185,12 @@ annual_process_fluxes = [
 
 ```python
 fi[["timestep"]+annual_process_fluxes].groupby("timestep").sum().plot(figsize=(15,10))
+```
+
+## Disturbance Statistics
+
+```python
+rule_based_stats.stats
 ```
 
 ## Appendix
