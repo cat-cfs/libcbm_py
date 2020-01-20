@@ -34,7 +34,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
             stats_row = stats.iloc[0]
             self.assertTrue(stats_row["total_eligible_value"] == 15.0)
             self.assertTrue(stats_row["total_achieved"] == 10.0)

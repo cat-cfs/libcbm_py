@@ -145,7 +145,7 @@ class TransitionRuleProcessor(object):
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
                 continue
-                # the first proportion corresponds to teh source data
+                # the first proportion corresponds to the source data
                 # for all remaining splits, so the must be updated last so
                 # those changes don't propagate into the splits.
 
@@ -193,7 +193,7 @@ class TransitionRuleProcessor(object):
             params_split = params_split.append(params)
             flux_split = flux_split.append(flux)
 
-        # for the first index use the existing matched records
+        # for the first index in the tr_group use the existing matched records
         transition_classifier_ids = \
             self._get_transition_classifier_set(
                 transition_rule=tr_group.iloc[0])

@@ -48,7 +48,7 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
             time_step=time_step,
             sit_events=sit_events,
             cbm_vars=cbm_vars)
-        stats_func(stats_df)
+        stats_func(time_step, stats_df)
         return cbm_vars
 
     return sit_events_pre_dynamics_func

@@ -34,7 +34,8 @@ class SITEventProcessorTest(unittest.TestCase):
         mock_stats_func = Mock()
         pre_dynamics_func = get_pre_dynamics_func(
             mock_sit_event_processor, mock_sit_events)
-        cbm_vars_result = pre_dynamics_func(time_step, mock_cbm_vars, mock_stats_func)
+        cbm_vars_result = pre_dynamics_func(
+            time_step, mock_cbm_vars, mock_stats_func)
 
         mock_sit_event_processor.process_events.assert_called_with(
             time_step=time_step,
@@ -42,7 +43,7 @@ class SITEventProcessorTest(unittest.TestCase):
             cbm_vars=mock_cbm_vars)
 
         self.assertTrue(cbm_vars_result == "mock_cbm_vars")
-        mock_stats_func.assert_called_once_with("mock_stats_result")
+        mock_stats_func.assert_called_once_with(time_step, "mock_stats_result")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
