@@ -18,6 +18,7 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import \
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit import sit_event_processor
+from libcbm.model.cbm.rule_based.rule_based_stats import RuleBasedStats
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_classifier_parser
@@ -302,6 +303,16 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     return cbm
 
 
+def create_rule_based_stats():
+    """Creates an object for tracking rule based model run statistics
+
+    Returns:
+        libcbm.model.cbm.rule_based.rule_based_stats.RuleBasedStats:
+            a storage class for tracking rule based disturbance statistics
+    """
+    return RuleBasedStats()
+
+
 def create_sit_rule_based_pre_dynamics_func(sit, cbm, disturbance_stats_func,
                                             random_func=np.random.rand):
     """Assembles a function for processing SIT rule based disturbances.
@@ -309,6 +320,9 @@ def create_sit_rule_based_pre_dynamics_func(sit, cbm, disturbance_stats_func,
     Args:
         sit (object): sit instance as returned by :py:func:`load_sit`
         cbm (object): initialized instance of the CBM model
+        disturbance_stats_func (func): a function of
+            (timestep, pandas.DataFrame) for storing per timestep rule based
+            disturbance statistics.
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
             Defaults to np.random.rand.
