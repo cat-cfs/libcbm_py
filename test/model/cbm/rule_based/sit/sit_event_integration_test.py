@@ -36,6 +36,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         def stats_func(timestep, stats):
             stats_row = stats.iloc[0]
+            self.assertTrue(timestep == 1)
             self.assertTrue(stats_row["total_eligible_value"] == 15.0)
             self.assertTrue(stats_row["total_achieved"] == 10.0)
             self.assertTrue(stats_row["shortfall"] == 0.0)
@@ -84,8 +85,9 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
             stats_row = stats.iloc[0]
+            self.assertTrue(timestep == 1)
             self.assertTrue(stats_row["total_eligible_value"] == 5.0)
             self.assertTrue(stats_row["total_achieved"] == 5.0)
             self.assertTrue(stats_row["shortfall"] == 5.0)
@@ -138,7 +140,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([100, 99, 98, 97, 96])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 1)
+
             self.assertTrue(stats.iloc[0]["sit_event_index"] == 1)
             self.assertTrue(stats.iloc[0]["total_eligible_value"] == 25.0)
             self.assertTrue(stats.iloc[0]["total_achieved"] == 10.0)
@@ -193,7 +198,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         # and the second will be split into 1 and 4 hectare stands.
         cbm_vars.state.age = np.array([99, 100])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 1)
+
             stats_row = stats.iloc[0]
             self.assertTrue(stats_row["total_eligible_value"] == 10.0)
             self.assertTrue(stats_row["total_achieved"] == 6.0)
@@ -243,7 +251,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 1)
+
             stats_row = stats.iloc[0]
             self.assertTrue(stats_row["total_eligible_value"] == 10.0)
             self.assertTrue(stats_row["total_achieved"] == 10.0)
@@ -289,7 +300,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100, 98])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 1)
+
             stats_row = stats.iloc[0]
             self.assertTrue(stats_row["total_eligible_value"] == 9.0)
             self.assertTrue(stats_row["total_achieved"] == 9.0)
@@ -335,7 +349,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 4)
+
             stats_row = stats.iloc[0]
             self.assertTrue(stats_row["total_eligible_value"] == 10.0)
             self.assertTrue(stats_row["total_achieved"] == 7.0)
@@ -391,7 +408,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.HardwoodMerch = 1.0
         cbm_vars.state.age = np.array([50])
 
-        def stats_func(stats):
+        def stats_func(timestep, stats):
+
+            self.assertTrue(timestep == 100)
+
             self.assertTrue(stats.iloc[0]["total_eligible_value"] == 1000.0)
             self.assertTrue(stats.iloc[0]["total_achieved"] == 20.0)
             self.assertTrue(stats.iloc[0]["shortfall"] == 0.0)

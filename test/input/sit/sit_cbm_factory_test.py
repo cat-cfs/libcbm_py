@@ -20,9 +20,10 @@ class SITCBMFactoryTest(unittest.TestCase):
         cbm = sit_cbm_factory.initialize_cbm(sit)
         results, reporting_func = \
             cbm_simulator.create_in_memory_reporting_func()
+        rule_based_stats = sit_cbm_factory.create_rule_based_stats()
         rule_based_event_func = \
             sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(
-                sit, cbm, lambda x: None)
+                sit, cbm, rule_based_stats.append_stats)
         cbm_simulator.simulate(
             cbm,
             n_steps=1,
@@ -35,3 +36,4 @@ class SITCBMFactoryTest(unittest.TestCase):
         self.assertTrue(
             results.pools[results.pools.timestep == 0].shape[0]
             == inventory.shape[0])
+        self.assertTrue(rule_based_stats.stats.shape[0] > 0)
