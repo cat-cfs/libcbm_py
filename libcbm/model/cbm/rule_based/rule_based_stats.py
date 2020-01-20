@@ -1,3 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 import pandas as pd
 
 
@@ -14,7 +18,7 @@ class RuleBasedStats:
 
         Args:
             timestep (int): the timestep for the data in stats
-            stats (pandas.DataFrame): the stats
+            stats (pandas.DataFrame): the stats to append to this instance
         """
         stats = stats.copy()
         stats.insert(loc=0, column="timestep", value=timestep)

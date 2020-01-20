@@ -1,8 +1,6 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at https://mozilla.org/MPL/2.0/.
-"""
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import numpy as np
 from libcbm.input.sit import sit_transition_rule_parser
@@ -104,7 +102,19 @@ class SITTransitionRuleProcessor:
         self.transition_rule_processor = transition_rule_processor
 
     def process_transition_rules(self, sit_transitions, cbm_vars):
+        """Process the specified SIT transition rules versus the current model
+        state.
 
+        Args:
+            sit_transitions (pandas.DataFrame): sit formatted transition rules.
+                See:
+                :py:func:`libcbm.input.sit.sit_transition_rule_parser.parse`
+            cbm_vars (object): CBM model state.
+
+        Returns:
+            object: the input CBM model state with the transition rules
+            applied.
+        """
         classifiers = cbm_vars.classifiers
         n_stands = classifiers.shape[0]
         classifier_names = classifiers.columns.tolist()

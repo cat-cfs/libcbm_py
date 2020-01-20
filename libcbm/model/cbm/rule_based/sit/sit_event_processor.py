@@ -1,8 +1,6 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at https://mozilla.org/MPL/2.0/.
-"""
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import numpy as np
 import pandas as pd
@@ -55,7 +53,22 @@ def get_pre_dynamics_func(sit_event_processor, sit_events):
 
 
 class SITEventProcessor():
+    """SITEventProcessor processes standard import tool format events.
 
+    Args:
+        model_functions (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper):
+            The collection of CBM dynamics functions, which are used by this
+            class to compute Carbon production due to disturbance events for
+            MerchC targets.
+        compute_functions (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): Used
+            to compute carbon dynamics flows for MerchC targets.
+        classifier_filter_builder (ClassifierFilter):
+            object used to construct and evaluate classifier filters to
+            include or exclude stands from event and transition eligibility
+        random_generator (function): a function to generate a random sequence,
+            whose single argument is an integer that specifies the number of
+            random numbers in the returned sequence.
+    """
     def __init__(self, model_functions, compute_functions,
                  classifier_filter_builder, random_generator):
 
