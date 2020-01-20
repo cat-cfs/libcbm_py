@@ -225,4 +225,6 @@ class TransitionRuleProcessor(object):
             cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
                 flux_split).reset_index(drop=True)
 
+        cbm_vars.state = cbm_vars.state.astype({'regeneration_delay': 'int32'})
+        cbm_vars.params = cbm_vars.params.astype({'reset_age': 'int32'})
         return transition_mask_output, cbm_vars
