@@ -2,7 +2,8 @@ import pandas as pd
 
 
 class RuleBasedStats:
-    """Storage for timestep by timestep statistics.
+    """Storage and method for appending to timestep by timestep model
+    statistics.
     """
     def __init__(self):
         self.stats = pd.DataFrame()
@@ -17,4 +18,4 @@ class RuleBasedStats:
         """
         stats = stats.copy()
         stats.insert(loc=0, column="timestep", value=timestep)
-        self.stats = self.stats.append(stats)
+        self.stats = self.stats.append(stats, sort=True)
