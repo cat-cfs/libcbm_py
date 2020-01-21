@@ -1,7 +1,7 @@
 libcbm
 ======
 
-version 0.2.1
+version 0.2.4
 
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
@@ -48,9 +48,9 @@ Code Documentation
    :caption: Contents:
 
    cbm_model
-   rule_based
    cbm_input_and_variables
    cbm_sit
+   rule_based
    cbm3_tutorial2
    cbm_testing
    cbm_core_functions
