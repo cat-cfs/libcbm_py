@@ -1,8 +1,6 @@
-"""
-This Source Code Form is subject to the terms of the Mozilla Public
-License, v. 2.0. If a copy of the MPL was not distributed with this
-file, You can obtain one at https://mozilla.org/MPL/2.0/.
-"""
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
 import sqlite3
@@ -306,7 +304,8 @@ class CBMDefaultsReference:
         }
 
     def get_pools(self):
-        """Get the ordered list of human readable pool codes defined in cbm_defaults
+        """Get the ordered list of human readable pool codes defined in
+        cbm_defaults
 
         Returns:
             list: list of string codes for cbm pools
