@@ -105,6 +105,11 @@ def parse(classifiers_table):
             # for classifiers, the 3rd column is used for the name
             "name": classifiers.description},
         columns=["id", "name"])
+
+    # since the order of classifier ids defines the order of classifier
+    # value columns in the other SIT tables, sorting is important
+    classifiers.sort_values(by="id", inplace=True)
+
     duplicate_classifiers = classifiers.groupby("name").size()
     duplicated_classifier_names = list(
         duplicate_classifiers[duplicate_classifiers > 1].index)
