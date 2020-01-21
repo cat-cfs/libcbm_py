@@ -78,8 +78,6 @@ These are used to initialize the CBM class.
 .. automodule:: libcbm.model.cbm.cbm_defaults
     :members:
 
-.. automodule:: libcbm.model.cbm.cbm_defaults_queries
-    :members:
 
 CBM default parameters reference
 --------------------------------

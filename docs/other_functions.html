@@ -111,6 +111,38 @@
 </dl>
 </dd></dl>
 
+<span class="target" id="module-libcbm.resources.cbm_defaults_queries"></span><dl class="function">
+<dt id="libcbm.resources.cbm_defaults_queries.get_query">
+<code class="sig-prename descclassname">libcbm.resources.cbm_defaults_queries.</code><code class="sig-name descname">get_query</code><span class="sig-paren">(</span><em class="sig-param">query_filename</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.cbm_defaults_queries.get_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>read the contents of a file stored in the same directory as this module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>query_filename</strong> (<em>str</em>) – the name of a file stored in the same
+directory as this module</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the contents of the file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.resources.cbm_defaults_queries.get_script_dir">
+<code class="sig-prename descclassname">libcbm.resources.cbm_defaults_queries.</code><code class="sig-name descname">get_script_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.cbm_defaults_queries.get_script_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the directory containing this script file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the directory containing this module</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 <span class="target" id="module-libcbm.data_helpers"></span><dl class="function">
 <dt id="libcbm.data_helpers.append_simulation_result">
 <code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">append_simulation_result</code><span class="sig-paren">(</span><em class="sig-param">simulation_result</em>, <em class="sig-param">timestep_data</em>, <em class="sig-param">timestep</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.append_simulation_result" title="Permalink to this definition">¶</a></dt>
@@ -167,16 +199,20 @@ potentially convert to ndarray</p>
 
 <dl class="function">
 <dt id="libcbm.data_helpers.get_nullable_ndarray">
-<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_nullable_ndarray</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">type=&lt;class 'ctypes.c_double'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_nullable_ndarray" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_nullable_ndarray</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">dtype=&lt;class 'ctypes.c_double'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_nullable_ndarray" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method for wrapper parameters that can be specified either as
-null pointers or pointers to numpy memory</p>
+null pointers or pointers to numpy memory.  Return a pointer to float64
+or int32 memory for use with ctypes wrapped functions, or None if None
+is specified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>a</strong> (<em>numpy.ndarray</em><em>, </em><em>None</em>) – array to convert to pointer, if None is
 specified None is returned.</p></li>
 <li><p><strong>type</strong> (<em>object</em><em>, </em><em>optional</em>) – type supported by ctypes.POINTER. Defaults
-to ctypes.c_double.</p></li>
+to ctypes.c_double.  Since libcbm only currently uses int32, or
+float 64, the only valid values are those that equal
+ctypes.c_double, or ctypes.c_int32</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

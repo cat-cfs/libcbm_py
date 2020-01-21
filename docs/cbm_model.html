@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="CBM rule based disturbances and transition rules" href="rule_based.html" />
+    <link rel="next" title="CBM Input and Variables" href="cbm_input_and_variables.html" />
     <link rel="prev" title="libcbm" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
+          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="libcbm"
@@ -51,8 +51,8 @@
   <p class="topless"><a href="index.html"
                         title="previous chapter">libcbm</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="rule_based.html"
-                        title="next chapter">CBM rule based disturbances and transition rules</a></p>
+  <p class="topless"><a href="cbm_input_and_variables.html"
+                        title="next chapter">CBM Input and Variables</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -331,16 +331,23 @@ for a compatible definition.</p></li>
 <span id="simulator"></span><h2>Simulator<a class="headerlink" href="#module-libcbm.model.cbm.cbm_simulator" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><em class="sig-param">density=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create storage and a function for simulation results.  The function
-return value can be passed to <a class="reference internal" href="#libcbm.model.cbm.cbm_simulator.simulate" title="libcbm.model.cbm.cbm_simulator.simulate"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate()</span></code></a> to track simultion
-results.</p>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><em class="sig-param">density=False</em>, <em class="sig-param">classifier_map=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create storage and a function for complete simulation results.  The
+function return value can be passed to <a class="reference internal" href="#libcbm.model.cbm.cbm_simulator.simulate" title="libcbm.model.cbm.cbm_simulator.simulate"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate()</span></code></a> to track
+simulation results.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>density</strong> (<em>bool</em><em>, </em><em>optional</em>) – if set to true pool and flux indicators will
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>density</strong> (<em>bool</em><em>, </em><em>optional</em>) – if set to true pool and flux indicators will
 be computed as area densities (tonnes C/ha). By default, pool and
 flux outputs are computed as mass (tonnes C) based on the area of
-each stand. Defaults to False.</p>
+each stand. Defaults to False.</p></li>
+<li><p><strong>classifier_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – a classifier map for subsituting the
+internal classifier id values with classifier value names.
+If specified, the names associated with each id in the map are the
+values in the  the classifiers result DataFrame  If set to None the
+id values will be returned.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><p>a pair of values:</p>
@@ -349,14 +356,21 @@ each stand. Defaults to False.</p>
 <li><p>types.SimpleNameSpace: an object with properties:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>pool_indicators a pandas.DataFrame for storing pools</p></li>
-<li><p>flux_indicators a pandas.DataFrame for storing fluxes</p></li>
-<li><p>state_indicators a pandas.DataFrame for storing state</p></li>
+<li><p>pool (pandas.DataFrame) pool results storage</p></li>
+<li><p>flux (pandas.DataFrame) flux results storage</p></li>
+<li><p>state (pandas.DataFrame) state results storage</p></li>
+<li><dl class="simple">
+<dt>classifiers (pandas.DataFrame) classifiers results</dt><dd><p>storage</p>
+</dd>
+</dl>
+</li>
+<li><p>params (pandas.DataFrame) cbm params storage</p></li>
+<li><p>inventory (pandas.DataFrame) inventory storage</p></li>
 </ul>
 </div></blockquote>
 </li>
 <li><dl class="simple">
-<dt>func: a function for appending to the above results</dt><dd><p>DataFrames</p>
+<dt>func: a function for appending to the above results</dt><dd><p>DataFrames for each timestep</p>
 </dd>
 </dl>
 </li>
@@ -424,7 +438,7 @@ The function returns None.</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
+          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="libcbm"

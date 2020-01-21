@@ -14,8 +14,8 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="CBM Input and Variables" href="cbm_input_and_variables.html" />
-    <link rel="prev" title="CBM" href="cbm_model.html" /> 
+    <link rel="next" title="libcbm run of tutorial 2 from CBM-CFS3" href="cbm3_tutorial2.html" />
+    <link rel="prev" title="CBM Standard Import tool format" href="cbm_sit.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -27,10 +27,10 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="cbm_model.html" title="CBM"
+          <a href="cbm_sit.html" title="CBM Standard Import tool format"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
@@ -46,11 +46,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="cbm_model.html"
-                        title="previous chapter">CBM</a></p>
+  <p class="topless"><a href="cbm_sit.html"
+                        title="previous chapter">CBM Standard Import tool format</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="cbm_input_and_variables.html"
-                        title="next chapter">CBM Input and Variables</a></p>
+  <p class="topless"><a href="cbm3_tutorial2.html"
+                        title="next chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -81,7 +81,8 @@
 <dl class="class">
 <dt id="libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter">
 <em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.classifier_filter.</code><code class="sig-name descname">ClassifierFilter</code><span class="sig-paren">(</span><em class="sig-param">classifiers_config</em>, <em class="sig-param">classifier_aggregates</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a classifier filter</p>
+<dd><p>ClassifierFilter creates a filter for deeming stands
+eligible or ineligible for disturbance or transition.</p>
 <dl class="method">
 <dt id="libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter.create_classifiers_filter">
 <code class="sig-name descname">create_classifiers_filter</code><span class="sig-paren">(</span><em class="sig-param">classifier_set</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter.create_classifiers_filter" title="Permalink to this definition">¶</a></dt>
@@ -165,7 +166,7 @@ simulation state and variables</p></li>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.event_processor.process_event">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filter</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filter</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em>, <em class="sig-param">stats_func</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a CBM rule based event by filtering and targeting a subset of
 the specified inventory.  In the case of merchantable or area targets
 splits may occur to meet a disturbance target exactly.</p>
@@ -179,11 +180,15 @@ See <a class="reference internal" href="#module-libcbm.model.cbm.rule_based.rule
 specified index is eligible (True) or ineligible (False) for
 disturbance.</p></li>
 <li><p><strong>target_func</strong> (<em>func</em>) – a function for creating a disturbance target.
-See: <a class="reference internal" href="#module-libcbm.model.cbm.rule_based.rule_target" title="libcbm.model.cbm.rule_based.rule_target"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.model.cbm.rule_based.rule_target</span></code></a></p></li>
+See: <a class="reference internal" href="#module-libcbm.model.cbm.rule_based.rule_target" title="libcbm.model.cbm.rule_based.rule_target"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.model.cbm.rule_based.rule_target</span></code></a>.
+The function return value is:
+<a class="reference internal" href="#libcbm.model.cbm.rule_based.rule_target.RuleTargetResult" title="libcbm.model.cbm.rule_based.rule_target.RuleTargetResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.rule_based.rule_target.RuleTargetResult</span></code></a></p></li>
 <li><p><strong>disturbance_type_id</strong> (<em>int</em>) – the id for the disturbance event being
 processed.</p></li>
 <li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
 simulation state and variables</p></li>
+<li><p><strong>stats_func</strong> (<em>func</em>) – a function called with the summary statistics of the
+rule based event, for debugging or other uses.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -314,9 +319,35 @@ local_dict.</p>
 </dl>
 </dd></dl>
 
-<span class="target" id="module-libcbm.model.cbm.rule_based.rule_target"></span><dl class="function">
+<span class="target" id="module-libcbm.model.cbm.rule_based.rule_target"></span><dl class="class">
+<dt id="libcbm.model.cbm.rule_based.rule_target.RuleTargetResult">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">RuleTargetResult</code><span class="sig-paren">(</span><em class="sig-param">target</em>, <em class="sig-param">statistics</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.RuleTargetResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Standard return value for the functions in this module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>pandas.DataFrame</em>) – <p>dataframe containing:</p>
+<ul>
+<li><dl class="simple">
+<dt>target_var: the disturbed amount for each disturbed record</dt><dd><p>(in target units)</p>
+</dd>
+</dl>
+</li>
+<li><p>sort_var: the variable used to sort values for disturbance</p></li>
+<li><p>disturbed_index: the index of each disturbed record</p></li>
+<li><p>area_proportions: the proportions for each record to disturb</p></li>
+</ul>
+</p></li>
+<li><p><strong>statistics</strong> (<em>dict</em>) – dictionary describing the statistics involved in
+the disturbance target</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_target.compute_disturbance_production">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">compute_disturbance_production</code><span class="sig-paren">(</span><em class="sig-param">model_functions</em>, <em class="sig-param">compute_functions</em>, <em class="sig-param">pools</em>, <em class="sig-param">inventory</em>, <em class="sig-param">disturbance_type</em>, <em class="sig-param">flux</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.compute_disturbance_production" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">compute_disturbance_production</code><span class="sig-paren">(</span><em class="sig-param">model_functions</em>, <em class="sig-param">compute_functions</em>, <em class="sig-param">cbm_vars</em>, <em class="sig-param">disturbance_type</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.compute_disturbance_production" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a series of disturbance production values based on</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -324,11 +355,9 @@ local_dict.</p>
 <li><p><strong>model_functions</strong> (<em>object</em>) – Model specific functions. Used for computing
 disturbance flows based on the specified disturbance type.</p></li>
 <li><p><strong>compute_functions</strong> (<em>object</em>) – Functions for computing pool flows.</p></li>
-<li><p><strong>pools</strong> (<em>pandas.DataFrame</em>) – The current pool values.</p></li>
-<li><p><strong>inventory</strong> (<em>pandas.DataFrame</em>) – The inventory DataFrame.</p></li>
+<li><p><strong>cbm_vars</strong> (<em>object</em>) – object containing current simulation state</p></li>
 <li><p><strong>disturbance_type</strong> (<em>int</em>) – The integer code specifying the disturbance
 type.</p></li>
-<li><p><strong>flux</strong> (<em>pandas.DataFrame</em>) – Storage for flux computation</p></li>
 <li><p><strong>eligible</strong> (<em>numpy.ndarray</em>) – Bit values where True specifies the index is
 eligible for the disturbance, and false the opposite. In the
 returned result False indices will be set with 0’s.</p></li>
@@ -364,7 +393,7 @@ in units tonnes C/ha.</p>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_target.proportion_area_target">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">proportion_area_target</code><span class="sig-paren">(</span><em class="sig-param">area_target_value</em>, <em class="sig-param">inventory</em>, <em class="sig-param">eligible</em>, <em class="sig-param">on_unrealized</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.proportion_area_target" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">proportion_area_target</code><span class="sig-paren">(</span><em class="sig-param">area_target_value</em>, <em class="sig-param">inventory</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.proportion_area_target" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a disturbance target which disturbs that proportion of all
 eligible records that such that the sum of all eligible record
 areas multiplied by the proportion equals the area target exactly.</p>
@@ -376,10 +405,6 @@ areas multiplied by the proportion equals the area target exactly.</p>
 disturbance.</p></li>
 <li><p><strong>eligible</strong> (<em>pandas.Series</em>) – boolean array indicating
 whether or not each index is eligible for this disturbance target</p></li>
-<li><p><strong>on_unrealized</strong> (<em>func</em>) – a function called when the specified parameters
-will result in an unrealized disturbance.
-area_target_value - sum(inventory.area[eligible]) is passed as the
-single parameter.</p></li>
 </ul>
 </dd>
 </dl>
@@ -387,7 +412,7 @@ single parameter.</p></li>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_target.sorted_area_target">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_area_target</code><span class="sig-paren">(</span><em class="sig-param">area_target_value</em>, <em class="sig-param">sort_value</em>, <em class="sig-param">inventory</em>, <em class="sig-param">eligible</em>, <em class="sig-param">on_unrealized</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_area_target" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_area_target</code><span class="sig-paren">(</span><em class="sig-param">area_target_value</em>, <em class="sig-param">sort_value</em>, <em class="sig-param">inventory</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_area_target" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a sorted sequence of areas/proportions for meeting an area
 target exactly.</p>
 <dl class="field-list simple">
@@ -401,10 +426,6 @@ number of rows in the specified inventory</p></li>
 disturbance.</p></li>
 <li><p><strong>eligible</strong> (<em>pandas.Series</em>) – boolean array indicating
 whether or not each index is eligible for this disturbance target</p></li>
-<li><p><strong>on_unrealized</strong> (<em>func</em>) – a function called when the specified parameters
-will result in an unrealized disturbance.
-area_target_value - sum(inventory.area[eligible]) is passed as the
-single parameter.</p></li>
 </ul>
 </dd>
 </dl>
@@ -417,7 +438,7 @@ single parameter.</p></li>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_target.sorted_disturbance_target">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_disturbance_target</code><span class="sig-paren">(</span><em class="sig-param">target_var</em>, <em class="sig-param">sort_var</em>, <em class="sig-param">target</em>, <em class="sig-param">eligible</em>, <em class="sig-param">on_unrealized</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_disturbance_target" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_disturbance_target</code><span class="sig-paren">(</span><em class="sig-param">target_var</em>, <em class="sig-param">sort_var</em>, <em class="sig-param">target</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_disturbance_target" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given a target variable, a sort variable, and a cumulative
 target, produce a table of index, area proportions that will
 satisfy exactly a rule based disturbance target.</p>
@@ -432,9 +453,6 @@ the accumulator.</p></li>
 <li><p><strong>target</strong> (<em>float</em>) – the cumulative target.</p></li>
 <li><p><strong>eligible</strong> (<em>pandas.Series</em>) – boolean array indicating
 whether or not each index is eligible for this disturbance target</p></li>
-<li><p><strong>on_unrealized</strong> (<em>func</em>) – a function called when the specified parameters
-will result in an unrealized disturbance. target - sum(target_var)
-is passed as the single parameter.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
@@ -470,7 +488,7 @@ disturb a proportion.</p>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_target.sorted_merch_target">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_merch_target</code><span class="sig-paren">(</span><em class="sig-param">carbon_target</em>, <em class="sig-param">disturbance_production</em>, <em class="sig-param">inventory</em>, <em class="sig-param">sort_value</em>, <em class="sig-param">efficiency</em>, <em class="sig-param">eligible</em>, <em class="sig-param">on_unrealized</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_merch_target" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_target.</code><code class="sig-name descname">sorted_merch_target</code><span class="sig-paren">(</span><em class="sig-param">carbon_target</em>, <em class="sig-param">disturbance_production</em>, <em class="sig-param">inventory</em>, <em class="sig-param">sort_value</em>, <em class="sig-param">efficiency</em>, <em class="sig-param">eligible</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_target.sorted_merch_target" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a sorted sequence of areas/proportions for meeting a merch C
 target exactly.</p>
 <dl class="field-list simple">
@@ -491,10 +509,6 @@ the number of rows in the specified inventory</p></li>
 records</p></li>
 <li><p><strong>eligible</strong> (<em>pandas.Series</em>) – boolean array indicating
 whether or not each index is eligible for this disturbance target</p></li>
-<li><p><strong>on_unrealized</strong> (<em>func</em>) – a function called when the specified parameters
-will result in an unrealized disturbance.
-carbon_target - sum(eligible production) is passed as the single
-parameter.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -598,8 +612,25 @@ function call.</p>
 <h2>SIT Specific functionality<a class="headerlink" href="#sit-specific-functionality" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_event_processor.</code><code class="sig-name descname">SITEventProcessor</code><span class="sig-paren">(</span><em class="sig-param">model_functions</em>, <em class="sig-param">compute_functions</em>, <em class="sig-param">cbm_defaults_ref</em>, <em class="sig-param">classifier_filter_builder</em>, <em class="sig-param">random_generator</em>, <em class="sig-param">on_unrealized_event</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_event_processor.</code><code class="sig-name descname">SITEventProcessor</code><span class="sig-paren">(</span><em class="sig-param">model_functions</em>, <em class="sig-param">compute_functions</em>, <em class="sig-param">classifier_filter_builder</em>, <em class="sig-param">random_generator</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>SITEventProcessor processes standard import tool format events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_functions</strong> (<a class="reference internal" href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper" title="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper"><em>libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper</em></a>) – The collection of CBM dynamics functions, which are used by this
+class to compute Carbon production due to disturbance events for
+MerchC targets.</p></li>
+<li><p><strong>compute_functions</strong> (<a class="reference internal" href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper"><em>libcbm.wrapper.libcbm_wrapper.LibCBMWrapper</em></a>) – Used
+to compute carbon dynamics flows for MerchC targets.</p></li>
+<li><p><strong>classifier_filter_builder</strong> (<a class="reference internal" href="#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter" title="libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter"><em>ClassifierFilter</em></a>) – object used to construct and evaluate classifier filters to
+include or exclude stands from event and transition eligibility</p></li>
+<li><p><strong>random_generator</strong> (<em>function</em>) – a function to generate a random sequence,
+whose single argument is an integer that specifies the number of
+random numbers in the returned sequence.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events">
 <code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process sit_events for the start of the given timestep, computing a
@@ -633,7 +664,61 @@ simulation state and variables</p></li>
 
 </dd></dl>
 
-<span class="target" id="module-libcbm.model.cbm.rule_based.sit.sit_event_processor"></span><dl class="function">
+<span class="target" id="module-libcbm.model.cbm.rule_based.sit.sit_event_processor"></span><dl class="class">
+<dt>
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_event_processor.</code><code class="sig-name descname">SITEventProcessor</code><span class="sig-paren">(</span><em class="sig-param">model_functions</em>, <em class="sig-param">compute_functions</em>, <em class="sig-param">classifier_filter_builder</em>, <em class="sig-param">random_generator</em><span class="sig-paren">)</span></dt>
+<dd><p>SITEventProcessor processes standard import tool format events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_functions</strong> (<a class="reference internal" href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper" title="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper"><em>libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper</em></a>) – The collection of CBM dynamics functions, which are used by this
+class to compute Carbon production due to disturbance events for
+MerchC targets.</p></li>
+<li><p><strong>compute_functions</strong> (<a class="reference internal" href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper"><em>libcbm.wrapper.libcbm_wrapper.LibCBMWrapper</em></a>) – Used
+to compute carbon dynamics flows for MerchC targets.</p></li>
+<li><p><strong>classifier_filter_builder</strong> (<a class="reference internal" href="#libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter" title="libcbm.model.cbm.rule_based.classifier_filter.ClassifierFilter"><em>ClassifierFilter</em></a>) – object used to construct and evaluate classifier filters to
+include or exclude stands from event and transition eligibility</p></li>
+<li><p><strong>random_generator</strong> (<em>function</em>) – a function to generate a random sequence,
+whose single argument is an integer that specifies the number of
+random numbers in the returned sequence.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt>
+<code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span></dt>
+<dd><p>Process sit_events for the start of the given timestep, computing a
+new simulation state, and the disturbance types to apply for the
+timestep.</p>
+<p>Because of the nature of CBM rule based events, the size of the
+returned arrays may grow on the “n_stands” dimension from the original
+sizes due to area splitting, however the total inventory area will
+remain constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_step</strong> (<em>int</em>) – the simulation time step for which to compute the
+events.  Used to filter the specified sit_events DataFrame by
+its “time_step” column</p></li>
+<li><p><strong>sit_events</strong> (<em>pandas.DataFrame</em>) – table of SIT formatted events.
+Expected format is the same as the return value of:
+<a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_disturbance_event_parser.parse" title="libcbm.input.sit.sit_disturbance_event_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_event_parser.parse()</span></code></a></p></li>
+<li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
+simulation state and variables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>expanded and updated cbm_vars</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_event_processor.get_pre_dynamics_func">
 <code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_event_processor.</code><code class="sig-name descname">get_pre_dynamics_func</code><span class="sig-paren">(</span><em class="sig-param">sit_event_processor</em>, <em class="sig-param">sit_events</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.get_pre_dynamics_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a function for applying SIT rule based events in a CBM
@@ -914,7 +999,31 @@ current simulation for which to create a filter.</p></li>
 <dl class="class">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor">
 <em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.</code><code class="sig-name descname">SITTransitionRuleProcessor</code><span class="sig-paren">(</span><em class="sig-param">transition_rule_processor</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><dl class="method">
+<dt id="libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor.process_transition_rules">
+<code class="sig-name descname">process_transition_rules</code><span class="sig-paren">(</span><em class="sig-param">sit_transitions</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor.process_transition_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process the specified SIT transition rules versus the current model
+state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sit_transitions</strong> (<em>pandas.DataFrame</em>) – sit formatted transition rules.
+See:
+<a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_transition_rule_parser.parse" title="libcbm.input.sit.sit_transition_rule_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_transition_rule_parser.parse()</span></code></a></p></li>
+<li><p><strong>cbm_vars</strong> (<em>object</em>) – CBM model state.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the input CBM model state with the transition rules
+applied.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 </div>
@@ -935,10 +1044,10 @@ current simulation for which to create a filter.</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
+          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              >next</a> |</li>
         <li class="right" >
-          <a href="cbm_model.html" title="CBM"
+          <a href="cbm_sit.html" title="CBM Standard Import tool format"
              >previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>

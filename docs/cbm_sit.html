@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="libcbm run of tutorial 2 from CBM-CFS3" href="cbm3_tutorial2.html" />
+    <link rel="next" title="CBM rule based disturbances and transition rules" href="rule_based.html" />
     <link rel="prev" title="CBM Input and Variables" href="cbm_input_and_variables.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,7 +27,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
+          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
@@ -59,8 +59,8 @@
   <p class="topless"><a href="cbm_input_and_variables.html"
                         title="previous chapter">CBM Input and Variables</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="cbm3_tutorial2.html"
-                        title="next chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
+  <p class="topless"><a href="rule_based.html"
+                        title="next chapter">CBM rule based disturbances and transition rules</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -1597,6 +1597,50 @@ classifiers</p></li>
 <div class="section" id="module-libcbm.input.sit.sit_cbm_factory">
 <span id="simulating-sit-input"></span><h2>Simulating SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_cbm_factory" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.create_rule_based_stats">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_rule_based_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_rule_based_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an object for tracking rule based model run statistics</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a storage class for tracking rule based disturbance statistics</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>libcbm.model.cbm.rule_based.rule_based_stats.RuleBasedStats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_pre_dynamics_func">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_sit_rule_based_pre_dynamics_func</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">cbm</em>, <em class="sig-param">disturbance_stats_func</em>, <em class="sig-param">random_func=&lt;built-in method rand of numpy.random.mtrand.RandomState object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_pre_dynamics_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assembles a function for processing SIT rule based disturbances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p></li>
+<li><p><strong>cbm</strong> (<em>object</em>) – initialized instance of the CBM model</p></li>
+<li><p><strong>disturbance_stats_func</strong> (<em>func</em>) – a function of
+(timestep, pandas.DataFrame) for storing per timestep rule based
+disturbance statistics.</p></li>
+<li><p><strong>random_func</strong> (<em>func</em><em>, </em><em>optional</em>) – A function of a single integer that
+returns a numeric 1d array whose length is the integer argument.
+Defaults to np.random.rand.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>a function of (timestep, cbm_vars) which computes rule based</dt><dd><p>disturbances for a given time step and simulation state</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>func</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcbm.input.sit.sit_cbm_factory.get_classifiers">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_classifiers</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_classifiers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create classifier input for initializing the CBM class based on CBM
@@ -2101,7 +2145,7 @@ classifier values definition. Use the return value of:
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
+          <a href="rule_based.html" title="CBM rule based disturbances and transition rules"
              >next</a> |</li>
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"

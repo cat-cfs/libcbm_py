@@ -201,8 +201,8 @@ current simulation state.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>classifiers</strong> (<em>pandas.DataFrame</em>) – classifier values associated with
 the inventory</p></li>
-<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Will not be modified by this function.
-See:
+<li><p><strong>inventory</strong> (<em>object</em>) – CBM inventory data. Will not be modified by
+this function. See:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_inventory" title="libcbm.model.cbm.cbm_variables.initialize_inventory"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_inventory()</span></code></a>
 for a compatible definition</p></li>
 <li><p><strong>state_variables</strong> (<em>pandas.DataFrame</em>) – simulation variables which
@@ -400,38 +400,6 @@ values. See:
 <a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables" title="libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables()</span></code></a>
 for a compatible definition.</p></li>
 </ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="libcbm.wrapper.cbm.libcbm_spinup_state.LibCBM_SpinupState">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.cbm.libcbm_spinup_state.</code><code class="sig-name descname">LibCBM_SpinupState</code><a class="headerlink" href="#libcbm.wrapper.cbm.libcbm_spinup_state.LibCBM_SpinupState" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper for low level enum of the same name defined in LibCBM C/C++ code</p>
-<dl class="method">
-<dt id="libcbm.wrapper.cbm.libcbm_spinup_state.LibCBM_SpinupState.get_name">
-<em class="property">static </em><code class="sig-name descname">get_name</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.libcbm_spinup_state.LibCBM_SpinupState.get_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>gets the name of the enum field associated with the specified
-integer</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<em>int</em>) – an integer matching the value of one of the enum fields</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – raised when the specified value is not a defined enum
-    field</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>the name of the enum field associated with the specified</dt><dd><p>integer</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>str</p>
 </dd>
 </dl>
 </dd></dl>
