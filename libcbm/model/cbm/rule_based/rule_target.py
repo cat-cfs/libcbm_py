@@ -110,11 +110,20 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
-        # create the empty dataframe result
-        return pd.DataFrame(
-            columns=[
-                "target_var", "sort_var", "disturbed_index",
-                "area_proportions"])
+        return RuleTargetResult(
+            target=pd.DataFrame(
+                columns=[
+                    "target_var", "sort_var", "disturbed_index",
+                    "area_proportions"]),
+            statistics={
+                "total_eligible_value": disturbed["target_var"].sum(),
+                "total_achieved": 0,
+                "shortfall": target,
+                "num_records_disturbed": 0,
+                "num_splits": 0,
+                "num_eligible": eligible.sum()
+            })
+
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
