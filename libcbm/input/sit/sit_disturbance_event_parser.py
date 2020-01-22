@@ -138,10 +138,10 @@ def parse(disturbance_events, classifiers, classifier_values,
             "Undefined disturbance type ids (as defined in sit "
             f"disturbance types) detected: {undefined_disturbances}"
         )
-    disturbance_join = events.merge(
-        disturbance_types, left_on="disturbance_type",
-        right_on="id")
-    events.disturbance_type = disturbance_join.name
+
+    disturbance_type_map = {
+        x["id"]: x["name"] for _, x in disturbance_types.iterrows()}
+    events.disturbance_type = events.disturbance_type.map(disturbance_type_map)
 
     events = events.rename(
         columns={

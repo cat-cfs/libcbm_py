@@ -104,10 +104,12 @@ def parse(transition_rules, classifiers, classifier_values,
             "Undefined disturbance type ids (as defined in sit "
             f"disturbance types) detected: {undefined_disturbances}"
         )
-    disturbance_join = transitions.merge(
-        disturbance_types, left_on="disturbance_type",
-        right_on="id")
-    transitions.disturbance_type = disturbance_join.name
+
+    disturbance_type_map = {
+        x["id"]: x["name"] for _, x in disturbance_types.iterrows()}
+
+    transitions.disturbance_type = \
+        transitions.disturbance_type.map(disturbance_type_map)
 
     transitions = transitions.rename(
         columns={
