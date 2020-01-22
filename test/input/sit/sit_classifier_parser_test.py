@@ -174,3 +174,24 @@ class SITClassifierParserTest(unittest.TestCase):
 
         self.assertTrue(list(classifiers.id) == [1, 2])
         self.assertTrue(list(classifiers.name) == ["999", "700"])
+
+    def test_expected_result_with_classifier_id_out_of_order(self):
+        """checks that numeric values are converted to strings
+        """
+
+        sit_classifiers_table = pd.DataFrame(
+            data=[
+                ("2", "_CLASSIFIER", "999", np.nan, np.nan),
+                (2, 1.0, "a", np.nan, np.nan),
+                (2, "b", "b", np.nan, np.nan),
+                (2, 2.0, "agg1", 1.0, "b"),
+                (2, "agg2", "agg2", 1.0, "b"),
+                (1, "_CLASSIFIER", 700, np.nan, np.nan),
+                (1, 5, "a", np.nan, np.nan),
+                (1, 6, "agg1", "5", np.nan)])
+
+        classifiers, _, _ = \
+            sit_classifier_parser.parse(sit_classifiers_table)
+
+        self.assertTrue(list(classifiers.id) == [1, 2])
+
