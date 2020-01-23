@@ -12,13 +12,6 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
-class SITProcessEventsResult():
-
-    def __init__(self, cbm_vars, stats_df, sit_disturbances):
-        self.cbm_vars = cbm_vars
-        self.stats_df = stats_df
-        self.sit_disturbances = sit_disturbances
-
 def get_pre_dynamics_func(sit_event_processor, sit_events):
     """Gets a function for applying SIT rule based events in a CBM
     timestep loop.
@@ -100,7 +93,7 @@ class SITEventProcessor():
 
         return compute_disturbance_production
 
-    def _process_event(self, eligible, sit_event, sit_event_idx, cbm_vars):
+    def _process_event(self, eligible, sit_event, cbm_vars):
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
@@ -135,21 +128,14 @@ class SITEventProcessor():
                     sit_event, cbm_vars.classifiers.columns.tolist()),
                 cbm_vars.classifiers))
 
-        stats_row = []
-
-        def stats_func(event_stats):
-            event_stats.update({"sit_event_index": sit_event_idx})
-            stats_row.append(event_stats)
-
-        cbm_vars = event_processor.process_event(
+        process_event_result = event_processor.process_event(
             event_filter=event_filter,
             undisturbed=eligible,
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
-            cbm_vars=cbm_vars,
-            stats_func=stats_func)
+            cbm_vars=cbm_vars)
 
-        return cbm_vars, stats_row[0]
+        return process_event_result
 
     def _event_iterator(self, sit_events):
 
@@ -160,8 +146,8 @@ class SITEventProcessor():
             by="disturbance_type_id",
             kind="mergesort")
         # mergesort is a stable sort, and the default "quicksort" is not
-        for idx, sorted_event in sorted_events.iterrows():
-            yield idx, dict(sorted_event)
+        for event_index, sorted_event in sorted_events.iterrows():
+            yield event_index, dict(sorted_event)
 
     def process_events(self, time_step, sit_events, cbm_vars):
         """Process sit_events for the start of the given timestep, computing a
@@ -194,14 +180,13 @@ class SITEventProcessor():
             sit_events.time_step == time_step].copy()
 
         stats_rows = []
-        for idx, sit_event in self._event_iterator(time_step_events):
+        for event_index, sit_event in self._event_iterator(time_step_events):
             eligible = cbm_vars.params.disturbance_type <= 0
-            cbm_vars, stats_row = self._process_event(
-                eligible,
-                sit_event,
-                idx,
-                cbm_vars)
-            stats_rows.append(stats_row)
+            process_event_result = self._process_event(
+                eligible, sit_event, cbm_vars)
+            stats = process_event_result.rule_target_result.statistics
+            stats["sit_event_index"] = event_index
+            stats_rows.append(stats)
 
         stats_df = pd.DataFrame(stats_rows)
         return cbm_vars, stats_df
