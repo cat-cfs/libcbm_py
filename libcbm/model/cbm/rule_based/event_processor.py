@@ -7,8 +7,15 @@ import numpy as np
 from libcbm.model.cbm.rule_based import rule_filter
 
 
+class ProcessEventResult:
+
+    def __init__(self, cbm_vars, filter_result, rule_target_result):
+        self.cbm_vars = cbm_vars
+        self.filter_result = filter_result
+        self.rule_target_result = rule_target_result
+
 def process_event(event_filter, undisturbed, target_func,
-                  disturbance_type_id, cbm_vars, stats_func):
+                  disturbance_type_id, cbm_vars):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -28,13 +35,10 @@ def process_event(event_filter, undisturbed, target_func,
             processed.
         cbm_vars (object): an object containing dataframes that store cbm
             simulation state and variables
-        stats_func (func): a function called with the summary statistics of the
-            rule based event, for debugging or other uses.
 
     Returns:
-        tuple: The computed disturbance index and pools, state variables,
-            classifiers and inventory which can be modified when splitting
-            occurs. See the return value of :py:func:`apply_rule_based_event`
+        ProcessEventResult: instance of class containing results for the
+            disturbance event
     """
 
     filter_result = rule_filter.evaluate_filter(event_filter)
@@ -46,10 +50,10 @@ def process_event(event_filter, undisturbed, target_func,
     rule_target_result = target_func(
         cbm_vars, filter_result)
 
-    stats_func(rule_target_result.statistics)
-
-    return apply_rule_based_event(
+    cbm_vars = apply_rule_based_event(
         rule_target_result.target, disturbance_type_id, cbm_vars)
+
+    return ProcessEventResult(cbm_vars, filter_result, rule_target_result)
 
 
 def apply_rule_based_event(target, disturbance_type_id, cbm_vars):

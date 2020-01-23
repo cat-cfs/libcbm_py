@@ -12,6 +12,13 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
+class SITProcessEventsResult():
+
+    def __init__(self, cbm_vars, stats_df, sit_disturbances):
+        self.cbm_vars = cbm_vars
+        self.stats_df = stats_df
+        self.sit_disturbances = sit_disturbances
+
 def get_pre_dynamics_func(sit_event_processor, sit_events):
     """Gets a function for applying SIT rule based events in a CBM
     timestep loop.
