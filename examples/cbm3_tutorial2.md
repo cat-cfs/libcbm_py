@@ -41,6 +41,14 @@ config_path = os.path.join(resources.get_test_resources_dir(), "cbm3_tutorial2",
 sit = sit_cbm_factory.load_sit(config_path)
 ```
 
+```python
+sit.sit_data.disturbance_events
+```
+
+```python
+sit.sit_data.transition_rules
+```
+
 Initialize and validate the inventory in the sit dataset
 
 ```python
