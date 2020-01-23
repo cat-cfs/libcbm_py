@@ -93,18 +93,12 @@ class EventProcessorTest(unittest.TestCase):
 
             mock_target_func.side_effect = target_func
 
-            stats_func = Mock()
-
-            cbm_vars_result = event_processor.process_event(
+            res = event_processor.process_event(
                 event_filter=mock_event_filter,
                 undisturbed=mock_undisturbed,
                 target_func=mock_target_func,
                 disturbance_type_id=disturbance_type_id,
-                cbm_vars=mock_cbm_vars,
-                stats_func=stats_func
-                )
-
-            stats_func.assert_called_once_with("mock_statistics")
+                cbm_vars=mock_cbm_vars)
 
             mock_rule_filter.evaluate_filter.assert_called_once_with(
                 "mock_event_filter")
@@ -112,17 +106,17 @@ class EventProcessorTest(unittest.TestCase):
 
             # no splits occurred here, so the inputs are returned
             self.assertTrue(
-                cbm_vars_result.classifiers.equals(mock_classifiers))
+                res.cbm_vars.classifiers.equals(mock_classifiers))
             self.assertTrue(
-                cbm_vars_result.inventory.equals(mock_inventory))
+                res.cbm_vars.inventory.equals(mock_inventory))
             self.assertTrue(
-                cbm_vars_result.pools.equals(mock_pools))
+                res.cbm_vars.pools.equals(mock_pools))
             self.assertTrue(
-                cbm_vars_result.state.equals(mock_state_variables))
+                res.cbm_vars.state.equals(mock_state_variables))
             self.assertTrue(
-                cbm_vars_result.flux_indicators.equals(mock_flux_indicators))
+                res.cbm_vars.flux_indicators.equals(mock_flux_indicators))
             self.assertTrue(
-                cbm_vars_result.params.equals(mock_params))
+                res.cbm_vars.params.equals(mock_params))
 
     def test_apply_rule_based_event_expected_result_with_no_split(self):
 

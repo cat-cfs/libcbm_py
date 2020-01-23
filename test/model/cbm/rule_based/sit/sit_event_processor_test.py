@@ -102,7 +102,7 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_event_processor.process_event = Mock()
 
             def mock_process_event(event_filter, undisturbed, target_func,
-                                   disturbance_type_id, cbm_vars, stats_func):
+                                   disturbance_type_id, cbm_vars):
                 call_count = mock_event_processor.process_event.call_count
 
                 # using call count checks event sorting
@@ -120,7 +120,6 @@ class SITEventProcessorTest(unittest.TestCase):
                 self.assertTrue(cbm_vars.pools.equals(mock_pools))
                 self.assertTrue(
                     cbm_vars.state.equals(mock_state_variables))
-                stats_func({})
                 return cbm_vars
 
             mock_event_processor.process_event.side_effect = mock_process_event
@@ -157,7 +156,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator)
 
-            cbm_vars_result, stats = sit_event_processor.process_events(
+            cbm_vars_result = sit_event_processor.process_events(
                 time_step=1,  # there are 2 mock events with t = 1
                 sit_events=mock_sit_events,
                 cbm_vars=mock_cbm_vars)
