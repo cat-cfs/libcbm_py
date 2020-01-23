@@ -8,11 +8,25 @@ from libcbm.model.cbm.rule_based import rule_filter
 
 
 class ProcessEventResult:
+    """Storage class for the result of the :py:func:`process_event`
+    function.
 
+    Args:
+        cbm_vars (object): an object containing dataframes that store cbm
+            simulation state and variables
+        filter_result (np.ndarray): numpy boolean array indicating for each
+            stand index in cbm_vars the index was eligible for the event when
+            true, and ineligible when false
+        rule_target_result (RuleTargetResult): instance of
+            :py:class:`libcbm.model.cbm.rule_based.rule_target.RuleTargetResult`
+            indicating targetted stands for this event
+    """
     def __init__(self, cbm_vars, filter_result, rule_target_result):
+
         self.cbm_vars = cbm_vars
         self.filter_result = filter_result
         self.rule_target_result = rule_target_result
+
 
 def process_event(event_filter, undisturbed, target_func,
                   disturbance_type_id, cbm_vars):
