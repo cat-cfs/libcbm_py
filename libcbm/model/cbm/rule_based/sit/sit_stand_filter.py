@@ -103,8 +103,7 @@ def get_state_variable_filter_mappings():
     """
     return get_state_variable_age_filter_mappings() + [
         ("MinYearsSinceDist", "time_since_last_disturbance", ">="),
-        ("MaxYearsSinceDist", "time_since_last_disturbance", "<="),
-        ("LastDistTypeID", "last_disturbance_type", "==")]
+        ("MaxYearsSinceDist", "time_since_last_disturbance", "<=")]
 
 
 def create_state_filter_expression(sit_data, age_only):
@@ -151,6 +150,16 @@ def create_state_filter_expression(sit_data, age_only):
             ))
 
     expression = " & ".join(expression_tokens)
+    return expression, columns
+
+
+def create_last_disturbance_type_filter(sit_data):
+
+    expression = "({state_variable} {operator} {value})".format(
+        state_variable="last_disturbance_type",
+        operator="==",
+        value=sit_data["LastDistTypeID"])
+    columns = ["last_disturbance_type"]
     return expression, columns
 
 
