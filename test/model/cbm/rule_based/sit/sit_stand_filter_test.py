@@ -38,32 +38,33 @@ class SITStandFilterTest(unittest.TestCase):
             self.assertTrue(exp == expected_expressions[i_row])
             self.assertTrue(set(cols) == set(expected_columns[i_row]))
 
+    def test_create_last_disturbance_type_filter(self):
+        exp, cols = sit_stand_filter.create_last_disturbance_type_filter(
+            {"LastDistTypeID": 1})
+        self.assertTrue(exp == "(last_disturbance_type == 1)")
+        self.assertTrue(cols == ["last_disturbance_type"])
+
     def test_expected_result_on_create_state_variable_filter(self):
 
         mock_data_columns = [
-            "min_age", "max_age", "MinYearsSinceDist", "MaxYearsSinceDist",
-            "LastDistTypeID"]
+            "min_age", "max_age", "MinYearsSinceDist", "MaxYearsSinceDist"]
 
         mock_data = [
-            [10, -1, -1, 5, -1],
-            [-1, 7, -1, -1, -1],
-            [10, -1, 30, -1, 4],
-            [-1, -1, -1, -1, 2],
-            [-1, -1, -1, -1, -1]]
+            [10, -1, -1, 5],
+            [-1, 7, -1, -1],
+            [10, -1, 30, -1],
+            [-1, -1, -1, -1]]
 
         expected_expressions = [
             "(age >= 10) & (time_since_last_disturbance <= 5)",
             "(age <= 7)",
-            "(age >= 10) & (time_since_last_disturbance >= 30) & " +
-            "(last_disturbance_type == 4)",
-            "(last_disturbance_type == 2)",
+            "(age >= 10) & (time_since_last_disturbance >= 30)",
             ""]
 
         expected_columns = [
             ["age", "time_since_last_disturbance"],
             ["age"],
-            ["age", "time_since_last_disturbance", "last_disturbance_type"],
-            ["last_disturbance_type"],
+            ["age", "time_since_last_disturbance"],
             []]
 
         mock_sit_transitions_data = pd.DataFrame(
