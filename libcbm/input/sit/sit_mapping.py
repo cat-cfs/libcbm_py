@@ -8,9 +8,9 @@ import numpy as np
 
 class SITMapping():
 
-    def __init__(self, config, cbm_defaults_ref):
+    def __init__(self, config, sit_cbm_defaults):
         self.config = config
-        self.cbm_defaults_ref = cbm_defaults_ref
+        self.sit_cbm_defaults = sit_cbm_defaults
 
     def get_species(self, species, classifiers, classifier_values):
         """Get a series of CBM species ids based on the specified species
@@ -45,7 +45,7 @@ class SITMapping():
             suffixes=["_classifier", "_classifier_value"])
         afforestation_pre_types = {
             x["afforestation_pre_type_name"]
-            for x in self.cbm_defaults_ref.get_afforestation_pre_types()}
+            for x in self.sit_cbm_defaults.get_afforestation_pre_types()}
 
         species_map = {}
         for species_mapping in self.config["species"]["species_mapping"]:
@@ -63,7 +63,7 @@ class SITMapping():
                 species_map[user_species] = -1
                 continue
             try:
-                species_id = self.cbm_defaults_ref.get_species_id(
+                species_id = self.sit_cbm_defaults.get_species_id(
                     default_species)
             except KeyError:
                 raise KeyError(
@@ -143,7 +143,7 @@ class SITMapping():
         for admin, eco in inventory[spu_classifier].map(default_spu_map):
             try:
                 output.append(
-                    self.cbm_defaults_ref.get_spatial_unit_id(admin, eco))
+                    self.sit_cbm_defaults.get_spatial_unit_id(admin, eco))
             except KeyError:
                 raise KeyError(
                     "The specified administrative/ecological boundary "
@@ -194,7 +194,7 @@ class SITMapping():
 
         def spu_map_func(row):
             try:
-                return self.cbm_defaults_ref.get_spatial_unit_id(
+                return self.sit_cbm_defaults.get_spatial_unit_id(
                     row.default_admin_boundary, row.default_eco_boundary)
             except KeyError:
                 raise KeyError(
@@ -239,13 +239,13 @@ class SITMapping():
             if "default_spuid" in self.config["spatial_units"]:
                 default_spuid = self.config["spatial_units"]["default_spuid"]
                 try:
-                    self.cbm_defaults_ref.get_spatial_unit(default_spuid)
+                    self.sit_cbm_defaults.get_spatial_unit(default_spuid)
                 except KeyError:
                     raise KeyError(
                         "specified spatial unit id not found in defaults: "
                         f"{default_spuid}")
             else:
-                default_spuid = self.cbm_defaults_ref.get_spatial_unit_id(
+                default_spuid = self.sit_cbm_defaults.get_spatial_unit_id(
                     self.config["spatial_units"]["admin_boundary"],
                     self.config["spatial_units"]["eco_boundary"]
                 )
@@ -268,7 +268,7 @@ class SITMapping():
 
         default_non_forest = {
             x["afforestation_pre_type_name"]: x["afforestation_pre_type_id"]
-            for x in self.cbm_defaults_ref.get_afforestation_pre_types()}
+            for x in self.sit_cbm_defaults.get_afforestation_pre_types()}
 
         non_forest_in_species = len(
             set(default_non_forest.keys())
@@ -280,7 +280,7 @@ class SITMapping():
         species_classifier = self.config["species"]["species_classifier"]
         if non_forest_in_species:
             default_species = {
-                x["species_name"] for x in self.cbm_defaults_ref.get_species()}
+                x["species_name"] for x in self.sit_cbm_defaults.get_species()}
             non_forest_classifier = species_classifier
             for item in self.config["species"]["species_mapping"]:
                 user_value = item["user_species"]
@@ -367,7 +367,7 @@ class SITMapping():
                 f"{undefined_values}")
         return inventory[non_forest_classifier].map(default_nonforest_type_map)
 
-    def get_disturbance_type_id(self, disturbance_type):
+    def get_sit_disturbance_type_id(self, disturbance_type):
         """Gets disturbance type ids based on the specified series of
         disturbance types, and the SIT mapping.  Used to encode any of:
 
@@ -379,13 +379,26 @@ class SITMapping():
         Args:
             disturbance_type (pandas.Series): A series of disturbance types
 
+        Returns:
+            pandas.Series: a series of disturbance type ids
+        """
+        raise NotImplementedError()
+
+    def get_default_disturbance_type_id(self, disturbance_type):
+        """Returns a series of default disturbance type ids based on the
+        specified series of SIT disturbance type names and SIT mapping
+
+        Args:
+            disturbance_type (pandas.Series): A series of disturbance types
+
         Raises:
             KeyError: disturbance type mapped more than one time in SIT mapping
             KeyError: mapped default disturbance type not found in default data
             KeyError: sit disturbance type code not mapped to default type
 
         Returns:
-            pandas.Series: a series of disturbance type ids
+            pandas.Series: a series of disturbance type ids as defined in CBM
+                default data
         """
         disturbance_type_map = {}
         for item in self.config["disturbance_types"]:
@@ -399,7 +412,7 @@ class SITMapping():
                 dist_type_id = None
                 try:
                     dist_type_id = \
-                        self.cbm_defaults_ref.get_disturbance_type_id(
+                        self.sit_cbm_defaults.get_disturbance_type_id(
                             default_dist_type)
                 except KeyError:
                     raise KeyError(
@@ -438,7 +451,7 @@ class SITMapping():
         """
         land_classes_by_code = {
             x["code"]: x["land_class_id"]
-            for x in self.cbm_defaults_ref.get_land_classes()}
+            for x in self.sit_cbm_defaults.get_land_classes()}
         land_class_id = {x for x in land_classes_by_code.values()}
         if land_class.dtype == np.object:
             undefined_land_classes = np.setdiff1d(
