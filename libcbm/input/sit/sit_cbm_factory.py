@@ -95,6 +95,22 @@ def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
     return output
 
 
+def initialize_disturbance_types(sit):
+    """attaches sit_disturbance_type_id and default_disturbance_type_id
+    columns to sit_disturbance_types data.
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+    """
+    sit.sit_data.disturbance_types.insert(
+        0, "sit_disturbance_type_id",
+        np.arange(len(sit.sit_data.disturbance_types)))
+    sit.sit_data.disturbance_types.insert(
+        0, "default_disturbance_type_id",
+        sit.sit_mapping.get_default_disturbance_type_id(
+            sit.sit_data.disturbance_types.name))
+
+
 def initialize_inventory(sit):
     """Converts SIT inventory data input for CBM
 
@@ -143,10 +159,10 @@ def initialize_inventory(sit):
             "land_class": sit_mapping.get_land_class_id(
                 sit_data.inventory.land_class),
             "historical_disturbance_type":
-                sit_mapping.get_disturbance_type_id(
+                sit_mapping.get_sit_disturbance_type_id(
                     sit_data.inventory.historical_disturbance_type),
             "last_pass_disturbance_type":
-                sit_mapping.get_disturbance_type_id(
+                sit_mapping.get_sit_disturbance_type_id(
                     sit_data.inventory.last_pass_disturbance_type),
         })
     return classifiers_result, inventory_result
@@ -167,7 +183,7 @@ def initialize_events(sit):
         return None
     sit_events = sit.sit_data.disturbance_events.copy()
     sit_events["disturbance_type_id"] = \
-        sit.sit_mapping.get_disturbance_type_id(sit_events.disturbance_type)
+        sit.sit_mapping.get_sit_disturbance_type_id(sit_events.disturbance_type)
     return sit_events
 
 
@@ -186,7 +202,7 @@ def initialize_transition_rules(sit):
         return None
     transition_rules = sit.sit_data.transition_rules.copy()
     transition_rules["disturbance_type_id"] = \
-        sit.sit_mapping.get_disturbance_type_id(
+        sit.sit_mapping.get_sit_disturbance_type_id(
             transition_rules.disturbance_type)
     return transition_rules
 
@@ -235,6 +251,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     cbm_defaults_ref = CBMDefaultsReference(db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], cbm_defaults_ref)
+    initialize_disturbance_types(sit)
     sit.db_path = db_path
     sit.defaults = cbm_defaults_ref
     return sit
