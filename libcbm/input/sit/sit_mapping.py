@@ -382,7 +382,8 @@ class SITMapping():
         Returns:
             pandas.Series: a series of disturbance type ids
         """
-        raise NotImplementedError()
+        return disturbance_type.map(
+            self.sit_cbm_defaults.get_sit_disturbance_type_id)
 
     def get_default_disturbance_type_id(self, disturbance_type):
         """Returns a series of default disturbance type ids based on the
@@ -412,7 +413,7 @@ class SITMapping():
                 dist_type_id = None
                 try:
                     dist_type_id = \
-                        self.sit_cbm_defaults.get_disturbance_type_id(
+                        self.sit_cbm_defaults.get_default_disturbance_type_id(
                             default_dist_type)
                 except KeyError:
                     raise KeyError(
