@@ -42,7 +42,7 @@ sit = sit_cbm_factory.load_sit(config_path)
 ```
 
 ```python
-sit.sit_data.disturbance_events
+sit.sit_data.disturbance_types
 ```
 
 ```python

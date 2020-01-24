@@ -7,10 +7,8 @@ import json
 from types import SimpleNamespace
 import pandas as pd
 import numpy as np
-from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
-from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.model.cbm.rule_based.rule_based_stats import RuleBasedStats
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_format
@@ -268,6 +266,9 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         sit (object): sit instance as returned by :py:func:`load_sit`
         dll_path (str): path to the libcbm compiled library, if not
             specified a default value is used.
+        parameters_factory (func): a function for generating cbm default
+            parameter configuration, if None the default implementation
+            (cbm_defaults) is used.
 
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
