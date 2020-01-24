@@ -12,46 +12,6 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
-def get_pre_dynamics_func(sit_event_processor, sit_events):
-    """Gets a function for applying SIT rule based events in a CBM
-    timestep loop.
-
-    The returned function can be used as the
-    pre_dynamics_func argument of
-    :py:func:`libcbm.model.cbm.cbm_simulator.simulate’`
-
-    Args:
-        sit_event_processor (SITEventProcessor): Instance of
-            :py:class:`SITEventProcessor` for computing sit rule based
-            disturbance events.
-        sit_events (pandas.DataFrame): table of SIT formatted events.
-            Expected format is the same as the return value of:
-            :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
-    Returns:
-        func: a function of 2 parameters:
-
-            1. time_step: the simulation time step which is used to select
-                sit_events by the time_step column.
-            2. cbm_vars: an object containing CBM simulation variables and
-                parameters.  Formatted the same as the return value of
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-
-            The function's return value is a copy of the input cbm_vars
-            with changes applied according to the sit_events for the
-            specified timestep.
-
-    """
-    def sit_events_pre_dynamics_func(time_step, cbm_vars, stats_func):
-        cbm_vars, stats_df = sit_event_processor.process_events(
-            time_step=time_step,
-            sit_events=sit_events,
-            cbm_vars=cbm_vars)
-        stats_func(time_step, stats_df)
-        return cbm_vars
-
-    return sit_events_pre_dynamics_func
-
-
 class SITEventProcessor():
     """SITEventProcessor processes standard import tool format events.
 

@@ -8,42 +8,6 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based import rule_filter
 
 
-def get_pre_dynamics_func(sit_transition_processor, sit_transitions):
-    """Gets a function for applying SIT transition rules in a CBM
-    timestep loop.
-
-        The returned function can be used as the
-        pre_dynamics_func argument of
-        :py:func:`libcbm.model.cbm.cbm_simulator.simulate’`
-
-    Args:
-        sit_transition_processor (SITTransitionRuleProcessor):
-            instance of an object to apply sit transitions to the simulation
-            state.
-        sit_transitions (pandas.DataFrame): table of SIT formatted transitions.
-            Expected format is the same as the return value of:
-            :py:func:`libcbm.input.sit.sit_transition_rule_parser.parse`
-
-    Returns:
-        func: a function of 2 parameters:
-
-            1. time_step: the simulation time step which is used to select
-                sit_events by the time_step column.
-            2. cbm_vars: an object containing CBM simulation variables and
-                parameters.  Formatted the same as the return value of
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-
-            The function's return value is a copy of the input cbm_vars
-            with changes applied according to the sit_events for the
-            specified timestep.
-    """
-    def sit_transition_pre_dynamics_func(_, cbm_vars):
-        cbm_vars = sit_transition_processor.process_transition_rules(
-            sit_transitions, cbm_vars)
-        return cbm_vars
-    return sit_transition_pre_dynamics_func
-
-
 def state_variable_filter_func(tr_group_key, state_variables):
     """Create a filter based on transition rule state criteria for setting
     stands eligible or ineligible for transition.

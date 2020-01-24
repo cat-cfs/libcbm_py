@@ -11,19 +11,13 @@ from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
-from libcbm.model.cbm.rule_based.transition_rule_processor import \
-    TransitionRuleProcessor
-from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
-from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
-from libcbm.model.cbm.rule_based.sit import sit_event_processor
 from libcbm.model.cbm.rule_based.rule_based_stats import RuleBasedStats
-from libcbm.input.sit.sit_mapping import SITMapping
-from libcbm.input.sit import sit_reader
-from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_format
-
+from libcbm.input.sit.sit_mapping import SITMapping
+from libcbm.input.sit import sit_reader
 import libcbm.resources
+from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -311,16 +305,12 @@ def create_rule_based_stats():
     return RuleBasedStats()
 
 
-def create_sit_rule_based_pre_dynamics_func(sit, cbm, disturbance_stats_func,
-                                            random_func=np.random.rand):
-    """Assembles a function for processing SIT rule based disturbances.
+def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
+    """initializes a class for processing SIT rule based disturbances.
 
     Args:
         sit (object): sit instance as returned by :py:func:`load_sit`
         cbm (object): initialized instance of the CBM model
-        disturbance_stats_func (func): a function of
-            (timestep, pandas.DataFrame) for storing per timestep rule based
-            disturbance statistics.
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
             Defaults to np.random.rand.
@@ -329,47 +319,18 @@ def create_sit_rule_based_pre_dynamics_func(sit, cbm, disturbance_stats_func,
         func: a function of (timestep, cbm_vars) which computes rule based
             disturbances for a given time step and simulation state
     """
-    sit_events = initialize_events(sit)
-    sit_transition_rules = initialize_transition_rules(sit)
+
     classifiers_config = get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values)
-
-    classifier_filter = ClassifierFilter(
-        classifiers_config=classifiers_config,
-        classifier_aggregates=sit.sit_data.classifier_aggregates)
 
     classifier_value_post_fix = \
         sit_format.get_transition_rule_classifier_set_postfix()
     group_err_max = sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX
-    state_filter_func = \
-        sit_transition_rule_processor.state_variable_filter_func
 
-    tr_processor = TransitionRuleProcessor(
-        classifier_filter_builder=classifier_filter,
-        state_variable_filter_func=state_filter_func,
+    return sit_rule_based_processor.sit_rule_based_processor_factory(
+        cbm=cbm,
+        random_func=random_func,
         classifiers_config=classifiers_config,
-        grouped_percent_err_max=group_err_max,
-        wildcard=sit_classifier_parser.get_wildcard_keyword(),
-        transition_classifier_postfix=classifier_value_post_fix)
-
-    event_processor = sit_event_processor.SITEventProcessor(
-        model_functions=cbm.model_functions,
-        compute_functions=cbm.compute_functions,
-        classifier_filter_builder=classifier_filter,
-        random_generator=random_func)
-
-    sit_tr_processor = \
-        sit_transition_rule_processor.SITTransitionRuleProcessor(tr_processor)
-
-    tr_func = sit_transition_rule_processor.get_pre_dynamics_func(
-        sit_tr_processor, sit_transition_rules)
-
-    dist_func = sit_event_processor.get_pre_dynamics_func(
-        event_processor, sit_events)
-
-    def pre_dynamic_func(time_step, cbm_vars):
-        cbm_vars = dist_func(time_step, cbm_vars, disturbance_stats_func)
-        cbm_vars = tr_func(time_step, cbm_vars)
-        return cbm_vars
-
-    return pre_dynamic_func
+        classifier_aggregates=sit.sit_data.classifier_aggregates,
+        sit_events=initialize_events(sit),
+        sit_transitions=initialize_transition_rules(sit))
