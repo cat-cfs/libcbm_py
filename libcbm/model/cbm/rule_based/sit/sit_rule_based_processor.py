@@ -26,7 +26,7 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
             state_variable_filter_func=state_filter_func,
             classifiers_config=classifiers_config,
             grouped_percent_err_max=tr_constants.group_err_max,
-            wildcard=tr_constants.wildcard,  # sit_classifier_parser.get_wildcard_keyword(),
+            wildcard=tr_constants.wildcard,
             transition_classifier_postfix=tr_constants.classifier_value_postfix
         ))
 

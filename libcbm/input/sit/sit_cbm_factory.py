@@ -16,6 +16,7 @@ from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
+from libcbm.input.sit import sit_classifier_parser
 import libcbm.resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 
@@ -323,9 +324,10 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
     classifiers_config = get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values)
 
-    classifier_value_post_fix = \
-        sit_format.get_transition_rule_classifier_set_postfix()
-    group_err_max = sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX
+    tr_constants = SimpleNamespace(
+        group_err_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
+        classifier_value_postfix=sit_format.get_transition_rule_classifier_set_postfix(),
+        wildcard=sit_classifier_parser.get_wildcard_keyword())
 
     return sit_rule_based_processor.sit_rule_based_processor_factory(
         cbm=cbm,
@@ -333,4 +335,5 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
         classifiers_config=classifiers_config,
         classifier_aggregates=sit.sit_data.classifier_aggregates,
         sit_events=initialize_events(sit),
-        sit_transitions=initialize_transition_rules(sit))
+        sit_transitions=initialize_transition_rules(sit),
+        tr_constants=tr_constants)
