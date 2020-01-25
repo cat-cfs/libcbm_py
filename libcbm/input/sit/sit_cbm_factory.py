@@ -15,6 +15,7 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_classifier_parser
+from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 import libcbm.resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 
@@ -183,7 +184,8 @@ def initialize_events(sit):
         return None
     sit_events = sit.sit_data.disturbance_events.copy()
     sit_events["disturbance_type_id"] = \
-        sit.sit_mapping.get_sit_disturbance_type_id(sit_events.disturbance_type)
+        sit.sit_mapping.get_sit_disturbance_type_id(
+            sit_events.disturbance_type)
     return sit_events
 
 
@@ -248,12 +250,11 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     """
     if not db_path:
         db_path = libcbm.resources.get_cbm_defaults_path()
-    cbm_defaults_ref = CBMDefaultsReference(db_path, locale_code=locale_code)
+    sit_defaults = SITCBMDefaults(db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
-        sit.config["mapping_config"], cbm_defaults_ref)
+        sit.config["mapping_config"], sit_defaults)
     initialize_disturbance_types(sit)
-    sit.db_path = db_path
-    sit.defaults = cbm_defaults_ref
+    sit.defaults = sit_defaults
     return sit
 
 
@@ -275,7 +276,7 @@ def load_sit(config_path, db_path=None):
     return sit
 
 
-def initialize_cbm(sit, dll_path=None, parameters_factory=None):
+def initialize_cbm(sit, dll_path=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -283,9 +284,6 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         sit (object): sit instance as returned by :py:func:`load_sit`
         dll_path (str): path to the libcbm compiled library, if not
             specified a default value is used.
-        parameters_factory (func): a function for generating cbm default
-            parameter configuration, if None the default implementation
-            (cbm_defaults) is used.
 
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
@@ -293,13 +291,10 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 
     if not dll_path:
         dll_path = libcbm.resources.get_libcbm_bin_path()
-    if parameters_factory is None:
-        parameters_factory = cbm_defaults.get_cbm_parameters_factory(
-            sit.db_path)
+    parameters_factory = sit.defaults.get_parameters_factory()
     cbm = cbm_factory.create(
         dll_path=dll_path,
-        dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
-            sit.db_path),
+        dll_config_factory=sit.defaults.get_configuration_factory(),
         cbm_parameters_factory=parameters_factory,
         merch_volume_to_biomass_factory=lambda:
             cbm_config.merch_volume_to_biomass_config(
