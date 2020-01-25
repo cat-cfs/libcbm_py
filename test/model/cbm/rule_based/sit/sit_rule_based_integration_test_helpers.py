@@ -174,7 +174,7 @@ def get_transition_rules_pre_dynamics_func(sit):
         classifiers_config=classifiers_config,
         classifier_aggregates=sit.sit_data.classifier_aggregates)
     classifier_value_post_fix = \
-        sit_format.get_transition_rule_classifier_set_postfix()
+        sit_format.get_tr_classifier_set_postfix()
     group_err_max = sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX
     state_filter_func = \
         sit_transition_rule_processor.state_variable_filter_func
