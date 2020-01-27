@@ -96,22 +96,6 @@ def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
     return output
 
 
-def initialize_disturbance_types(sit):
-    """attaches sit_disturbance_type_id and default_disturbance_type_id
-    columns to sit_disturbance_types data.
-
-    Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
-    """
-    sit.sit_data.disturbance_types.insert(
-        0, "sit_disturbance_type_id",
-        np.arange(len(sit.sit_data.disturbance_types)))
-    sit.sit_data.disturbance_types.insert(
-        0, "default_disturbance_type_id",
-        sit.sit_mapping.get_default_disturbance_type_id(
-            sit.sit_data.disturbance_types.name))
-
-
 def initialize_inventory(sit):
     """Converts SIT inventory data input for CBM
 
@@ -253,7 +237,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], sit_defaults)
-    initialize_disturbance_types(sit)
+    sit.db_path = db_path
     sit.defaults = sit_defaults
     return sit
 
@@ -309,16 +293,6 @@ def initialize_cbm(sit, dll_path=None):
     return cbm
 
 
-def create_rule_based_stats():
-    """Creates an object for tracking rule based model run statistics
-
-    Returns:
-        libcbm.model.cbm.rule_based.rule_based_stats.RuleBasedStats:
-            a storage class for tracking rule based disturbance statistics
-    """
-    return RuleBasedStats()
-
-
 def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
     """initializes a class for processing SIT rule based disturbances.
 
@@ -330,8 +304,8 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
             Defaults to np.random.rand.
 
     Returns:
-        func: a function of (timestep, cbm_vars) which computes rule based
-            disturbances for a given time step and simulation state
+        SITRuleBasedProcessor: an object for processing SIT rule based
+            disturbances
     """
 
     classifiers_config = get_classifiers(

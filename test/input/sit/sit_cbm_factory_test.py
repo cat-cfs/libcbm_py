@@ -20,10 +20,9 @@ class SITCBMFactoryTest(unittest.TestCase):
         cbm = sit_cbm_factory.initialize_cbm(sit)
         results, reporting_func = \
             cbm_simulator.create_in_memory_reporting_func()
-        rule_based_stats = sit_cbm_factory.create_rule_based_stats()
-        rule_based_event_func = \
-            sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(
-                sit, cbm, rule_based_stats.append_stats)
+        rule_based_processor = \
+            sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+
         cbm_simulator.simulate(
             cbm,
             n_steps=1,
@@ -31,9 +30,10 @@ class SITCBMFactoryTest(unittest.TestCase):
             inventory=inventory,
             pool_codes=sit.defaults.get_pools(),
             flux_indicator_codes=sit.defaults.get_flux_indicators(),
-            pre_dynamics_func=rule_based_event_func,
+            pre_dynamics_func=rule_based_processor.pre_dynamic_func,
             reporting_func=reporting_func)
         self.assertTrue(
             results.pools[results.pools.timestep == 0].shape[0]
             == inventory.shape[0])
-        self.assertTrue(rule_based_stats.stats.shape[0] > 0)
+        self.assertTrue(
+            len(rule_based_processor.sit_event_stats_by_timestep) > 0)
