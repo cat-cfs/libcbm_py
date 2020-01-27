@@ -5,7 +5,7 @@
 import numpy as np
 
 
-def get_transition_rule_classifier_set_postfix():
+def get_tr_classifier_set_postfix():
     """since transition rules contain 2 classifier sets (2 sets of columns)
     duplicate names are a problem if the classifier names are used for both.
     This function returns a postfix to append onto the second set of
@@ -192,7 +192,7 @@ def get_transition_rules_format(classifier_names, n_columns):
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
          "type": np.int}
     ]
-    tr_cset_postfix = get_transition_rule_classifier_set_postfix()
+    tr_cset_postfix = get_tr_classifier_set_postfix()
     classifier_set_dest = [
         {
             "name": f"{c}{tr_cset_postfix}",

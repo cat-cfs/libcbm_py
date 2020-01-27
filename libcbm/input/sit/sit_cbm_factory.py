@@ -250,7 +250,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     """
     if not db_path:
         db_path = libcbm.resources.get_cbm_defaults_path()
-    sit_defaults = SITCBMDefaults(db_path, locale_code=locale_code)
+    sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], sit_defaults)
     initialize_disturbance_types(sit)
@@ -339,7 +339,7 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
 
     tr_constants = SimpleNamespace(
         group_err_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
-        classifier_value_postfix=sit_format.get_transition_rule_classifier_set_postfix(),
+        classifier_value_postfix=sit_format.get_tr_classifier_set_postfix(),
         wildcard=sit_classifier_parser.get_wildcard_keyword())
 
     return sit_rule_based_processor.sit_rule_based_processor_factory(

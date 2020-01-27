@@ -58,7 +58,7 @@ def parse(transition_rules, classifiers, classifier_values,
         source_classifiers = transitions[row.name].unique()
 
         # get the destination classifier
-        tr_dest_fmt = sit_format.get_transition_rule_classifier_set_postfix()
+        tr_dest_fmt = sit_format.get_tr_classifier_set_postfix()
         dest_classifiers = transitions[f"{row.name}{tr_dest_fmt}"]
 
         defined_classifiers = classifier_values[
