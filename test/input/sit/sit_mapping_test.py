@@ -2,7 +2,7 @@ import unittest
 import pandas as pd
 from mock import Mock
 from libcbm.input.sit.sit_mapping import SITMapping
-from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 
 
 class SITMappingTest(unittest.TestCase):
@@ -38,7 +38,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -72,7 +72,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers = pd.DataFrame(
             data=[
                 (1, "classifier1"),
@@ -122,7 +122,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -161,7 +161,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a"]})
@@ -189,7 +189,7 @@ class SITMappingTest(unittest.TestCase):
                 "default_spuid": 10
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_spatial_unit(spatial_unit_id):
             raise KeyError
@@ -217,7 +217,7 @@ class SITMappingTest(unittest.TestCase):
                 "eco_boundary": "e1"
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_spatial_unit_id(admin_boundary, eco_boundary):
             self.assertTrue(admin_boundary == "a1")
@@ -259,7 +259,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -303,7 +303,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -345,7 +345,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -393,7 +393,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -433,7 +433,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -471,7 +471,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -502,7 +502,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -535,7 +535,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -573,7 +573,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b"],
@@ -598,7 +598,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         ref.get_afforestation_pre_types = lambda: []
         species = pd.Series(["b", "b"])
@@ -621,7 +621,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         ref.get_afforestation_pre_types = lambda: []
         species = pd.Series(["a", "a"])
@@ -651,7 +651,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a"]})
@@ -678,10 +678,10 @@ class SITMappingTest(unittest.TestCase):
                 {"user_dist_type": "fire", "default_dist_type": "Wildfire"}
             ]
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         sit_mapping = SITMapping(config, ref)
         with self.assertRaises(KeyError):
-            sit_mapping.get_disturbance_type_id(
+            sit_mapping.get_default_disturbance_type_id(
                 pd.Series(["missing_value"]))
 
     def test_undefined_default_disturbance_type_error(self):
@@ -693,17 +693,18 @@ class SITMappingTest(unittest.TestCase):
                 {"user_dist_type": "fire", "default_dist_type": "Wildfire"}
             ]
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_disturbance_type_id(name):
             raise KeyError()
 
-        ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
+        ref.get_default_disturbance_type_id.side_effect = \
+            mock_get_disturbance_type_id
         sit_mapping = SITMapping(config, ref)
         with self.assertRaises(KeyError):
-            sit_mapping.get_disturbance_type_id(
+            sit_mapping.get_default_disturbance_type_id(
                 pd.Series(["fire"]))
-        self.assertTrue(ref.get_disturbance_type_id.called)
+        self.assertTrue(ref.get_default_disturbance_type_id.called)
 
     def test_duplicated_user_disturbance_type_error(self):
         """checks that an error is raised when a disturbance type is
@@ -717,10 +718,10 @@ class SITMappingTest(unittest.TestCase):
                  "default_dist_type": "Clearcut"}
             ]
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         sit_mapping = SITMapping(config, ref)
         with self.assertRaises(KeyError):
-            sit_mapping.get_disturbance_type_id(
+            sit_mapping.get_default_disturbance_type_id(
                 pd.Series(["duplicated"]))
 
     def test_get_disturbance_type_id_returns_expected_value(self):
@@ -734,7 +735,7 @@ class SITMappingTest(unittest.TestCase):
                  "default_dist_type": "ClearCut"}
             ]
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_disturbance_type_id(name):
             if name == "Wildfire":
@@ -743,9 +744,9 @@ class SITMappingTest(unittest.TestCase):
                 return 2
             raise ValueError()
 
-        ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
+        ref.get_default_disturbance_type_id.side_effect = mock_get_disturbance_type_id
         sit_mapping = SITMapping(config, ref)
-        result = sit_mapping.get_disturbance_type_id(
+        result = sit_mapping.get_default_disturbance_type_id(
             pd.Series(["fire"]+["clearcut"]))
         self.assertTrue(list(result) == [1, 2])
 
@@ -758,7 +759,7 @@ class SITMappingTest(unittest.TestCase):
                 "default_spuid": 10
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
@@ -793,7 +794,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a"]})
@@ -835,7 +836,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a"]})
@@ -869,7 +870,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b", "a", "b"]})
@@ -913,7 +914,7 @@ class SITMappingTest(unittest.TestCase):
                 ]
             }
         }
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
         classifiers, classifier_values = self.get_mock_classifiers()
         inventory = pd.DataFrame({
             "classifier1": ["a", "b", "a", "b"]})
@@ -937,7 +938,7 @@ class SITMappingTest(unittest.TestCase):
         """checks that an error is raised if an undefined code is used in the
         input
         """
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_land_classes():
             return [
@@ -955,7 +956,7 @@ class SITMappingTest(unittest.TestCase):
     def test_get_landclass_undefined_id_error(self):
         """checks that an error is raised if an undefined id is used in the
         input"""
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_land_classes():
             return [
@@ -973,7 +974,7 @@ class SITMappingTest(unittest.TestCase):
     def test_get_landclass_id_expected_value(self):
         """tests the expected return of get_land_class_id when a Series of
         land class id integers are passed"""
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_land_classes():
             return [
@@ -992,7 +993,7 @@ class SITMappingTest(unittest.TestCase):
     def test_get_landclass_id_expected_value_with_code(self):
         """tests the expected return of get_land_class_id when a Series of
         land class code strings are passed"""
-        ref = Mock(spec=CBMDefaultsReference)
+        ref = Mock(spec=SITCBMDefaults)
 
         def mock_get_land_classes():
             return [
