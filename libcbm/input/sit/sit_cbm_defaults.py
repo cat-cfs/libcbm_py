@@ -12,7 +12,7 @@ class SITCBMDefaults(CBMDefaultsReference):
             x["name"]: x["sit_disturbance_type_id"]
             for _, x in sit.sit_data.disturbance_types.iterrows()}
         self.default_disturbance_id_lookup = {
-            x["name"]: x["id"]
+            x["disturbance_type_name"]: x["disturbance_type_id"]
             for x in self.get_disturbance_types()
         }
 
