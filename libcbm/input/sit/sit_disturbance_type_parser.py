@@ -1,7 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
+import numpy as np
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
@@ -54,4 +54,9 @@ def parse(disturbance_types_table):
     if len(duplicates) > 0:
         raise ValueError(
             f"duplicate ids detected in disturbance types {duplicates}")
+
+    # establish a numeric identifier for each row of the SIT disturbances
+    result.insert(
+        0, "sit_disturbance_type_id",
+        np.arange(len(result)) + 1)
     return result

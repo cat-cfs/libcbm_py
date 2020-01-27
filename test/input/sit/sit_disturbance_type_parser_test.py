@@ -16,6 +16,7 @@ class SITDisturbanceTypeParserTest(unittest.TestCase):
 
         self.assertTrue(list(result.id) == ["1", "2", "3"])
         self.assertTrue(list(result.name) == ["fire", "clearcut", "clearcut"])
+        self.assertTrue(list(result.sit_disturbance_type_id) == [1, 2, 3])
 
     def test_duplicate_id_error(self):
         """check if an error is raise on duplicate ids
