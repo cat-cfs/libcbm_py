@@ -34,29 +34,24 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        def stats_func(timestep, stats):
-            stats_row = stats.iloc[0]
-            self.assertTrue(timestep == 1)
-            self.assertTrue(stats_row["total_eligible_value"] == 15.0)
-            self.assertTrue(stats_row["total_achieved"] == 10.0)
-            self.assertTrue(stats_row["shortfall"] == 0.0)
-            self.assertTrue(stats_row["num_records_disturbed"] == 2)
-            self.assertTrue(stats_row["num_splits"] == 0)
-            self.assertTrue(stats_row["num_eligible"] == 3)
-
-        mock_stats_func = Mock()
-        mock_stats_func.side_effect = stats_func
-
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(sit)
-        cbm_vars_result = pre_dynamics_func(
-            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
+        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
+        cbm_vars_result = sit_rule_based_processor.dist_func(
+            time_step=1, cbm_vars=cbm_vars)
 
         # records 0 and 3 are the disturbed records: both are eligible, they
         # are the oldest stands, and together they exactly satisfy the target.
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) == [
                 helpers.FIRE_ID, 0, 0, helpers.FIRE_ID])
-        mock_stats_func.assert_called_once()
+
+        stats_row = \
+            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+        self.assertTrue(stats_row["total_eligible_value"] == 15.0)
+        self.assertTrue(stats_row["total_achieved"] == 10.0)
+        self.assertTrue(stats_row["shortfall"] == 0.0)
+        self.assertTrue(stats_row["num_records_disturbed"] == 2)
+        self.assertTrue(stats_row["num_splits"] == 0)
+        self.assertTrue(stats_row["num_eligible"] == 3)
 
     def test_rule_based_area_target_age_sort_unrealized(self):
         """Test a rule based event with area target, and age sort where no

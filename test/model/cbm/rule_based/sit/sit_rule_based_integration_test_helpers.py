@@ -146,23 +146,12 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
-def get_events_pre_dynamics_func(sit, parameters_factory=None,
-                                 random_func=None):
+def get_rule_based_processor(sit, random_func=None):
 
-    sit_events = sit_cbm_factory.initialize_events(sit)
-    cbm = sit_cbm_factory.initialize_cbm(
-        sit, parameters_factory=parameters_factory)
-    classifier_filter = ClassifierFilter(
-        classifiers_config=sit_cbm_factory.get_classifiers(
-            sit.sit_data.classifiers, sit.sit_data.classifier_values),
-        classifier_aggregates=sit.sit_data.classifier_aggregates)
-    processor = sit_event_processor.SITEventProcessor(
-        model_functions=cbm.model_functions,
-        compute_functions=cbm.compute_functions,
-        classifier_filter_builder=classifier_filter,
-        random_generator=random_func)
-    return sit_event_processor.get_pre_dynamics_func(
-        processor, sit_events)
+    cbm = sit_cbm_factory.initialize_cbm(sit)
+    rule_based_processor = \
+        sit_cbm_factory.create_sit_rule_based_processor(sit, cbm, random_func)
+    return rule_based_processor
 
 
 def get_transition_rules_pre_dynamics_func(sit):
