@@ -9,7 +9,6 @@ import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
-from libcbm.model.cbm.rule_based.rule_based_stats import RuleBasedStats
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
@@ -260,7 +259,7 @@ def load_sit(config_path, db_path=None):
     return sit
 
 
-def initialize_cbm(sit, dll_path=None):
+def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -268,6 +267,9 @@ def initialize_cbm(sit, dll_path=None):
         sit (object): sit instance as returned by :py:func:`load_sit`
         dll_path (str): path to the libcbm compiled library, if not
             specified a default value is used.
+        parameters_factory (func, optional): a parameterless function that
+            returns parameters for the cbm model.  If unspecified the sit
+            default is used. Defaults to None.
 
     Returns:
         libcbm.model.cbm.cbm_model.CBM: an initialized CBM instance
@@ -275,7 +277,8 @@ def initialize_cbm(sit, dll_path=None):
 
     if not dll_path:
         dll_path = libcbm.resources.get_libcbm_bin_path()
-    parameters_factory = sit.defaults.get_parameters_factory()
+    if parameters_factory is None:
+        parameters_factory = sit.defaults.get_parameters_factory()
     cbm = cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=sit.defaults.get_configuration_factory(),
