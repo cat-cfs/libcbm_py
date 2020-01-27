@@ -12,17 +12,12 @@ from libcbm import resources
 from libcbm.input.sit import sit_reader
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
-from libcbm.model.cbm.rule_based.sit import sit_event_processor
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.transition_rule_processor import \
     TransitionRuleProcessor
 
-FIRE_ID = 1
-CLEARCUT_ID = 3
-DEFORESTATION_ID = 7
 
-
-def get_parameters_factory():
+def get_parameters_factory(sit_cbm_defaults):
     """overrides selected default parameters for testing purposes.
 
     For example since rule based disturbances use the matrix flows into the
@@ -31,8 +26,7 @@ def get_parameters_factory():
     Returns:
         func: a function to be passed to initialize CBM default parameters
     """
-    parameters = cbm_defaults.load_cbm_parameters(
-        resources.get_cbm_defaults_path())
+    parameters = sit_cbm_defaults.get_parameters_factory()()
     disturbance_matrix_value = cbm_defaults.parameter_as_dataframe(
         parameters["disturbance_matrix_values"])
 
@@ -146,12 +140,26 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
-def get_rule_based_processor(sit, random_func=None):
+def get_rule_based_processor(sit, random_func=None, parameters_factory=None):
 
-    cbm = sit_cbm_factory.initialize_cbm(sit)
+    cbm = sit_cbm_factory.initialize_cbm(sit, parameters_factory)
     rule_based_processor = \
         sit_cbm_factory.create_sit_rule_based_processor(sit, cbm, random_func)
     return rule_based_processor
+
+
+def get_disturbance_type_ids(sit_disturbance_types, disturbance_types):
+    result = []
+    sit_disturbance_type_id_lookup = {
+        x["name"]: x["sit_disturbance_type_id"]
+        for _, x in sit_disturbance_types.iterrows()}
+
+    for d in disturbance_types:
+        if d in sit_disturbance_type_id_lookup:
+            result.append(sit_disturbance_type_id_lookup[d])
+        else:
+            result.append(0)
+    return result
 
 
 def get_transition_rules_pre_dynamics_func(sit):

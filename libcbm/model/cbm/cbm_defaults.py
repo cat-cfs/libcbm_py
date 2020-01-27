@@ -190,7 +190,7 @@ def load_cbm_flux_indicators(sqlite_path):
 
 
 def get_cbm_parameters_factory(db_path):
-    """Get a function that formates CBM parameters for
+    """Get a function that formats CBM parameters for
     :py:class:`libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper`
     drawn from the specified database.
 
