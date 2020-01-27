@@ -413,7 +413,7 @@ class SITMapping():
                 dist_type_id = None
                 try:
                     dist_type_id = \
-                        self.sit_cbm_defaults.get_default_disturbance_type_id(
+                        self.sit_cbm_defaults.get_disturbance_type_id(
                             default_dist_type)
                 except KeyError:
                     raise KeyError(

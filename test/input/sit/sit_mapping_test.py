@@ -698,13 +698,13 @@ class SITMappingTest(unittest.TestCase):
         def mock_get_disturbance_type_id(name):
             raise KeyError()
 
-        ref.get_default_disturbance_type_id.side_effect = \
+        ref.get_disturbance_type_id.side_effect = \
             mock_get_disturbance_type_id
         sit_mapping = SITMapping(config, ref)
         with self.assertRaises(KeyError):
             sit_mapping.get_default_disturbance_type_id(
                 pd.Series(["fire"]))
-        self.assertTrue(ref.get_default_disturbance_type_id.called)
+        self.assertTrue(ref.get_disturbance_type_id.called)
 
     def test_duplicated_user_disturbance_type_error(self):
         """checks that an error is raised when a disturbance type is
@@ -744,7 +744,7 @@ class SITMappingTest(unittest.TestCase):
                 return 2
             raise ValueError()
 
-        ref.get_default_disturbance_type_id.side_effect = mock_get_disturbance_type_id
+        ref.get_disturbance_type_id.side_effect = mock_get_disturbance_type_id
         sit_mapping = SITMapping(config, ref)
         result = sit_mapping.get_default_disturbance_type_id(
             pd.Series(["fire"]+["clearcut"]))

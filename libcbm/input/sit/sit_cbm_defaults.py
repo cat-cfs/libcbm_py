@@ -24,16 +24,13 @@ class SITCBMDefaults(CBMDefaultsReference):
                 f"Specified sit disturbance type value {sit_dist_type_name} "
                 "not mapped.")
 
-    def get_default_disturbance_type_id(self, default_dist_type_name):
-        if default_dist_type_name in self.default_disturbance_id_lookup:
-            return self.default_disturbance_id_lookup[default_dist_type_name]
-        else:
-            raise KeyError(
-                "Specified default disturbance type name "
-                f"{default_dist_type_name} not found.")
-
     def get_configuration_factory(self):
         return cbm_defaults.get_libcbm_configuration_factory(self.db_path)
 
     def get_parameters_factory(self):
-        return cbm_defaults.get_cbm_parameters_factory(self.db_path)
+        param_func = cbm_defaults.get_cbm_parameters_factory(self.db_path)
+        default_parameters = param_func()
+
+        def factory():
+            return default_parameters
+        return factory
