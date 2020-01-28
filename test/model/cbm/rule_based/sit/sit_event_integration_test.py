@@ -235,7 +235,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.state.age = np.array([99, 100])
 
         sit_rule_based_processor = helpers.get_rule_based_processor(
-            sit, helpers.get_parameters_factory(sit.defaults))
+            sit, random_func=None,
+            parameters_factory=helpers.get_parameters_factory(sit.defaults))
         cbm_vars_result = sit_rule_based_processor.dist_func(
             time_step=1, cbm_vars=cbm_vars)
 
@@ -276,31 +277,27 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100, 98])
 
-        def stats_func(timestep, stats):
-
-            self.assertTrue(timestep == 1)
-
-            stats_row = stats.iloc[0]
-            self.assertTrue(stats_row["total_eligible_value"] == 9.0)
-            self.assertTrue(stats_row["total_achieved"] == 9.0)
-            self.assertTrue(stats_row["shortfall"] == 1.0)
-            self.assertTrue(stats_row["num_records_disturbed"] == 3)
-            self.assertTrue(stats_row["num_splits"] == 0)
-            self.assertTrue(stats_row["num_eligible"] == 3)
-
-        mock_stats_func = Mock()
-        mock_stats_func.side_effect = stats_func
-
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(
-            sit, helpers.get_parameters_factory())
-        cbm_vars_result = pre_dynamics_func(
-            time_step=1, cbm_vars=cbm_vars, stats_func=mock_stats_func)
+        sit_rule_based_processor = helpers.get_rule_based_processor(
+            sit, random_func=None,
+            parameters_factory=helpers.get_parameters_factory(sit.defaults))
+        cbm_vars_result = sit_rule_based_processor.dist_func(
+            time_step=1, cbm_vars=cbm_vars)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [helpers.CLEARCUT_ID, helpers.CLEARCUT_ID, helpers.CLEARCUT_ID])
+            helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types,
+                ["clearcut", "clearcut", "clearcut"]))
 
-        mock_stats_func.assert_called_once()
+        stats_row = \
+            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+        self.assertTrue(stats_row["total_eligible_value"] == 9.0)
+        self.assertTrue(stats_row["total_achieved"] == 9.0)
+        self.assertTrue(stats_row["shortfall"] == 1.0)
+        self.assertTrue(stats_row["num_records_disturbed"] == 3)
+        self.assertTrue(stats_row["num_splits"] == 0)
+        self.assertTrue(stats_row["num_eligible"] == 3)
+
 
     def test_rule_based_merch_target_age_sort_split(self):
         sit = helpers.load_sit_data()
