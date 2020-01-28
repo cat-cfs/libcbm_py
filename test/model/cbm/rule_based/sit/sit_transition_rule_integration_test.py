@@ -27,10 +27,10 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         # in order for the transition to occur, the disturbance type needs to
         # be set, normally this would be done beforehand by the sit rule based
         # events.
-        cbm_vars.params.disturbance_type = helpers.FIRE_ID
+        cbm_vars.params.disturbance_type = helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types, ["fire"])[0]
 
-        pre_dynamics_func = helpers.get_transition_rules_pre_dynamics_func(
-            sit)
-        cbm_vars_result = pre_dynamics_func(0, cbm_vars=cbm_vars)
+        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
+        cbm_vars_result = sit_rule_based_processor.tr_func(cbm_vars=cbm_vars)
 
         self.assertTrue(cbm_vars_result.inventory.shape[0] == 2)
