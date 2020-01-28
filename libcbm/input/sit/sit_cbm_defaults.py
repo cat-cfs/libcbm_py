@@ -62,6 +62,7 @@ class SITCBMDefaults(CBMDefaultsReference):
         disturbance_type_map = {
             x["sit_disturbance_type_id"]: x["default_disturbance_type_id"]
             for _, x in self.sit.sit_data.disturbance_types.iterrows()}
+        disturbance_type_map.update({0: 0})  # add the null disturbance type
         self.__replace_dist_type(
             disturbance_type_map, default_parameters)
 

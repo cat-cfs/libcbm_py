@@ -1,5 +1,4 @@
 import unittest
-from mock import Mock
 import numpy as np
 
 import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers \
@@ -297,7 +296,6 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_records_disturbed"] == 3)
         self.assertTrue(stats_row["num_splits"] == 0)
         self.assertTrue(stats_row["num_eligible"] == 3)
-
 
     def test_rule_based_merch_target_age_sort_split(self):
         sit = helpers.load_sit_data()
