@@ -322,36 +322,32 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
-        def stats_func(timestep, stats):
-
-            self.assertTrue(timestep == 4)
-
-            stats_row = stats.iloc[0]
-            self.assertTrue(stats_row["total_eligible_value"] == 10.0)
-            self.assertTrue(stats_row["total_achieved"] == 7.0)
-            self.assertTrue(stats_row["shortfall"] == 0.0)
-            self.assertTrue(stats_row["num_records_disturbed"] == 2)
-            self.assertTrue(stats_row["num_splits"] == 1)
-            self.assertTrue(stats_row["num_eligible"] == 2)
-
-        mock_stats_func = Mock()
-        mock_stats_func.side_effect = stats_func
-
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(
-            sit, helpers.get_parameters_factory())
-        cbm_vars_result = pre_dynamics_func(
-            time_step=4, cbm_vars=cbm_vars, stats_func=mock_stats_func)
+        sit_rule_based_processor = helpers.get_rule_based_processor(
+            sit, random_func=None,
+            parameters_factory=helpers.get_parameters_factory(sit.defaults))
+        cbm_vars_result = sit_rule_based_processor.dist_func(
+            time_step=4, cbm_vars=cbm_vars)
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [helpers.CLEARCUT_ID, helpers.CLEARCUT_ID, 0])
+            helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types,
+                ["clearcut", "clearcut", None]))
+
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
         self.assertTrue(cbm_vars.state.shape[0] == 3)
         # note the age sort order caused the first record to split
         self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
 
-        mock_stats_func.assert_called_once()
+        stats_row = \
+            sit_rule_based_processor.sit_event_stats_by_timestep[4].iloc[0]
+        self.assertTrue(stats_row["total_eligible_value"] == 10.0)
+        self.assertTrue(stats_row["total_achieved"] == 7.0)
+        self.assertTrue(stats_row["shortfall"] == 0.0)
+        self.assertTrue(stats_row["num_records_disturbed"] == 2)
+        self.assertTrue(stats_row["num_splits"] == 1)
+        self.assertTrue(stats_row["num_eligible"] == 2)
 
     def test_rule_based_multiple_target_types(self):
         sit = helpers.load_sit_data()
@@ -381,42 +377,38 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.HardwoodMerch = 1.0
         cbm_vars.state.age = np.array([50])
 
-        def stats_func(timestep, stats):
-
-            self.assertTrue(timestep == 100)
-
-            self.assertTrue(stats.iloc[0]["total_eligible_value"] == 1000.0)
-            self.assertTrue(stats.iloc[0]["total_achieved"] == 20.0)
-            self.assertTrue(stats.iloc[0]["shortfall"] == 0.0)
-            self.assertTrue(stats.iloc[0]["num_records_disturbed"] == 1)
-            self.assertTrue(stats.iloc[0]["num_splits"] == 1)
-            self.assertTrue(stats.iloc[0]["num_eligible"] == 1)
-
-            self.assertTrue(stats.iloc[1]["total_eligible_value"] == 980.0)
-            self.assertTrue(stats.iloc[1]["total_achieved"] == 100.0)
-            self.assertTrue(stats.iloc[1]["shortfall"] == 0.0)
-            self.assertTrue(stats.iloc[1]["num_records_disturbed"] == 1)
-            self.assertTrue(stats.iloc[1]["num_splits"] == 1)
-            self.assertTrue(stats.iloc[1]["num_eligible"] == 1)
-
-            self.assertTrue(stats.iloc[2]["total_eligible_value"] == 880.0)
-            self.assertTrue(stats.iloc[2]["total_achieved"] == 20.0)
-            self.assertTrue(stats.iloc[2]["shortfall"] == 0.0)
-            self.assertTrue(stats.iloc[2]["num_records_disturbed"] == 1)
-            self.assertTrue(stats.iloc[2]["num_splits"] == 1)
-            self.assertTrue(stats.iloc[2]["num_eligible"] == 1)
-
-        mock_stats_func = Mock()
-        mock_stats_func.side_effect = stats_func
-
-        pre_dynamics_func = helpers.get_events_pre_dynamics_func(
-            sit, helpers.get_parameters_factory(),
-            random_func=np.ones)
-        cbm_vars_result = pre_dynamics_func(
-            time_step=100, cbm_vars=cbm_vars, stats_func=mock_stats_func)
+        sit_rule_based_processor = helpers.get_rule_based_processor(
+            sit, random_func=np.ones,  # don't really do a random sort
+            parameters_factory=helpers.get_parameters_factory(sit.defaults))
+        cbm_vars_result = sit_rule_based_processor.dist_func(
+            time_step=100, cbm_vars=cbm_vars)
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
-            [helpers.FIRE_ID, helpers.CLEARCUT_ID, helpers.DEFORESTATION_ID,
-             0])
+            helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types,
+                ["fire", "clearcut", "deforestation", None]))
+
         self.assertTrue(list(cbm_vars.inventory.area) == [20, 100, 20, 860])
-        mock_stats_func.assert_called_once()
+
+        stats = \
+            sit_rule_based_processor.sit_event_stats_by_timestep[100]
+        self.assertTrue(stats.iloc[0]["total_eligible_value"] == 1000.0)
+        self.assertTrue(stats.iloc[0]["total_achieved"] == 20.0)
+        self.assertTrue(stats.iloc[0]["shortfall"] == 0.0)
+        self.assertTrue(stats.iloc[0]["num_records_disturbed"] == 1)
+        self.assertTrue(stats.iloc[0]["num_splits"] == 1)
+        self.assertTrue(stats.iloc[0]["num_eligible"] == 1)
+
+        self.assertTrue(stats.iloc[1]["total_eligible_value"] == 980.0)
+        self.assertTrue(stats.iloc[1]["total_achieved"] == 100.0)
+        self.assertTrue(stats.iloc[1]["shortfall"] == 0.0)
+        self.assertTrue(stats.iloc[1]["num_records_disturbed"] == 1)
+        self.assertTrue(stats.iloc[1]["num_splits"] == 1)
+        self.assertTrue(stats.iloc[1]["num_eligible"] == 1)
+
+        self.assertTrue(stats.iloc[2]["total_eligible_value"] == 880.0)
+        self.assertTrue(stats.iloc[2]["total_achieved"] == 20.0)
+        self.assertTrue(stats.iloc[2]["shortfall"] == 0.0)
+        self.assertTrue(stats.iloc[2]["num_records_disturbed"] == 1)
+        self.assertTrue(stats.iloc[2]["num_splits"] == 1)
+        self.assertTrue(stats.iloc[2]["num_eligible"] == 1)
