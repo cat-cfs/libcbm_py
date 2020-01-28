@@ -142,7 +142,8 @@ def setup_cbm_vars(sit):
 
 def get_rule_based_processor(sit, random_func=None, parameters_factory=None):
 
-    cbm = sit_cbm_factory.initialize_cbm(sit, parameters_factory)
+    cbm = sit_cbm_factory.initialize_cbm(
+        sit, dll_path=None, parameters_factory=parameters_factory)
     rule_based_processor = \
         sit_cbm_factory.create_sit_rule_based_processor(sit, cbm, random_func)
     return rule_based_processor
