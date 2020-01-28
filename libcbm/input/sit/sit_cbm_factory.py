@@ -236,6 +236,10 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], sit_defaults)
+    sit.sit_data.disturbance_types.insert(
+        0, "default_disturbance_type_id",
+        sit.sit_mapping.get_default_disturbance_type_id(
+            sit.sit_data.disturbance_types.name))
     sit.db_path = db_path
     sit.defaults = sit_defaults
     return sit
