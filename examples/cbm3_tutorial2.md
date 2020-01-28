@@ -41,14 +41,6 @@ config_path = os.path.join(resources.get_test_resources_dir(), "cbm3_tutorial2",
 sit = sit_cbm_factory.load_sit(config_path)
 ```
 
-```python
-sit.sit_data.disturbance_types
-```
-
-```python
-sit.sit_data.transition_rules
-```
-
 Initialize and validate the inventory in the sit dataset
 
 ```python
@@ -70,8 +62,7 @@ results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
 Create a function to apply rule based disturbance events and transition rules based on the SIT input
 
 ```python
-rule_based_stats = sit_cbm_factory.create_rule_based_stats()
-rule_based_event_func = sit_cbm_factory.create_sit_rule_based_pre_dynamics_func(sit, cbm, rule_based_stats.append_stats)
+rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
 ```
 
 ## Simulation
@@ -85,7 +76,7 @@ cbm_simulator.simulate(
     inventory            = inventory,
     pool_codes           = sit.defaults.get_pools(),
     flux_indicator_codes = sit.defaults.get_flux_indicators(),
-    pre_dynamics_func    = rule_based_event_func,
+    pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
     reporting_func       = reporting_func
 )
 ```
@@ -179,7 +170,11 @@ fi[["timestep"]+annual_process_fluxes].groupby("timestep").sum().plot(figsize=(1
 ## Disturbance Statistics
 
 ```python
-rule_based_stats.stats
+rule_based_processor.sit_event_stats_by_timestep[1]
+```
+
+```python
+rule_based_processor.sit_events
 ```
 
 ## Appendix
