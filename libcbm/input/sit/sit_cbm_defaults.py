@@ -49,7 +49,7 @@ class SITCBMDefaults(CBMDefaultsReference):
                 parameters[parameter_name])
             output = pd.DataFrame()
             for k, v in disturbance_type_map.items():
-                matching_rows = df.loc[df["disturbance_type_id"] == v]
+                matching_rows = df.loc[df["disturbance_type_id"] == v].copy()
                 matching_rows["disturbance_type_id"] = k
                 output = output.append(matching_rows)
             output = output.reset_index(drop=True)
