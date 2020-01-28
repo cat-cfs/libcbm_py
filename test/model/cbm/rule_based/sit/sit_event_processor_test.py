@@ -6,8 +6,6 @@ import pandas as pd
 from mock import Mock
 from libcbm.model.cbm.rule_based.sit.sit_event_processor \
     import SITEventProcessor
-from libcbm.model.cbm.rule_based.sit.sit_event_processor \
-    import get_pre_dynamics_func
 
 # used in patching (overriding) module imports in the module being tested
 PATCH_PATH = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
@@ -15,35 +13,6 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
 
 class SITEventProcessorTest(unittest.TestCase):
 
-    def test_get_pre_dynamics_func(self):
-        """tests get_pre_dynamics_func and also calls the function returned
-        """
-
-        time_step = 10
-
-        mock_cbm_vars = "mock_cbm_vars"
-        mock_stats_result = "mock_stats_result"
-        mock_sit_event_processor = Mock()
-        mock_sit_event_processor.process_events = Mock()
-        mock_sit_event_processor.process_events.side_effect = \
-            lambda time_step, sit_events, cbm_vars: (
-                cbm_vars, mock_stats_result)
-
-        mock_sit_events = "mock_events"
-
-        mock_stats_func = Mock()
-        pre_dynamics_func = get_pre_dynamics_func(
-            mock_sit_event_processor, mock_sit_events)
-        cbm_vars_result = pre_dynamics_func(
-            time_step, mock_cbm_vars, mock_stats_func)
-
-        mock_sit_event_processor.process_events.assert_called_with(
-            time_step=time_step,
-            sit_events=mock_sit_events,
-            cbm_vars=mock_cbm_vars)
-
-        self.assertTrue(cbm_vars_result == "mock_cbm_vars")
-        mock_stats_func.assert_called_once_with(time_step, "mock_stats_result")
 
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
@@ -120,7 +89,13 @@ class SITEventProcessorTest(unittest.TestCase):
                 self.assertTrue(cbm_vars.pools.equals(mock_pools))
                 self.assertTrue(
                     cbm_vars.state.equals(mock_state_variables))
-                return cbm_vars
+
+                return SimpleNamespace(
+                    cbm_vars=cbm_vars,
+                    filter_result="mock_filter_result",
+                    rule_target_result=SimpleNamespace(
+                        statistics={"mock_stats": 1}
+                    ))
 
             mock_event_processor.process_event.side_effect = mock_process_event
 
@@ -156,7 +131,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator)
 
-            cbm_vars_result = sit_event_processor.process_events(
+            cbm_vars_result, stats = sit_event_processor.process_events(
                 time_step=1,  # there are 2 mock events with t = 1
                 sit_events=mock_sit_events,
                 cbm_vars=mock_cbm_vars)
@@ -171,3 +146,4 @@ class SITEventProcessorTest(unittest.TestCase):
                 cbm_vars_result.state.equals(mock_state_variables))
             self.assertTrue(
                 cbm_vars_result.params.equals(mock_params))
+            self.assertTrue(stats.shape[0] == 2)
