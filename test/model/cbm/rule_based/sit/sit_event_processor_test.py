@@ -13,7 +13,6 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.sit.sit_event_processor"
 
 class SITEventProcessorTest(unittest.TestCase):
 
-
     def test_process_events_behaviour(self):
         """Test some of the internal behaviour of SITEventProcessor, and check
         the expected result with a pair of events on a single timestep.
