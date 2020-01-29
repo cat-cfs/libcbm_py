@@ -79,6 +79,8 @@ class SITTransitionRuleProcessor:
             object: the input CBM model state with the transition rules
             applied.
         """
+        if sit_transitions is None:
+            return cbm_vars
         classifiers = cbm_vars.classifiers
         n_stands = classifiers.shape[0]
         classifier_names = classifiers.columns.tolist()
