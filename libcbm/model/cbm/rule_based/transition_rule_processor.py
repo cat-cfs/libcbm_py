@@ -9,6 +9,24 @@ from libcbm.model.cbm.rule_based import rule_filter
 
 
 def create_split_proportions(tr_group_key, tr_group, group_error_max):
+    """Create proportions
+
+    Args:
+        tr_group_key (dict): the composite key common to the transition
+            rule group members
+        tr_group (pandas.DataFrame): The table of transition rule group
+            members
+        group_error_max (float): used as a threshold to test if the group's
+            total percentage exceeds 100 percent.
+
+    Raises:
+        ValueError:  Thrown if the absolute difference of total percentage
+            minus 100 percent is greater than the group_error_max threshold.
+
+    Returns:
+        list: a list of proportions whose sum is 1.0 for splitting records
+            for transition
+    """
     # dealing with a couple of cases here:
     #
     # if the sum of the percent column in the specified group is less then
@@ -18,7 +36,7 @@ def create_split_proportions(tr_group_key, tr_group, group_error_max):
 
     percent_sum = tr_group.percent.sum()
     if abs(percent_sum - 100) < group_error_max:
-        return tr_group.percent / percent_sum
+        return list(tr_group.percent / percent_sum)
     elif percent_sum > 100:
         raise ValueError(
             f"total percent ({percent_sum}) in transition rule group "
