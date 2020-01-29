@@ -3,6 +3,7 @@ from mock import Mock
 from unittest.mock import patch
 from types import SimpleNamespace
 import pandas as pd
+import numpy as np
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor \
     import SITTransitionRuleProcessor
@@ -112,7 +113,8 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
     def test_process_transition_rules(self):
 
         mock_cbm_vars = SimpleNamespace(
-            classifiers=pd.DataFrame({"c1": [1], "c2": [1]}))
+            classifiers=pd.DataFrame({"c1": [1], "c2": [1]}),
+            params=pd.DataFrame({"reset_age": np.array([1, 2])}))
 
         mock_transition_rule_processor = Mock()
         mock_apply_transition_rule = Mock()
