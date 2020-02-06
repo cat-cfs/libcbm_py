@@ -97,6 +97,7 @@ def parse(classifiers_table):
     unpacked = sit_parser.unpack_table(
         classifiers_table, classifiers_format, "classifiers"
     )
+
     classifiers = unpacked \
         .loc[unpacked["name"] == get_classifier_keyword()]
     classifiers = pd.DataFrame(
@@ -106,6 +107,11 @@ def parse(classifiers_table):
             "name": classifiers.description},
         columns=["id", "name"])
 
+    if classifiers.shape[0] != len(unpacked.id.unique()):
+        # this can occur if the data isnt formatted correctly
+        raise ValueError(
+            "number of unique id values must match number of occurrences of "
+            "'{}'".format(get_classifier_keyword()))
     # since the order of classifier ids defines the order of classifier
     # value columns in the other SIT tables, sorting is important
     classifiers.sort_values(by="id", inplace=True)
