@@ -25,17 +25,20 @@ def load_table(config, config_dir):
 
     Supports The following formats:
 
-        CSV:
+        Excel or CSV:
 
-        Used pandas.read_csv to load and return a pandas.DataFrame.
-        With the exception of the "path" parameter, all parameters
-        are passed as literal keyword args to the pandas.read_csv
-        function.
+        Uses pandas.read_csv or pandas.read_excel to load and return a
+        pandas.DataFrame. With the exception of the "path" parameter, all
+        parameters are passed as literal keyword args to the pandas.read_csv,
+        or pandas.read_excel function.
 
-        Example::
+        Examples::
 
             {"type": "csv"
-             "params": {"path": "my_file.csv", sep="\\t"}
+             "params": {"path": "my_file.csv", "sep": "\\t"}
+
+            {"type": "excel"
+             "params: {"path": "my_file.xls", "header": null}
 
     Args:
         config (dict): configuration specifying a source of data
@@ -52,12 +55,18 @@ def load_table(config, config_dir):
     load_params = config["params"]
     cwd = os.getcwd()
     try:
-        os.chdir(config_dir)
+        if config_dir:
+            os.chdir(config_dir)
         if load_type == "csv":
             path = os.path.abspath(os.path.relpath(load_params["path"]))
             load_params = load_params.copy()
             del load_params["path"]
             return pd.read_csv(path, **load_params)
+        elif load_type == "excel":
+            path = os.path.abspath(os.path.relpath(load_params["path"]))
+            load_params = load_params.copy()
+            del load_params["path"]
+            return pd.read_excel(path, **load_params)
         else:
             raise NotImplementedError(
                 f"The specified table type {load_type} is not supported.")
