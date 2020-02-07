@@ -105,6 +105,8 @@ def save_cbm_cfs3_test(name, output_dir, start, end, runtime,
         os.path.join(output_dir, "flux.csv"), index=False)
     cbm3_result["state"].to_csv(
         os.path.join(output_dir, "state.csv"), index=False)
+    cbm3_result["disturbance"].to_csv(
+        os.path.join(output_dir, "disturbance.csv"), index=False)
     return metadata
 
 
