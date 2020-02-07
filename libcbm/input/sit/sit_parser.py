@@ -43,7 +43,7 @@ def unpack_column(table, column_description, table_name):
     col_name = column_description["name"]
     if "type" in column_description:
         try:
-            data = data.astype(column_description['type'], skipna=True)
+            data[data.notna()] = data.astype(column_description['type'])
         except ValueError:
             raise ValueError(
                 f"{table_name} table, column: '{col_name}' contains values "
