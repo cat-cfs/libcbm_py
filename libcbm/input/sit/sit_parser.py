@@ -99,10 +99,11 @@ def unpack_table(table, column_descriptions, table_name):
             for error feedback when an error occurs.
 
     Raises:
-        ValueError: [description]
+        ValueError: a duplicate column name was detected
 
     Returns:
-        [type]: [description]
+        pandas.DataFrame: a type-validated table with columns replaced with
+            the contents of column_descriptions.
     """
     cols = [x["name"] for x in column_descriptions]
     duplicates = _list_duplicates(cols)
