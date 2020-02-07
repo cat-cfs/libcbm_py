@@ -106,9 +106,6 @@ class SITClassifierParserTest(unittest.TestCase):
             sit_classifier_parser.parse(sit_classifiers_table)
 
     def test_expected_result(self):
-        """checks if an error is raise with multiple classifiers defined for a
-        single id
-        """
 
         sit_classifiers_table = pd.DataFrame(
             data=[
