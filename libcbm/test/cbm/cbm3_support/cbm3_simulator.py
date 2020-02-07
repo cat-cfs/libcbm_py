@@ -260,7 +260,8 @@ def get_cbm3_results(cbm3_results_db_path):
         cbm3_results_db_path, classifier_set_grouping=True,
         land_class_grouping=True)
     cbm3_dist_indicators_result = cbm3_results.load_disturbance_indicators(
-        cbm3_results_db_path, classifier_set_grouping=True)
+        cbm3_results_db_path, classifier_set_grouping=True,
+        disturbance_type_grouping=True)
     return {
         "pools": cbm3_pool_result,
         "flux": cbm3_flux_result,
