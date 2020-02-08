@@ -192,19 +192,28 @@ def get_cbm3_disturbance_flux(cbm3_flux):
     flux = flux.rename(columns={'TimeStep': 'timestep'})
     flux["identifier"] = pd.to_numeric(flux["identifier"])
 
+    # get the timesteps that do not have any disturbance fluxes
+    missing_timesteps = set(cbm3_flux.TimeStep) - set(flux.timestep)
+
     # account for a CBM-CFS3 quirk where the following fluxes are negated
     # in the tblFluxIndicators results.
     biomass_to_air_cols = [
         'MerchToAir', 'FolToAir', 'OthToAir', 'CoarseToAir', 'FineToAir']
     for b in biomass_to_air_cols:
         flux[b] = flux[b] * -1.0
-
+    libcbm_flux_cols = get_libcbm_flux_disturbance_cols()
     disturbance_flux_mapping = collections.OrderedDict(
-        zip(
-            get_cbm3_flux_disturbance_cols(),
-            get_libcbm_flux_disturbance_cols()))
+        zip(get_cbm3_flux_disturbance_cols(), libcbm_flux_cols))
 
     flux = flux.rename(columns=disturbance_flux_mapping)
+    zero_flux_timesteps = {"timestep": list(missing_timesteps)}
+    zero_flux_timesteps.update(
+        dict(
+            zip(
+                libcbm_flux_cols,
+                [0.0]*len(libcbm_flux_cols))))
+    # add rows for timesteps that have zero disturbance flux
+    flux = flux.append(pd.DataFrame(zero_flux_timesteps))
     return flux
 
 
