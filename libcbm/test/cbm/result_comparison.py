@@ -94,7 +94,8 @@ def diff_result(merged):
             values with the CBM-CFS3 values by timestep, identifier
     """
     diffs = pd.DataFrame()
-    diffs["identifier"] = merged["identifier"]
+    if "identifier" in merged.columns:
+        diffs["identifier"] = merged["identifier"]
     diffs["timestep"] = merged["timestep"]
     diffs["abs_total_diff"] = 0
     all_col = list(merged.columns)
@@ -141,10 +142,13 @@ def get_summarized_diff_plot(merged, max_results, x_label, y_label,
 def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
                                   **plot_kwargs):
     """Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
-    for a single test case.
+    for a single test case, or the summary for all test cases in merged if the
+    identifier is not specified
 
     Args:
-        identifier (int): The test case id
+        identifier (int): The test case id, if set to none, the comparison
+            includes a summarized view of all identifiers in the specified
+            merged DataFrame.
         merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
             by: :py:func:`merge_result`.
         diff (bool): if true return differences from the merge, and otherwise
@@ -158,12 +162,15 @@ def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
     """
     markers = ["o", "v", "^", "<", ">", "1", "2", "3", "4", "8", "s", "p", "P",
                "*", "h", "H", "+", "x", "X", "D", "d"]
-    subset = merged[merged["identifier"] == identifier].copy()
+    if identifier:
+        subset = merged[merged["identifier"] == identifier].copy()
+    else:
+        subset = merged.copy()
+    subset = subset.drop(columns="identifier")
+
     if diff:
         subset = diff_result(subset)
-    subset = subset.drop(columns="identifier")
     subset = subset.groupby("timestep").sum()
-
     ax = subset.plot(
         **plot_kwargs)
     ax.set(
@@ -172,38 +179,4 @@ def get_test_case_comparison_plot(identifier, merged, diff, x_label, y_label,
     for i, line in enumerate(ax.get_lines()):
         line.set_marker(markers[i % len(markers)])
     ax.legend(ax.get_lines(), subset.columns, loc='best')
-    return ax
-
-
-def get_test_case_comparison_by_indicator_plot(identifier, merged, diff,
-                                               timesteps, y_label,
-                                               **plot_kwargs):
-    """Gets a comparison plot for a CBM3 simulation versus a LibCBM simulation
-    for a single test case where the X Axis are the indicators, and a values
-    are generated for each timestep.
-
-    Args:
-        identifier (int): The test case id
-        merged (pandas.DataFrame): A merged CBM3/LibCBM comparison as produced
-            by: :py:func:`merge_result`.
-        diff (bool): if true return differences from the merge, and otherwise
-            return the raw merged values
-        timesteps (list): a list of timesteps to plot for the indicators,
-            specifying None will plot all timesteps.
-        y_label (str): The label on the y axis of the resulting plot
-
-    Returns:
-        matplotlib.AxesSubplot or np.array: the return value of
-            pandas.DataFrame.plot
-    """
-    subset = merged[merged["identifier"] == identifier].copy()
-    if timesteps:
-        subset = subset[subset["timestep"].isin(timesteps)]
-    if diff:
-        subset = diff_result(subset)
-    subset = subset.drop(columns="identifier")
-    subset = subset.groupby("timestep").sum()
-    subset = subset.T
-    ax = subset.plot(**plot_kwargs)
-    ax.set(ylabel=y_label)
     return ax
