@@ -31,7 +31,7 @@ def get_libcbm_flux_disturbance_cols():
         'DisturbanceCoarseToAir',
         'DisturbanceFineToAir',
         'DisturbanceDOMCO2Emission',
-        'DisturbanceDOMCH4Emssion',
+        'DisturbanceDOMCH4Emission',
         'DisturbanceDOMCOEmission',
         'DisturbanceMerchLitterInput',
         'DisturbanceFolLitterInput',
@@ -212,8 +212,14 @@ def get_cbm3_disturbance_flux(cbm3_flux):
             zip(
                 libcbm_flux_cols,
                 [0.0]*len(libcbm_flux_cols))))
-    # add rows for timesteps that have zero disturbance flux
-    flux = flux.append(pd.DataFrame(zero_flux_timesteps))
+
+    for identifier in cbm3_flux.identifier.unique():
+        zero_flux_timesteps_copy = zero_flux_timesteps.copy()
+        zero_flux_timesteps_copy["identifier"] = identifier
+        # add rows for timesteps that have zero disturbance flux
+        # for each identifier
+        flux = flux.append(pd.DataFrame(zero_flux_timesteps_copy))
+
     return flux
 
 
@@ -253,7 +259,7 @@ def get_cbm3_annual_process_flux(cbm3_flux):
     return flux
 
 
-def get_merged_annual_process_flux(cbm3_flux, libcbm_flux):
+def get_merged_annual_process_flux(cbm3_flux, libcbm_flux, col_filter=None):
     """Produces a merge of the annual process cbm3 and libcbm flux results
 
     Args:
@@ -261,18 +267,23 @@ def get_merged_annual_process_flux(cbm3_flux, libcbm_flux):
             :py:func:`libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results`
         libcbm_flux (pandas.DataFrame): libcbm pool results as produced by:
             :py:func:`libcbm.test.cbm.test_case_simulator.run_test_cases`
+        col_filter (func): a function for filtering the returned columns
+            (accepts an string element of the list and returns true to include
+             and false to exclude the column from the result)
 
     Returns:
         pandas.DataFrame: merged comparison of CBM3 versus libcbm for analysis
     """
+    cols = get_libcbm_flux_annual_process_cols()
+    if col_filter:
+        cols = [x for x in cols if col_filter(x)]
     merged_flux = result_comparison.merge_result(
-        get_cbm3_annual_process_flux(cbm3_flux),
-        libcbm_flux,
-        get_libcbm_flux_annual_process_cols())
+        get_cbm3_annual_process_flux(cbm3_flux), libcbm_flux, cols)
+
     return merged_flux
 
 
-def get_merged_disturbance_flux(cbm3_flux, libcbm_flux):
+def get_merged_disturbance_flux(cbm3_flux, libcbm_flux, col_filter=None):
     """Produces a merge of the cbm3 and libcbm disturbance flux results
 
     Args:
@@ -280,12 +291,16 @@ def get_merged_disturbance_flux(cbm3_flux, libcbm_flux):
             :py:func:`libcbm.test.cbm.cbm3_support.cbm3_simulator.get_cbm3_results`
         libcbm_flux (pandas.DataFrame): libcbm pool results as produced by:
             :py:func:`libcbm.test.cbm.test_case_simulator.run_test_cases`
+        col_filter (func): a function for filtering the returned columns
+            (accepts an string element of the list and returns true to include
+             and false to exclude the column from the result)
 
     Returns:
         pandas.DataFrame: merged comparison of CBM3 versus libcbm for analysis
     """
+    cols = get_libcbm_flux_disturbance_cols()
+    if col_filter:
+        cols = [x for x in cols if col_filter(x)]
     merged_flux = result_comparison.merge_result(
-        get_cbm3_disturbance_flux(cbm3_flux),
-        libcbm_flux,
-        get_libcbm_flux_disturbance_cols())
+        get_cbm3_disturbance_flux(cbm3_flux), libcbm_flux, cols)
     return merged_flux
