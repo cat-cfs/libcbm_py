@@ -5,7 +5,6 @@
 import os
 import datetime
 from libcbm.test.cbm.cbm3_support import cbm3_test_io
-
 from libcbm.test.cbm.cbm3_support import cbm3_simulator
 
 

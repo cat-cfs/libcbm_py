@@ -124,6 +124,7 @@ def load_cbm_cfs3_test(test_dir):
             - pools : pandas.DataFrame containing pool results
             - flux : pandas.DataFrame containing flux results
             - state : pandas.DataFrame containing state results
+            - disturbance : pandas.DataFrame containing disturbance results
     """
     test = SimpleNamespace()
     with open(os.path.join(test_dir, 'metadata.json')) as metadata_fp:
@@ -133,4 +134,5 @@ def load_cbm_cfs3_test(test_dir):
     test.pools = pd.read_csv(os.path.join(test_dir, "pools.csv"))
     test.flux = pd.read_csv(os.path.join(test_dir, "flux.csv"))
     test.state = pd.read_csv(os.path.join(test_dir, "state.csv"))
+    test.disturbance = pd.read_csv(os.path.join(test_dir, "disturbance.csv"))
     return test

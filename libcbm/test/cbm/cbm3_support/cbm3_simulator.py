@@ -248,7 +248,9 @@ def get_cbm3_results(cbm3_results_db_path):
                 simulation results
             "flux": a pandas.DataFrame containing CBM-CFS3 flux
                 simulation results
-            "state": a pandas dataframe containing age, and landclass
+            "state": a pandas.DataFrame containing age, and landclass
+                information.
+            "disturbance": a pandas.DataFrame containing disturbance
                 information.
     """
     cbm3_pool_result = cbm3_results.load_pool_indicators(
@@ -262,6 +264,7 @@ def get_cbm3_results(cbm3_results_db_path):
     cbm3_dist_indicators_result = cbm3_results.load_disturbance_indicators(
         cbm3_results_db_path, classifier_set_grouping=True,
         disturbance_type_grouping=True)
+
     return {
         "pools": cbm3_pool_result,
         "flux": cbm3_flux_result,
