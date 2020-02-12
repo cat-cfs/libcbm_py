@@ -39,7 +39,7 @@ def unpack_column(table, column_description, table_name):
     Returns:
         pandas.DataFrame: the resulting table
     """
-    data = table.iloc[:, column_description["index"]]
+    data = table.iloc[:, column_description["index"]].copy()
     col_name = column_description["name"]
     if "type" in column_description:
         try:
