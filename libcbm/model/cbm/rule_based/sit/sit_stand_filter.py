@@ -2,14 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-# TEMPORARY: see issue #15 (https://github.com/cat-cfs/libcbm_py/issues/15)
-from libcbm.test.cbm import pool_comparison
-#########
-
 
 def get_pool_variable_filter_mappings():
-
-    biomass = pool_comparison.get_libcbm_biomass_pools()
+    # TEMPORARY: see issue #15 (https://github.com/cat-cfs/libcbm_py/issues/15)
+    biomass = [
+        'SoftwoodMerch', 'SoftwoodFoliage', 'SoftwoodOther',
+        'SoftwoodCoarseRoots', 'SoftwoodFineRoots', 'HardwoodMerch',
+        'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots',
+        'HardwoodFineRoots']
     return [
         ("MinTotBiomassC", biomass, ">="),
         ("MaxTotBiomassC", biomass, "<="),
