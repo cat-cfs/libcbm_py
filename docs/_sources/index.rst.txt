@@ -1,7 +1,7 @@
 libcbm
 ======
 
-version 0.2.4
+version 0.3.0
 
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
@@ -15,9 +15,8 @@ Key Features
 
  - User allocated model state using numpy/Pandas and user controlled model stepping See: :ref:`cbm-model`
  - Core CBM dynamics and state functions. See: :ref:`cbm-core-functions`
- - CBM-CFS3 results comparison/test functions. See: :ref:`cbm-testing`
  - General purpose matrix-based pool/flux compute methods. See: :ref:`libcbm-core-functions`
- - Example jupyter notebooks including CBM-CFS3 testing (see /examples)
+ - Example jupyter notebooks (see /examples)
  - Full support for the CBM-CFS3 standard import tool format
 
 Requirements
@@ -28,11 +27,6 @@ Requirements
  - pandas
  - sqlite3
  - numexpr
-
-In order to run the CBM-CFS3 tests there are additional requirements:
- - Windows OS (CBM-CFS3 is windows only)
- - pyodbc and a working 64 bit MS Access driver
- - cbm3_python https://github.com/cat-cfs/cbm3_python
 
 Running the notebooks in /examples Also have additional requirements:
  - scipy
@@ -52,7 +46,6 @@ Code Documentation
    cbm_sit
    rule_based
    cbm3_tutorial2
-   cbm_testing
    cbm_core_functions
    libcbm_core_functions
    other_functions

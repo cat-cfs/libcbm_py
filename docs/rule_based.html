@@ -137,7 +137,28 @@ local_dict.</p>
 
 </dd></dl>
 
-<span class="target" id="module-libcbm.model.cbm.rule_based.event_processor"></span><dl class="function">
+<span class="target" id="module-libcbm.model.cbm.rule_based.event_processor"></span><dl class="class">
+<dt id="libcbm.model.cbm.rule_based.event_processor.ProcessEventResult">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">ProcessEventResult</code><span class="sig-paren">(</span><em class="sig-param">cbm_vars</em>, <em class="sig-param">filter_result</em>, <em class="sig-param">rule_target_result</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.ProcessEventResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Storage class for the result of the <a class="reference internal" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="libcbm.model.cbm.rule_based.event_processor.process_event"><code class="xref py py-func docutils literal notranslate"><span class="pre">process_event()</span></code></a>
+function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
+simulation state and variables</p></li>
+<li><p><strong>filter_result</strong> (<em>np.ndarray</em>) – numpy boolean array indicating for each
+stand index in cbm_vars the index was eligible for the event when
+true, and ineligible when false</p></li>
+<li><p><strong>rule_target_result</strong> (<a class="reference internal" href="#libcbm.model.cbm.rule_based.rule_target.RuleTargetResult" title="libcbm.model.cbm.rule_based.rule_target.RuleTargetResult"><em>RuleTargetResult</em></a>) – instance of
+<a class="reference internal" href="#libcbm.model.cbm.rule_based.rule_target.RuleTargetResult" title="libcbm.model.cbm.rule_based.rule_target.RuleTargetResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.rule_based.rule_target.RuleTargetResult</span></code></a>
+indicating targetted stands for this event</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="libcbm.model.cbm.rule_based.event_processor.apply_rule_based_event">
 <code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">apply_rule_based_event</code><span class="sig-paren">(</span><em class="sig-param">target</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.apply_rule_based_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the specified target to the CBM simulation variables,
@@ -166,7 +187,7 @@ simulation state and variables</p></li>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.event_processor.process_event">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filter</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em>, <em class="sig-param">stats_func</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filter</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a CBM rule based event by filtering and targeting a subset of
 the specified inventory.  In the case of merchantable or area targets
 splits may occur to meet a disturbance target exactly.</p>
@@ -187,20 +208,17 @@ The function return value is:
 processed.</p></li>
 <li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
 simulation state and variables</p></li>
-<li><p><strong>stats_func</strong> (<em>func</em>) – a function called with the summary statistics of the
-rule based event, for debugging or other uses.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>The computed disturbance index and pools, state variables,</dt><dd><p>classifiers and inventory which can be modified when splitting
-occurs. See the return value of <a class="reference internal" href="#libcbm.model.cbm.rule_based.event_processor.apply_rule_based_event" title="libcbm.model.cbm.rule_based.event_processor.apply_rule_based_event"><code class="xref py py-func docutils literal notranslate"><span class="pre">apply_rule_based_event()</span></code></a></p>
+<dt>instance of class containing results for the</dt><dd><p>disturbance event</p>
 </dd>
 </dl>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>tuple</p>
+<dd class="field-odd"><p><a class="reference internal" href="#libcbm.model.cbm.rule_based.event_processor.ProcessEventResult" title="libcbm.model.cbm.rule_based.event_processor.ProcessEventResult">ProcessEventResult</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -555,7 +573,39 @@ inventory.spatial_reference</p></li>
 </dl>
 </dd></dl>
 
-<span class="target" id="module-libcbm.model.cbm.rule_based.transition_rule_processor"></span><dl class="class">
+<span class="target" id="module-libcbm.model.cbm.rule_based.transition_rule_processor"></span><dl class="function">
+<dt id="libcbm.model.cbm.rule_based.transition_rule_processor.create_split_proportions">
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.transition_rule_processor.</code><code class="sig-name descname">create_split_proportions</code><span class="sig-paren">(</span><em class="sig-param">tr_group_key</em>, <em class="sig-param">tr_group</em>, <em class="sig-param">group_error_max</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.transition_rule_processor.create_split_proportions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create proportions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tr_group_key</strong> (<em>dict</em>) – the composite key common to the transition
+rule group members</p></li>
+<li><p><strong>tr_group</strong> (<em>pandas.DataFrame</em>) – The table of transition rule group
+members</p></li>
+<li><p><strong>group_error_max</strong> (<em>float</em>) – used as a threshold to test if the group’s
+total percentage exceeds 100 percent.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Thrown if the absolute difference of total percentage
+    minus 100 percent is greater than the group_error_max threshold.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a list of proportions whose sum is 1.0 for splitting records</dt><dd><p>for transition</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
 <dt id="libcbm.model.cbm.rule_based.transition_rule_processor.TransitionRuleProcessor">
 <em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.rule_based.transition_rule_processor.</code><code class="sig-name descname">TransitionRuleProcessor</code><span class="sig-paren">(</span><em class="sig-param">classifier_filter_builder</em>, <em class="sig-param">state_variable_filter_func</em>, <em class="sig-param">classifiers_config</em>, <em class="sig-param">grouped_percent_err_max</em>, <em class="sig-param">wildcard</em>, <em class="sig-param">transition_classifier_postfix</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.transition_rule_processor.TransitionRuleProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
@@ -718,53 +768,6 @@ simulation state and variables</p></li>
 
 </dd></dl>
 
-<dl class="function">
-<dt id="libcbm.model.cbm.rule_based.sit.sit_event_processor.get_pre_dynamics_func">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_event_processor.</code><code class="sig-name descname">get_pre_dynamics_func</code><span class="sig-paren">(</span><em class="sig-param">sit_event_processor</em>, <em class="sig-param">sit_events</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.get_pre_dynamics_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a function for applying SIT rule based events in a CBM
-timestep loop.</p>
-<p>The returned function can be used as the
-pre_dynamics_func argument of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_simulator.simulate’()</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sit_event_processor</strong> (<a class="reference internal" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor" title="libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor"><em>SITEventProcessor</em></a>) – Instance of
-<a class="reference internal" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor" title="libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SITEventProcessor</span></code></a> for computing sit rule based
-disturbance events.</p></li>
-<li><p><strong>sit_events</strong> (<em>pandas.DataFrame</em>) – table of SIT formatted events.
-Expected format is the same as the return value of:
-<a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_disturbance_event_parser.parse" title="libcbm.input.sit.sit_disturbance_event_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_event_parser.parse()</span></code></a></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>a function of 2 parameters:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><dl class="simple">
-<dt>time_step: the simulation time step which is used to select</dt><dd><p>sit_events by the time_step column.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>cbm_vars: an object containing CBM simulation variables and</dt><dd><p>parameters.  Formatted the same as the return value of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p>
-</dd>
-</dl>
-</li>
-</ol>
-<p>The function’s return value is a copy of the input cbm_vars
-with changes applied according to the sit_events for the
-specified timestep.</p>
-</div></blockquote>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>func</p>
-</dd>
-</dl>
-</dd></dl>
-
 <span class="target" id="module-libcbm.model.cbm.rule_based.sit.sit_stand_filter"></span><dl class="function">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_stand_filter.create_pool_filter_expression">
 <code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_stand_filter.</code><code class="sig-name descname">create_pool_filter_expression</code><span class="sig-paren">(</span><em class="sig-param">sit_data</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_stand_filter.create_pool_filter_expression" title="Permalink to this definition">¶</a></dt>
@@ -904,54 +907,6 @@ columns, along with a boolean operator to compare values.</p>
 </dd></dl>
 
 <span class="target" id="module-libcbm.model.cbm.rule_based.sit.sit_stand_target"></span><span class="target" id="module-libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor"></span><dl class="function">
-<dt id="libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.get_pre_dynamics_func">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.</code><code class="sig-name descname">get_pre_dynamics_func</code><span class="sig-paren">(</span><em class="sig-param">sit_transition_processor</em>, <em class="sig-param">sit_transitions</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.get_pre_dynamics_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a function for applying SIT transition rules in a CBM
-timestep loop.</p>
-<blockquote>
-<div><p>The returned function can be used as the
-pre_dynamics_func argument of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_simulator.simulate’()</span></code></p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sit_transition_processor</strong> (<a class="reference internal" href="#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor" title="libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.SITTransitionRuleProcessor"><em>SITTransitionRuleProcessor</em></a>) – instance of an object to apply sit transitions to the simulation
-state.</p></li>
-<li><p><strong>sit_transitions</strong> (<em>pandas.DataFrame</em>) – table of SIT formatted transitions.
-Expected format is the same as the return value of:
-<a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_transition_rule_parser.parse" title="libcbm.input.sit.sit_transition_rule_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_transition_rule_parser.parse()</span></code></a></p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><p>a function of 2 parameters:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><dl class="simple">
-<dt>time_step: the simulation time step which is used to select</dt><dd><p>sit_events by the time_step column.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>cbm_vars: an object containing CBM simulation variables and</dt><dd><p>parameters.  Formatted the same as the return value of
-<code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_simulation_variables()</span></code></p>
-</dd>
-</dl>
-</li>
-</ol>
-<p>The function’s return value is a copy of the input cbm_vars
-with changes applied according to the sit_events for the
-specified timestep.</p>
-</div></blockquote>
-</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>func</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.sit_transition_rule_iterator">
 <code class="sig-prename descclassname">libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.</code><code class="sig-name descname">sit_transition_rule_iterator</code><span class="sig-paren">(</span><em class="sig-param">sit_transitions</em>, <em class="sig-param">classifier_names</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor.sit_transition_rule_iterator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Groups transition rules by classifiers, and eligibility criteria and

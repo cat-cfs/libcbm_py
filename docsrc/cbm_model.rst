@@ -3,7 +3,7 @@
 CBM
 ===
 
-LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.  See: :ref:`cbm-testing`.
+LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 

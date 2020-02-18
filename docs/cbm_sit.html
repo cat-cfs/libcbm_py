@@ -1343,13 +1343,17 @@ for error feedback when an error occurs.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – [description]</p>
+<dd class="field-even"><p><strong>ValueError</strong> – a duplicate column name was detected</p>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>[description]</p>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a type-validated table with columns replaced with</dt><dd><p>the contents of column_descriptions.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>[type]</p>
+<dd class="field-even"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1528,8 +1532,8 @@ columns.</p></li>
 </dd></dl>
 
 <dl class="function">
-<dt id="libcbm.input.sit.sit_format.get_transition_rule_classifier_set_postfix">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_transition_rule_classifier_set_postfix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_transition_rule_classifier_set_postfix" title="Permalink to this definition">¶</a></dt>
+<dt id="libcbm.input.sit.sit_format.get_tr_classifier_set_postfix">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_tr_classifier_set_postfix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_tr_classifier_set_postfix" title="Permalink to this definition">¶</a></dt>
 <dd><p>since transition rules contain 2 classifier sets (2 sets of columns)
 duplicate names are a problem if the classifier names are used for both.
 This function returns a postfix to append onto the second set of
@@ -1597,31 +1601,14 @@ classifiers</p></li>
 <div class="section" id="module-libcbm.input.sit.sit_cbm_factory">
 <span id="simulating-sit-input"></span><h2>Simulating SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_cbm_factory" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="libcbm.input.sit.sit_cbm_factory.create_rule_based_stats">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_rule_based_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_rule_based_stats" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an object for tracking rule based model run statistics</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>a storage class for tracking rule based disturbance statistics</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>libcbm.model.cbm.rule_based.rule_based_stats.RuleBasedStats</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_pre_dynamics_func">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_sit_rule_based_pre_dynamics_func</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">cbm</em>, <em class="sig-param">disturbance_stats_func</em>, <em class="sig-param">random_func=&lt;built-in method rand of numpy.random.mtrand.RandomState object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_pre_dynamics_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Assembles a function for processing SIT rule based disturbances.</p>
+<dt id="libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_processor">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_sit_rule_based_processor</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">cbm</em>, <em class="sig-param">random_func=&lt;built-in method rand of numpy.random.mtrand.RandomState object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_processor" title="Permalink to this definition">¶</a></dt>
+<dd><p>initializes a class for processing SIT rule based disturbances.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p></li>
 <li><p><strong>cbm</strong> (<em>object</em>) – initialized instance of the CBM model</p></li>
-<li><p><strong>disturbance_stats_func</strong> (<em>func</em>) – a function of
-(timestep, pandas.DataFrame) for storing per timestep rule based
-disturbance statistics.</p></li>
 <li><p><strong>random_func</strong> (<em>func</em><em>, </em><em>optional</em>) – A function of a single integer that
 returns a numeric 1d array whose length is the integer argument.
 Defaults to np.random.rand.</p></li>
@@ -1629,13 +1616,13 @@ Defaults to np.random.rand.</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>a function of (timestep, cbm_vars) which computes rule based</dt><dd><p>disturbances for a given time step and simulation state</p>
+<dt>an object for processing SIT rule based</dt><dd><p>disturbances</p>
 </dd>
 </dl>
 </p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>func</p>
+<dd class="field-odd"><p>SITRuleBasedProcessor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1711,6 +1698,9 @@ SITMapping used to validate species classifier and fetch species id</p></li>
 <li><p><strong>sit</strong> (<em>object</em>) – sit instance as returned by <a class="reference internal" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="libcbm.input.sit.sit_cbm_factory.load_sit"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_sit()</span></code></a></p></li>
 <li><p><strong>dll_path</strong> (<em>str</em>) – path to the libcbm compiled library, if not
 specified a default value is used.</p></li>
+<li><p><strong>parameters_factory</strong> (<em>func</em><em>, </em><em>optional</em>) – a parameterless function that
+returns parameters for the cbm model.  If unspecified the sit
+default is used. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1866,14 +1856,17 @@ otherwise it is None.</p>
 is used to compute absolute paths for file based tables.</p>
 <p>Supports The following formats:</p>
 <blockquote>
-<div><p>CSV:</p>
-<p>Used pandas.read_csv to load and return a pandas.DataFrame.
-With the exception of the “path” parameter, all parameters
-are passed as literal keyword args to the pandas.read_csv
-function.</p>
-<p>Example:</p>
+<div><p>Excel or CSV:</p>
+<p>Uses pandas.read_csv or pandas.read_excel to load and return a
+pandas.DataFrame. With the exception of the “path” parameter, all
+parameters are passed as literal keyword args to the pandas.read_csv,
+or pandas.read_excel function.</p>
+<p>Examples:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;csv&quot;</span>
- <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;my_file.csv&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">}</span>
+ <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;my_file.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;sep&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">}</span>
+
+<span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;excel&quot;</span>
+ <span class="s2">&quot;params: {&quot;</span><span class="n">path</span><span class="s2">&quot;: &quot;</span><span class="n">my_file</span><span class="o">.</span><span class="n">xls</span><span class="s2">&quot;, &quot;</span><span class="n">header</span><span class="s2">&quot;: null}</span>
 </pre></div>
 </div>
 </div></blockquote>
@@ -1978,20 +1971,12 @@ rules</p></li>
 <h2>SIT Mapping<a class="headerlink" href="#sit-mapping" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.input.sit.sit_mapping.</code><code class="sig-name descname">SITMapping</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">cbm_defaults_ref</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.input.sit.sit_mapping.</code><code class="sig-name descname">SITMapping</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">sit_cbm_defaults</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_disturbance_type_id">
-<code class="sig-name descname">get_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets disturbance type ids based on the specified series of
-disturbance types, and the SIT mapping.  Used to encode any of:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>historical disturbance type column in sit inventory</p></li>
-<li><p>last pass disturbance type column in sit inventory</p></li>
-<li><p>disturbance type column in sit disturbance events</p></li>
-<li><p>disturbance type column in sit transition rules</p></li>
-</ul>
-</div></blockquote>
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_default_disturbance_type_id">
+<code class="sig-name descname">get_default_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_default_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a series of default disturbance type ids based on the
+specified series of SIT disturbance type names and SIT mapping</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>disturbance_type</strong> (<em>pandas.Series</em>) – A series of disturbance types</p>
@@ -2004,7 +1989,11 @@ disturbance types, and the SIT mapping.  Used to encode any of:</p>
 </ul>
 </dd>
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>a series of disturbance type ids</p>
+<dd class="field-odd"><p><dl class="simple">
+<dt>a series of disturbance type ids as defined in CBM</dt><dd><p>default data</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>pandas.Series</p>
@@ -2037,6 +2026,32 @@ returned.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>pandas.Series</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="libcbm.input.sit.sit_mapping.SITMapping.get_sit_disturbance_type_id">
+<code class="sig-name descname">get_sit_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_sit_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets disturbance type ids based on the specified series of
+disturbance types, and the SIT mapping.  Used to encode any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>historical disturbance type column in sit inventory</p></li>
+<li><p>last pass disturbance type column in sit inventory</p></li>
+<li><p>disturbance type column in sit disturbance events</p></li>
+<li><p>disturbance type column in sit transition rules</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>disturbance_type</strong> (<em>pandas.Series</em>) – A series of disturbance types</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a series of disturbance type ids</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.Series</p>
 </dd>
 </dl>
 </dd></dl>
