@@ -8,7 +8,8 @@ from libcbm import data_helpers
 from libcbm.model.cbm import cbm_variables
 
 
-def create_in_memory_reporting_func(density=False, classifier_map=None):
+def create_in_memory_reporting_func(density=False, classifier_map=None,
+                                    disturbance_type_map=None):
     """Create storage and a function for complete simulation results.  The
     function return value can be passed to :py:func:`simulate` to track
     simulation results.
@@ -23,6 +24,10 @@ def create_in_memory_reporting_func(density=False, classifier_map=None):
             If specified, the names associated with each id in the map are the
             values in the  the classifiers result DataFrame  If set to None the
             id values will be returned.
+        disturbance_type_map (dict, optional): a disturbance type map for
+            subsituting the internally defined disturbance type id with names
+            or other ids in the params and state tables.  If set to none no
+            substitution will occur.
 
     Returns:
             tuple: a pair of values:
@@ -35,7 +40,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None):
                     - classifiers (pandas.DataFrame) classifiers results
                         storage
                     - params (pandas.DataFrame) cbm params storage
-                    - inventory (pandas.DataFrame) inventory storage
+                    - area (pandas.DataFrame) area storage
 
                 2. func: a function for appending to the above results
                     DataFrames for each timestep
@@ -47,7 +52,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None):
     results.state = None
     results.classifiers = None
     results.params = None
-    results.inventory = None
+    results.area = None
 
     def append_simulation_result(timestep, cbm_vars):
         timestep_pools = cbm_vars.pools if density else \
@@ -60,6 +65,21 @@ def create_in_memory_reporting_func(density=False, classifier_map=None):
                     cbm_vars.inventory.area, axis=0)
             results.flux = data_helpers.append_simulation_result(
                 results.flux, timestep_flux, timestep)
+
+        def disturbance_type_map_func(dist_id):
+            if dist_id <= 0:
+                return dist_id
+            else:
+                return disturbance_type_map[dist_id]
+
+        if disturbance_type_map:
+            cbm_vars.state.last_disturbance_type = \
+                cbm_vars.state.last_disturbance_type.apply(
+                    disturbance_type_map_func)
+            cbm_vars.params.disturbance_type = \
+                cbm_vars.params.disturbance_type.apply(
+                    disturbance_type_map_func)
+
         results.state = data_helpers.append_simulation_result(
             results.state, cbm_vars.state, timestep)
         if classifier_map is None:
@@ -71,8 +91,8 @@ def create_in_memory_reporting_func(density=False, classifier_map=None):
                 cbm_vars.classifiers.applymap(
                     classifier_map.__getitem__),
                 timestep)
-        results.inventory = data_helpers.append_simulation_result(
-            results.inventory, cbm_vars.inventory, timestep)
+        results.area = data_helpers.append_simulation_result(
+            results.area, cbm_vars.inventory.loc[:, ["area"]], timestep)
         results.params = data_helpers.append_simulation_result(
             results.params, cbm_vars.params, timestep)
     return results, append_simulation_result
