@@ -72,16 +72,20 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
             else:
                 return disturbance_type_map[dist_id]
 
+        state = cbm_vars.state.copy()
+        params = cbm_vars.params.copy()
         if disturbance_type_map:
-            cbm_vars.state.last_disturbance_type = \
+            state.last_disturbance_type = \
                 cbm_vars.state.last_disturbance_type.apply(
                     disturbance_type_map_func)
-            cbm_vars.params.disturbance_type = \
+
+            params.disturbance_type = \
                 cbm_vars.params.disturbance_type.apply(
                     disturbance_type_map_func)
 
         results.state = data_helpers.append_simulation_result(
-            results.state, cbm_vars.state, timestep)
+            results.state, state, timestep)
+
         if classifier_map is None:
             results.classifiers = data_helpers.append_simulation_result(
                 results.classifiers, cbm_vars.classifiers, timestep)
@@ -94,7 +98,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
         results.area = data_helpers.append_simulation_result(
             results.area, cbm_vars.inventory.loc[:, ["area"]], timestep)
         results.params = data_helpers.append_simulation_result(
-            results.params, cbm_vars.params, timestep)
+            results.params, params, timestep)
     return results, append_simulation_result
 
 
