@@ -44,6 +44,8 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
         ValueError: the sum of the percent field for any grouped set of
             transition rule rows exceeded 100%
     """
+    if len(sit_transitions.index) == 0:
+        return
     group_cols = classifier_names + \
         ["min_age", "max_age", "disturbance_type_id"]
 

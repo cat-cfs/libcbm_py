@@ -51,7 +51,8 @@ def parse(transition_rules, classifiers, classifier_values,
 
     transitions = sit_parser.unpack_table(
         transition_rules, transition_rule_format, "transitions")
-
+    if len(transitions.index) == 0:
+        return transitions
     # check that each value in transition_rules events classifier sets is
     # defined in classifier values, classifier aggregates or is a wildcard
     for row in classifiers.itertuples():
