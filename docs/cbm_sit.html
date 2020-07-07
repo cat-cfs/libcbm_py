@@ -1,17 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBM Standard Import tool format &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CBM rule based disturbances and transition rules" href="rule_based.html" />
@@ -32,54 +34,10 @@
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CBM Standard Import tool format</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">CBM Standard Import tool format</a><ul>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_classifier_parser">Classifiers</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_age_class_parser">Age Classes</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_type_parser">Disturbance Types</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_inventory_parser">Inventory</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_yield_parser">Growth and Yield</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_event_parser">Disturbance Events</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_transition_rule_parser">Transition Rules</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_parser">The SIT Format</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_cbm_factory">Simulating SIT input</a></li>
-<li><a class="reference internal" href="#module-libcbm.input.sit.sit_reader">Reading SIT input</a></li>
-<li><a class="reference internal" href="#sit-mapping">SIT Mapping</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="cbm_input_and_variables.html"
-                        title="previous chapter">CBM Input and Variables</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="rule_based.html"
-                        title="next chapter">CBM rule based disturbances and transition rules</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/cbm_sit.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -95,7 +53,7 @@ labels in DataFrames passed to SIT parse functions function will be ignored
 by the parsing functions here.</p>
 <div class="section" id="module-libcbm.input.sit.sit_classifier_parser">
 <span id="classifiers"></span><h2>Classifiers<a class="headerlink" href="#module-libcbm.input.sit.sit_classifier_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_classifier_parser.get_classifier_keyword">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">get_classifier_keyword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.get_classifier_keyword" title="Permalink to this definition">¶</a></dt>
 <dd><p>gets the _CLASSIFIER keyword using the SIT_Classifiers format.</p>
@@ -109,15 +67,15 @@ by the parsing functions here.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_classifier_parser.get_wildcard_keyword">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">get_wildcard_keyword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.get_wildcard_keyword" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the classifier value wildcard keyword of the SIT format</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_classifier_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">classifiers_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_classifier_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers_table</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_classifier_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>parse SIT_Classifiers formatted data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -287,9 +245,9 @@ format.</p>
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_age_class_parser">
 <span id="age-classes"></span><h2>Age Classes<a class="headerlink" href="#module-libcbm.input.sit.sit_age_class_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_age_class_parser.generate_sit_age_classes">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">generate_sit_age_classes</code><span class="sig-paren">(</span><em class="sig-param">age_interval</em>, <em class="sig-param">max_age</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.generate_sit_age_classes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">generate_sit_age_classes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">age_interval</span></em>, <em class="sig-param"><span class="n">max_age</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.generate_sit_age_classes" title="Permalink to this definition">¶</a></dt>
 <dd><p>generate a valid SIT_ageclass input table.  This is a helper method
 to create input for <code class="xref py py-func docutils literal notranslate"><span class="pre">parse_age_classes()</span></code></p>
 <dl class="field-list simple">
@@ -311,7 +269,7 @@ to create input for <code class="xref py py-func docutils literal notranslate"><
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generate_sit_age_classes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">generate_sit_age_classes</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="go">   0  1</span>
 <span class="go">0  0  0</span>
 <span class="go">1  1  2</span>
@@ -323,9 +281,9 @@ to create input for <code class="xref py py-func docutils literal notranslate"><
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_age_class_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">age_class_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_age_class_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">age_class_table</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_age_class_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse the sit age class table format into a table of age classes with
 fields:</p>
 <blockquote>
@@ -478,9 +436,9 @@ fields:</p>
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_disturbance_type_parser">
 <span id="disturbance-types"></span><h2>Disturbance Types<a class="headerlink" href="#module-libcbm.input.sit.sit_disturbance_type_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_disturbance_type_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_type_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_types_table</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_type_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_type_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_types_table</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_type_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse and validate a SIT formatted disturbance type table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -559,9 +517,9 @@ disturbance type format</p>
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_inventory_parser">
 <span id="inventory"></span><h2>Inventory<a class="headerlink" href="#module-libcbm.input.sit.sit_inventory_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">expand_age_class_inventory</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">expand_age_class_inventory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.expand_age_class_inventory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Support for the SIT age class inventory feature.  For rows with
 inventory.using_age_class = True, the inventory.age column represents an
 identifier defined in the passed age_classes table.  The inventory record
@@ -591,9 +549,9 @@ returned by the function:
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_inventory_parser.get_map_land_class_func">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">get_map_land_class_func</code><span class="sig-paren">(</span><em class="sig-param">land_classes</em>, <em class="sig-param">on_error</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.get_map_land_class_func" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">get_map_land_class_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">land_classes</span></em>, <em class="sig-param"><span class="n">on_error</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.get_map_land_class_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function for mapping land class to land class id.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -613,9 +571,9 @@ specified id is not found call this function with that id</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_inventory_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">inventory_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_inventory_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory_table</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em>, <em class="sig-param"><span class="n">disturbance_types</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_inventory_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates SIT formatted inventory data.  The inventory_table
 parameter is the primary data, and the other args act as validation
 metadata.</p>
@@ -1041,9 +999,9 @@ returned by the function:
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_yield_parser">
 <span id="growth-and-yield"></span><h2>Growth and Yield<a class="headerlink" href="#module-libcbm.input.sit.sit_yield_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_yield_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_yield_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">yield_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_yield_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_yield_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yield_table</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_yield_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates the CBM SIT growth and yield format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1086,22 +1044,22 @@ columns.  Use the return value of:
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_disturbance_event_parser">
 <span id="disturbance-events"></span><h2>Disturbance Events<a class="headerlink" href="#module-libcbm.input.sit.sit_disturbance_event_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_disturbance_event_parser.get_sort_types">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">get_sort_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.get_sort_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the CBM standard import tool sorting id/name pairs as a dictionary</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_disturbance_event_parser.get_target_types">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">get_target_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.get_target_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the CBM standard import tool target type id/name pairs as a
 dictionary</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_disturbance_event_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_events</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_events</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em>, <em class="sig-param"><span class="n">classifier_aggregates</span></em>, <em class="sig-param"><span class="n">disturbance_types</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates the CBM SIT disturbance event format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1151,9 +1109,9 @@ of: <a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.p
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_transition_rule_parser">
 <span id="transition-rules"></span><h2>Transition Rules<a class="headerlink" href="#module-libcbm.input.sit.sit_transition_rule_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_transition_rule_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_transition_rule_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">transition_rules</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_transition_rule_parser.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_transition_rule_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transition_rules</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em>, <em class="sig-param"><span class="n">classifier_aggregates</span></em>, <em class="sig-param"><span class="n">disturbance_types</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_transition_rule_parser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates the CBM SIT transition rule format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1201,9 +1159,9 @@ columns.  Use the return value of:
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_parser">
 <span id="the-sit-format"></span><h2>The SIT Format<a class="headerlink" href="#module-libcbm.input.sit.sit_parser" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_parser.get_parse_bool_func">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">get_parse_bool_func</code><span class="sig-paren">(</span><em class="sig-param">table_name</em>, <em class="sig-param">colname</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.get_parse_bool_func" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">get_parse_bool_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table_name</span></em>, <em class="sig-param"><span class="n">colname</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.get_parse_bool_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>gets a boolean-like value to boolean parse function according to the
 SIT specification.  The parameters are used to create a friendly error
 message when a parse failure occurs.</p>
@@ -1223,9 +1181,9 @@ message when a parse failure occurs.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_parser.substitute_using_age_class_rows">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">substitute_using_age_class_rows</code><span class="sig-paren">(</span><em class="sig-param">rows</em>, <em class="sig-param">parse_bool_func</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.substitute_using_age_class_rows" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">substitute_using_age_class_rows</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rows</span></em>, <em class="sig-param"><span class="n">parse_bool_func</span></em>, <em class="sig-param"><span class="n">age_classes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.substitute_using_age_class_rows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Substitute age class criteria values that appear in SIT transition
 rules or disturbance events data into age values.</p>
 <p>Checks that min softwood age equals min hardwood age and max softwood
@@ -1269,9 +1227,9 @@ using_age_class column.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_parser.unpack_column">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_column</code><span class="sig-paren">(</span><em class="sig-param">table</em>, <em class="sig-param">column_description</em>, <em class="sig-param">table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_column" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_column</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em>, <em class="sig-param"><span class="n">column_description</span></em>, <em class="sig-param"><span class="n">table_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_column" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates a column in a pandas DataFrame</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1326,9 +1284,9 @@ for error feedback when an error occurs.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_parser.unpack_table">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_table</code><span class="sig-paren">(</span><em class="sig-param">table</em>, <em class="sig-param">column_descriptions</em>, <em class="sig-param">table_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_table" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_parser.</code><code class="sig-name descname">unpack_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em>, <em class="sig-param"><span class="n">column_descriptions</span></em>, <em class="sig-param"><span class="n">table_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_parser.unpack_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates and assigns column names to a column-ordered table using
 the specified list of column descriptions. Any existing column labels
 on the specified table are ignored.</p>
@@ -1358,7 +1316,7 @@ for error feedback when an error occurs.</p></li>
 </dl>
 </dd></dl>
 
-<span class="target" id="module-libcbm.input.sit.sit_format"></span><dl class="function">
+<span class="target" id="module-libcbm.input.sit.sit_format"></span><dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_age_class_format">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_age_class_format</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_age_class_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of dictionaries describing the CBM SIT age class columns</p>
@@ -1376,9 +1334,9 @@ for error feedback when an error occurs.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_age_eligibility_columns">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_age_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param">base_index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_age_eligibility_columns" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_age_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_index</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_age_eligibility_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>gets the columns for age eligibility which appear in SIT events and
 SIT transition.  The index of the columns is offset using the specified
 base.</p>
@@ -1399,9 +1357,9 @@ base.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_classifier_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_classifier_format</code><span class="sig-paren">(</span><em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_classifier_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_classifier_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_classifier_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of dictionaries describing the CBM SIT classifier columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1421,9 +1379,9 @@ table</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_disturbance_eligibility_columns">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param">index</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_eligibility_columns" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_eligibility_columns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">index</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_eligibility_columns" title="Permalink to this definition">¶</a></dt>
 <dd><p>gets the columns for disturbance eligibility which appear in SIT
 events.  The index of the columns is offset using the specified
 base.</p>
@@ -1444,9 +1402,9 @@ base.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_disturbance_event_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_event_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_event_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_event_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifier_names</span></em>, <em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_event_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of column description dictionaries describing the SIT
 disturbance event format</p>
 <dl class="field-list simple">
@@ -1474,9 +1432,9 @@ columns.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_disturbance_type_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_type_format</code><span class="sig-paren">(</span><em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_type_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_type_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_type_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of dictionaries describing the CBM SIT disturbance type
 columns</p>
 <dl class="field-list simple">
@@ -1505,9 +1463,9 @@ formatted table.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_inventory_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_inventory_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_inventory_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_inventory_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifier_names</span></em>, <em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_inventory_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a description of the SIT inventory columns as a list of
 dictionaries</p>
 <dl class="field-list simple">
@@ -1531,7 +1489,7 @@ columns.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_tr_classifier_set_postfix">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_tr_classifier_set_postfix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_tr_classifier_set_postfix" title="Permalink to this definition">¶</a></dt>
 <dd><p>since transition rules contain 2 classifier sets (2 sets of columns)
@@ -1540,9 +1498,9 @@ This function returns a postfix to append onto the second set of
 classifiers to solve that issue.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_transition_rules_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_transition_rules_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_transition_rules_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_transition_rules_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifier_names</span></em>, <em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_transition_rules_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a list of dictionaries describing each column in the SIT
 format transition rules.  The format is dynamic and changes based on the
 number of classifiers and whether or not a spatial identifier is
@@ -1568,9 +1526,9 @@ included in the data.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_format.get_yield_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_yield_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_yield_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_yield_format</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifier_names</span></em>, <em class="sig-param"><span class="n">n_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_yield_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of dictionaries describing the CBM SIT age class columns</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1600,7 +1558,7 @@ classifiers</p></li>
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_cbm_factory">
 <span id="simulating-sit-input"></span><h2>Simulating SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_cbm_factory" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_processor">
 <code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">create_sit_rule_based_processor</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">cbm</em>, <em class="sig-param">random_func=&lt;built-in method rand of numpy.random.mtrand.RandomState object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.create_sit_rule_based_processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>initializes a class for processing SIT rule based disturbances.</p>
@@ -1627,9 +1585,9 @@ Defaults to np.random.rand.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.get_classifiers">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_classifiers</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_classifiers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_classifiers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_classifiers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create classifier input for initializing the CBM class based on CBM
 Standard import tool formatted data.</p>
 <dl class="field-list simple">
@@ -1654,9 +1612,9 @@ output of <a class="reference internal" href="#libcbm.input.sit.sit_classifier_p
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.get_merch_volumes">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_merch_volumes</code><span class="sig-paren">(</span><em class="sig-param">yield_table</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">age_classes</em>, <em class="sig-param">sit_mapping</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_merch_volumes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">get_merch_volumes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yield_table</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em>, <em class="sig-param"><span class="n">age_classes</span></em>, <em class="sig-param"><span class="n">sit_mapping</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.get_merch_volumes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create merchantable volume input for initializing the CBM class
 based on CBM Standard import tool formatted data.</p>
 <dl class="field-list simple">
@@ -1685,9 +1643,9 @@ SITMapping used to validate species classifier and fetch species id</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_cbm">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_cbm</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">dll_path=None</em>, <em class="sig-param">parameters_factory=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_cbm" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_cbm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit</span></em>, <em class="sig-param"><span class="n">dll_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parameters_factory</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_cbm" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Create an initialized instance of</dt><dd><p><a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_model.CBM</span></code></a> based on SIT input</p>
 </dd>
@@ -1712,9 +1670,9 @@ default is used. Defaults to None.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_events">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_events</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_events" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_events</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a copy of the parsed sit events with the disturbance type id
 resulting from the SIT configuration.</p>
 <dl class="field-list simple">
@@ -1734,9 +1692,9 @@ resulting from the SIT configuration.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_inventory">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_inventory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_inventory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts SIT inventory data input for CBM</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1751,9 +1709,9 @@ resulting from the SIT configuration.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_sit_objects">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_sit_objects</code><span class="sig-paren">(</span><em class="sig-param">sit</em>, <em class="sig-param">db_path=None</em>, <em class="sig-param">locale_code='en-CA'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_sit_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit</span></em>, <em class="sig-param"><span class="n">db_path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">locale_code</span><span class="o">=</span><span class="default_value">'en-CA'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_sit_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load and attach objects required for the SIT to the specified namespace</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1769,9 +1727,9 @@ corresponding translated version of default parameter strings</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.initialize_transition_rules">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_transition_rules</code><span class="sig-paren">(</span><em class="sig-param">sit</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_transition_rules" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">initialize_transition_rules</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.initialize_transition_rules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a copy of the parsed sit transition rules with the disturbance
 type id resulting from the SIT configuration.</p>
 <dl class="field-list simple">
@@ -1791,9 +1749,9 @@ type id resulting from the SIT configuration.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.load_sit">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">load_sit</code><span class="sig-paren">(</span><em class="sig-param">config_path</em>, <em class="sig-param">db_path=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">load_sit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config_path</span></em>, <em class="sig-param"><span class="n">db_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.load_sit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads data and objects required to run from the SIT format.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1812,9 +1770,9 @@ default database is used. Defaults to None.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_cbm_factory.read_sit_config">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">read_sit_config</code><span class="sig-paren">(</span><em class="sig-param">config_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.read_sit_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_cbm_factory.</code><code class="sig-name descname">read_sit_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_cbm_factory.read_sit_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load SIT data and configuration from the json formatted configuration
 file at specified config_path.</p>
 <dl class="field-list simple">
@@ -1849,9 +1807,9 @@ otherwise it is None.</p>
 </div>
 <div class="section" id="module-libcbm.input.sit.sit_reader">
 <span id="reading-sit-input"></span><h2>Reading SIT input<a class="headerlink" href="#module-libcbm.input.sit.sit_reader" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_reader.load_table">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">load_table</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">config_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.load_table" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">load_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em>, <em class="sig-param"><span class="n">config_dir</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.load_table" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a table based on the specified configuration.  The config_dir
 is used to compute absolute paths for file based tables.</p>
 <p>Supports The following formats:</p>
@@ -1890,9 +1848,9 @@ or pandas.read_excel function.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.input.sit.sit_reader.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">sit_classifiers</em>, <em class="sig-param">sit_disturbance_types</em>, <em class="sig-param">sit_age_classes</em>, <em class="sig-param">sit_inventory</em>, <em class="sig-param">sit_yield</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">sit_transitions</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sit_classifiers</span></em>, <em class="sig-param"><span class="n">sit_disturbance_types</span></em>, <em class="sig-param"><span class="n">sit_age_classes</span></em>, <em class="sig-param"><span class="n">sit_inventory</span></em>, <em class="sig-param"><span class="n">sit_yield</span></em>, <em class="sig-param"><span class="n">sit_events</span></em>, <em class="sig-param"><span class="n">sit_transitions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates CBM Standard import tool formatted data including
 the complicated interdependencies in the SIT format. Returns an object
 containing the validated result.</p>
@@ -1969,12 +1927,12 @@ rules</p></li>
 </div>
 <div class="section" id="sit-mapping">
 <h2>SIT Mapping<a class="headerlink" href="#sit-mapping" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.input.sit.sit_mapping.</code><code class="sig-name descname">SITMapping</code><span class="sig-paren">(</span><em class="sig-param">config</em>, <em class="sig-param">sit_cbm_defaults</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.input.sit.sit_mapping.</code><code class="sig-name descname">SITMapping</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config</span></em>, <em class="sig-param"><span class="n">sit_cbm_defaults</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping.get_default_disturbance_type_id">
-<code class="sig-name descname">get_default_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_default_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_default_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_default_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a series of default disturbance type ids based on the
 specified series of SIT disturbance type names and SIT mapping</p>
 <dl class="field-list simple">
@@ -2001,9 +1959,9 @@ specified series of SIT disturbance type names and SIT mapping</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping.get_land_class_id">
-<code class="sig-name descname">get_land_class_id</code><span class="sig-paren">(</span><em class="sig-param">land_class</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_land_class_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_land_class_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">land_class</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_land_class_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produces a validated series of land class ids.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2030,9 +1988,9 @@ returned.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping.get_sit_disturbance_type_id">
-<code class="sig-name descname">get_sit_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_sit_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_sit_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_type</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_sit_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets disturbance type ids based on the specified series of
 disturbance types, and the SIT mapping.  Used to encode any of:</p>
 <blockquote>
@@ -2056,9 +2014,9 @@ disturbance types, and the SIT mapping.  Used to encode any of:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping.get_spatial_unit">
-<code class="sig-name descname">get_spatial_unit</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_spatial_unit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_spatial_unit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_spatial_unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a pandas.Series containing spatial unit ids based on SIT
 Inventory, SIT classifiers and the mapping configuration.</p>
 <dl class="field-list simple">
@@ -2096,9 +2054,9 @@ the specified inventory.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.input.sit.sit_mapping.SITMapping.get_species">
-<code class="sig-name descname">get_species</code><span class="sig-paren">(</span><em class="sig-param">species</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_species" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_species</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">classifier_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_mapping.SITMapping.get_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a series of CBM species ids based on the specified species
 classifier values series and the SIT import tool classifier
 configuration and mapping.</p>
@@ -2145,7 +2103,53 @@ classifier values definition. Use the return value of:
 </div>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CBM Standard Import tool format</a><ul>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_classifier_parser">Classifiers</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_age_class_parser">Age Classes</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_type_parser">Disturbance Types</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_inventory_parser">Inventory</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_yield_parser">Growth and Yield</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_disturbance_event_parser">Disturbance Events</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_transition_rule_parser">Transition Rules</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_parser">The SIT Format</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_cbm_factory">Simulating SIT input</a></li>
+<li><a class="reference internal" href="#module-libcbm.input.sit.sit_reader">Reading SIT input</a></li>
+<li><a class="reference internal" href="#sit-mapping">SIT Mapping</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm_input_and_variables.html"
+                        title="previous chapter">CBM Input and Variables</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rule_based.html"
+                        title="next chapter">CBM rule based disturbances and transition rules</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_sit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -2165,12 +2169,13 @@ classifier values definition. Use the return value of:
         <li class="right" >
           <a href="cbm_input_and_variables.html" title="CBM Input and Variables"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CBM Standard Import tool format</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

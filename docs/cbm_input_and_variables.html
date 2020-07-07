@@ -1,17 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBM Input and Variables &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="CBM Standard Import tool format" href="cbm_sit.html" />
@@ -32,54 +34,10 @@
         <li class="right" >
           <a href="cbm_model.html" title="CBM"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CBM Input and Variables</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">CBM Input and Variables</a><ul>
-<li><a class="reference internal" href="#inventory">Inventory</a></li>
-<li><a class="reference internal" href="#pools">Pools</a></li>
-<li><a class="reference internal" href="#flux">Flux</a></li>
-<li><a class="reference internal" href="#spinup-parameters">Spinup parameters</a></li>
-<li><a class="reference internal" href="#spinup-variables">Spinup variables</a></li>
-<li><a class="reference internal" href="#cbm-time-step-parameters">CBM time step parameters</a></li>
-<li><a class="reference internal" href="#cbm-state-variables">CBM state variables</a></li>
-<li><a class="reference internal" href="#classifiers">Classifiers</a></li>
-<li><a class="reference internal" href="#merchantable-volume-curves">Merchantable Volume Curves</a></li>
-<li><a class="reference internal" href="#cbm-default-parameters">CBM default parameters</a></li>
-<li><a class="reference internal" href="#cbm-default-parameters-reference">CBM default parameters reference</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="cbm_model.html"
-                        title="previous chapter">CBM</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="cbm_sit.html"
-                        title="next chapter">CBM Standard Import tool format</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/cbm_input_and_variables.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -90,9 +48,9 @@
 <span id="id1"></span><h1>CBM Input and Variables<a class="headerlink" href="#cbm-input-and-variables" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="inventory">
 <h2>Inventory<a class="headerlink" href="#inventory" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_inventory">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param">inventory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_inventory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_inventory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_inventory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check fields and types of inventory input for
 <a class="reference internal" href="cbm_model.html#libcbm.model.cbm.cbm_model.CBM" title="libcbm.model.cbm.cbm_model.CBM"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_model.CBM</span></code></a> functions</p>
 <p>Example Inventory table: (abbreviated column names)</p>
@@ -184,18 +142,18 @@ after a last pass deforestation event occurs.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_classifiers">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_classifiers</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_classifiers" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_classifiers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_classifiers" title="Permalink to this definition">¶</a></dt>
 <dd><p>converts classifiers table to required type</p>
 </dd></dl>
 
 </div>
 <div class="section" id="pools">
 <h2>Pools<a class="headerlink" href="#pools" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_pools">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_pools</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em>, <em class="sig-param">pool_codes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_pools" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_pools</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em>, <em class="sig-param"><span class="n">pool_codes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a dataframe for storing CBM pools</p>
 <p>The dataframe here has 1 row for each stand and is row-aligned with
 all other vectors and dataframes using this convention.</p>
@@ -220,9 +178,9 @@ labels in the resulting dataframe</p></li>
 </div>
 <div class="section" id="flux">
 <h2>Flux<a class="headerlink" href="#flux" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_flux">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_flux</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em>, <em class="sig-param">flux_indicator_codes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_flux" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_flux</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em>, <em class="sig-param"><span class="n">flux_indicator_codes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_flux" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a dataframe for storing CBM flux indicator values</p>
 <p>The dataframe here has 1 row for each stand and is row-aligned with
 all other vectors and dataframes using this convention.</p>
@@ -247,9 +205,9 @@ are used as column labels in the resulting dataframe</p></li>
 </div>
 <div class="section" id="spinup-parameters">
 <h2>Spinup parameters<a class="headerlink" href="#spinup-parameters" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_spinup_parameters">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_spinup_parameters</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em>, <em class="sig-param">return_interval=None</em>, <em class="sig-param">min_rotations=None</em>, <em class="sig-param">max_rotations=None</em>, <em class="sig-param">mean_annual_temp=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_spinup_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_spinup_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em>, <em class="sig-param"><span class="n">return_interval</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_rotations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_rotations</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mean_annual_temp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_spinup_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create spinup parameters as a collection of variable vectors</p>
 <p>The variables here are all of length N stands and are row-aligned with
 all other vectors and dataframes using this convention.</p>
@@ -292,9 +250,9 @@ temperature used in the spinup procedure. Defaults to None.</p></li>
 </div>
 <div class="section" id="spinup-variables">
 <h2>Spinup variables<a class="headerlink" href="#spinup-variables" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_spinup_variables">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_spinup_variables</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_spinup_variables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_spinup_variables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_spinup_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a collection of vectors used as working/state variables for
 the spinup routine.</p>
 <dl class="field-list simple">
@@ -317,9 +275,9 @@ the spinup routine.</p>
 </div>
 <div class="section" id="cbm-time-step-parameters">
 <h2>CBM time step parameters<a class="headerlink" href="#cbm-time-step-parameters" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_cbm_parameters">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_cbm_parameters</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em>, <em class="sig-param">disturbance_type=0</em>, <em class="sig-param">reset_age=-1</em>, <em class="sig-param">mean_annual_temp=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_cbm_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_cbm_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em>, <em class="sig-param"><span class="n">disturbance_type</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">reset_age</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="n">mean_annual_temp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_cbm_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create CBM parameters as a collection of variable vectors</p>
 <p>The variables here are all of length N stands and are row-aligned with
 all other vectors and dataframes using this convention.</p>
@@ -371,9 +329,9 @@ each stand. Defaults to None.</p></li>
 </div>
 <div class="section" id="cbm-state-variables">
 <h2>CBM state variables<a class="headerlink" href="#cbm-state-variables" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_cbm_state_variables</code><span class="sig-paren">(</span><em class="sig-param">n_stands</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_variables.</code><code class="sig-name descname">initialize_cbm_state_variables</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_stands</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a pandas dataframe containing state variables used by CBM
 functions at simulation runtime, with default initial values.</p>
 <p>The dataframe here has 1 row for each stand and is row-aligned with
@@ -394,9 +352,9 @@ all other vectors and dataframes using this convention.</p>
 </div>
 <div class="section" id="classifiers">
 <h2>Classifiers<a class="headerlink" href="#classifiers" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_config.classifier">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">values</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>Composes a classifier structure used for configuring libcbm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -440,9 +398,9 @@ Use classifier values of the format returned by:
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_config.classifier_value">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier_value</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">description=''</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier_value" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier_value</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">description</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>Composes a classifier value structure used for configuring libcbm.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -471,9 +429,9 @@ Defaults to “”.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_config.classifier_config">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier_config</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">classifier_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.classifier_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compose the classifier value scheme used for configuring libcbm.
 This method will generate classifier ids and classifier value ids
 based on the order of classifiers and classifier values.</p>
@@ -572,9 +530,9 @@ corresponding classifier</p>
 </div>
 <div class="section" id="merchantable-volume-curves">
 <h2>Merchantable Volume Curves<a class="headerlink" href="#merchantable-volume-curves" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_config.merch_volume_curve">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">merch_volume_curve</code><span class="sig-paren">(</span><em class="sig-param">classifier_set</em>, <em class="sig-param">merch_volumes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.merch_volume_curve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">merch_volume_curve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifier_set</span></em>, <em class="sig-param"><span class="n">merch_volumes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.merch_volume_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formats merchantable volume growth curve data for libcbm CBM model
 consumption.</p>
 <dl class="field-list simple">
@@ -638,9 +596,9 @@ classifiers. For example:</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_config.merch_volume_to_biomass_config">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">merch_volume_to_biomass_config</code><span class="sig-paren">(</span><em class="sig-param">db_path</em>, <em class="sig-param">merch_volume_curves</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.merch_volume_to_biomass_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_config.</code><code class="sig-name descname">merch_volume_to_biomass_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db_path</span></em>, <em class="sig-param"><span class="n">merch_volume_curves</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_config.merch_volume_to_biomass_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Formats merchantable volume growth curve data for libcbm CBM model
 consumption.</p>
 <dl class="field-list simple">
@@ -721,9 +679,9 @@ as the return value of <a class="reference internal" href="#libcbm.model.cbm.cbm
 <h2>CBM default parameters<a class="headerlink" href="#cbm-default-parameters" title="Permalink to this headline">¶</a></h2>
 <p>The parameters in this section are the simulation-constant model parameters.
 These are used to initialize the CBM class.</p>
-<span class="target" id="module-libcbm.model.cbm.cbm_defaults"></span><dl class="function">
+<span class="target" id="module-libcbm.model.cbm.cbm_defaults"></span><dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.dataframe_as_parameter">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">dataframe_as_parameter</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.dataframe_as_parameter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">dataframe_as_parameter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.dataframe_as_parameter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a dataframe into a dictionary table format like the
 dictionary values returned by the function
 <a class="reference internal" href="#libcbm.model.cbm.cbm_defaults.load_cbm_parameters" title="libcbm.model.cbm.cbm_defaults.load_cbm_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_cbm_parameters()</span></code></a></p>
@@ -735,9 +693,9 @@ scheme</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.get_cbm_parameters_factory">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">get_cbm_parameters_factory</code><span class="sig-paren">(</span><em class="sig-param">db_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.get_cbm_parameters_factory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">get_cbm_parameters_factory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.get_cbm_parameters_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a function that formats CBM parameters for
 <a class="reference internal" href="cbm_core_functions.html#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper" title="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper</span></code></a>
 drawn from the specified database.</p>
@@ -756,9 +714,9 @@ drawn from the specified database.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.get_libcbm_configuration_factory">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">get_libcbm_configuration_factory</code><span class="sig-paren">(</span><em class="sig-param">db_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.get_libcbm_configuration_factory" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">get_libcbm_configuration_factory</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">db_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.get_libcbm_configuration_factory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a parameterless function that creates configuration for
 <a class="reference internal" href="libcbm_core_functions.html#libcbm.wrapper.libcbm_wrapper.LibCBMWrapper" title="libcbm.wrapper.libcbm_wrapper.LibCBMWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_wrapper.LibCBMWrapper</span></code></a></p>
 <dl class="field-list simple">
@@ -776,9 +734,9 @@ drawn from the specified database.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.load_cbm_flux_indicators">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_flux_indicators</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_flux_indicators" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_flux_indicators</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqlite_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_flux_indicators" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads cbm flux indicator information from a cbm_defaults database
 into the format expected by the libcbm compiled library.</p>
 <p>Used to capture flows between specified source pools and specified sink
@@ -811,9 +769,9 @@ pools for a given process to return as model output.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.load_cbm_parameters">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_parameters</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_parameters" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqlite_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads cbm default parameters into configuration dictionary format.
 Used for initializing CBM functionality in LibCBM via the InitializeCBM
 function.</p>
@@ -836,9 +794,9 @@ configuration.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.load_cbm_pools">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_pools</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_pools" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">load_cbm_pools</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqlite_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.load_cbm_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads cbm pool information from a cbm_defaults database into the
 format expected by the libcbm compiled library.</p>
 <dl class="field-list simple">
@@ -866,9 +824,9 @@ format expected by the libcbm compiled library.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.model.cbm.cbm_defaults.parameter_as_dataframe">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">parameter_as_dataframe</code><span class="sig-paren">(</span><em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.parameter_as_dataframe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults.</code><code class="sig-name descname">parameter_as_dataframe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults.parameter_as_dataframe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return one of the values stored in the dictionary returned by
 <a class="reference internal" href="#libcbm.model.cbm.cbm_defaults.load_cbm_parameters" title="libcbm.model.cbm.cbm_defaults.load_cbm_parameters"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_cbm_parameters()</span></code></a> as a DataFrame</p>
 <dl class="field-list simple">
@@ -886,9 +844,9 @@ format expected by the libcbm compiled library.</p>
 </div>
 <div class="section" id="cbm-default-parameters-reference">
 <h2>CBM default parameters reference<a class="headerlink" href="#cbm-default-parameters-reference" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults_reference.</code><code class="sig-name descname">CBMDefaultsReference</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em>, <em class="sig-param">locale_code='en-CA'</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.cbm_defaults_reference.</code><code class="sig-name descname">CBMDefaultsReference</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqlite_path</span></em>, <em class="sig-param"><span class="n">locale_code</span><span class="o">=</span><span class="default_value">'en-CA'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a reference to the localized name and id relationships
 stored in a cbm_defaults database.</p>
 <dl class="field-list simple">
@@ -900,9 +858,9 @@ table of the cbm_defaults database. Defaults to “en-CA”.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_type_id">
-<code class="sig-name descname">get_afforestation_pre_type_id</code><span class="sig-paren">(</span><em class="sig-param">afforestation_pre_type_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_type_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_afforestation_pre_type_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">afforestation_pre_type_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_type_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the afforestation pre-type id associated with the specified
 afforestation pre-type name</p>
 <dl class="field-list simple">
@@ -918,7 +876,7 @@ afforestation pre-type name</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_types">
 <code class="sig-name descname">get_afforestation_pre_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_afforestation_pre_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get name and id information for the afforestation pre-types
@@ -940,7 +898,7 @@ of dictionaries with the following keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_biomass_pools">
 <code class="sig-name descname">get_biomass_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_biomass_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the subset of the pool codes that correspond to biomass
@@ -955,7 +913,7 @@ pools in cbm_defaults</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_dead_organic_matter_pools">
 <code class="sig-name descname">get_dead_organic_matter_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_dead_organic_matter_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the subset of the pool codes that correspond to dead
@@ -970,9 +928,9 @@ organic matter (DOM) pools in cbm_defaults</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_disturbance_type_id">
-<code class="sig-name descname">get_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_disturbance_type_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_type_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_disturbance_type_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the disturbance type id associated with the specified
 disturbance type name</p>
 <dl class="field-list simple">
@@ -988,7 +946,7 @@ disturbance type name</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_disturbance_types">
 <code class="sig-name descname">get_disturbance_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_disturbance_types" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all name and id information about every CBM disturbance type
@@ -1006,7 +964,7 @@ as a list of rows with keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_flux_indicators">
 <code class="sig-name descname">get_flux_indicators</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_flux_indicators" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
@@ -1023,9 +981,9 @@ as a list of rows with keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_by_disturbance_type">
-<code class="sig-name descname">get_land_class_by_disturbance_type</code><span class="sig-paren">(</span><em class="sig-param">disturbance_type_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_by_disturbance_type" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_land_class_by_disturbance_type</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_type_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_by_disturbance_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the specified disturbance_type_name get UNFCCC land class
 info for the land class caused by the disturbance type.  If no
 UNFCCC land class is associated, return None.</p>
@@ -1052,7 +1010,7 @@ dictionary containing values for:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_disturbance_ref">
 <code class="sig-name descname">get_land_class_disturbance_ref</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_disturbance_ref" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get name and id information for the cbm disturbance types that
@@ -1079,9 +1037,9 @@ following keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_id">
-<code class="sig-name descname">get_land_class_id</code><span class="sig-paren">(</span><em class="sig-param">land_class_code</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_land_class_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">land_class_code</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_class_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the land class id associated with the specified CBM land class
 code (where a code might be for example: UNFCCC_FL_R_FL)</p>
 <dl class="field-list simple">
@@ -1097,7 +1055,7 @@ code (where a code might be for example: UNFCCC_FL_R_FL)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_classes">
 <code class="sig-name descname">get_land_classes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_land_classes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all name and id information about every CBM land class.</p>
@@ -1119,7 +1077,7 @@ code (where a code might be for example: UNFCCC_FL_R_FL)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_pools">
 <code class="sig-name descname">get_pools</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_pools" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the ordered list of human readable pool codes defined in
@@ -1134,9 +1092,9 @@ cbm_defaults</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit">
-<code class="sig-name descname">get_spatial_unit</code><span class="sig-paren">(</span><em class="sig-param">spatial_unit_id</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_spatial_unit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spatial_unit_id</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a tuple of admin boundary name, eco boundary name for the
 specified spatial unit id</p>
 <dl class="field-list simple">
@@ -1152,9 +1110,9 @@ specified spatial unit id</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit_id">
-<code class="sig-name descname">get_spatial_unit_id</code><span class="sig-paren">(</span><em class="sig-param">admin_boundary_name</em>, <em class="sig-param">eco_boundary_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_spatial_unit_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">admin_boundary_name</span></em>, <em class="sig-param"><span class="n">eco_boundary_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_unit_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the spatial unit id associated with the specified
 admin-boundary-name, eco-boundary-name combination</p>
 <dl class="field-list simple">
@@ -1173,7 +1131,7 @@ admin-boundary-name, eco-boundary-name combination</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_units">
 <code class="sig-name descname">get_spatial_units</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_spatial_units" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get name and id information for the spatial units defined in the
@@ -1196,7 +1154,7 @@ with the following keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species">
 <code class="sig-name descname">get_species</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all name and id information about every CBM species.</p>
@@ -1221,9 +1179,9 @@ with the following keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species_id">
-<code class="sig-name descname">get_species_id</code><span class="sig-paren">(</span><em class="sig-param">species_name</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species_id" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_species_id</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">species_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.get_species_id" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the species id associated with the specified species name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1238,9 +1196,9 @@ with the following keys:</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.load_data">
-<code class="sig-name descname">load_data</code><span class="sig-paren">(</span><em class="sig-param">sqlite_path</em>, <em class="sig-param">query</em>, <em class="sig-param">query_params=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.load_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sqlite_path</span></em>, <em class="sig-param"><span class="n">query</span></em>, <em class="sig-param"><span class="n">query_params</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference.load_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>loads the specified query into a list of dictionary formatted query</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1266,7 +1224,53 @@ to the sqlite3 execute method. Defaults to None.</p></li>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CBM Input and Variables</a><ul>
+<li><a class="reference internal" href="#inventory">Inventory</a></li>
+<li><a class="reference internal" href="#pools">Pools</a></li>
+<li><a class="reference internal" href="#flux">Flux</a></li>
+<li><a class="reference internal" href="#spinup-parameters">Spinup parameters</a></li>
+<li><a class="reference internal" href="#spinup-variables">Spinup variables</a></li>
+<li><a class="reference internal" href="#cbm-time-step-parameters">CBM time step parameters</a></li>
+<li><a class="reference internal" href="#cbm-state-variables">CBM state variables</a></li>
+<li><a class="reference internal" href="#classifiers">Classifiers</a></li>
+<li><a class="reference internal" href="#merchantable-volume-curves">Merchantable Volume Curves</a></li>
+<li><a class="reference internal" href="#cbm-default-parameters">CBM default parameters</a></li>
+<li><a class="reference internal" href="#cbm-default-parameters-reference">CBM default parameters reference</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm_model.html"
+                        title="previous chapter">CBM</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_sit.html"
+                        title="next chapter">CBM Standard Import tool format</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_input_and_variables.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1286,12 +1290,13 @@ to the sqlite3 execute method. Defaults to None.</p></li>
         <li class="right" >
           <a href="cbm_model.html" title="CBM"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CBM Input and Variables</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

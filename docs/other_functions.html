@@ -1,17 +1,19 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Other functions &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="LibCBM core functionality" href="libcbm_core_functions.html" /> 
@@ -28,33 +30,10 @@
         <li class="right" >
           <a href="libcbm_core_functions.html" title="LibCBM core functionality"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Other functions</a></li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="libcbm_core_functions.html"
-                        title="previous chapter">LibCBM core functionality</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/other_functions.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -63,7 +42,7 @@
             
   <div class="section" id="module-libcbm.resources">
 <span id="other-functions"></span><h1>Other functions<a class="headerlink" href="#module-libcbm.resources" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.resources.get_cbm_defaults_path">
 <code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_cbm_defaults_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_cbm_defaults_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the path to the packaged cbm defaults sqlite database</p>
@@ -77,7 +56,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.resources.get_libcbm_bin_path">
 <code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_libcbm_bin_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_libcbm_bin_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns bundled, OS specific compiled libcbm C/C++ library</p>
@@ -97,7 +76,7 @@
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.resources.get_local_dir">
 <code class="sig-prename descclassname">libcbm.resources.</code><code class="sig-name descname">get_local_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.get_local_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the directory containing this script</p>
@@ -111,9 +90,9 @@
 </dl>
 </dd></dl>
 
-<span class="target" id="module-libcbm.resources.cbm_defaults_queries"></span><dl class="function">
+<span class="target" id="module-libcbm.resources.cbm_defaults_queries"></span><dl class="py function">
 <dt id="libcbm.resources.cbm_defaults_queries.get_query">
-<code class="sig-prename descclassname">libcbm.resources.cbm_defaults_queries.</code><code class="sig-name descname">get_query</code><span class="sig-paren">(</span><em class="sig-param">query_filename</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.cbm_defaults_queries.get_query" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.resources.cbm_defaults_queries.</code><code class="sig-name descname">get_query</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">query_filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.cbm_defaults_queries.get_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>read the contents of a file stored in the same directory as this module.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -129,7 +108,7 @@ directory as this module</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.resources.cbm_defaults_queries.get_script_dir">
 <code class="sig-prename descclassname">libcbm.resources.cbm_defaults_queries.</code><code class="sig-name descname">get_script_dir</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.resources.cbm_defaults_queries.get_script_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the directory containing this script file</p>
@@ -143,9 +122,9 @@ directory as this module</p>
 </dl>
 </dd></dl>
 
-<span class="target" id="module-libcbm.data_helpers"></span><dl class="function">
+<span class="target" id="module-libcbm.data_helpers"></span><dl class="py function">
 <dt id="libcbm.data_helpers.append_simulation_result">
-<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">append_simulation_result</code><span class="sig-paren">(</span><em class="sig-param">simulation_result</em>, <em class="sig-param">timestep_data</em>, <em class="sig-param">timestep</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.append_simulation_result" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">append_simulation_result</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">simulation_result</span></em>, <em class="sig-param"><span class="n">timestep_data</span></em>, <em class="sig-param"><span class="n">timestep</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.append_simulation_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append the specified timestep data to a simulation result spanning
 multiple time steps</p>
 <dl class="field-list simple">
@@ -173,9 +152,9 @@ to the larger simulation result in the “timestep” column</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.data_helpers.get_ndarray">
-<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_ndarray</code><span class="sig-paren">(</span><em class="sig-param">a</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_ndarray" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_ndarray</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_ndarray" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method to deal with numpy arrays stored in pandas objects.
 Gets a reference to the underlying numpy.ndarray storage from a
 pandas.DataFrame or pandas.Series.</p>
@@ -197,7 +176,7 @@ potentially convert to ndarray</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.data_helpers.get_nullable_ndarray">
 <code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">get_nullable_ndarray</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">dtype=&lt;class 'ctypes.c_double'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.get_nullable_ndarray" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper method for wrapper parameters that can be specified either as
@@ -229,9 +208,9 @@ the underlying ndarray data.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.data_helpers.promote_scalar">
-<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">promote_scalar</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">size</em>, <em class="sig-param">dtype</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.promote_scalar" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">promote_scalar</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">dtype</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.promote_scalar" title="Permalink to this definition">¶</a></dt>
 <dd><p>If the specified value is scalar promote it to a numpy array filled
 with the scalar value, and otherwise return the value.  This is purely
 a helper function to allow scalar parameters for certain vector
@@ -259,9 +238,9 @@ vector if promotion occurs</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="libcbm.data_helpers.unpack_ndarrays">
-<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">unpack_ndarrays</code><span class="sig-paren">(</span><em class="sig-param">variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.unpack_ndarrays" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.data_helpers.</code><code class="sig-name descname">unpack_ndarrays</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.data_helpers.unpack_ndarrays" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert and return a set of variables as a types.SimpleNamespace whose
 members are only ndarray.
 Supports 2 cases:</p>
@@ -297,7 +276,32 @@ necessary.</p>
 </div>
 
 
+            <div class="clearer"></div>
           </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="libcbm_core_functions.html"
+                        title="previous chapter">LibCBM core functionality</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/other_functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -314,12 +318,13 @@ necessary.</p>
         <li class="right" >
           <a href="libcbm_core_functions.html" title="LibCBM core functionality"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Other functions</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>
