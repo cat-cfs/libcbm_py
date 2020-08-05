@@ -61,7 +61,7 @@ setup(
     license="MPL-2.0",
     url="",
     download_url="",
-    packages=find_packages(),
+    packages=find_packages(exclude=['test*']),
     package_data={
         "libcbm":
             cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin +
