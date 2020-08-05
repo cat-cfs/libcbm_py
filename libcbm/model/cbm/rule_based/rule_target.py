@@ -324,7 +324,7 @@ def compute_disturbance_production(model_functions, compute_functions,
     # compute the flux based on the specified disturbance type
     compute_functions.compute_flux(
         [disturbance_op], [disturbance_op_process_id],
-        cbm_vars.pools.to_numpy(copy=True), cbm_vars.flux_indicators,
+        np.ascontiguousarray(cbm_vars.pools), cbm_vars.flux_indicators,
         enabled=eligible.astype(np.int32))
 
     compute_functions.free_op(disturbance_op)
