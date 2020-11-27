@@ -106,12 +106,6 @@ def parse(transition_rules, classifiers, classifier_values,
             f"disturbance types) detected: {undefined_disturbances}"
         )
 
-    disturbance_type_map = {
-        x["id"]: x["name"] for _, x in disturbance_types.iterrows()}
-
-    transitions.disturbance_type = \
-        transitions.disturbance_type.map(disturbance_type_map)
-
     transitions = transitions.rename(
         columns={
             "min_softwood_age": "min_age",

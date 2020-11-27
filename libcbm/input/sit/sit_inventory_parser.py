@@ -171,14 +171,6 @@ def parse(inventory_table, classifiers, classifier_values,
                 f"disturbance types) detected: {undefined_lastpass}"
             )
 
-        disturbance_type_map = {
-            x["id"]: x["name"] for _, x in disturbance_types.iterrows()}
-
-        inventory.historical_disturbance_type = \
-            inventory.historical_disturbance_type.map(disturbance_type_map)
-        inventory.last_pass_disturbance_type = \
-            inventory.last_pass_disturbance_type.map(disturbance_type_map)
-
     inventory.using_age_class = inventory.using_age_class.map(
         sit_parser.get_parse_bool_func("inventory", "using_age_class"))
 

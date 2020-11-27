@@ -14,7 +14,7 @@ class SITCBMDefaults(CBMDefaultsReference):
         self.sit = sit
         self.db_path = db_path
         self.sit_disturbance_type_id_lookup = {
-            x["name"]: x["sit_disturbance_type_id"]
+            x["id"]: x["sit_disturbance_type_id"]
             for _, x in sit.sit_data.disturbance_types.iterrows()}
         self.default_disturbance_id_lookup = {
             x["disturbance_type_name"]: x["disturbance_type_id"]
