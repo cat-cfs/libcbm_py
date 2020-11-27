@@ -152,7 +152,7 @@ def get_rule_based_processor(sit, random_func=None, parameters_factory=None):
 def get_disturbance_type_ids(sit_disturbance_types, disturbance_types):
     result = []
     sit_disturbance_type_id_lookup = {
-        x["name"]: x["sit_disturbance_type_id"]
+        x["id"]: x["sit_disturbance_type_id"]
         for _, x in sit_disturbance_types.iterrows()}
 
     for d in disturbance_types:

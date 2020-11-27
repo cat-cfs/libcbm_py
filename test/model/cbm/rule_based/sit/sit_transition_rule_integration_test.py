@@ -10,13 +10,13 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         sit = helpers.load_sit_data()
         sit.sit_data.transition_rules = helpers.initialize_transitions(sit, [
             {"admin": "?", "eco": "?", "species": "sp",
-             "disturbance_type": "fire", "percent": 50, "species_tr": "oak",
+             "disturbance_type": "dist1", "percent": 50, "species_tr": "oak",
              "regeneration_delay": 5, "reset_age": 0},
             {"admin": "?", "eco": "?", "species": "sp",
-             "disturbance_type": "fire", "percent": 50, "species_tr": "pn",
+             "disturbance_type": "dist1", "percent": 50, "species_tr": "pn",
              "regeneration_delay": 10, "reset_age": -1}
             ])
-        # change the post-fire species to 1/2 oak, 1/2 pine
+        # change the post-dist1 species to 1/2 oak, 1/2 pine
 
         sit.sit_data.inventory = helpers.initialize_inventory(sit, [
             {"admin": "a1", "eco": "e2", "species": "sp", "area": 5}
@@ -28,7 +28,7 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         # be set, normally this would be done beforehand by the sit rule based
         # events.
         cbm_vars.params.disturbance_type = helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types, ["fire"])[0]
+            sit.sit_data.disturbance_types, ["dist1"])[0]
 
         sit_rule_based_processor = helpers.get_rule_based_processor(sit)
         cbm_vars_result = sit_rule_based_processor.tr_func(cbm_vars=cbm_vars)

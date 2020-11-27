@@ -15,7 +15,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "time_step": 1}
+             "target": 10, "disturbance_type": "dist1", "time_step": 1}
         ])
 
         # records 0, 2, and 3 match, and 1 does not.  The target is 10, so
@@ -43,7 +43,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types,
-                ["fire", None, None, "fire"]))
+                ["dist1", None, None, "dist1"]))
 
         stats_row = \
             sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
@@ -63,7 +63,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a2", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "time_step": 1}
+             "target": 10, "disturbance_type": "dist1", "time_step": 1}
         ])
 
         # record at index 1 is the only eligible record meaning the above event
@@ -91,7 +91,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types,
-                [None, "fire", None, None]))
+                [None, "dist1", None, None]))
 
         stats_row = \
             sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
@@ -110,11 +110,11 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "clearcut",
+             "target": 10, "disturbance_type": "dist2",
              "time_step": 1},
             {"admin": "?", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 10, "disturbance_type": "fire", "time_step": 1},
+             "target": 10, "disturbance_type": "dist1", "time_step": 1},
         ])
         # the second of the above events will match all records, and it will
         # occur first since fire happens before clearcut
@@ -139,7 +139,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         expected_disturbance_types = helpers.get_disturbance_type_ids(
             sit.sit_data.disturbance_types,
-            ["fire", "fire", None, "clearcut", "clearcut"])
+            ["dist1", "dist1", None, "dist2", "dist2"])
 
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
@@ -172,7 +172,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 6, "disturbance_type": "fire", "time_step": 1}
+             "target": 6, "disturbance_type": "dist1", "time_step": 1}
         ])
         # since the target is 6, one of the 2 inventory records below needs to
         # be split
@@ -194,7 +194,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types, ["fire", "fire", None]))
+                sit.sit_data.disturbance_types, ["dist1", "dist1", None]))
 
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
@@ -218,7 +218,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
-             "target": 10, "disturbance_type": "clearcut",
+             "target": 10, "disturbance_type": "dist2",
              "time_step": 1}
         ])
 
@@ -251,7 +251,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types, ["clearcut", "clearcut"]))
+                sit.sit_data.disturbance_types, ["dist2", "dist2"]))
 
     def test_rule_based_merch_target_age_sort_unrealized(self):
         sit = helpers.load_sit_data()
@@ -259,7 +259,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
-             "target": 10, "disturbance_type": "clearcut",
+             "target": 10, "disturbance_type": "dist2",
              "time_step": 1}
         ])
 
@@ -286,7 +286,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types,
-                ["clearcut", "clearcut", "clearcut"]))
+                ["dist2", "dist2", "dist2"]))
 
         stats_row = \
             sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
@@ -303,7 +303,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_HW_AGE", "target_type": "Merchantable",
-             "target": 7, "disturbance_type": "clearcut",
+             "target": 7, "disturbance_type": "dist2",
              "time_step": 4}
         ])
 
@@ -330,7 +330,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types,
-                ["clearcut", "clearcut", None]))
+                ["dist2", "dist2", None]))
 
         self.assertTrue(cbm_vars.pools.shape[0] == 3)
         self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
@@ -353,16 +353,16 @@ class SITEventIntegrationTest(unittest.TestCase):
         sit.sit_data.disturbance_events = helpers.initialize_events(sit, [
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "MERCHCSORT_TOTAL", "target_type": "Merchantable",
-             "target": 100, "disturbance_type": "clearcut",
+             "target": 100, "disturbance_type": "dist2",
              "time_step": 100},
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "SORT_BY_SW_AGE", "target_type": "Area",
-             "target": 20, "disturbance_type": "deforestation",
+             "target": 20, "disturbance_type": "dist3",
              "time_step": 100},
             # this event will occur first
             {"admin": "a1", "eco": "?", "species": "sp",
              "sort_type": "RANDOMSORT", "target_type": "Area",
-             "target": 20, "disturbance_type": "fire",
+             "target": 20, "disturbance_type": "dist1",
              "time_step": 100},
         ])
 
@@ -384,7 +384,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             list(cbm_vars_result.params.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types,
-                ["fire", "clearcut", "deforestation", None]))
+                ["dist1", "dist2", "dist3", None]))
 
         self.assertTrue(list(cbm_vars.inventory.area) == [20, 100, 20, 860])
 
