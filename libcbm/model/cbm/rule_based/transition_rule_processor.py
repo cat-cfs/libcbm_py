@@ -132,21 +132,12 @@ class TransitionRuleProcessor(object):
                     state
 
         """
-        filter_result = self._filter_stands(tr_group_key, cbm_vars)
-
-        if np.logical_and(transition_mask, filter_result).any():
-            # this indicates that a transition rule has collided with another
-            # transition rule, which is possible when overlapping criteria are
-            # specified (wildcards, age ranges etc.)  This is a simplistic,
-            # but safe solution for this possible issue. Another approach might
-            # be to prioritize overlapping groups instead.
-            raise ValueError(
-                "overlapping transition rule criteria detected: "
-                f"{tr_group_key}")
+        filtered = self._filter_stands(tr_group_key, cbm_vars)
 
         # sets the transitioned array with the transition filter result
-        transition_mask = np.logical_or(transition_mask, filter_result)
-        transition_mask_output = transition_mask.copy()
+        eligible = np.logical_and(
+            np.logical_not(transition_mask), filtered)
+        transition_mask_output = np.logical_or(transition_mask, eligible)
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
@@ -169,15 +160,15 @@ class TransitionRuleProcessor(object):
             # For all proportions other than the first we need to make
             # a copy of each of the state variables to split off the
             # percentage for the current group member
-            pools = cbm_vars.pools[filter_result].copy()
-            flux = cbm_vars.flux_indicators[filter_result].copy()
-            params = cbm_vars.params[filter_result].copy()
-            state = cbm_vars.state[filter_result].copy()
-            inventory = cbm_vars.inventory[filter_result].copy()
-            classifiers = cbm_vars.classifiers[filter_result].copy()
+            pools = cbm_vars.pools[eligible].copy()
+            flux = cbm_vars.flux_indicators[eligible].copy()
+            params = cbm_vars.params[eligible].copy()
+            state = cbm_vars.state[eligible].copy()
+            inventory = cbm_vars.inventory[eligible].copy()
+            classifiers = cbm_vars.classifiers[eligible].copy()
             transition_mask_output = np.concatenate([
                 transition_mask_output,
-                transition_mask[filter_result].copy()])
+                np.ones(pools.shape[0], dtype=bool)])
 
             # set the area for the split portion according to the current
             # group member proportion
@@ -216,16 +207,16 @@ class TransitionRuleProcessor(object):
                 transition_rule=tr_group.iloc[0])
         for classifier_name, value_id in transition_classifier_ids:
             cbm_vars.classifiers.loc[
-                filter_result, classifier_name] = value_id
+                eligible, classifier_name] = value_id
         if proportions[0] < 1.0:
-            cbm_vars.inventory.loc[filter_result, "area"] = \
-                cbm_vars.inventory.loc[filter_result, "area"] * \
+            cbm_vars.inventory.loc[eligible, "area"] = \
+                cbm_vars.inventory.loc[eligible, "area"] * \
                 proportions[0]
 
-        cbm_vars.state.loc[filter_result, "regeneration_delay"] = \
+        cbm_vars.state.loc[eligible, "regeneration_delay"] = \
             tr_group.iloc[0].regeneration_delay
 
-        cbm_vars.params.loc[filter_result, "reset_age"] = \
+        cbm_vars.params.loc[eligible, "reset_age"] = \
             tr_group.iloc[0].reset_age
 
         if len(proportions) > 1:
