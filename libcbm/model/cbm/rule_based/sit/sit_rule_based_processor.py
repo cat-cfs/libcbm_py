@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import numpy as np
+import pandas as pd
 from libcbm.model.cbm.rule_based.transition_rule_processor import \
     TransitionRuleProcessor
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
@@ -66,4 +68,8 @@ class SITRuleBasedProcessor():
     def pre_dynamic_func(self, time_step, cbm_vars):
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
+        cbm_vars.classifiers = pd.DataFrame(
+            columns=cbm_vars.classifiers.columns,
+            data=np.ascontiguousarray(
+                cbm_vars.classifiers.to_numpy(dtype="int32")))
         return cbm_vars
