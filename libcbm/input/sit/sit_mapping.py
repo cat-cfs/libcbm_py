@@ -454,7 +454,7 @@ class SITMapping():
             x["code"]: x["land_class_id"]
             for x in self.sit_cbm_defaults.get_land_classes()}
         land_class_id = {x for x in land_classes_by_code.values()}
-        if land_class.dtype == np.object:
+        if land_class.dtype == object:
             undefined_land_classes = np.setdiff1d(
                 land_class.unique(), list(land_classes_by_code.keys()))
             if len(undefined_land_classes) > 0:

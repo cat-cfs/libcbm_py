@@ -227,7 +227,7 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
         valid_age_classes = np.concatenate(
             [age_classes.name.unique(), np.array(["-1"])])
         age_class_ids = using_age_class_rows[
-            age_class_criteria_col].astype(np.str).unique()
+            age_class_criteria_col].astype(str).unique()
         undefined_age_classes = np.setdiff1d(
             age_class_ids,
             valid_age_classes)
@@ -242,13 +242,13 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
     age_class_end_year_map = {
         x.name: x.end_year for x in age_classes.itertuples()}
     using_age_class_rows.min_softwood_age = using_age_class_rows \
-        .min_softwood_age.astype(np.str).map(age_class_start_year_map)
+        .min_softwood_age.astype(str).map(age_class_start_year_map)
     using_age_class_rows.min_hardwood_age = using_age_class_rows \
-        .min_hardwood_age.astype(np.str).map(age_class_start_year_map)
+        .min_hardwood_age.astype(str).map(age_class_start_year_map)
     using_age_class_rows.max_softwood_age = using_age_class_rows \
-        .max_softwood_age.astype(np.str).map(age_class_end_year_map)
+        .max_softwood_age.astype(str).map(age_class_end_year_map)
     using_age_class_rows.max_hardwood_age = using_age_class_rows \
-        .max_hardwood_age.astype(np.str).map(age_class_end_year_map)
+        .max_hardwood_age.astype(str).map(age_class_end_year_map)
 
     # if the above mapping fails, it results in Nan values in the failed rows,
     # this replaces those with -1

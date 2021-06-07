@@ -178,7 +178,7 @@ def parse(inventory_table, classifiers, classifier_values,
     # of 0 is enforced
     age_column_format = [
         x for x in inventory_format if x["name"] == "age"][0].copy()
-    age_column_format["type"] = np.int32
+    age_column_format["type"] = int
     age_column_format["min_value"] = 0
 
     sit_parser.unpack_column(
@@ -249,7 +249,7 @@ def expand_age_class_inventory(inventory, age_classes):
             raise ValueError(
                 "using_age_class=true and spatial reference may not be "
                 "used together")
-    using_age_class_rows.age = using_age_class_rows.age.astype(np.str)
+    using_age_class_rows.age = using_age_class_rows.age.astype(str)
 
     age_class_merge = using_age_class_rows.merge(
         expanded_age_classes, left_on="age", right_on="name")

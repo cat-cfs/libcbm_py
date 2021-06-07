@@ -102,7 +102,7 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     parameters.max_rotations = data_helpers.promote_scalar(
         max_rotations, n_stands, dtype=np.int32)
     parameters.mean_annual_temp = data_helpers.promote_scalar(
-        mean_annual_temp, n_stands, dtype=np.float)
+        mean_annual_temp, n_stands, dtype=np.float64)
     return parameters
 
 
@@ -122,11 +122,11 @@ def initialize_spinup_variables(n_stands):
 
     variables = SimpleNamespace()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
-    variables.slow_pools = np.zeros(n_stands, dtype=np.float)
+    variables.slow_pools = np.zeros(n_stands, dtype=np.float64)
     variables.disturbance_type = np.zeros(n_stands, dtype=np.int32)
     variables.rotation = np.zeros(n_stands, dtype=np.int32)
     variables.step = np.zeros(n_stands, dtype=np.int32)
-    variables.last_rotation_slow_C = np.zeros(n_stands, dtype=np.float)
+    variables.last_rotation_slow_C = np.zeros(n_stands, dtype=np.float64)
     variables.enabled = np.ones(n_stands, dtype=np.int32)
     variables.age = np.zeros(n_stands, dtype=np.int32)
     variables.growth_enabled = np.ones(n_stands, dtype=np.int32)
@@ -187,7 +187,7 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
     }
     if mean_annual_temp:
         data["mean_annual_temp"] = data_helpers.promote_scalar(
-            mean_annual_temp, n_stands, dtype=np.float)
+            mean_annual_temp, n_stands, dtype=np.float64)
     parameters = pd.DataFrame(data=data)
     return parameters
 
@@ -213,7 +213,7 @@ def initialize_cbm_state_variables(n_stands):
         "enabled": np.ones(n_stands, dtype=np.int32),
         "land_class": np.zeros(n_stands, dtype=np.int32),
         "age": np.zeros(n_stands, dtype=np.int32),
-        "growth_multiplier": np.ones(n_stands, dtype=np.float),
+        "growth_multiplier": np.ones(n_stands, dtype=np.float64),
         "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
     })
 
@@ -258,7 +258,7 @@ def initialize_inventory(inventory):
     """
     return pd.DataFrame({
         "age": inventory.age.to_numpy(dtype=np.int32),
-        "area": inventory.area.to_numpy(dtype=np.float),
+        "area": inventory.area.to_numpy(dtype=np.float64),
         "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
         "afforestation_pre_type_id":
             inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32),

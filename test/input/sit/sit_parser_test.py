@@ -1,6 +1,5 @@
 import unittest
 import pandas as pd
-import numpy as np
 from libcbm.input.sit import sit_parser
 
 
@@ -23,8 +22,8 @@ class SITParserTest(unittest.TestCase):
         unpacked = sit_parser.unpack_table(
             table=pd.DataFrame([("1", "2", "3")]),
             column_descriptions=[
-                {"index": 0, "name": "col0", "type": np.int},
-                {"index": 1, "name": "col1", "type": np.float},
+                {"index": 0, "name": "col0", "type": int},
+                {"index": 1, "name": "col1", "type": float},
                 {"index": 2, "name": "col2"}],
             table_name="")
         self.assertTrue(list(unpacked.columns) == ["col0", "col1", "col2"])
@@ -39,9 +38,9 @@ class SITParserTest(unittest.TestCase):
         """
 
         cases = [
-            ("invalid_integer", np.int),
-            ("1.1", np.int),
-            ("invalid_float", np.float),
+            ("invalid_integer", int),
+            ("1.1", int),
+            ("invalid_float", float),
         ]
 
         for value, constraint_type in cases:
@@ -59,7 +58,7 @@ class SITParserTest(unittest.TestCase):
             sit_parser.unpack_table(
                 table=pd.DataFrame([(-1,)]),
                 column_descriptions=[
-                    {"index": 0, "name": "col0", "type": np.int,
+                    {"index": 0, "name": "col0", "type": int,
                      "min_value": 0}],
                 table_name="")
 
@@ -70,7 +69,7 @@ class SITParserTest(unittest.TestCase):
             sit_parser.unpack_table(
                 table=pd.DataFrame([(1,)]),
                 column_descriptions=[
-                    {"index": 0, "name": "col0", "type": np.int,
+                    {"index": 0, "name": "col0", "type": int,
                      "max_value": 0}],
                 table_name="")
 

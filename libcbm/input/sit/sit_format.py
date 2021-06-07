@@ -2,8 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import numpy as np
-
 
 def get_tr_classifier_set_postfix():
     """since transition rules contain 2 classifier sets (2 sets of columns)
@@ -29,9 +27,9 @@ def get_classifier_format(n_columns):
         list: a list of dictionaries describing the CBM SIT classifier columns
     """
     classifier_format = [
-        {"name": "id", "index": 0, "type": np.int},
-        {"name": "name", "index": 1, "type": np.str},
-        {"name": "description", "index": 2, "type": np.str},
+        {"name": "id", "index": 0, "type": int},
+        {"name": "name", "index": 1, "type": str},
+        {"name": "description", "index": 2, "type": str},
     ]
 
     if n_columns < 3:
@@ -40,7 +38,7 @@ def get_classifier_format(n_columns):
     elif n_columns >= 4:
         classifier_format.extend([{
             "name": "aggregate_value_{}".format(i-2), "index": i,
-            "type": np.str
+            "type": str
         } for i in range(3, n_columns)])
     return classifier_format
 
@@ -64,8 +62,8 @@ def get_disturbance_type_format(n_columns):
             type columns
     """
     disturbance_type_format = [
-        {"name": "id", "index": 0, "type": np.str},
-        {"name": "name", "index": 1, "type": np.str},
+        {"name": "id", "index": 0, "type": str},
+        {"name": "name", "index": 1, "type": str},
     ]
     if n_columns < 2:
         raise ValueError(
@@ -86,8 +84,8 @@ def get_age_class_format():
             columns
     """
     return [
-        {"name": "id", "index": 0, "type": np.str},
-        {"name": "class_size", "index": 1, "type": np.int},
+        {"name": "id", "index": 0, "type": str},
+        {"name": "class_size", "index": 1, "type": int},
     ]
 
 
@@ -109,7 +107,7 @@ def get_yield_format(classifier_names, n_columns):
     """
     n_classifiers = len(classifier_names)
     classifier_values = [
-        {"name": c, "index": i, "type": np.str}
+        {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)]
     leading_species_col = [{
         "name": "leading_species", "index": n_classifiers}]
@@ -124,7 +122,7 @@ def get_yield_format(classifier_names, n_columns):
             "name": "v{}".format(i-vol_index),
             "index": i,
             "min_value": 0,
-            "type": np.float}
+            "type": float}
         for i in range(vol_index, n_columns)]
 
     return classifier_values + leading_species_col + volumes
@@ -171,33 +169,33 @@ def get_transition_rules_format(classifier_names, n_columns):
     """
     n_classifiers = len(classifier_names)
     classifier_set_src = [
-        {"name": c, "index": i, "type": np.str}
+        {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)]
     age_eligibility = get_age_eligibility_columns(n_classifiers)
     disturbance_type = [{
         "name": "disturbance_type",
         "index": n_classifiers+5,
-        "type": np.str}]
+        "type": str}]
 
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
         {"name": "regeneration_delay", "index": regeneration_delay_index,
-         "min_value": 0, "type": np.int},
+         "min_value": 0, "type": int},
         {"name": "reset_age", "index": regeneration_delay_index + 1,
-         "min_value": -1, "type": np.int},
+         "min_value": -1, "type": int},
         {"name": "percent", "index": regeneration_delay_index + 2,
-         "min_value": 0, "max_value": 100, "type": np.int},
+         "min_value": 0, "max_value": 100, "type": int},
     ]
     spatial_reference = [
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
-         "type": np.int}
+         "type": int}
     ]
     tr_cset_postfix = get_tr_classifier_set_postfix()
     classifier_set_dest = [
         {
             "name": f"{c}{tr_cset_postfix}",
             "index": i + n_classifiers + len(age_eligibility) + 1,
-            "type": np.str}
+            "type": str}
         for i, c in enumerate(classifier_names)]
     result = []
     result.extend(classifier_set_src)  # source classifier set
@@ -239,26 +237,26 @@ def get_inventory_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
 
     classifier_set = [
-        {"name": c, "index": i, "type": np.str}
+        {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)]
 
     inventory = [
-        {"name": "using_age_class", "index": n_classifiers, "type": np.str},
+        {"name": "using_age_class", "index": n_classifiers, "type": str},
         # age can be a string (for "using_age_class" support, so no min value
         # is specified)
         {"name": "age", "index": n_classifiers + 1},
         {"name": "area", "index": n_classifiers + 2, "min_value": 0,
-         "type": np.float},
+         "type": float},
         {"name": "delay", "index": n_classifiers + 3, "min_value": 0,
-         "type": np.int},
+         "type": int},
         {"name": "land_class", "index": n_classifiers + 4}]
 
     if n_columns > n_classifiers + 6:
         inventory.extend([
             {"name": "historical_disturbance_type",
-             "index": n_classifiers + 5, "type": np.str},
+             "index": n_classifiers + 5, "type": str},
             {"name": "last_pass_disturbance_type",
-             "index": n_classifiers + 6, "type": np.str}])
+             "index": n_classifiers + 6, "type": str}])
     if n_columns == n_classifiers + 6:
         raise ValueError(
             "Invalid number of columns: both historical and last pass "
@@ -270,7 +268,7 @@ def get_inventory_format(classifier_names, n_columns):
     if n_columns == n_classifiers + 8:
         inventory.append({
             "name": "spatial_reference", "index": n_classifiers + 7,
-            "type": np.int})
+            "type": int})
     if n_columns > n_classifiers + 8:
         raise ValueError(
             f"With {n_classifiers} classifiers, SIT inventory should have "
@@ -292,29 +290,29 @@ def get_disturbance_eligibility_columns(index):
             eligibility columns
     """
     return [
-        {"name": "MinYearsSinceDist", "index": index + 0, "type": np.int},
-        {"name": "MaxYearsSinceDist", "index": index + 1, "type": np.int},
-        {"name": "LastDistTypeID", "index": index + 2, "type": np.int},
-        {"name": "MinTotBiomassC", "index": index + 3, "type": np.float},
-        {"name": "MaxTotBiomassC", "index": index + 4, "type": np.float},
-        {"name": "MinSWMerchBiomassC", "index": index + 5, "type": np.float},
-        {"name": "MaxSWMerchBiomassC", "index": index + 6, "type": np.float},
-        {"name": "MinHWMerchBiomassC", "index": index + 7, "type": np.float},
-        {"name": "MaxHWMerchBiomassC", "index": index + 8, "type": np.float},
-        {"name": "MinTotalStemSnagC", "index": index + 9, "type": np.float},
-        {"name": "MaxTotalStemSnagC", "index": index + 10, "type": np.float},
-        {"name": "MinSWStemSnagC", "index": index + 11, "type": np.float},
-        {"name": "MaxSWStemSnagC", "index": index + 12, "type": np.float},
-        {"name": "MinHWStemSnagC", "index": index + 13, "type": np.float},
-        {"name": "MaxHWStemSnagC", "index": index + 14, "type": np.float},
+        {"name": "MinYearsSinceDist", "index": index + 0, "type": int},
+        {"name": "MaxYearsSinceDist", "index": index + 1, "type": int},
+        {"name": "LastDistTypeID", "index": index + 2, "type": str},
+        {"name": "MinTotBiomassC", "index": index + 3, "type": float},
+        {"name": "MaxTotBiomassC", "index": index + 4, "type": float},
+        {"name": "MinSWMerchBiomassC", "index": index + 5, "type": float},
+        {"name": "MaxSWMerchBiomassC", "index": index + 6, "type": float},
+        {"name": "MinHWMerchBiomassC", "index": index + 7, "type": float},
+        {"name": "MaxHWMerchBiomassC", "index": index + 8, "type": float},
+        {"name": "MinTotalStemSnagC", "index": index + 9, "type": float},
+        {"name": "MaxTotalStemSnagC", "index": index + 10, "type": float},
+        {"name": "MinSWStemSnagC", "index": index + 11, "type": float},
+        {"name": "MaxSWStemSnagC", "index": index + 12, "type": float},
+        {"name": "MinHWStemSnagC", "index": index + 13, "type": float},
+        {"name": "MaxHWStemSnagC", "index": index + 14, "type": float},
         {"name": "MinTotalStemSnagMerchC", "index": index + 15,
-         "type": np.float},
+         "type": float},
         {"name": "MaxTotalStemSnagMerchC", "index": index + 16,
-         "type": np.float},
-        {"name": "MinSWMerchStemSnagC", "index": index + 17, "type": np.float},
-        {"name": "MaxSWMerchStemSnagC", "index": index + 18, "type": np.float},
-        {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": np.float},
-        {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": np.float}
+         "type": float},
+        {"name": "MinSWMerchStemSnagC", "index": index + 17, "type": float},
+        {"name": "MaxSWMerchStemSnagC", "index": index + 18, "type": float},
+        {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": float},
+        {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": float}
     ]
 
 
@@ -338,7 +336,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
 
     classifier_set = [
-        {"name": c, "index": i, "type": np.str}
+        {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)]
 
     disturbance_age_eligibility = get_age_eligibility_columns(n_classifiers)
@@ -349,14 +347,14 @@ def get_disturbance_event_format(classifier_names, n_columns):
     n_eligibility_fields = len(disturbance_eligibility)
     index = n_classifiers + n_age_fields + n_eligibility_fields
     event_target = [
-        {"name": "efficiency", "index": index, "type": np.float,
+        {"name": "efficiency", "index": index, "type": float,
          "min_value": 0, "max_value": 1},
         {"name": "sort_type", "index": index + 1},
         {"name": "target_type", "index": index + 2},
-        {"name": "target", "index": index + 3, "type": np.float,
+        {"name": "target", "index": index + 3, "type": float,
          "min_value": 0},
-        {"name": "disturbance_type", "index": index + 4, "type": np.str},
-        {"name": "time_step", "index": index + 5, "type": np.int,
+        {"name": "disturbance_type", "index": index + 4, "type": str},
+        {"name": "time_step", "index": index + 5, "type": int,
          "min_value": 1},
     ]
     if n_columns < index + 6:
@@ -365,7 +363,7 @@ def get_disturbance_event_format(classifier_names, n_columns):
             "{}".format(index + 6))
     if n_columns == index + 7:
         event_target.append(
-            {"name": "spatial_reference", "index": index + 6, "type": np.int}
+            {"name": "spatial_reference", "index": index + 6, "type": int}
         )
     if n_columns > index + 7:
         raise ValueError(

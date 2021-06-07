@@ -112,7 +112,7 @@ def parse(disturbance_events, classifiers, classifier_values,
 
     # validate sort type
     valid_sort_types = get_sort_types().keys()
-    int_sort_type = events.sort_type.astype(np.int)
+    int_sort_type = events.sort_type.astype(int)
     sort_type_diff = set(int_sort_type.unique()) \
         .difference(set(valid_sort_types))
     if len(sort_type_diff) > 0:

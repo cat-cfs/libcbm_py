@@ -321,7 +321,8 @@ def compute_disturbance_production(model_functions, compute_functions,
 
     cbm_vars = cbm_variables.prepare(cbm_vars)
 
-    pools_copy = np.array(cbm_vars.pools, copy=True, order="C", dtype=np.float)
+    pools_copy = np.array(
+        cbm_vars.pools, copy=True, order="C", dtype=np.float64)
 
     # compute the flux based on the specified disturbance type
     compute_functions.compute_flux(
