@@ -111,6 +111,9 @@ class SITEventProcessorTest(unittest.TestCase):
             sit_stand_filter.create_state_filter_expression.side_effect = \
                 lambda sit_event, age_only: \
                 ("(mock_variable == 7)", ["mock_variable"])
+            sit_stand_filter.create_last_disturbance_type_filter = Mock()
+            sit_stand_filter.create_last_disturbance_type_filter.side_effect \
+                = lambda sit_event: ("", [])
 
             # mock sit_stand_target
             sit_stand_target = mocks["sit_stand_target"]

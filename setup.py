@@ -11,7 +11,9 @@ resources_dir = "resources"
 
 cbm_defaults_db = [
     os.path.join(resources_dir, "cbm_defaults_db", x)
-    for x in ["cbm_defaults_2018.db", "cbm_defaults_2019.db", "cbm_defaults_2020.db"]]
+    for x in ["cbm_defaults_2018.db",
+              "cbm_defaults_2019.db",
+              "cbm_defaults_2020.db"]]
 
 cbm_defaults_queries = [
     os.path.join("resources", "cbm_defaults_queries", "*.sql")
@@ -49,7 +51,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="libcbm",
-    version="0.3.9",
+    version="0.4.0",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,

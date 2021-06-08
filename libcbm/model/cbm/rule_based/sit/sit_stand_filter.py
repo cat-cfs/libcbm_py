@@ -155,6 +155,8 @@ def create_state_filter_expression(sit_data, age_only):
 
 def create_last_disturbance_type_filter(sit_data):
 
+    if int(sit_data["LastDistTypeID"]) == -1:
+        return "", []
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",

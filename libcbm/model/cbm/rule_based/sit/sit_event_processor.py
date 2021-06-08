@@ -73,6 +73,9 @@ class SITEventProcessor():
         state_filter_expression, state_filter_cols = \
             sit_stand_filter.create_state_filter_expression(
                 sit_event, False)
+        dist_type_filter_expression, dist_type_cols = \
+            sit_stand_filter.create_last_disturbance_type_filter(
+                sit_event)
 
         event_filter = rule_filter.merge_filters(
             rule_filter.create_filter(
@@ -86,7 +89,11 @@ class SITEventProcessor():
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
                     sit_event, cbm_vars.classifiers.columns.tolist()),
-                cbm_vars.classifiers))
+                cbm_vars.classifiers),
+            rule_filter.create_filter(
+                expression=dist_type_filter_expression,
+                data=cbm_vars.state,
+                columns=dist_type_cols))
 
         process_event_result = event_processor.process_event(
             event_filter=event_filter,

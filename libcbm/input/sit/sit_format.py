@@ -292,7 +292,7 @@ def get_disturbance_eligibility_columns(index):
     return [
         {"name": "MinYearsSinceDist", "index": index + 0, "type": int},
         {"name": "MaxYearsSinceDist", "index": index + 1, "type": int},
-        {"name": "LastDistTypeID", "index": index + 2, "type": str},
+        {"name": "LastDistTypeID", "index": index + 2, "type": int},
         {"name": "MinTotBiomassC", "index": index + 3, "type": float},
         {"name": "MaxTotBiomassC", "index": index + 4, "type": float},
         {"name": "MinSWMerchBiomassC", "index": index + 5, "type": float},
