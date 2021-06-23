@@ -122,10 +122,10 @@ def _create_classifier_value_maps(sit):
 
         if classifier_name in sit.classifier_value_ids:
             sit.classifier_value_ids[
-                classifier_name][classifier_value_name] = classifier_name
+                classifier_name][classifier_value_name] = classifier_value_id
         else:
             sit.classifier_value_ids[classifier_name] = {
-                classifier_value_name: classifier_name
+                classifier_value_name: classifier_value_id
             }
 
         if classifier_id in sit.classifier_value_names:
