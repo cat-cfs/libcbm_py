@@ -15,7 +15,7 @@ from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
-import libcbm.resources
+from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 
 
@@ -44,6 +44,97 @@ def get_classifiers(classifiers, classifier_values):
 
     config = cbm_config.classifier_config(classifiers_config)
     return config
+
+
+def _create_classifier_value_maps(sit):
+    """Creates dictionaries for fetching internally defined identifiers
+    and attaches them to the specified sit object instance. Values can
+    then be fetched from the sit instance like the following examples::
+
+        classifier_id = sit.classifier_ids["my_classifier_name"]
+        classifier_name = sit.classifier_names[1]
+        classifier_value_id = \
+            sit.classifier_value_ids["classifier1"]["classifier1_value1"]
+
+    The following fields will be assigned to the specified sit instance:
+
+        * classifier_names - dictionary of id (int, key) to
+            name (str, value) for each classifier
+        * classifier_ids - dictionary of name (str, value)
+            to id (int, key) for each classifier
+        * classifier_value_ids - nested dictionary, with one entry per
+            classifier name. Each nested dictionary contains classifier value
+            name (str, key) to classifier value id (int, value)
+
+            Example::
+
+                {
+                    "classifier_name_1": {
+                        "classifier_1_value_name_1": 1,
+                        "classifier_1_value_name_2": 2
+                    },
+                    "classifier_name_2": {
+                        "classifier_2_value_name_1": 3,
+                        "classifier_2_value_name_2": 4
+                    },
+                    ...
+                }
+
+        * classifier_value_names - nested dictionary, with one entry per
+            classifier id. Each nested dictionary contains classifier value
+            name (str, key) to classifier value id (int, value)
+
+            Example::
+
+                {
+                    1: {
+                        1: "classifier_1_value_name_1",
+                        2: "classifier_1_value_name_2"
+                    },
+                    2: {
+                        3: "classifier_2_value_name_1"
+                        4: "classifier_2_value_name_2"
+                    },
+                    ...
+                }
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+    """
+    classifiers_config = get_classifiers(
+        sit.sit_data.classifiers, sit.sit_data.classifier_values)
+    sit.classifier_names = {}
+    sit.classifier_ids = {}
+    sit.classifier_value_ids = {}
+    sit.classifier_value_names = {}
+
+    for classifier_data in classifiers_config["classifiers"]:
+        sit.classifier_names[classifier_data["id"]] = \
+            classifier_data["name"]
+        sit.classifier_ids[classifier_data["name"]] = \
+            classifier_data["id"]
+
+    for classifier_value_data in classifiers_config["classifier_values"]:
+        classifier_id = classifier_value_data["classifier_id"]
+        classifier_name = sit.classifier_names[classifier_id]
+        classifier_value_id = classifier_value_data["id"]
+        classifier_value_name = classifier_value_data["value"]
+
+        if classifier_name in sit.classifier_value_ids:
+            sit.classifier_value_ids[
+                classifier_name][classifier_value_name] = classifier_name
+        else:
+            sit.classifier_value_ids[classifier_name] = {
+                classifier_value_name: classifier_name
+            }
+
+        if classifier_id in sit.classifier_value_names:
+            sit.classifier_value_names[classifier_id][classifier_value_id] = \
+                classifier_value_name
+        else:
+            sit.classifier_value_names[classifier_id] = {
+                classifier_value_id: classifier_value_name
+            }
 
 
 def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
@@ -232,7 +323,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
             corresponding translated version of default parameter strings
     """
     if not db_path:
-        db_path = libcbm.resources.get_cbm_defaults_path()
+        db_path = resources.get_cbm_defaults_path()
     sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
     sit.sit_mapping = SITMapping(
         sit.config["mapping_config"], sit_defaults)
@@ -242,6 +333,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
             sit.sit_data.disturbance_types.name))
     sit.db_path = db_path
     sit.defaults = sit_defaults
+    _create_classifier_value_maps(sit)
     return sit
 
 
@@ -280,7 +372,7 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     """
 
     if not dll_path:
-        dll_path = libcbm.resources.get_libcbm_bin_path()
+        dll_path = resources.get_libcbm_bin_path()
     if parameters_factory is None:
         parameters_factory = sit.defaults.get_parameters_factory()
     cbm = cbm_factory.create(
