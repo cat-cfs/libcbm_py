@@ -77,10 +77,10 @@ def classifier_config(classifiers):
                             "name" "c1"
                         },
                         "classifier_values":[
-                            {"name": "c1_v1", "description": "c1_v1"},
-                            {"name": "c1_v2", "description": "c1_v2"},
+                            {"value": "c1_v1", "description": "c1_v1"},
+                            {"value": "c1_v2", "description": "c1_v2"},
                             ...
-                            {"name": "c1_vn", "description": "c1_vn"}
+                            {"value": "c1_vn", "description": "c1_vn"}
                         ]
                     },
                     {
@@ -88,10 +88,10 @@ def classifier_config(classifiers):
                             "name" "c2"
                         },
                         "classifier_values":[
-                            {"name": "c2_v1", "description": "c2_v1"},
-                            {"name": "c2_v2", "description": "c2_v2"},
+                            {"value": "c2_v1", "description": "c2_v1"},
+                            {"value": "c2_v2", "description": "c2_v2"},
                             ...
-                            {"name": "c2_vk", "description": "c1_vk"}
+                            {"value": "c2_vk", "description": "c1_vk"}
                         ]
                     },
                     ...,
@@ -100,10 +100,10 @@ def classifier_config(classifiers):
                             "name" "cj"
                         },
                         "classifier_values":[
-                            {"name": "cj_v1", "description": "cj_v1"},
-                            {"name": "cj_v2", "description": "cj_v2"},
+                            {"value": "cj_v1", "description": "cj_v1"},
+                            {"value": "cj_v2", "description": "cj_v2"},
                             ...
-                            {"name": "cj_vi", "description": "cj_vi"}
+                            {"value": "cj_vi", "description": "cj_vi"}
                         ]
                     }
                 ]
@@ -134,18 +134,18 @@ def classifier_config(classifiers):
                     {"id": j, "name": "cj"}
                 ],
                 "classifier_values": [
-                    {"id": 1, "classifier_id": 1, "name": "c1_v1", ...},
-                    {"id": 2, "classifier_id": 1, "name": "c1_v2", ...},
+                    {"id": 1, "classifier_id": 1, "value": "c1_v1", ...},
+                    {"id": 2, "classifier_id": 1, "value": "c1_v2", ...},
                     ...,
-                    {"id": n, "classifier_id": 1, "name": "c1_vn", ...},
-                    {"id": n+1, "classifier_id": 2, "name": "c2_v1", ...},
-                    {"id": n+2, "classifier_id": 2, "name": "c2_v2", ...},
+                    {"id": n, "classifier_id": 1, "value": "c1_vn", ...},
+                    {"id": n+1, "classifier_id": 2, "value": "c2_v1", ...},
+                    {"id": n+2, "classifier_id": 2, "value": "c2_v2", ...},
                     ...,
-                    {"id": n+k, "classifier_id": 2, "name": "c2_vk", ...},
-                    {"id": n+k+1, "classifier_id": j, "name": "cj_v1", ...},
-                    {"id": n+k+2, "classifier_id": j, "name": "cj_v2", ...},
+                    {"id": n+k, "classifier_id": 2, "value": "c2_vk", ...},
+                    {"id": n+k+1, "classifier_id": j, "value": "cj_v1", ...},
+                    {"id": n+k+2, "classifier_id": j, "value": "cj_v2", ...},
                     ...,
-                    {"id": n+k+i, "classifier_id": j, "name": "cj_vi", ...}
+                    {"id": n+k+i, "classifier_id": j, "value": "cj_vi", ...}
                 ]
                 }
     """
