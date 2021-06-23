@@ -1,5 +1,9 @@
+from types import SimpleNamespace
 import unittest
 import os
+import pandas as pd
+from unittest.mock import Mock
+from unittest.mock import patch
 
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
@@ -37,3 +41,61 @@ class SITCBMFactoryTest(unittest.TestCase):
             == inventory.shape[0])
         self.assertTrue(
             len(rule_based_processor.sit_event_stats_by_timestep) > 0)
+
+    @patch("libcbm.input.sit.sit_cbm_factory.resources")
+    @patch("libcbm.input.sit.sit_cbm_factory.SITCBMDefaults")
+    @patch("libcbm.input.sit.sit_cbm_factory.SITMapping")
+    def test_classifier_maps(self, SITMapping, SITCBMDefaults, resources):
+
+        classifiers = pd.DataFrame(
+            columns=["id", "name"],
+            data=[
+                [1, "c1"],
+                [2, "c2"],
+                [3, "c3"]])
+        classifier_values = pd.DataFrame(
+            columns=["classifier_id", "name"],
+            data=[
+                [1, "c1v1"],
+                [1, "c1v2"],
+                [2, "c2v1"],
+                [2, "c2v2"],
+                [2, "c2v3"],
+                [3, "c3v1"],
+                [3, "c3v2"],
+                [3, "c3v3"],
+                [3, "c3v4"]])
+        sit = SimpleNamespace(
+            config={"mapping_config": None},
+            sit_data=SimpleNamespace(
+                classifiers=classifiers,
+                classifier_values=classifier_values,
+                disturbance_types=Mock()
+            ),
+            sit_mapping=Mock()
+        )
+        sit_cbm_factory.initialize_sit_objects(sit)
+        self.assertTrue(len(sit.classifier_names) == len(classifiers.index))
+        self.assertTrue(len(sit.classifier_ids) == len(classifiers.index))
+        self.assertTrue(
+            len(sit.classifier_value_ids) == len(classifiers.index))
+        self.assertTrue(
+            len(sit.classifier_value_names) == len(classifiers.index))
+        self.assertTrue(
+            set(classifiers.name) == set(sit.classifier_value_ids.keys()))
+        self.assertTrue(
+            set(classifiers.name) == set(sit.classifier_names.values()))
+
+        for _, classifier_row in classifiers.iterrows():
+            classifier_name = classifier_row["name"]
+            classifier_id = classifier_row["id"]
+            expected_classifier_names = classifier_values[
+                classifier_values.classifier_id == classifier_id].name
+
+            self.assertTrue(
+                set(sit.classifier_value_ids[classifier_name].keys()) ==
+                set(expected_classifier_names))
+
+            self.assertTrue(
+                set(sit.classifier_value_names[classifier_id].values()) ==
+                set(expected_classifier_names))
