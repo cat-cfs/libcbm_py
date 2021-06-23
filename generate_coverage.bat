@@ -1,0 +1,1 @@
+pytest --cov=libcbm --cov-report html:cov_html
