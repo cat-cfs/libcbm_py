@@ -43,7 +43,7 @@ def get_linux_os_release():
                 v = v[1:-1]
             d[k] = v
         return d
-            
+
 
 def get_libcbm_bin_path():
     """Returns bundled, OS specific compiled libcbm C/C++ library
@@ -76,7 +76,7 @@ def get_libcbm_bin_path():
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so")
         elif platform.system().lower() == "linux":
-            message = f"unsupported linux distribution: {plat}"
+            message = f"unsupported linux distribution: {platform.platform()}"
             warnings.warn(message, RuntimeWarning)
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so")
