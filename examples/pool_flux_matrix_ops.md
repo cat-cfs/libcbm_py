@@ -5,8 +5,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.1'
-      jupytext_version: 1.2.3
+      format_version: '1.2'
+      jupytext_version: 1.4.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -27,24 +27,15 @@ import numpy as np
 import scipy.sparse
 ```
 ```python
-#helpers for integrating this notebook with libcbm
-import notebook_startup
-```
-
-```python
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
-```
-
-```python
-settings = notebook_startup.load_settings()
-dllpath = settings["libcbm_path"]
+from libcbm import resources
 ```
 
 ```python
 
 def load_dll(config):
-    dll = LibCBMWrapper(LibCBMHandle(dllpath, json.dumps(config)))
+    dll = LibCBMWrapper(LibCBMHandle(resources.get_libcbm_bin_path(), json.dumps(config)))
     return dll
 
 def create_pools(names):
