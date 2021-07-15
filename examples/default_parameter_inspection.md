@@ -5,8 +5,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.1'
-      jupytext_version: 1.2.3
+      format_version: '1.2'
+      jupytext_version: 1.4.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -25,7 +25,7 @@ from libcbm import resources
 db_path = resources.get_cbm_defaults_path()
 
 cbm_default_parameters = cbm_defaults.load_cbm_parameters(db_path)
-cbm_default_ref = CBMDefaultsReference(db_path, "en-CA")
+cbm_default_ref = CBMDefaultsReference(db_path, "fr-CA")
 ```
 
 ```python
@@ -80,4 +80,8 @@ default_parameters["root_parameter"]
 
 ```python
 spatial_units.merge(default_parameters["spinup_parameter"])
+```
+
+```python
+
 ```

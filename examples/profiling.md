@@ -5,8 +5,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.1'
-      jupytext_version: 1.2.3
+      format_version: '1.2'
+      jupytext_version: 1.4.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -22,26 +22,16 @@ import plotly.graph_objects as go
 ```
 
 ```python
-#helpers for integrating this notebook with libcbm
-import notebook_startup
-```
-
-```python
 from libcbm.model.cbm import cbm_defaults
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm import resources
 ```
 
 ```python
-settings = notebook_startup.load_settings()
-dll_path = settings["libcbm_path"]
-db_path = settings["cbm_defaults_db_path"]
-
-```
-
-```python
+db_path = resources.get_cbm_defaults_path()
 classifiers = lambda : cbm_config.classifier_config([
     cbm_config.classifier(
         "c1",
@@ -63,11 +53,9 @@ merch_volumes = lambda : cbm_config.merch_volume_to_biomass_config(
 
 ```python
 cbm = cbm_factory.create(
-    dll_path=dll_path,
-    dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
-        db_path),
-    cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
-        db_path),
+    dll_path=resources.get_libcbm_bin_path(),
+    dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(db_path),
+    cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(db_path),
     merch_volume_to_biomass_factory=merch_volumes,
     classifiers_factory=classifiers)
 ```
@@ -87,17 +75,17 @@ cbm_params = cbm_variables.initialize_cbm_parameters(n_stands)
 cbm_state = cbm_variables.initialize_cbm_state_variables(n_stands)
 inventory = cbm_variables.initialize_inventory(
     inventory=pd.DataFrame({
-        "age": np.random.randint(low=0, high=300, size=n_stands, dtype=np.int),
+        "age": np.random.randint(low=0, high=300, size=n_stands, dtype=int),
         "area": np.ones(n_stands),
-        "spatial_unit": np.ones(n_stands, dtype=np.int) * 42,
-        "afforestation_pre_type_id": np.ones(n_stands, dtype=np.int) * -1,
-        "land_class": np.ones(n_stands, dtype=np.int) * 0,
-        "historical_disturbance_type": np.ones(n_stands, dtype=np.int) * 1,
-        "last_pass_disturbance_type": np.ones(n_stands, dtype=np.int) * 1,
-        "delay": np.ones(n_stands, dtype=np.int) * 0,
+        "spatial_unit": np.ones(n_stands, dtype=int) * 42,
+        "afforestation_pre_type_id": np.ones(n_stands, dtype=int) * -1,
+        "land_class": np.ones(n_stands, dtype=int) * 0,
+        "historical_disturbance_type": np.ones(n_stands, dtype=int) * 1,
+        "last_pass_disturbance_type": np.ones(n_stands, dtype=int) * 1,
+        "delay": np.ones(n_stands, dtype=int) * 0,
     }))
 classifiers = classifiers=pd.DataFrame({
-        "c1": np.ones(n_stands, dtype=np.int) * 1
+        "c1": np.ones(n_stands, dtype=int) * 1
     })
 ```
 
