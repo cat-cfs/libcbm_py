@@ -5,8 +5,8 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.1'
-      jupytext_version: 1.2.3
+      format_version: '1.2'
+      jupytext_version: 1.4.1
   kernelspec:
     display_name: Python 3
     language: python
@@ -37,7 +37,7 @@ from libcbm import resources
 Load the standard import tool configuration at the specified path.  This configuration encompasses the data source for the various sit inputs (sit_inventory, sit_classifiers etc.) and also the relationships of classifiers, and disturbance types to the default CBM parameters.
 
 ```python
-config_path = os.path.join(r"C:\Users\smorken\dev\libcbm\libcbm_py\libcbm\resources\test", "cbm3_tutorial6", "sit_config.json")
+config_path = os.path.join(resources.get_test_resources_dir(), "cbm3_tutorial6", "sit_config.json")
 sit = sit_cbm_factory.load_sit(config_path)
 ```
 
@@ -121,7 +121,7 @@ annual_carbon_stocks = pd.DataFrame(
         "DOM": pi[dom_pools].sum(axis=1),
         "Total Ecosystem": pi[biomass_pools+dom_pools].sum(axis=1)})
 
-annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,160),ylim=(0,5.4e6))
+annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10))
 ```
 
 ## State Variable Results
@@ -223,4 +223,8 @@ sit.sit_data.transition_rules
 
 ```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
+```
+
+```python
+
 ```
