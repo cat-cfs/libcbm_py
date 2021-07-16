@@ -1,0 +1,110 @@
+---
+title: "cbm3_tutorial2.rmd"
+output: html_document
+---
+
+``` {r}
+library(ggplot2)
+library(reshape2)
+
+library(reticulate)
+
+# if necessary specify a particular python
+#use_python("/usr/local/bin/python")
+
+os <- import("os")
+sit_cbm_factory <- import("libcbm.input.sit.sit_cbm_factory")
+cbm_simulator <- import("libcbm.model.cbm.cbm_simulator")
+resources <- import("libcbm.resources")
+```
+
+## Setup
+
+Load the standard import tool configuration at the specified path. This 
+configuration encompasses the data source for the various sit inputs
+(sit_inventory, sit_classifiers etc.) and also the relationships of classifiers,
+and disturbance types to the default CBM parameters.
+
+``` {r}
+config_path <- os$path$join(
+  resources$get_test_resources_dir(), "cbm3_tutorial2", "sit_config.json")
+sit <- sit_cbm_factory$load_sit(config_path)
+```
+
+Initialize and validate the inventory in the sit dataset
+
+``` {r}
+inv_tuple <- sit_cbm_factory$initialize_inventory(sit)
+classifiers <- inv_tuple[[1]]
+inventory <- inv_tuple[[2]]
+```
+
+Initialize an instance of the CBM model
+
+``` {r}
+cbm <- sit_cbm_factory$initialize_cbm(sit)
+```
+
+Create storage and a function for storing CBM simulation results. This
+particular implementation appends timestep results for each step into a running
+DataFrame which is stored in memory.
+
+``` {r}
+results_tuple <- cbm_simulator$create_in_memory_reporting_func()
+results <- results_tuple[[1]]
+reporting_func <- results_tuple[[2]]
+```
+
+Create a function to apply rule based disturbance events and transition rules
+based on the SIT input
+
+``` {r}
+rule_based_processor = sit_cbm_factory$create_sit_rule_based_processor(sit, cbm)
+```
+
+## Simulation
+
+The following line of code spins up the CBM inventory and runs it through 200
+timesteps.
+
+``` {r}
+cbm_simulator$simulate(
+    cbm,
+    n_steps              = 200,
+    classifiers          = classifiers,
+    inventory            = inventory,
+    pool_codes           = sit$defaults$get_pools(),
+    flux_indicator_codes = sit$defaults$get_flux_indicators(),
+    pre_dynamics_func    = rule_based_processor$pre_dynamic_func,
+    reporting_func       = reporting_func
+)
+```
+
+## Pool Results
+
+``` {r}
+
+biomass_pools = c('SoftwoodMerch','SoftwoodFoliage', 'SoftwoodOther', 'SoftwoodCoarseRoots', 'SoftwoodFineRoots',
+                 'HardwoodMerch', 'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots', 'HardwoodFineRoots')
+
+dom_pools = c('AboveGroundVeryFastSoil', 'BelowGroundVeryFastSoil', 'AboveGroundFastSoil', 'BelowGroundFastSoil',
+             'MediumSoil', 'AboveGroundSlowSoil', 'BelowGroundSlowSoil', 'SoftwoodStemSnag', 'SoftwoodBranchSnag',
+             'HardwoodStemSnag', 'HardwoodBranchSnag')
+
+
+df <- data.frame(
+  timestep = results$pools["timestep"],
+  biomass = rowSums(results$pools[biomass_pools]),
+  dom = rowSums(results$pools[dom_pools]),
+  total_eco = rowSums(results$pools[c(biomass_pools, dom_pools)])
+)
+
+df <- aggregate(
+  cbind(biomass=df$biomass, dom=df$dom, total_eco=df$total_eco),
+  by=list(timestep=df$timestep), FUN=sum)
+
+df <- melt(df, id.vars="timestep", variable.name="series")
+ggplot(df, aes(timestep,value)) + geom_line(aes(colour = series))
+
+```
+
