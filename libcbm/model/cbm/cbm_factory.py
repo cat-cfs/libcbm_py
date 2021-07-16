@@ -10,6 +10,23 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 
 
+def _dataframe_to_json(df):
+    """Convert a dataframe into a dictionary table format used by the CBM core
+
+    Args:
+        df (pandas.DataFrame): a dataframe to convert to the data/col_map
+            scheme
+
+    Returns:
+        dict: a dictionary with keys:
+
+            * column_map: name, index pairs for each column
+            * data: nested list of data rows
+    """
+    return {
+        "column_map": {x: i for i, x in enumerate(df.columns)},
+        "data": df.values.tolist()}
+
 def create(dll_path, dll_config_factory, cbm_parameters_factory,
            merch_volume_to_biomass_factory, classifiers_factory):
     """Create and initialize an instance of the CBM model
@@ -77,8 +94,9 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
 
     merch_volume_to_biomass_config = merch_volume_to_biomass_factory()
     classifiers_config = classifiers_factory()
+    parameters = {k: _dataframe_to_json(v) for k, v in cbm_parameters_factory().items()}
     cbm_config = {
-        "cbm_defaults": cbm_parameters_factory(),
+        "cbm_defaults": parameters,
         "merch_volume_to_biomass": merch_volume_to_biomass_config,
         "classifiers": classifiers_config["classifiers"],
         "classifier_values": classifiers_config["classifier_values"],
