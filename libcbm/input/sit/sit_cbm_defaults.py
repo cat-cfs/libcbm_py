@@ -45,16 +45,14 @@ class SITCBMDefaults(CBMDefaultsReference):
             "disturbance_matrix_associations",
             "land_class_transitions"]
         for parameter_name in parameter_names:
-            df = cbm_defaults.parameter_as_dataframe(
-                parameters[parameter_name])
+            df = parameters[parameter_name]
             output = pd.DataFrame()
             for k, v in disturbance_type_map.items():
                 matching_rows = df.loc[df["disturbance_type_id"] == v].copy()
                 matching_rows["disturbance_type_id"] = k
                 output = output.append(matching_rows)
             output = output.reset_index(drop=True)
-            parameters[parameter_name] = \
-                cbm_defaults.dataframe_as_parameter(output)
+            parameters[parameter_name] = output
 
     def get_parameters_factory(self):
         param_func = cbm_defaults.get_cbm_parameters_factory(self.db_path)
