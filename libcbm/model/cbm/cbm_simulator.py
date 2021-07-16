@@ -144,7 +144,7 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
         spinup_variables, spinup_params)
     cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)
-    for time_step in range(1, n_steps + 1):
+    for time_step in range(1, int(n_steps) + 1):
         cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm_vars = cbm_variables.prepare(cbm_vars)
         cbm.step(
