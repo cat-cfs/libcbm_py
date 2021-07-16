@@ -339,4 +339,4 @@ def initialize_simulation_variables(classifiers, inventory, pool_codes,
     cbm_vars.state = initialize_cbm_state_variables(n_stands)
     cbm_vars.inventory = initialize_inventory(inventory)
     cbm_vars.classifiers = initialize_classifiers(classifiers)
-    return cbm_vars
+    return prepare(cbm_vars)
