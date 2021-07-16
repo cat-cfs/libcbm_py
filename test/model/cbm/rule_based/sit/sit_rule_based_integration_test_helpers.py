@@ -27,8 +27,7 @@ def get_parameters_factory(sit_cbm_defaults):
         func: a function to be passed to initialize CBM default parameters
     """
     parameters = sit_cbm_defaults.get_parameters_factory()()
-    disturbance_matrix_value = cbm_defaults.parameter_as_dataframe(
-        parameters["disturbance_matrix_values"])
+    disturbance_matrix_value = parameters["disturbance_matrix_values"]
 
     # since for the purposes of rule based disturbances we are
     # only really interested in production results of disturbance matrices
@@ -66,8 +65,7 @@ def get_parameters_factory(sit_cbm_defaults):
                     "proportion"]))
     new_matrix = new_matrix.reset_index(drop=True)
 
-    parameters["disturbance_matrix_values"] = \
-        cbm_defaults.dataframe_as_parameter(new_matrix)
+    parameters["disturbance_matrix_values"] = new_matrix
 
     def parameters_factory():
         return parameters
