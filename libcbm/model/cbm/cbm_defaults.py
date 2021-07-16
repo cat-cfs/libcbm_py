@@ -22,8 +22,8 @@ def load_cbm_parameters(sqlite_path):
             raised.
 
     Returns:
-        dict: a dictionary of name/formatted data pairs for use with LibCBM
-        configuration.
+        dict: a dictionary of name/pandas.DataFrame pairs for use with LibCBM
+            configuration.
     """
     result = {}
 
@@ -52,56 +52,15 @@ def load_cbm_parameters(sqlite_path):
         raise ValueError(
             "specified path does not exist '{0}'".format(sqlite_path))
     with sqlite3.connect(sqlite_path) as conn:
-        cursor = conn.cursor()
+
         for table, query in queries.items():
-            cursor.execute(query)
-            data = [[col for col in row] for row in cursor]
             if table in result:
                 raise AssertionError(
                     "duplicate table name detected {}"
                     .format(table))
-            result[table] = {
-                "column_map": {
-                    v[0]: i for i, v in
-                    enumerate(cursor.description)},
-                "data": data
-            }
+            result[table] = pd.read_sql(query, conn)
 
     return result
-
-
-def parameter_as_dataframe(parameters):
-    """Return one of the values stored in the dictionary returned by
-    :py:func:`load_cbm_parameters` as a DataFrame
-
-    Args:
-        parameters (dict): a dictionary with keys:
-
-          - column_map: a dictionary of name (key) to column index (value)
-          - data: list of lists of values in the table
-    """
-    colmap = parameters["column_map"]
-    keys = sorted(colmap, key=colmap.get)
-    colnames = []
-    for key in keys:
-        colnames.append(key)
-    return pd.DataFrame(
-        data=parameters["data"],
-        columns=colnames)
-
-
-def dataframe_as_parameter(df):
-    """Convert a dataframe into a dictionary table format like the
-    dictionary values returned by the function
-    :py:func:`load_cbm_parameters`
-
-    Args:
-        df (pandas.DataFrame): a dataframe to convert to the data/col_map
-            scheme
-    """
-    return {
-        "column_map": {x: i for i, x in enumerate(df.columns)},
-        "data": df.values.tolist()}
 
 
 def load_cbm_pools(sqlite_path):
