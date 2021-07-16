@@ -40,20 +40,19 @@ def run_cbm_random():
     sit = sit_cbm_factory.load_sit(config_path)
     classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 
-    # get the default CBM parameters
+    # get the default CBM parameters: this is a dictionary of name/dataframe pairs
     default_parameters = sit.defaults.get_parameters_factory()()
 
     def random_parameter_factory():
         # update the default parameters table "turnover_parameters"
         
-        #first convert the json formatted table to a dataframe
-        turnover_parameters = cbm_defaults.parameter_as_dataframe(default_parameters["turnover_parameters"])
+        turnover_parameters = default_parameters["turnover_parameters"].copy()
         #fetch the StemAnnualTurnoverRate series from the dataframe
         stem_turnover_rate = turnover_parameters["StemAnnualTurnoverRate"]
         # replace the StemAnnualTurnoverRate with values drawn from a distribution
         turnover_parameters["StemAnnualTurnoverRate"] = rng.normal(stem_turnover_rate, stem_turnover_rate / 20.0)
         # convert the dataframe back to the json format used by CBM
-        default_parameters["turnover_parameters"] = cbm_defaults.dataframe_as_parameter(turnover_parameters)
+        default_parameters["turnover_parameters"] = turnover_parameters
         return default_parameters
 
     # use the above random parameter factory as the source for CBM parameters

@@ -24,38 +24,13 @@ from libcbm import resources
 #change this if you have another database path
 db_path = resources.get_cbm_defaults_path()
 
-cbm_default_parameters = cbm_defaults.load_cbm_parameters(db_path)
+default_parameters = cbm_defaults.load_cbm_parameters(db_path)
 cbm_default_ref = CBMDefaultsReference(db_path, "fr-CA")
 ```
 
 ```python
 spatial_units = pd.DataFrame([dict(x) for x in cbm_default_ref.get_spatial_units()])
 pools = pd.DataFrame([dict(x) for x in cbm_default_ref.pools_ref])
-```
-
-```python
-def load_default_parameters(name):
-    json_parameters = cbm_default_parameters[name]
-    return pd.DataFrame(data=json_parameters["data"], columns=json_parameters["column_map"])
-```
-
-```python
-default_parameters ={k: load_default_parameters(k) for k in [
-            "decay_parameters",
-            "slow_mixing_rate",
-            "mean_annual_temp",
-            "turnover_parameters",
-            "disturbance_matrix_values",
-            "disturbance_matrix_associations",
-            "root_parameter",
-            "growth_multipliers",
-            "land_classes",
-            "land_class_transitions",
-            "spatial_units",
-            "random_return_interval",
-            "spinup_parameter",
-            "afforestation_pre_type"
-            ]}
 ```
 
 ```python
