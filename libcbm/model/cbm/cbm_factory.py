@@ -27,6 +27,7 @@ def _dataframe_to_json(df):
         "column_map": {x: i for i, x in enumerate(df.columns)},
         "data": df.values.tolist()}
 
+
 def create(dll_path, dll_config_factory, cbm_parameters_factory,
            merch_volume_to_biomass_factory, classifiers_factory):
     """Create and initialize an instance of the CBM model
@@ -94,7 +95,8 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
 
     merch_volume_to_biomass_config = merch_volume_to_biomass_factory()
     classifiers_config = classifiers_factory()
-    parameters = {k: _dataframe_to_json(v) for k, v in cbm_parameters_factory().items()}
+    parameters = {
+        k: _dataframe_to_json(v) for k, v in cbm_parameters_factory().items()}
     cbm_config = {
         "cbm_defaults": parameters,
         "merch_volume_to_biomass": merch_volume_to_biomass_config,
