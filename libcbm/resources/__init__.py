@@ -53,17 +53,22 @@ def get_libcbm_bin_path():
         RuntimeError: unknown platform.system() value
 
     Returns:
-        str: path to the bundled, compiled dll or so file
+        str: path to the bundled, compiled `dll`, `so` or `dylib` file
     """
-
+    # Get the directory that this script is located in #
     local_dir = get_local_dir()
+    # Can only run on 64-bit platforms #
     if sys.maxsize <= 2**32:
         raise RuntimeError("32 bit python not supported")
+    # Get the current operating system #
+    # This returns a string like 'Linux', 'Darwin', 'Java' or 'Windows' #
     system = platform.system()
-    if os.name == "nt":
+    # Windows case #
+    if system == "Windows":
         return os.path.join(
             local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll")
-    elif os.name == "posix":
+    # Linux case #
+    elif system == "Linux":
         os_release = get_linux_os_release()
         if not os_release:
             raise RuntimeError("unsupported platform")
@@ -82,5 +87,24 @@ def get_libcbm_bin_path():
                 local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so")
         else:
             raise RuntimeError("unsupported platform")
+    # macOS case #
+    elif system == "Darwin":
+        # This returns a string like '10.8.4' #
+        os_release = platform.mac_ver()[0]
+        # Split the result #
+        major, minor, patch = os_release.split('.')
+        # The directory name that contains the complied files #
+        dir_name = "macosx_%s_%s_x86_64" % (major, minor)
+        # Get the full path to the dylib #
+        dylib = os.path.join(local_dir, "libcbm_bin", dir_name, "libcbm.dylib")
+        # Let's hope we have it compiled for that version #
+        msg = "The source distribution for this version of macOS has not been" \
+              " compiled yet. You can do this yourself with the `libcbm_c`" \
+              " repository and `cmake`."
+        if not os.path.exists(dylib): raise RuntimeError(msg)
+        # Otherwise return #
+        return dylib
+    # Other cases #
     else:
-        raise RuntimeError("unsupported platform")
+        msg = "The platform '%s' is currently unsupported."
+        raise RuntimeError(msg % system)
