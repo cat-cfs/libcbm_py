@@ -1,7 +1,9 @@
 from enum import IntEnum
 import json
-from typing import SupportsRound
+from types import SimpleNamespace
 import numpy as np
+import pandas as pd
+from scipy import sparse
 
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
@@ -16,9 +18,7 @@ class Pool(IntEnum):
     FeatherMossSlow=5,
     SphagnumMossSlow=6,
     CO2=7
-
-    def get_names(self):
-        return [name for name,_ in list(self.__members__.items())]
+   
 
 def f1(merch_vol, a, b):
     """Returns Canopy openess, O(t) as a function of Merch. Volume
@@ -43,13 +43,13 @@ def f2(openness, stand_age, c, d):
     (O(t)* c) + d
 
     Args:
-        openness (double, np.ndarray): canopy openness
+        openness (float, np.ndarray): canopy openness
         stand_age (int, np.ndarray): stand age in years
         c (float, np.ndarray): MossC c parameter, 
         d (float, np.ndarray): MossC d parameter
 
     Returns:
-        np.ndarray: Feathuer moss ground cover
+        np.ndarray: Feather moss ground cover
     """
     return np.where(
         stand_age < 10,
@@ -59,14 +59,58 @@ def f2(openness, stand_age, c, d):
             100.0, openness * c + d))
 
 def f3(openness, stand_age, e, f):
-    pass
+    """ returns Sphagnum moss ground cover, GCsp(t)
+
+    (O(t)* e) + f
+
+    Args:
+        openness (float, np.ndarray): canopy openness
+        stand_age (int, np.ndarray): stand age in years
+        e (float, np.ndarray): MossC e parameter, 
+        f (float, np.ndarray): MossC f parameter
+
+    Returns:
+        np.ndarray: Sphagnum moss ground cover
+    """
+    return np.where(
+        stand_age < 10,
+        0.0,
+        np.where(
+            openness > 70.0,
+            100.0, openness * e + f))
+
 
 def f4(openness, g, h):
-    pass
+    """Feathermoss NPP (assuming 100% ground cover), NPPfm
+    
+    g*O(t)^h
+
+    Args:
+        openness (float, np.ndarray): canopy openness
+        g (float, np.ndarray): MossC g parameter, 
+        h (float, np.ndarray): MossC h parameter, 
+    """
+    return np.where(
+        openness < 5.0, 0.6,
+        g * np.power(openness, h))
+
 
 def f5(openness, i, j, l):
+    """Sphagnum NPP (assuming 100% ground cover), NPPsp
 
-    pass
+    i*(O(t)^2) + j*(O(t) + l
+
+    Args:
+        openness (float, np.ndarray): canopy openness
+        i (float, np.ndarray): MossC i parameter,
+        j (float, np.ndarray): MossC j parameter,
+        l (float, np.ndarray): MossC l parameter,
+
+    Returns:
+        np.ndarray: Sphagnum moss NPP
+    """
+    return i * openness ** 2.0 + j * openness + l
+
 
 def f6(merch_vol, m, n):
     """ 
@@ -76,7 +120,8 @@ def f6(merch_vol, m, n):
         m ([type]): [description]
         n ([type]): [description]
     """
-    pass
+    return np.log(merch_vol) * m + n
+
 
 def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
     """Applied Decay rate, ak this applies to any of the moss DOM 
@@ -84,57 +129,60 @@ def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
     fast (ksf), and sphagnum slow (kss)
 
     Args:
-        mean_annual_temp ([type]): [description]
-        base_decay_rate ([type]): [description]
-        q10 ([type]): [description]
-        t_ref ([type]): [description]
+        mean_annual_temp (float, np.ndarray): [description]
+        base_decay_rate (float, np.ndarray): [description]
+        q10 (float, np.ndarray): [description]
+        t_ref (float, np.ndarray): [description]
     """
-    pass
+    return base_decay_rate * np.exp(
+        (mean_annual_temp - t_ref) * np.log(q10) * 0.1)
 
-def get_or_add_c_annual_process_matrix(collection, age, mean_annual_temp,
-                                       max_merch_vol, merch_vol,
-                                       function_params, decay_params):
-    pass
 
-def c_annual_process_dynamics_params(age, mean_annual_temp, max_merch_vol, merch_vol,
-                              function_params, decay_params):
+def c_annual_process_dynamics_params(df_params):
 
-    kss = f6(max_merch_vol, function_params.m, function_params.n)
-
-    # applied feather moss fast pool decay rate
-    akff = f7(
-        mean_annual_temp, decay_params.kff, decay_params.q10,
-        decay_params.tref)
-
-    # applied feather moss slow pool decay rate
-    akfs = f7(
-        mean_annual_temp, decay_params.kfs, decay_params.q10,
-        decay_params.tref) 
+    kss = f6(df_params.max_merch_vol, df_params.m, df_params.n)
+    openness = f1(df_params.merch_vol, df_params.a, df_params.b)
     
-    # applied sphagnum fast pool applied decay rate
-    aksf = f7(
-        mean_annual_temp, decay_params.ksf, decay_params.q10,
-        decay_params.tref) 
-
-    # applied sphagnum slow pool applied decay rate
-    akss = f7(mean_annual_temp, kss, decay_params.q10, decay_params.tref) 
-
-    openness = f1(merch_vol, function_params.a, function_params.b)
+    return SimpleNamespace(
+        kss=kss,
+        opennes=openness,
     
-    # Feather moss ground cover
-    GCfm = f2(openness, age, function_params.c, function_params.d) 
-    
-    # Sphagnum ground cover
-    GCsp = f3(openness, age, function_params.e, function_params.f) 
+        # applied feather moss fast pool decay rate
+        akff=f7(
+            df_params.mean_annual_temp, df_params.kff, df_params.q10,
+            df_params.tref),
 
-    # Feathermoss NPP (assuming 100% ground cover)
-    NPPfm = f4(openness, function_params.g, function_params.h) 
+        # applied feather moss slow pool decay rate
+        akfs=f7(
+            df_params.mean_annual_temp, df_params.kfs, df_params.q10,
+            df_params.tref), 
+        
+        # applied sphagnum fast pool applied decay rate
+        aksf=f7(
+            df_params.mean_annual_temp, df_params.ksf, df_params.q10,
+            df_params.tref),
 
-    # Sphagnum NPP (assuming 100% ground cover)
-    NPPsp = f5(
-        openness, function_params.i, function_params.j, function_params.l)
+        # applied sphagnum slow pool applied decay rate
+        akss=f7(
+            df_params.mean_annual_temp, kss, df_params.q10, df_params.tref),
+
+        # Feather moss ground cover
+        GCfm=f2(openness, df_params.age, df_params.c, df_params.d),
+        
+        # Sphagnum ground cover
+        GCsp=f3(openness, df_params.age, df_params.e, df_params.f),
+
+        # Feathermoss NPP (assuming 100% ground cover)
+        NPPfm=f4(openness, df_params.g, df_params.h),
+
+        # Sphagnum NPP (assuming 100% ground cover)
+        NPPsp = f5(
+            openness, df_params.i, df_params.j, df_params.l))
     
-def get_annual_process_matrix():
+def get_annual_process_matrix(dynamics_param):
+    n_params = len(dynamics_param.NPPfm)
+
+    mat = sparse.coo_matrix(shape=(len(Pool), len(Pool), n_params))
     flows = np.array([
         [Pool.Input, Pool.FeatherMossLive, NPPfm * GCfm/100.0]
         [Pool.Input, Pool.SphagnumMossLive, NPPsp * GCsp/100.0],
