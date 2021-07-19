@@ -9,6 +9,7 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
 
+
 class Pool(IntEnum):
     Input=0,
     FeatherMossLive=1,
@@ -183,37 +184,46 @@ def get_annual_process_matrix(dynamics_param):
     n_params = len(dynamics_param.NPPfm)
 
     mat = sparse.coo_matrix(shape=(len(Pool), len(Pool), n_params))
-    flows = np.array([
-        [Pool.Input, Pool.FeatherMossLive, NPPfm * GCfm/100.0]
-        [Pool.Input, Pool.SphagnumMossLive, NPPsp * GCsp/100.0],
+    mat[Pool.Input, Pool.FeatherMossLive, :] = \
+        dynamics_param.NPPfm * dynamics_param.GCfm / 100.0
+    mat[Pool.Input, Pool.SphagnumMossLive, :] = \
+        dynamics_param.NPPsp * dynamics_param.GCsp / 100.0 
  
         # turnovers
-        [Pool.FeatherMossLive, Pool.FeatherMossFast, 1.0],
-        [Pool.FeatherMossLive, Pool.FeatherMossLive, 0.0],
+    mat[Pool.FeatherMossLive, Pool.FeatherMossFast, :] = 1.0,
+    mat[Pool.FeatherMossLive, Pool.FeatherMossLive, :] = 0.0,
  
-        [Pool.FeatherMossFast, Pool.FeatherMossSlow, akff * 0.15],
+    mat[Pool.FeatherMossFast, Pool.FeatherMossSlow, :] = \
+        dynamics_param.akff * 0.15,
  
-        [Pool.SphagnumMossLive, Pool.SphagnumMossFast, 1.0],
-        [Pool.SphagnumMossLive, Pool.SphagnumMossLive, 0.0],
+    mat[Pool.SphagnumMossLive, Pool.SphagnumMossFast, :] = 1.0,
+    mat[Pool.SphagnumMossLive, Pool.SphagnumMossLive, :] = 0.0,
  
-        [Pool.SphagnumMossFast, Pool.SphagnumMossSlow, aksf*0.15],
+    mat[Pool.SphagnumMossFast, Pool.SphagnumMossSlow, :] = \
+        dynamics_param.aksf * 0.15,
  
         # fast losses
-        [Pool.FeatherMossFast, Pool.FeatherMossFast, 1.0-akff],
-        [Pool.SphagnumMossFast, Pool.SphagnumMossFast, 1.0-aksf],
+    mat[Pool.FeatherMossFast, Pool.FeatherMossFast, :] = \
+        1.0 - dynamics_param.akff,
+    mat[Pool.SphagnumMossFast, Pool.SphagnumMossFast, :] = \
+        1.0 - dynamics_param.aksf,
  
         # decays
-        [Pool.FeatherMossFast, Pool.CO2, akff*0.85],
+    mat[Pool.FeatherMossFast, Pool.CO2, :] = \
+        dynamics_param.akff * 0.85,
  
-        [Pool.SphagnumMossFast, Pool.CO2, aksf*0.85],
+    mat[Pool.SphagnumMossFast, Pool.CO2, :] = \
+        dynamics_param.aksf * 0.85,
  
-        [Pool.FeatherMossSlow, Pool.CO2, akfs],
-        [Pool.FeatherMossSlow, Pool.FeatherMossSlow, 1.0-akfs],
+    mat[Pool.FeatherMossSlow, Pool.CO2, :] = dynamics_param.akfs,
+    mat[Pool.FeatherMossSlow, Pool.FeatherMossSlow, :] = \
+        1.0 - dynamics_param.akfs,
  
-        [Pool.SphagnumMossSlow, Pool.CO2, akss],
-        [Pool.SphagnumMossSlow, Pool.SphagnumMossSlow, 1.0-akss]
-    ])
-    return flows
+    mat[Pool.SphagnumMossSlow, Pool.CO2, :] = dynamics_param.akss,
+    mat[Pool.SphagnumMossSlow, Pool.SphagnumMossSlow, :] = \
+        1.0 - dynamics_param.akss
+    
+    return mat
 
 
 def get_disturbance_flows(disturbance_type_name, disturbance_matrices):
@@ -286,15 +296,8 @@ def spinup(pools, model_state, model_params):
             last_rotation_slow=model_state.last_rotation_slow,
             this_rotation_slow=model_state.this_rotation_slow)
         
+        c_annual_process_dynamics_params()
         
-        annual_process_flows = []
-        for row_idx in range(0, len(model_state.index)):
-            annual_process_flows.append(
-                c_annual_process_dynamics(
-                   # row.iloc[].age,
-                   # paramsmean_annual_temp, max_merch_vol, merch_vol,
-                   #           function_params, decay_params
-                ))
 
 
 def compute_pools(dll, pools, ops, op_indices):
@@ -306,7 +309,7 @@ def compute_pools(dll, pools, ops, op_indices):
         op_ids.append(op_id)
         #The set op function accepts a matrix of coordinate triples.  
         #In LibCBM matrices are stored in a sparse format, so 0 values can be omitted from the parameter
-        dll.set_op(op_id, [to_coordinate(x) for x in op], 
+        dll.set_op(op_id, [x for x in op], 
                    np.ascontiguousarray(op_indices[:,i]))
         
     dll.compute_pools(op_ids, pools)
