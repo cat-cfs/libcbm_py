@@ -353,23 +353,42 @@ def compute_pools(dll, pools, ops, op_indices):
     return pools
 
 
-def initialize(config):
-    dll = LibCBMWrapper(
-        LibCBMHandle(
-            resources.get_libcbm_bin_path(),
-            json.dumps(config)))
+def build_merch_vol_lookup(merch_volume):
+    merch_vol_lookup = {int(i): {} for i in merch_volume.index}
+    for _, row in merch_volume.iterrows():
+        merch_vol_lookup[int(row.name)][int(row.age)] = float(row.volume)
+    return merch_vol_lookup
 
 
-def run(decay_parameter, disturbance_matrix, moss_c_parameter, inventory,
-        mean_annual_temperature, merch_volume, spinup_parameter):
-    pools = np.repeat()
-    flux_processor = initialize(
-        config={
+def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
+    output = np.zeros(shape=age.shape)
+    for i, age in np.ndenumerate(age):
+        output[i] = merch_vol_lookup[merch_vol_id[i]][age]
+    return output
+
+
+def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
+               inventory, mean_annual_temperature, merch_volume,
+               spinup_parameter):
+    libcbm_config = {
             "pools": [
                 {'name': x, 'id': i+1, 'index': i}
                 for i, x in enumerate(Pool.__members__.keys())],
             "flux_indicators": []
-        })
+        }
+    pools = np.repeat()
+    params = SimpleNamespace(
+
+        max_vols = pd.DataFrame(
+            {"max_merch_vol": merch_volume.volume.groupby(by=merch_volume.index).max()})
+    )
+    return SimpleNamespace(
+        dll=LibCBMWrapper(
+            LibCBMHandle(
+                resources.get_libcbm_bin_path(),
+                json.dumps(libcbm_config)))
+
+    )
 
 
 def main(args):
