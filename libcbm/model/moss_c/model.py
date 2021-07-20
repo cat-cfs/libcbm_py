@@ -370,37 +370,51 @@ def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
 def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
                inventory, mean_annual_temperature, merch_volume,
                spinup_parameter):
+
     libcbm_config = {
             "pools": [
                 {'name': x, 'id': i+1, 'index': i}
                 for i, x in enumerate(Pool.__members__.keys())],
             "flux_indicators": []
         }
-    pools = np.repeat()
+    merch_vol_lookup = build_merch_vol_lookup(merch_volume)
+    pools = np.zeros(shape=(len(inventory.index), len(Pool)))
+    pools[:, Pool.Input] = 1.0
+
+    max_vols = pd.DataFrame(
+        {"max_merch_vol": merch_volume.volume.groupby(
+            by=merch_volume.index).max()})
     params = SimpleNamespace(
 
-        max_vols = pd.DataFrame(
-            {"max_merch_vol": merch_volume.volume.groupby(by=merch_volume.index).max()})
     )
+
+    dynamics_param = inventory \
+        .merge(moss_c_parameter, left_on="moss_c_parameter_id",
+               right_index=True, validate="m:1") \
+        .merge(decay_parameter, left_on="decay_parameter_id", right_index=True,
+               validate="m:1") \
+        .merge(mean_annual_temperature, left_on="mean_annual_temperature_id",
+               right_index=True, validate="m:1") \
+        .merge(spinup_parameter, left_on="spinup_parameter_id",
+               right_index=True, validate="m:1") \
+        .merge(max_vols, left_on=["merch_volume_id"],
+               right_index=True, validate="m:1")
+
+    if (dynamics_param.index != inventory.index).any():
+        raise ValueError()
+
+    model_state = SimpleNamespace(
+        age=inventory.age.to_numpy(),
+        merch_vol=get_merch_vol(
+            merch_vol_lookup,
+            inventory.age.to_numpy(),
+            inventory.merch_volume_id.to_numpy()))
+
     return SimpleNamespace(
         dll=LibCBMWrapper(
             LibCBMHandle(
                 resources.get_libcbm_bin_path(),
-                json.dumps(libcbm_config)))
-
+                json.dumps(libcbm_config))),
+        dynamics_param=dynamics_param,
+        model_state=model_state
     )
-
-
-def main(args):
-    decay_parameter = pd.read_csv("decay_parameter.csv", index_col="id")
-    disturbance_matrix = pd.read_csv("disturbance_matrix.csv")
-    moss_c_parameter = pd.read_csv("moss_c_parameter.csv", index_col="id")
-    inventory = pd.read_csv("inventory.csv")
-    mean_annual_temperature = pd.read_csv(
-        "mean_annual_temperature.csv", index_col="id")
-    merch_volume = pd.read_csv("merch_volume.csv", index_col="id")
-    spinup_parameter = pd.read_csv("spinup_parameter.csv", index_col="id")
-
-
-if __name__ == "main":
-    main(sys.args)
