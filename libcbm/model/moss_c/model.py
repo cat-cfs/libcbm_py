@@ -1,12 +1,22 @@
 from enum import IntEnum
 import json
+import sys
 from types import SimpleNamespace
 import numpy as np
-from scipy import sparse
+
+import numba
+import numba.typed
 
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
+
+
+class SpinupState(IntEnum):
+    AnnualProcesses = 1,
+    HistoricalEvent = 2,
+    LastPassEvent = 3,
+    End = 4
 
 
 class Pool(IntEnum):
@@ -118,9 +128,9 @@ def f6(merch_vol, m, n):
     """
 
     Args:
-        merch_vol ([type]): [description]
-        m ([type]): [description]
-        n ([type]): [description]
+        merch_vol (float, np.ndarray): merchantable volume.
+        m (float, np.ndarray): MossC m parameter,
+        n (float, np.ndarray): MossC n parameter,
     """
     return np.log(merch_vol) * m + n
 
@@ -140,91 +150,135 @@ def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
         (mean_annual_temp - t_ref) * np.log(q10) * 0.1)
 
 
-def annual_process_dynamics(df_params):
+def annual_process_dynamics(state, params):
 
-    kss = f6(df_params.max_merch_vol, df_params.m, df_params.n)
-    openness = f1(df_params.merch_vol, df_params.a, df_params.b)
+    kss = f6(params.max_merch_vol, params.m, params.n)
+    openness = f1(state.merch_vol, params.a, params.b)
 
     return SimpleNamespace(
         kss=kss,
-        opennes=openness,
+        openness=openness,
 
         # applied feather moss fast pool decay rate
         akff=f7(
-            df_params.mean_annual_temp, df_params.kff, df_params.q10,
-            df_params.tref),
+            params.mean_annual_temp, params.kff, params.q10,
+            params.tref),
 
         # applied feather moss slow pool decay rate
         akfs=f7(
-            df_params.mean_annual_temp, df_params.kfs, df_params.q10,
-            df_params.tref),
+            params.mean_annual_temp, params.kfs, params.q10,
+            params.tref),
 
         # applied sphagnum fast pool applied decay rate
         aksf=f7(
-            df_params.mean_annual_temp, df_params.ksf, df_params.q10,
-            df_params.tref),
+            params.mean_annual_temp, params.ksf, params.q10,
+            params.tref),
 
         # applied sphagnum slow pool applied decay rate
         akss=f7(
-            df_params.mean_annual_temp, kss, df_params.q10, df_params.tref),
+            params.mean_annual_temp, kss, params.q10, params.tref),
 
         # Feather moss ground cover
-        GCfm=f2(openness, df_params.age, df_params.c, df_params.d),
+        GCfm=f2(openness, state.age, params.c, params.d),
 
         # Sphagnum ground cover
-        GCsp=f3(openness, df_params.age, df_params.e, df_params.f),
+        GCsp=f3(openness, state.age, params.e, params.f),
 
         # Feathermoss NPP (assuming 100% ground cover)
-        NPPfm=f4(openness, df_params.g, df_params.h),
+        NPPfm=f4(openness, params.g, params.h),
 
         # Sphagnum NPP (assuming 100% ground cover)
         NPPsp=f5(
-            openness, df_params.i, df_params.j, df_params.l))
+            openness, params.i, params.j, params.l))
+
+
+def _expand_matrix(mat, initialize_identity=True):
+    n_mats = len(mat[0][2])
+    n_rows = len(mat)
+    out_rows = [float(mat[r][0]) for r in range(0, n_rows)]
+    out_cols = [float(mat[r][1]) for r in range(0, n_rows)]
+    out_values = [
+        np.array([mat[r][2]])
+        if np.isscalar(mat[r][2])
+        else np.array(mat[r][2])
+        for r in range(0, n_rows)]
+    identity_set = {int(p) for p in Pool}
+    print(identity_set)
+    for r in range(0, n_rows):
+        if out_rows[r] == out_cols[r]:
+            identity_set.remove(int(out_rows[r]))
+    print(identity_set)
+    return __expand_matrix(
+        n_mats, n_rows,
+        numba.typed.List(out_rows),
+        numba.typed.List(out_cols),
+        numba.typed.List(out_values),
+        numba.typed.List(identity_set))
+
+
+@numba.njit
+def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
+                    identity_set):
+
+    n_output_rows = n_rows + len(identity_set)
+    output = [np.zeros(shape=(n_output_rows, 3)) for _ in range(0, n_mats)]
+    for i in range(0, n_mats):
+        for r, pool in enumerate(identity_set):
+            output[i][r][0] = pool
+            output[i][r][1] = pool
+            output[i][r][2] = 1.0
+    for i in range(0, n_mats):
+        for r in range(0, n_rows):
+            r_offset = r + len(identity_set)
+            output[i][r_offset][0] = out_rows[r]
+            output[i][r_offset][1] = out_cols[r]
+            if out_values[r].size == 1:
+                output[i][r_offset][2] = out_values[r][0]
+            else:
+                output[i][r_offset][2] = out_values[r][i]
+
+    return output
 
 
 def get_annual_process_matrix(dynamics_param):
-    n_params = len(dynamics_param.NPPfm)
+    mat = [
+        [Pool.Input, Pool.FeatherMossLive,
+         dynamics_param.NPPfm * dynamics_param.GCfm / 100.0],
+        [Pool.Input, Pool.SphagnumMossLive,
+         dynamics_param.NPPsp * dynamics_param.GCsp / 100.0],
 
-    mat = sparse.coo_matrix(shape=(len(Pool), len(Pool), n_params))
-    mat[Pool.Input, Pool.FeatherMossLive, :] = \
-        dynamics_param.NPPfm * dynamics_param.GCfm / 100.0
-    mat[Pool.Input, Pool.SphagnumMossLive, :] = \
-        dynamics_param.NPPsp * dynamics_param.GCsp / 100.0
+        # turnovers
+        [Pool.FeatherMossLive, Pool.FeatherMossFast, 1.0],
+        [Pool.FeatherMossLive, Pool.FeatherMossLive, 0.0],
 
-    # turnovers
-    mat[Pool.FeatherMossLive, Pool.FeatherMossFast, :] = 1.0,
-    mat[Pool.FeatherMossLive, Pool.FeatherMossLive, :] = 0.0,
+        [Pool.FeatherMossFast, Pool.FeatherMossSlow,
+         dynamics_param.akff * 0.15],
 
-    mat[Pool.FeatherMossFast, Pool.FeatherMossSlow, :] = \
-        dynamics_param.akff * 0.15,
+        [Pool.SphagnumMossLive, Pool.SphagnumMossFast, 1.0],
+        [Pool.SphagnumMossLive, Pool.SphagnumMossLive, 0.0],
 
-    mat[Pool.SphagnumMossLive, Pool.SphagnumMossFast, :] = 1.0,
-    mat[Pool.SphagnumMossLive, Pool.SphagnumMossLive, :] = 0.0,
+        [Pool.SphagnumMossFast, Pool.SphagnumMossSlow,
+         dynamics_param.aksf * 0.15],
 
-    mat[Pool.SphagnumMossFast, Pool.SphagnumMossSlow, :] = \
-        dynamics_param.aksf * 0.15,
+        # fast losses
+        [Pool.FeatherMossFast, Pool.FeatherMossFast,
+         1.0 - dynamics_param.akff],
+        [Pool.SphagnumMossFast, Pool.SphagnumMossFast,
+         1.0 - dynamics_param.aksf],
 
-    # fast losses
-    mat[Pool.FeatherMossFast, Pool.FeatherMossFast, :] = \
-        1.0 - dynamics_param.akff,
-    mat[Pool.SphagnumMossFast, Pool.SphagnumMossFast, :] = \
-        1.0 - dynamics_param.aksf,
+        # decays
+        [Pool.FeatherMossFast, Pool.CO2, dynamics_param.akff * 0.85],
 
-    # decays
-    mat[Pool.FeatherMossFast, Pool.CO2, :] = \
-        dynamics_param.akff * 0.85,
+        [Pool.SphagnumMossFast, Pool.CO2, dynamics_param.aksf * 0.85],
 
-    mat[Pool.SphagnumMossFast, Pool.CO2, :] = \
-        dynamics_param.aksf * 0.85,
+        [Pool.FeatherMossSlow, Pool.CO2, dynamics_param.akfs],
+        [Pool.FeatherMossSlow, Pool.FeatherMossSlow,
+         1.0 - dynamics_param.akfs],
 
-    mat[Pool.FeatherMossSlow, Pool.CO2, :] = dynamics_param.akfs,
-    mat[Pool.FeatherMossSlow, Pool.FeatherMossSlow, :] = \
-        1.0 - dynamics_param.akfs,
-
-    mat[Pool.SphagnumMossSlow, Pool.CO2, :] = dynamics_param.akss,
-    mat[Pool.SphagnumMossSlow, Pool.SphagnumMossSlow, :] = \
-        1.0 - dynamics_param.akss
-
+        [Pool.SphagnumMossSlow, Pool.CO2, dynamics_param.akss],
+        [Pool.SphagnumMossSlow, Pool.SphagnumMossSlow,
+         1.0 - dynamics_param.akss]
+    ]
     return mat
 
 
@@ -235,13 +289,6 @@ def get_disturbance_flows(disturbance_type_name, disturbance_matrices):
         ]
     ]
     return matrix
-
-
-class SpinupState(IntEnum):
-    AnnualProcesses = 1,
-    HistoricalEvent = 2,
-    LastPassEvent = 3,
-    End = 4
 
 
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
@@ -321,3 +368,9 @@ def run():
                 for i, x in enumerate(Pool.__members__.keys())],
             "flux_indicators": []
         })
+
+def main(args):
+    pass
+
+if __name__ == "main":
+    main(sys.args)
