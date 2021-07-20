@@ -10,7 +10,7 @@ import numba.typed
 
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
-from libcbm import resources
+from libcbm import model, resources
 
 
 class SpinupState(IntEnum):
@@ -193,7 +193,7 @@ def annual_process_dynamics(state, params):
             openness, params.i, params.j, params.l))
 
 
-def _expand_matrix(mat, initialize_identity=True):
+def expand_matrix(mat, initialize_identity=True):
     n_mats = len(mat[0][2])
     n_rows = len(mat)
     out_rows = [float(mat[r][0]) for r in range(0, n_rows)]
@@ -203,12 +203,14 @@ def _expand_matrix(mat, initialize_identity=True):
         if np.isscalar(mat[r][2])
         else np.array(mat[r][2])
         for r in range(0, n_rows)]
-    identity_set = {int(p) for p in Pool}
-    print(identity_set)
-    for r in range(0, n_rows):
-        if out_rows[r] == out_cols[r]:
-            identity_set.remove(int(out_rows[r]))
-    print(identity_set)
+    if initialize_identity:
+        identity_set = {int(p) for p in Pool}
+
+        for r in range(0, n_rows):
+            if out_rows[r] == out_cols[r]:
+                identity_set.remove(int(out_rows[r]))
+    else:
+        identity_set = []
     return __expand_matrix(
         n_mats, n_rows,
         numba.typed.List(out_rows),
@@ -331,8 +333,17 @@ def spinup(pools, model_state, model_params):
         annual_process_dynamics()
 
 
-def step():
-    pass
+def step(model_context):
+    dynamics = annual_process_dynamics(
+        model_context.state, model_context.params)
+    matrices = expand_matrix(get_annual_process_matrix(dynamics))
+
+    model_context.pools = compute_pools(
+        model_context.dll,
+        model_context.pools,
+        [matrices],
+        np.array([list(range(0, len(model_context.params.index)))], dtype=np.uintp).T)
+    model_context.state.age += 1
 
 
 def compute_pools(dll, pools, ops, op_indices):
@@ -384,9 +395,6 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
     max_vols = pd.DataFrame(
         {"max_merch_vol": merch_volume.volume.groupby(
             by=merch_volume.index).max()})
-    params = SimpleNamespace(
-
-    )
 
     dynamics_param = inventory \
         .merge(moss_c_parameter, left_on="moss_c_parameter_id",
@@ -415,6 +423,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
             LibCBMHandle(
                 resources.get_libcbm_bin_path(),
                 json.dumps(libcbm_config))),
-        dynamics_param=dynamics_param,
-        model_state=model_state
+        params=dynamics_param,
+        state=model_state,
+        pools=pools
     )
