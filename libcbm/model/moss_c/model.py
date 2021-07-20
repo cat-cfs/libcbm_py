@@ -3,6 +3,7 @@ import json
 import sys
 from types import SimpleNamespace
 import numpy as np
+import pandas as pd
 
 import numba
 import numba.typed
@@ -359,7 +360,8 @@ def initialize(config):
             json.dumps(config)))
 
 
-def run():
+def run(decay_parameter, disturbance_matrix, moss_c_parameter, inventory,
+        mean_annual_temperature, merch_volume, spinup_parameter):
     pools = np.repeat()
     flux_processor = initialize(
         config={
@@ -369,8 +371,17 @@ def run():
             "flux_indicators": []
         })
 
+
 def main(args):
-    pass
+    decay_parameter = pd.read_csv("decay_parameter.csv", index_col="id")
+    disturbance_matrix = pd.read_csv("disturbance_matrix.csv")
+    moss_c_parameter = pd.read_csv("moss_c_parameter.csv", index_col="id")
+    inventory = pd.read_csv("inventory.csv")
+    mean_annual_temperature = pd.read_csv(
+        "mean_annual_temperature.csv", index_col="id")
+    merch_volume = pd.read_csv("merch_volume.csv", index_col="id")
+    spinup_parameter = pd.read_csv("spinup_parameter.csv", index_col="id")
+
 
 if __name__ == "main":
     main(sys.args)
