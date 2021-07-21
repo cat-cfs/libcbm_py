@@ -35,7 +35,97 @@ class Pool(IntEnum):
     SphagnumMossFast = 4,
     FeatherMossSlow = 5,
     SphagnumMossSlow = 6,
-    CO2 = 7
+    CO2 = 7,
+    CH4 = 8
+    CO = 9,
+
+
+ANNUAL_PROCESSES = 1
+DISTURBANCE = 2
+
+BIOMASS_POOLS = [
+    Pool.FeatherMossLive,
+    Pool.SphagnumMossLive,
+]
+DOM_POOLS = [
+    Pool.FeatherMossFast,
+    Pool.SphagnumMossFast,
+    Pool.FeatherMossSlow,
+    Pool.SphagnumMossSlow,
+]
+ECOSYSTEM_POOLS = BIOMASS_POOLS + DOM_POOLS
+
+FLUX_INDICATORS = [
+    {"name": "NPP",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": [Pool.Input],
+     "sink_pools": [Pool.FeatherMossLive, Pool.SphagnumMossLive]},
+    {"name": "DisturbanceCO2Production",
+     "process_id": DISTURBANCE,
+     "source_pools": ECOSYSTEM_POOLS,
+     "sink_pools": [Pool.CO2]},
+    {"name": "DisturbanceCH4Production",
+     "process_id": DISTURBANCE,
+     "source_pools": ECOSYSTEM_POOLS,
+     "sink_pools": [Pool.CH4]},
+    {"name": "DisturbanceCOProduction",
+     "process_id": DISTURBANCE,
+     "source_pools": ECOSYSTEM_POOLS,
+     "sink_pools": [Pool.CO]},
+    {"name": "DisturbanceBioCO2Emission",
+     "process_id": DISTURBANCE,
+     "source_pools": ECOSYSTEM_POOLS,
+     "sink_pools": [Pool.CO]},
+    {"name": "DisturbanceBioCH4Emission"},
+    {"name": "DisturbanceBioCOEmission"},
+    {"name": "DecayDOMCO2Emission"},
+    {"name": "DisturbanceSoftProduction"},
+    {"name": "DisturbanceHardProduction"},
+    {"name": "DisturbanceDOMProduction"},
+    {"name": "DeltaBiomass_AG"},
+    {"name": "DeltaBiomass_BG"},
+    {"name": "TurnoverMerchLitterInput"},
+    {"name": "TurnoverFolLitterInput"},
+    {"name": "TurnoverOthLitterInput"},
+    {"name": "TurnoverCoarseLitterInput"},
+    {"name": "TurnoverFineLitterInput"},
+    {"name": "DecayVFastAGToAir"},
+    {"name": "DecayVFastBGToAir"},
+    {"name": "DecayFastAGToAir"},
+    {"name": "DecayFastBGToAir"},
+    {"name": "DecayMediumToAir"},
+    {"name": "DecaySlowAGToAir"},
+    {"name": "DecaySlowBGToAir"},
+    {"name": "DecaySWStemSnagToAir"},
+    {"name": "DecaySWBranchSnagToAir"},
+    {"name": "DecayHWStemSnagToAir"},
+    {"name": "DecayHWBranchSnagToAir"},
+    {"name": "DisturbanceMerchToAir"},
+    {"name": "DisturbanceFolToAir"},
+    {"name": "DisturbanceOthToAir"},
+    {"name": "DisturbanceCoarseToAir"},
+    {"name": "DisturbanceFineToAir"},
+    {"name": "DisturbanceDOMCO2Emission"},
+    {"name": "DisturbanceDOMCH4Emission"},
+    {"name": "DisturbanceDOMCOEmission"},
+    {"name": "DisturbanceMerchLitterInput"},
+    {"name": "DisturbanceFolLitterInput"},
+    {"name": "DisturbanceOthLitterInput"},
+    {"name": "DisturbanceCoarseLitterInput"},
+    {"name": "DisturbanceFineLitterInput"},
+    {"name": "DisturbanceVFastAGToAir"},
+    {"name": "DisturbanceVFastBGToAir"},
+    {"name": "DisturbanceFastAGToAir"},
+    {"name": "DisturbanceFastBGToAir"},
+    {"name": "DisturbanceMediumToAir"},
+    {"name": "DisturbanceSlowAGToAir"},
+    {"name": "DisturbanceSlowBGToAir"},
+    {"name": "DisturbanceSWStemSnagToAir"},
+    {"name": "DisturbanceSWBranchSnagToAir"},
+    {"name": "DisturbanceHWStemSnagToAir"},
+    {"name": "DisturbanceHWBranchSnagToAir"},
+
+]
 
 
 def f1(merch_vol, a, b):
@@ -381,7 +471,8 @@ def compute_pools(dll, pools, ops, op_indices):
                    np.ascontiguousarray(op_indices[:, i]))
 
     dll.compute_pools(op_ids, pools)
-
+    for op_id in op_ids:
+        dll.free_op(op_id)
     return pools
 
 
@@ -395,8 +486,13 @@ def build_merch_vol_lookup(merch_volume):
 def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
     output = np.zeros(shape=age.shape, dtype=float)
     for i, age in np.ndenumerate(age):
-        output[i] = merch_vol_lookup[merch_vol_id[i]][age]
+        lookup = merch_vol_lookup[merch_vol_id[i]]
+        if age in lookup:
+            output[i] = lookup[age]
+        else:
+            output[i] = max(lookup, key=int)
     return output
+
 
 
 def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
@@ -407,7 +503,21 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
             "pools": [
                 {'name': x, 'id': i+1, 'index': i}
                 for i, x in enumerate(Pool.__members__.keys())],
-            "flux_indicators": []
+            "flux_indicators": [
+                        {
+                            "id": 1,
+                            "index": 0,
+                            "process_id": ANNUAL_PROCESSES,
+                            "source_pools": [1, 2],
+                            "sink_pools": [3]
+                        },
+                        {
+                            "id": 2,
+                            "index": 1,
+                            "process_id": 1,
+                            "source_pools": [1, 2],
+                            "sink_pools": [3]
+                        }]
         }
     merch_vol_lookup = build_merch_vol_lookup(merch_volume)
     pools = np.zeros(shape=(len(inventory.index), len(Pool)))
@@ -432,7 +542,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
     if (dynamics_param.index != inventory.index).any():
         raise ValueError()
 
-    initial_age = np.full_like(inventory.age, 0, dtype=int)
+    initial_age = np.full_like(inventory.age, 1.0, dtype=int)
     model_state = SimpleNamespace(
         age=initial_age,
         merch_vol=get_merch_vol(
