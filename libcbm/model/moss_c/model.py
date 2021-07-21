@@ -357,9 +357,14 @@ def step(model_context):
         model_context.pools,
         [matrices],
         np.array(
-            [list(range(0, len(model_context.params.index)))],
+            [list(range(0, len(model_context.state.age)))],
             dtype=np.uintp).T)
     model_context.state.age += 1
+    model_context.state.merch_vol = \
+        get_merch_vol(
+            model_context.merch_vol_lookup,
+            model_context.state.age,
+            model_context.input_data.inventory.merch_volume_id.to_numpy())
 
 
 def compute_pools(dll, pools, ops, op_indices):
@@ -388,7 +393,7 @@ def build_merch_vol_lookup(merch_volume):
 
 
 def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
-    output = np.zeros(shape=age.shape)
+    output = np.zeros(shape=age.shape, dtype=float)
     for i, age in np.ndenumerate(age):
         output[i] = merch_vol_lookup[merch_vol_id[i]][age]
     return output
@@ -427,11 +432,12 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
     if (dynamics_param.index != inventory.index).any():
         raise ValueError()
 
+    initial_age = np.full_like(inventory.age, 0, dtype=int)
     model_state = SimpleNamespace(
-        age=inventory.age.to_numpy(),
+        age=initial_age,
         merch_vol=get_merch_vol(
             merch_vol_lookup,
-            inventory.age.to_numpy(),
+            initial_age,
             inventory.merch_volume_id.to_numpy()))
 
     return SimpleNamespace(
@@ -441,5 +447,15 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
                 json.dumps(libcbm_config))),
         params=to_numpy_namespace(dynamics_param),
         state=model_state,
-        pools=pools
+        pools=pools,
+        merch_vol_lookup=merch_vol_lookup,
+        input_data=SimpleNamespace(
+            decay_parameter=decay_parameter,
+            disturbance_matrix=disturbance_matrix,
+            moss_c_parameter=moss_c_parameter,
+            inventory=inventory,
+            mean_annual_temperature=mean_annual_temperature,
+            merch_volume=merch_volume,
+            spinup_parameter=spinup_parameter
+        )
     )
