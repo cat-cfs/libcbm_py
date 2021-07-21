@@ -17,7 +17,7 @@ import numba.typed
 
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
-from libcbm import model, resources
+from libcbm import resources
 
 
 class SpinupState(IntEnum):
@@ -51,9 +51,10 @@ def f1(merch_vol, a, b):
     Returns:
         np.ndarray: Canopy openess
     """
-    return np.where(
-        merch_vol == 0.0, 60.0,
-        np.power(10, a * np.log10(merch_vol) + b))
+    result = np.full_like(merch_vol, 60.0)
+    result[merch_vol != 0.0] = np.power(
+        10, a * np.log10(merch_vol[merch_vol != 0.0]) + b)
+    return result
 
 
 def f2(openness, stand_age, c, d):
@@ -349,7 +350,9 @@ def step(model_context):
         model_context.dll,
         model_context.pools,
         [matrices],
-        np.array([list(range(0, len(model_context.params.index)))], dtype=np.uintp).T)
+        np.array(
+            [list(range(0, len(model_context.params.index)))],
+            dtype=np.uintp).T)
     model_context.state.age += 1
 
 
