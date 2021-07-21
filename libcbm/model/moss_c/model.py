@@ -497,7 +497,12 @@ def step(model_context):
     n_stands = len(model_context.state.age)
     dynamics = annual_process_dynamics(
         model_context.state, model_context.params)
-    matrices = expand_matrix(get_annual_process_matrix(dynamics))
+    annual_process_matrices = expand_matrix(
+        get_annual_process_matrix(dynamics))
+    annual_process_matrix_index = np.array(
+        list(range(0, n_stands)), dtype=np.uintp)
+    disturbance_matrices = model_context.dm_data.dm_list
+    disturbance_matrix_index = np.full(n_stands, 0, dtype=np.uintp)
     flux = pd.DataFrame(
         columns=[x["name"] for x in FLUX_INDICATORS],
         data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
@@ -505,10 +510,11 @@ def step(model_context):
         model_context.dll,
         model_context.pools,
         flux,
-        [matrices],
-        np.array(
-            [list(range(0, ))],
-            dtype=np.uintp).T)
+        [annual_process_matrices, disturbance_matrices],
+        np.column_stack([
+            annual_process_matrix_index,
+            disturbance_matrix_index]))
+
     model_context.state.age += 1
     model_context.state.merch_vol = \
         get_merch_vol(
@@ -543,7 +549,7 @@ def compute_flux(dll, pools, flux, ops, op_indices, enabled=None):
         dll.set_op(op_id, [x for x in op],
                    np.ascontiguousarray(op_indices[:, i]))
 
-    op_processes = [ANNUAL_PROCESSES]
+    op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
     dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
     for op_id in op_ids:
         dll.free_op(op_id)
@@ -566,6 +572,49 @@ def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
         else:
             output[i] = max(lookup, key=int)
     return output
+
+
+def initialize_dm(disturbance_matrix_data):
+    dm_data = disturbance_matrix_data
+    proportions_valid = np.allclose(
+        1.0,
+        dm_data[["Name", "Source", "Proportion"]].groupby(
+            ["Name", "Source"]).sum())
+    if not proportions_valid:
+        raise ValueError("proportions in disturbance matrices do not sum to 1")
+
+    identity_matrix = np.column_stack([
+        np.array([int(p) for p in Pool], dtype=float),
+        np.array([int(p) for p in Pool], dtype=float),
+        np.repeat(1.0, len(Pool))])
+    dm_list = [identity_matrix]
+    dm_name_index = {None: 0}
+    for dm_name in dm_data.Name.unique():
+        dm_values = dm_data[dm_data.Name == dm_name].copy()
+
+        identity_set = {p for p in Pool}
+
+        for i_row, row in dm_values.iterrows():
+            if Pool[row.Source] == Pool[row.Sink]:
+                identity_set.remove(Pool[row.Source])
+
+        dm_values = dm_values.append([
+            {"Name": dm_name,
+             "Source": p.name,
+             "Sink": p.name,
+             "Proportion": 1.0} for p in identity_set],
+            ignore_index=True)
+        mat = np.column_stack([
+            np.array([Pool[p] for p in dm_values.Source], dtype=float),
+            np.array([Pool[p] for p in dm_values.Sink], dtype=float),
+            dm_values.Proportion.to_numpy()
+        ])
+        dm_name_index[dm_name] = len(dm_list)
+        dm_list.append(mat)
+
+    return SimpleNamespace(
+        dm_name_index=dm_name_index,
+        dm_list=dm_list)
 
 
 def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
@@ -625,6 +674,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
         state=model_state,
         pools=pools,
         merch_vol_lookup=merch_vol_lookup,
+        dm_data=initialize_dm(disturbance_matrix),
         input_data=SimpleNamespace(
             decay_parameter=decay_parameter,
             disturbance_matrix=disturbance_matrix,
