@@ -495,16 +495,20 @@ def spinup(pools, model_state, model_params):
 
 
 def step(model_context):
+    n_stands = len(model_context.state.age)
     dynamics = annual_process_dynamics(
         model_context.state, model_context.params)
     matrices = expand_matrix(get_annual_process_matrix(dynamics))
-
-    model_context.pools = compute_pools(
+    flux = pd.DataFrame(
+        columns=[x["name"] for x in FLUX_INDICATORS],
+        data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
+    model_context.pools = compute_flux(
         model_context.dll,
         model_context.pools,
+        flux,
         [matrices],
         np.array(
-            [list(range(0, len(model_context.state.age)))],
+            [list(range(0, ))],
             dtype=np.uintp).T)
     model_context.state.age += 1
     model_context.state.merch_vol = \
@@ -512,22 +516,36 @@ def step(model_context):
             model_context.merch_vol_lookup,
             model_context.state.age,
             model_context.input_data.inventory.merch_volume_id.to_numpy())
+    return flux
 
 
-def compute_pools(dll, pools, ops, op_indices):
+def compute_pools(dll, pools, ops, op_indices, enabled=None):
     pools = pools.copy()
 
     op_ids = []
     for i, op in enumerate(ops):
         op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
-        # The set op function accepts a matrix of coordinate triples.
-        # In LibCBM matrices are stored in a sparse format, so 0 values can be
-        # omitted from the parameter
         dll.set_op(op_id, [x for x in op],
                    np.ascontiguousarray(op_indices[:, i]))
 
-    dll.compute_pools(op_ids, pools)
+    dll.compute_pools(op_ids, pools, enabled)
+    for op_id in op_ids:
+        dll.free_op(op_id)
+    return pools
+
+
+def compute_flux(dll, pools, flux, ops, op_indices, enabled=None):
+    pools = pools.copy()
+    op_ids = []
+    for i, op in enumerate(ops):
+        op_id = dll.allocate_op(pools.shape[0])
+        op_ids.append(op_id)
+        dll.set_op(op_id, [x for x in op],
+                   np.ascontiguousarray(op_indices[:, i]))
+
+    op_processes = [ANNUAL_PROCESSES]
+    dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
     for op_id in op_ids:
         dll.free_op(op_id)
     return pools
