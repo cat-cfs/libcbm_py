@@ -1,6 +1,7 @@
-# moss c model
+# moss c model implementation
 #
-# publication:
+# based on referenced work:
+#
 # Bona, Kelly & Shaw, Cindy & Fyles, James & Kurz, Werner. (2016).
 # Modelling moss-derived carbon in upland black spruce forests.
 # Canadian Journal of Forest Research. 46. 10.1139/cjfr-2015-0512.
@@ -38,6 +39,7 @@ class Pool(IntEnum):
     CO2 = 7,
     CH4 = 8
     CO = 9,
+    Products = 10
 
 
 ANNUAL_PROCESSES = 1
@@ -53,13 +55,22 @@ DOM_POOLS = [
     Pool.FeatherMossSlow,
     Pool.SphagnumMossSlow,
 ]
+
+EMISSIONS_POOLS = [
+    Pool.CO2, Pool.CH4, Pool.CO
+]
+
 ECOSYSTEM_POOLS = BIOMASS_POOLS + DOM_POOLS
 
 FLUX_INDICATORS = [
-    {"name": "NPP",
+    {"name": "NPPFeatherMoss",
      "process_id": ANNUAL_PROCESSES,
      "source_pools": [Pool.Input],
-     "sink_pools": [Pool.FeatherMossLive, Pool.SphagnumMossLive]},
+     "sink_pools": [Pool.FeatherMossLive]},
+    {"name": "NPPSphagnumMoss",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": [Pool.Input],
+     "sink_pools": [Pool.FeatherMossLive]},
     {"name": "DisturbanceCO2Production",
      "process_id": DISTURBANCE,
      "source_pools": ECOSYSTEM_POOLS,
@@ -74,56 +85,69 @@ FLUX_INDICATORS = [
      "sink_pools": [Pool.CO]},
     {"name": "DisturbanceBioCO2Emission",
      "process_id": DISTURBANCE,
-     "source_pools": ECOSYSTEM_POOLS,
+     "source_pools": BIOMASS_POOLS,
      "sink_pools": [Pool.CO]},
-    {"name": "DisturbanceBioCH4Emission"},
-    {"name": "DisturbanceBioCOEmission"},
-    {"name": "DecayDOMCO2Emission"},
-    {"name": "DisturbanceSoftProduction"},
-    {"name": "DisturbanceHardProduction"},
-    {"name": "DisturbanceDOMProduction"},
-    {"name": "DeltaBiomass_AG"},
-    {"name": "DeltaBiomass_BG"},
-    {"name": "TurnoverMerchLitterInput"},
-    {"name": "TurnoverFolLitterInput"},
-    {"name": "TurnoverOthLitterInput"},
-    {"name": "TurnoverCoarseLitterInput"},
-    {"name": "TurnoverFineLitterInput"},
-    {"name": "DecayVFastAGToAir"},
-    {"name": "DecayVFastBGToAir"},
-    {"name": "DecayFastAGToAir"},
-    {"name": "DecayFastBGToAir"},
-    {"name": "DecayMediumToAir"},
-    {"name": "DecaySlowAGToAir"},
-    {"name": "DecaySlowBGToAir"},
-    {"name": "DecaySWStemSnagToAir"},
-    {"name": "DecaySWBranchSnagToAir"},
-    {"name": "DecayHWStemSnagToAir"},
-    {"name": "DecayHWBranchSnagToAir"},
-    {"name": "DisturbanceMerchToAir"},
-    {"name": "DisturbanceFolToAir"},
-    {"name": "DisturbanceOthToAir"},
-    {"name": "DisturbanceCoarseToAir"},
-    {"name": "DisturbanceFineToAir"},
+    {"name": "DisturbanceBioCH4Emission",
+     "process_id": DISTURBANCE,
+     "source_pools": BIOMASS_POOLS,
+     "sink_pools": [Pool.CH4]},
+    {"name": "DisturbanceBioCOEmission",
+     "process_id": DISTURBANCE,
+     "source_pools": BIOMASS_POOLS,
+     "sink_pools": [Pool.CO]},
+    {"name": "DecayDOMCO2Emission",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": DOM_POOLS,
+     "sink_pools": [Pool.CO2]},
+    {"name": "DisturbanceBioProduction",
+     "process_id": DISTURBANCE,
+     "source_pools": BIOMASS_POOLS,
+     "sink_pools": [Pool.Products]},
+    {"name": "DisturbanceDOMProduction",
+     "process_id": DISTURBANCE,
+     "source_pools": DOM_POOLS,
+     "sink_pools": [Pool.Products]},
+
+    {"name": "TurnoverFeatherMossInput",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.FeatherMossLive,
+     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
+    {"name": "TurnoverSphagnumMossInput",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.FeatherMossLive,
+     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
+
+    {"name": "DecayFeatherMossFastToAir",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.FeatherMossFast,
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DecaySphagnumMossFastToAir",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.SphagnumMossFast,
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DecayFeatherMossSlowToAir",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.FeatherMossSlow,
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DecaySphagnumMossSlowToAir",
+     "process_id": ANNUAL_PROCESSES,
+     "source_pools": Pool.SphagnumMossSlow,
+     "sink_pools": EMISSIONS_POOLS},
+
+    {"name": "DisturbanceFeatherMossToAir"},
+    {"name": "DisturbanceSphagnumMossToAir"},
+
     {"name": "DisturbanceDOMCO2Emission"},
     {"name": "DisturbanceDOMCH4Emission"},
     {"name": "DisturbanceDOMCOEmission"},
-    {"name": "DisturbanceMerchLitterInput"},
-    {"name": "DisturbanceFolLitterInput"},
-    {"name": "DisturbanceOthLitterInput"},
-    {"name": "DisturbanceCoarseLitterInput"},
-    {"name": "DisturbanceFineLitterInput"},
-    {"name": "DisturbanceVFastAGToAir"},
-    {"name": "DisturbanceVFastBGToAir"},
-    {"name": "DisturbanceFastAGToAir"},
-    {"name": "DisturbanceFastBGToAir"},
-    {"name": "DisturbanceMediumToAir"},
-    {"name": "DisturbanceSlowAGToAir"},
-    {"name": "DisturbanceSlowBGToAir"},
-    {"name": "DisturbanceSWStemSnagToAir"},
-    {"name": "DisturbanceSWBranchSnagToAir"},
-    {"name": "DisturbanceHWStemSnagToAir"},
-    {"name": "DisturbanceHWBranchSnagToAir"},
+
+    {"name": "DisturbanceFeatherMossLitterInput"},
+    {"name": "DisturbanceSphagnumMossLitterInput"},
+
+    {"name": "DisturbanceFeatherMossFastToAir"},
+    {"name": "DisturbanceSphagnumMossFastToAir"},
+    {"name": "DisturbanceFeatherMossSlowToAir"},
+    {"name": "DisturbanceSphagnumMossSlowToAir"},
 
 ]
 
@@ -492,7 +516,6 @@ def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
         else:
             output[i] = max(lookup, key=int)
     return output
-
 
 
 def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
