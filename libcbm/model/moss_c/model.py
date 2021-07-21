@@ -43,7 +43,7 @@ class Pool(IntEnum):
 
 
 ANNUAL_PROCESSES = 1
-DISTURBANCE = 2
+DISTURBANCE_PROCESS = 2
 
 BIOMASS_POOLS = [
     Pool.FeatherMossLive,
@@ -72,27 +72,27 @@ FLUX_INDICATORS = [
      "source_pools": [Pool.Input],
      "sink_pools": [Pool.FeatherMossLive]},
     {"name": "DisturbanceCO2Production",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": ECOSYSTEM_POOLS,
      "sink_pools": [Pool.CO2]},
     {"name": "DisturbanceCH4Production",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": ECOSYSTEM_POOLS,
      "sink_pools": [Pool.CH4]},
     {"name": "DisturbanceCOProduction",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": ECOSYSTEM_POOLS,
      "sink_pools": [Pool.CO]},
     {"name": "DisturbanceBioCO2Emission",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": BIOMASS_POOLS,
      "sink_pools": [Pool.CO]},
     {"name": "DisturbanceBioCH4Emission",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": BIOMASS_POOLS,
      "sink_pools": [Pool.CH4]},
     {"name": "DisturbanceBioCOEmission",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": BIOMASS_POOLS,
      "sink_pools": [Pool.CO]},
     {"name": "DecayDOMCO2Emission",
@@ -100,54 +100,87 @@ FLUX_INDICATORS = [
      "source_pools": DOM_POOLS,
      "sink_pools": [Pool.CO2]},
     {"name": "DisturbanceBioProduction",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": BIOMASS_POOLS,
      "sink_pools": [Pool.Products]},
     {"name": "DisturbanceDOMProduction",
-     "process_id": DISTURBANCE,
+     "process_id": DISTURBANCE_PROCESS,
      "source_pools": DOM_POOLS,
      "sink_pools": [Pool.Products]},
 
     {"name": "TurnoverFeatherMossInput",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.FeatherMossLive,
+     "source_pools": [Pool.FeatherMossLive],
      "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
     {"name": "TurnoverSphagnumMossInput",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.FeatherMossLive,
+     "source_pools": [Pool.FeatherMossLive],
      "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
 
     {"name": "DecayFeatherMossFastToAir",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.FeatherMossFast,
+     "source_pools": [Pool.FeatherMossFast],
      "sink_pools": EMISSIONS_POOLS},
     {"name": "DecaySphagnumMossFastToAir",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.SphagnumMossFast,
+     "source_pools": [Pool.SphagnumMossFast],
      "sink_pools": EMISSIONS_POOLS},
     {"name": "DecayFeatherMossSlowToAir",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.FeatherMossSlow,
+     "source_pools": [Pool.FeatherMossSlow],
      "sink_pools": EMISSIONS_POOLS},
     {"name": "DecaySphagnumMossSlowToAir",
      "process_id": ANNUAL_PROCESSES,
-     "source_pools": Pool.SphagnumMossSlow,
+     "source_pools": [Pool.SphagnumMossSlow],
      "sink_pools": EMISSIONS_POOLS},
 
-    {"name": "DisturbanceFeatherMossToAir"},
-    {"name": "DisturbanceSphagnumMossToAir"},
+    {"name": "DisturbanceFeatherMossToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.FeatherMossLive],
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DisturbanceSphagnumMossToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.SphagnumMossLive],
+     "sink_pools": EMISSIONS_POOLS},
 
-    {"name": "DisturbanceDOMCO2Emission"},
-    {"name": "DisturbanceDOMCH4Emission"},
-    {"name": "DisturbanceDOMCOEmission"},
+    {"name": "DisturbanceDOMCO2Emission",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": DOM_POOLS,
+     "sink_pools": [Pool.CO2]},
+    {"name": "DisturbanceDOMCH4Emission",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": DOM_POOLS,
+     "sink_pools": [Pool.CH4]},
+    {"name": "DisturbanceDOMCOEmission",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": DOM_POOLS,
+     "sink_pools": [Pool.CO]},
 
-    {"name": "DisturbanceFeatherMossLitterInput"},
-    {"name": "DisturbanceSphagnumMossLitterInput"},
+    {"name": "DisturbanceFeatherMossLitterInput",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.FeatherMossLive],
+     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
+    {"name": "DisturbanceSphagnumMossLitterInput",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.SphagnumMossLive],
+     "sink_pools": [Pool.SphagnumMossFast, Pool.SphagnumMossSlow]},
 
-    {"name": "DisturbanceFeatherMossFastToAir"},
-    {"name": "DisturbanceSphagnumMossFastToAir"},
-    {"name": "DisturbanceFeatherMossSlowToAir"},
-    {"name": "DisturbanceSphagnumMossSlowToAir"},
+    {"name": "DisturbanceFeatherMossFastToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.FeatherMossFast],
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DisturbanceSphagnumMossFastToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.SphagnumMossFast],
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DisturbanceFeatherMossSlowToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.FeatherMossSlow],
+     "sink_pools": EMISSIONS_POOLS},
+    {"name": "DisturbanceSphagnumMossSlowToAir",
+     "process_id": DISTURBANCE_PROCESS,
+     "source_pools": [Pool.SphagnumMossSlow],
+     "sink_pools": EMISSIONS_POOLS},
 
 ]
 
@@ -523,24 +556,17 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
                spinup_parameter):
 
     libcbm_config = {
-            "pools": [
-                {'name': x, 'id': i+1, 'index': i}
-                for i, x in enumerate(Pool.__members__.keys())],
-            "flux_indicators": [
-                        {
-                            "id": 1,
-                            "index": 0,
-                            "process_id": ANNUAL_PROCESSES,
-                            "source_pools": [1, 2],
-                            "sink_pools": [3]
-                        },
-                        {
-                            "id": 2,
-                            "index": 1,
-                            "process_id": 1,
-                            "source_pools": [1, 2],
-                            "sink_pools": [3]
-                        }]
+        "pools": [
+            {'name': p.name, 'id': int(p), 'index': p_idx}
+            for p_idx, p in enumerate(Pool)],
+        "flux_indicators": [
+            {
+                "id": f_idx + 1,
+                "index": f_idx,
+                "process_id": f["process_id"],
+                "source_pools": [int(x) for x in f["source_pools"]],
+                "sink_pools": [int(x) for x in f["sink_pools"]],
+            } for f_idx, f in enumerate(FLUX_INDICATORS)]
         }
     merch_vol_lookup = build_merch_vol_lookup(merch_volume)
     pools = np.zeros(shape=(len(inventory.index), len(Pool)))
