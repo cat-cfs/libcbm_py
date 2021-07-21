@@ -1,3 +1,10 @@
+# moss c model
+#
+# publication:
+# Bona, Kelly & Shaw, Cindy & Fyles, James & Kurz, Werner. (2016).
+# Modelling moss-derived carbon in upland black spruce forests.
+# Canadian Journal of Forest Research. 46. 10.1139/cjfr-2015-0512.
+#
 from enum import IntEnum
 import json
 import sys
