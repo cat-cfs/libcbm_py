@@ -159,6 +159,12 @@ def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
         (mean_annual_temp - t_ref) * np.log(q10) * 0.1)
 
 
+def to_numpy_namespace(df):
+    return SimpleNamespace(**{
+        col: df[col].to_numpy() for col in df.columns
+    })
+
+
 def annual_process_dynamics(state, params):
 
     kss = f6(params.max_merch_vol, params.m, params.n)
@@ -433,7 +439,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
             LibCBMHandle(
                 resources.get_libcbm_bin_path(),
                 json.dumps(libcbm_config))),
-        params=dynamics_param,
+        params=to_numpy_namespace(dynamics_param),
         state=model_state,
         pools=pools
     )
