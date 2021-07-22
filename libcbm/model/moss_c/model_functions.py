@@ -101,13 +101,28 @@ def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
     return output
 
 
-def get_last_pass_disturbance_type(model_context):
-    model_context.params.last_pass_disturbance_type
-    model_context.dm_data.dm_name_index
+def np_map(a, m, dtype):
+    """Return the mapped value of a according to the dictionary m.
+    Any values in a not present as a key in m will be unchanged.
+
+    Args:
+        a (numpy.ndarray): a numpy array
+        m (dict): a dictionary to map values in the resulting array
+        dtype (object): numpy type assigned as type of returned array
+    Returns:
+        numpy.ndarray: the numpy array with replaced mapped values
+    """
+    d = numba.typed.Dict(m)
+    return _np_map(a, d, dtype)
 
 
-def get_historical_disturbance_type(model_context):
-    pass
+@numba.njit
+def _np_map(a, m, dtype):
+    out = np.ndarray(shape=a.shape, dtype=dtype)
+    for index, value in np.ndenumerate(a):
+        if value in m:
+            out[index] = m[value]
+    return out
 
 
 def initialize_dm(disturbance_matrix_data):
