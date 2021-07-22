@@ -445,52 +445,70 @@ def get_annual_process_matrix(dynamics_param):
     return mat
 
 
-def get_disturbance_flows(disturbance_type_name, disturbance_matrices):
-    matrix = [
-        [
-
-        ]
-    ]
-    return matrix
-
-
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
     return abs((last_rotation_slow - this_rotation_slow)
                / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
 
 
-def advance_spinup_state(spinup_state, age, return_interval, rotation_num,
-                         max_rotations, last_rotation_slow,
+@numba.jit
+def advance_spinup_state(spinup_state, age, final_age, return_interval,
+                         rotation_num, max_rotations, last_rotation_slow,
                          this_rotation_slow):
-    np.where(
-        spinup_state == SpinupState.AnnualProcesses,
-        np.where(
-            age >= return_interval,
-            np.where(
-                _small_slow_diff(last_rotation_slow, this_rotation_slow)
-                | rotation_num > max_rotations,
-                SpinupState.LastPassEvent,
-                SpinupState.HistoricalEvent),
-            SpinupState.AnnualProcesses),
-        np.where(
-            spinup_state == SpinupState.HistoricalEvent,
-            SpinupState.AnnualProcesses,
-            SpinupState.End))
+
+    out_state = spinup_state.copy()
+    for i, state in np.ndenumerate(spinup_state):
+        if state == SpinupState.AnnualProcesses:
+            if age[i] >= return_interval[i]:
+                small_slow_diff = _small_slow_diff(
+                    last_rotation_slow[i], this_rotation_slow)
+                if small_slow_diff | rotation_num[i] > max_rotations[i]:
+                    out_state[i] = SpinupState.LastPassEvent
+                else:
+                    out_state[i] = SpinupState.HistoricalEvent
+            else:
+                out_state[i] = SpinupState.AnnualProcesses
+        elif state == SpinupState.HistoricalEvent:
+            out_state[i] = SpinupState.AnnualProcesses
+        elif state == SpinupState.LastPassEvent:
+            if age < final_age:
+                out_state[i] = SpinupState.AnnualProcesses
+            elif age >= final_age:
+                out_state[i] = SpinupState.End
+    return out_state
 
 
-def spinup(pools, model_state, model_params):
+def get_last_pass_disturbance_type(model_context):
+    model_context.params.last_pass_disturbance_type
+    model_context.dm_data.dm_name_index
+
+
+def get_historical_disturbance_type(model_context):
+    pass
+
+
+def spinup(model_context):
+    array_shape = model_context.state.age.shape
+    spinup_state = np.full(
+        array_shape, SpinupState.AnnualProcesses)
+    rotation_num = np.full(array_shape, 0, dtype=int)
+    last_rotation_slow = np.full(array_shape, 0.0, dtype=float)
+    this_rotation_slow = np.full(array_shape, 0.0, dtype=float)
 
     while True:
-        model_state.spinup_state = advance_spinup_state(
-            spinup_state=model_state.spinup_state,
-            age=model_state.age,
-            return_interval=model_params.return_interval,
-            rotation_num=model_state.rotation_num,
-            max_rotations=model_params.max_rotations,
-            last_rotation_slow=model_state.last_rotation_slow,
-            this_rotation_slow=model_state.this_rotation_slow)
+        spinup_state = advance_spinup_state(
+            spinup_state=spinup_state,
+            age=model_context.state.age,
+            final_age=model_context.params.age,
+            return_interval=model_context.params.return_interval,
+            rotation_num=rotation_num,
+            max_rotations=model_context.params.max_rotations,
+            last_rotation_slow=last_rotation_slow,
+            this_rotation_slow=this_rotation_slow)
+        last_rotation_slow[spinup_state == SpinupState.HistoricalEvent] = \
+            model_context.pools[Pool.FeatherMossSlow] + \
+            model_context.pools[Pool.SphagnumMossSlow]
 
-        annual_process_dynamics()
+        break
 
 
 def step(model_context):
@@ -502,7 +520,7 @@ def step(model_context):
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.dm_data.dm_list
-    disturbance_matrix_index = np.full(n_stands, 0, dtype=np.uintp)
+    disturbance_matrix_index = model_context.disturbance_types
     flux = pd.DataFrame(
         columns=[x["name"] for x in FLUX_INDICATORS],
         data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
@@ -657,7 +675,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
     if (dynamics_param.index != inventory.index).any():
         raise ValueError()
 
-    initial_age = np.full_like(inventory.age, 1.0, dtype=int)
+    initial_age = np.full_like(inventory.age, 1, dtype=int)
     model_state = SimpleNamespace(
         age=initial_age,
         merch_vol=get_merch_vol(
@@ -675,6 +693,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
         pools=pools,
         merch_vol_lookup=merch_vol_lookup,
         dm_data=initialize_dm(disturbance_matrix),
+        disturbance_types=np.full_like(inventory.age, 0, dtype=np.uintp),
         input_data=SimpleNamespace(
             decay_parameter=decay_parameter,
             disturbance_matrix=disturbance_matrix,
@@ -682,6 +701,5 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
             inventory=inventory,
             mean_annual_temperature=mean_annual_temperature,
             merch_volume=merch_volume,
-            spinup_parameter=spinup_parameter
-        )
+            spinup_parameter=spinup_parameter)
     )
