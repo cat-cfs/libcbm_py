@@ -6,14 +6,10 @@
 # Modelling moss-derived carbon in upland black spruce forests.
 # Canadian Journal of Forest Research. 46. 10.1139/cjfr-2015-0512.
 #
-import json
+
 from types import SimpleNamespace
 import numpy as np
 import pandas as pd
-
-from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
-from libcbm.wrapper.libcbm_handle import LibCBMHandle
-from libcbm import resources
 
 from libcbm.model.moss_c.pools import Pool
 from libcbm.model.moss_c.pools import FLUX_INDICATORS
@@ -140,12 +136,6 @@ def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
     """
     return base_decay_rate * np.exp(
         (mean_annual_temp - t_ref) * np.log(q10) * 0.1)
-
-
-def to_numpy_namespace(df):
-    return SimpleNamespace(**{
-        col: df[col].to_numpy() for col in df.columns
-    })
 
 
 def annual_process_dynamics(state, params):
@@ -286,73 +276,3 @@ def step(model_context):
             model_context.state.age,
             model_context.input_data.inventory.merch_volume_id.to_numpy())
     return flux
-
-
-def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
-               inventory, mean_annual_temperature, merch_volume,
-               spinup_parameter):
-
-    libcbm_config = {
-        "pools": [
-            {'name': p.name, 'id': int(p), 'index': p_idx}
-            for p_idx, p in enumerate(Pool)],
-        "flux_indicators": [
-            {
-                "id": f_idx + 1,
-                "index": f_idx,
-                "process_id": f["process_id"],
-                "source_pools": [int(x) for x in f["source_pools"]],
-                "sink_pools": [int(x) for x in f["sink_pools"]],
-            } for f_idx, f in enumerate(FLUX_INDICATORS)]
-        }
-    merch_vol_lookup = model_functions.build_merch_vol_lookup(merch_volume)
-    pools = np.zeros(shape=(len(inventory.index), len(Pool)))
-    pools[:, Pool.Input] = 1.0
-
-    max_vols = pd.DataFrame(
-        {"max_merch_vol": merch_volume.volume.groupby(
-            by=merch_volume.index).max()})
-
-    dynamics_param = inventory \
-        .merge(moss_c_parameter, left_on="moss_c_parameter_id",
-               right_index=True, validate="m:1") \
-        .merge(decay_parameter, left_on="decay_parameter_id", right_index=True,
-               validate="m:1") \
-        .merge(mean_annual_temperature, left_on="mean_annual_temperature_id",
-               right_index=True, validate="m:1") \
-        .merge(spinup_parameter, left_on="spinup_parameter_id",
-               right_index=True, validate="m:1") \
-        .merge(max_vols, left_on=["merch_volume_id"],
-               right_index=True, validate="m:1")
-
-    if (dynamics_param.index != inventory.index).any():
-        raise ValueError()
-
-    initial_age = np.full_like(inventory.age, 1, dtype=int)
-    model_state = SimpleNamespace(
-        age=initial_age,
-        merch_vol=model_functions.get_merch_vol(
-            merch_vol_lookup,
-            initial_age,
-            inventory.merch_volume_id.to_numpy()))
-
-    return SimpleNamespace(
-        dll=LibCBMWrapper(
-            LibCBMHandle(
-                resources.get_libcbm_bin_path(),
-                json.dumps(libcbm_config))),
-        params=to_numpy_namespace(dynamics_param),
-        state=model_state,
-        pools=pools,
-        merch_vol_lookup=merch_vol_lookup,
-        dm_data=model_functions.initialize_dm(disturbance_matrix),
-        disturbance_types=np.full_like(inventory.age, 0, dtype=np.uintp),
-        input_data=SimpleNamespace(
-            decay_parameter=decay_parameter,
-            disturbance_matrix=disturbance_matrix,
-            moss_c_parameter=moss_c_parameter,
-            inventory=inventory,
-            mean_annual_temperature=mean_annual_temperature,
-            merch_volume=merch_volume,
-            spinup_parameter=spinup_parameter)
-    )

@@ -153,6 +153,12 @@ def initialize_dm(disturbance_matrix_data):
         dm_list=dm_list)
 
 
+def to_numpy_namespace(df):
+    return SimpleNamespace(**{
+        col: df[col].to_numpy() for col in df.columns
+    })
+
+
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
     return abs((last_rotation_slow - this_rotation_slow)
                / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
