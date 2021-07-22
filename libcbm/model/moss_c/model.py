@@ -6,182 +6,19 @@
 # Modelling moss-derived carbon in upland black spruce forests.
 # Canadian Journal of Forest Research. 46. 10.1139/cjfr-2015-0512.
 #
-from enum import IntEnum
 import json
 from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-import numba
-import numba.typed
-
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
 
-
-class SpinupState(IntEnum):
-    AnnualProcesses = 1,
-    HistoricalEvent = 2,
-    LastPassEvent = 3,
-    End = 4
-
-
-class Pool(IntEnum):
-    Input = 0,
-    FeatherMossLive = 1,
-    SphagnumMossLive = 2,
-    FeatherMossFast = 3,
-    SphagnumMossFast = 4,
-    FeatherMossSlow = 5,
-    SphagnumMossSlow = 6,
-    CO2 = 7,
-    CH4 = 8
-    CO = 9,
-    Products = 10
-
-
-ANNUAL_PROCESSES = 1
-DISTURBANCE_PROCESS = 2
-
-BIOMASS_POOLS = [
-    Pool.FeatherMossLive,
-    Pool.SphagnumMossLive,
-]
-DOM_POOLS = [
-    Pool.FeatherMossFast,
-    Pool.SphagnumMossFast,
-    Pool.FeatherMossSlow,
-    Pool.SphagnumMossSlow,
-]
-
-EMISSIONS_POOLS = [
-    Pool.CO2, Pool.CH4, Pool.CO
-]
-
-ECOSYSTEM_POOLS = BIOMASS_POOLS + DOM_POOLS
-
-FLUX_INDICATORS = [
-    {"name": "NPPFeatherMoss",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.Input],
-     "sink_pools": [Pool.FeatherMossLive]},
-    {"name": "NPPSphagnumMoss",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.Input],
-     "sink_pools": [Pool.FeatherMossLive]},
-    {"name": "DisturbanceCO2Production",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": ECOSYSTEM_POOLS,
-     "sink_pools": [Pool.CO2]},
-    {"name": "DisturbanceCH4Production",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": ECOSYSTEM_POOLS,
-     "sink_pools": [Pool.CH4]},
-    {"name": "DisturbanceCOProduction",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": ECOSYSTEM_POOLS,
-     "sink_pools": [Pool.CO]},
-    {"name": "DisturbanceBioCO2Emission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": BIOMASS_POOLS,
-     "sink_pools": [Pool.CO]},
-    {"name": "DisturbanceBioCH4Emission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": BIOMASS_POOLS,
-     "sink_pools": [Pool.CH4]},
-    {"name": "DisturbanceBioCOEmission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": BIOMASS_POOLS,
-     "sink_pools": [Pool.CO]},
-    {"name": "DecayDOMCO2Emission",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": DOM_POOLS,
-     "sink_pools": [Pool.CO2]},
-    {"name": "DisturbanceBioProduction",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": BIOMASS_POOLS,
-     "sink_pools": [Pool.Products]},
-    {"name": "DisturbanceDOMProduction",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": DOM_POOLS,
-     "sink_pools": [Pool.Products]},
-
-    {"name": "TurnoverFeatherMossInput",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.FeatherMossLive],
-     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
-    {"name": "TurnoverSphagnumMossInput",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.FeatherMossLive],
-     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
-
-    {"name": "DecayFeatherMossFastToAir",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.FeatherMossFast],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DecaySphagnumMossFastToAir",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.SphagnumMossFast],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DecayFeatherMossSlowToAir",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.FeatherMossSlow],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DecaySphagnumMossSlowToAir",
-     "process_id": ANNUAL_PROCESSES,
-     "source_pools": [Pool.SphagnumMossSlow],
-     "sink_pools": EMISSIONS_POOLS},
-
-    {"name": "DisturbanceFeatherMossToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.FeatherMossLive],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DisturbanceSphagnumMossToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.SphagnumMossLive],
-     "sink_pools": EMISSIONS_POOLS},
-
-    {"name": "DisturbanceDOMCO2Emission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": DOM_POOLS,
-     "sink_pools": [Pool.CO2]},
-    {"name": "DisturbanceDOMCH4Emission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": DOM_POOLS,
-     "sink_pools": [Pool.CH4]},
-    {"name": "DisturbanceDOMCOEmission",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": DOM_POOLS,
-     "sink_pools": [Pool.CO]},
-
-    {"name": "DisturbanceFeatherMossLitterInput",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.FeatherMossLive],
-     "sink_pools": [Pool.FeatherMossFast, Pool.FeatherMossSlow]},
-    {"name": "DisturbanceSphagnumMossLitterInput",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.SphagnumMossLive],
-     "sink_pools": [Pool.SphagnumMossFast, Pool.SphagnumMossSlow]},
-
-    {"name": "DisturbanceFeatherMossFastToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.FeatherMossFast],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DisturbanceSphagnumMossFastToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.SphagnumMossFast],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DisturbanceFeatherMossSlowToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.FeatherMossSlow],
-     "sink_pools": EMISSIONS_POOLS},
-    {"name": "DisturbanceSphagnumMossSlowToAir",
-     "process_id": DISTURBANCE_PROCESS,
-     "source_pools": [Pool.SphagnumMossSlow],
-     "sink_pools": EMISSIONS_POOLS},
-
-]
+from libcbm.model.moss_c.pools import Pool
+from libcbm.model.moss_c.pools import FLUX_INDICATORS
+from libcbm.model.moss_c import model_functions
+from libcbm.model.moss_c.model_functions import SpinupState
 
 
 def f1(merch_vol, a, b):
@@ -262,7 +99,7 @@ def f4(openness, g, h):
         g * np.power(openness, h))
 
 
-def f5(openness, i, j, l):
+def f5(openness, i, j, _l):
     """Sphagnum NPP (assuming 100% ground cover), NPPsp
 
     i*(O(t)^2) + j*(O(t) + l
@@ -271,12 +108,12 @@ def f5(openness, i, j, l):
         openness (float, np.ndarray): canopy openness
         i (float, np.ndarray): MossC i parameter,
         j (float, np.ndarray): MossC j parameter,
-        l (float, np.ndarray): MossC l parameter,
+        _l (float, np.ndarray): MossC l parameter,
 
     Returns:
         np.ndarray: Sphagnum moss NPP
     """
-    return i * openness ** 2.0 + j * openness + l
+    return i * openness ** 2.0 + j * openness + _l
 
 
 def f6(merch_vol, m, n):
@@ -353,56 +190,6 @@ def annual_process_dynamics(state, params):
             openness, params.i, params.j, params.l))
 
 
-def expand_matrix(mat, initialize_identity=True):
-    n_mats = len(mat[0][2])
-    n_rows = len(mat)
-    out_rows = [float(mat[r][0]) for r in range(0, n_rows)]
-    out_cols = [float(mat[r][1]) for r in range(0, n_rows)]
-    out_values = [
-        np.array([mat[r][2]])
-        if np.isscalar(mat[r][2])
-        else np.array(mat[r][2])
-        for r in range(0, n_rows)]
-    if initialize_identity:
-        identity_set = {int(p) for p in Pool}
-
-        for r in range(0, n_rows):
-            if out_rows[r] == out_cols[r]:
-                identity_set.remove(int(out_rows[r]))
-    else:
-        identity_set = []
-    return __expand_matrix(
-        n_mats, n_rows,
-        numba.typed.List(out_rows),
-        numba.typed.List(out_cols),
-        numba.typed.List(out_values),
-        numba.typed.List(identity_set))
-
-
-@numba.njit
-def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
-                    identity_set):
-
-    n_output_rows = n_rows + len(identity_set)
-    output = [np.zeros(shape=(n_output_rows, 3)) for _ in range(0, n_mats)]
-    for i in range(0, n_mats):
-        for r, pool in enumerate(identity_set):
-            output[i][r][0] = pool
-            output[i][r][1] = pool
-            output[i][r][2] = 1.0
-    for i in range(0, n_mats):
-        for r in range(0, n_rows):
-            r_offset = r + len(identity_set)
-            output[i][r_offset][0] = out_rows[r]
-            output[i][r_offset][1] = out_cols[r]
-            if out_values[r].size == 1:
-                output[i][r_offset][2] = out_values[r][0]
-            else:
-                output[i][r_offset][2] = out_values[r][i]
-
-    return output
-
-
 def get_annual_process_matrix(dynamics_param):
     mat = [
         [Pool.Input, Pool.FeatherMossLive,
@@ -445,47 +232,6 @@ def get_annual_process_matrix(dynamics_param):
     return mat
 
 
-def _small_slow_diff(last_rotation_slow, this_rotation_slow):
-    return abs((last_rotation_slow - this_rotation_slow)
-               / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
-
-
-@numba.jit
-def advance_spinup_state(spinup_state, age, final_age, return_interval,
-                         rotation_num, max_rotations, last_rotation_slow,
-                         this_rotation_slow):
-
-    out_state = spinup_state.copy()
-    for i, state in np.ndenumerate(spinup_state):
-        if state == SpinupState.AnnualProcesses:
-            if age[i] >= return_interval[i]:
-                small_slow_diff = _small_slow_diff(
-                    last_rotation_slow[i], this_rotation_slow)
-                if small_slow_diff | rotation_num[i] > max_rotations[i]:
-                    out_state[i] = SpinupState.LastPassEvent
-                else:
-                    out_state[i] = SpinupState.HistoricalEvent
-            else:
-                out_state[i] = SpinupState.AnnualProcesses
-        elif state == SpinupState.HistoricalEvent:
-            out_state[i] = SpinupState.AnnualProcesses
-        elif state == SpinupState.LastPassEvent:
-            if age < final_age:
-                out_state[i] = SpinupState.AnnualProcesses
-            elif age >= final_age:
-                out_state[i] = SpinupState.End
-    return out_state
-
-
-def get_last_pass_disturbance_type(model_context):
-    model_context.params.last_pass_disturbance_type
-    model_context.dm_data.dm_name_index
-
-
-def get_historical_disturbance_type(model_context):
-    pass
-
-
 def spinup(model_context):
     array_shape = model_context.state.age.shape
     spinup_state = np.full(
@@ -495,7 +241,7 @@ def spinup(model_context):
     this_rotation_slow = np.full(array_shape, 0.0, dtype=float)
 
     while True:
-        spinup_state = advance_spinup_state(
+        spinup_state = model_functions.advance_spinup_state(
             spinup_state=spinup_state,
             age=model_context.state.age,
             final_age=model_context.params.age,
@@ -515,7 +261,7 @@ def step(model_context):
     n_stands = len(model_context.state.age)
     dynamics = annual_process_dynamics(
         model_context.state, model_context.params)
-    annual_process_matrices = expand_matrix(
+    annual_process_matrices = model_functions.expand_matrix(
         get_annual_process_matrix(dynamics))
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
@@ -524,7 +270,7 @@ def step(model_context):
     flux = pd.DataFrame(
         columns=[x["name"] for x in FLUX_INDICATORS],
         data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
-    model_context.pools = compute_flux(
+    model_context.pools = model_functions.compute(
         model_context.dll,
         model_context.pools,
         flux,
@@ -535,104 +281,11 @@ def step(model_context):
 
     model_context.state.age += 1
     model_context.state.merch_vol = \
-        get_merch_vol(
+        model_functions.get_merch_vol(
             model_context.merch_vol_lookup,
             model_context.state.age,
             model_context.input_data.inventory.merch_volume_id.to_numpy())
     return flux
-
-
-def compute_pools(dll, pools, ops, op_indices, enabled=None):
-    pools = pools.copy()
-
-    op_ids = []
-    for i, op in enumerate(ops):
-        op_id = dll.allocate_op(pools.shape[0])
-        op_ids.append(op_id)
-        dll.set_op(op_id, [x for x in op],
-                   np.ascontiguousarray(op_indices[:, i]))
-
-    dll.compute_pools(op_ids, pools, enabled)
-    for op_id in op_ids:
-        dll.free_op(op_id)
-    return pools
-
-
-def compute_flux(dll, pools, flux, ops, op_indices, enabled=None):
-    pools = pools.copy()
-    op_ids = []
-    for i, op in enumerate(ops):
-        op_id = dll.allocate_op(pools.shape[0])
-        op_ids.append(op_id)
-        dll.set_op(op_id, [x for x in op],
-                   np.ascontiguousarray(op_indices[:, i]))
-
-    op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
-    dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
-    for op_id in op_ids:
-        dll.free_op(op_id)
-    return pools
-
-
-def build_merch_vol_lookup(merch_volume):
-    merch_vol_lookup = {int(i): {} for i in merch_volume.index}
-    for _, row in merch_volume.iterrows():
-        merch_vol_lookup[int(row.name)][int(row.age)] = float(row.volume)
-    return merch_vol_lookup
-
-
-def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
-    output = np.zeros(shape=age.shape, dtype=float)
-    for i, age in np.ndenumerate(age):
-        lookup = merch_vol_lookup[merch_vol_id[i]]
-        if age in lookup:
-            output[i] = lookup[age]
-        else:
-            output[i] = max(lookup, key=int)
-    return output
-
-
-def initialize_dm(disturbance_matrix_data):
-    dm_data = disturbance_matrix_data
-    proportions_valid = np.allclose(
-        1.0,
-        dm_data[["Name", "Source", "Proportion"]].groupby(
-            ["Name", "Source"]).sum())
-    if not proportions_valid:
-        raise ValueError("proportions in disturbance matrices do not sum to 1")
-
-    identity_matrix = np.column_stack([
-        np.array([int(p) for p in Pool], dtype=float),
-        np.array([int(p) for p in Pool], dtype=float),
-        np.repeat(1.0, len(Pool))])
-    dm_list = [identity_matrix]
-    dm_name_index = {None: 0}
-    for dm_name in dm_data.Name.unique():
-        dm_values = dm_data[dm_data.Name == dm_name].copy()
-
-        identity_set = {p for p in Pool}
-
-        for i_row, row in dm_values.iterrows():
-            if Pool[row.Source] == Pool[row.Sink]:
-                identity_set.remove(Pool[row.Source])
-
-        dm_values = dm_values.append([
-            {"Name": dm_name,
-             "Source": p.name,
-             "Sink": p.name,
-             "Proportion": 1.0} for p in identity_set],
-            ignore_index=True)
-        mat = np.column_stack([
-            np.array([Pool[p] for p in dm_values.Source], dtype=float),
-            np.array([Pool[p] for p in dm_values.Sink], dtype=float),
-            dm_values.Proportion.to_numpy()
-        ])
-        dm_name_index[dm_name] = len(dm_list)
-        dm_list.append(mat)
-
-    return SimpleNamespace(
-        dm_name_index=dm_name_index,
-        dm_list=dm_list)
 
 
 def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
@@ -652,7 +305,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
                 "sink_pools": [int(x) for x in f["sink_pools"]],
             } for f_idx, f in enumerate(FLUX_INDICATORS)]
         }
-    merch_vol_lookup = build_merch_vol_lookup(merch_volume)
+    merch_vol_lookup = model_functions.build_merch_vol_lookup(merch_volume)
     pools = np.zeros(shape=(len(inventory.index), len(Pool)))
     pools[:, Pool.Input] = 1.0
 
@@ -678,7 +331,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
     initial_age = np.full_like(inventory.age, 1, dtype=int)
     model_state = SimpleNamespace(
         age=initial_age,
-        merch_vol=get_merch_vol(
+        merch_vol=model_functions.get_merch_vol(
             merch_vol_lookup,
             initial_age,
             inventory.merch_volume_id.to_numpy()))
@@ -692,7 +345,7 @@ def initialize(decay_parameter, disturbance_matrix, moss_c_parameter,
         state=model_state,
         pools=pools,
         merch_vol_lookup=merch_vol_lookup,
-        dm_data=initialize_dm(disturbance_matrix),
+        dm_data=model_functions.initialize_dm(disturbance_matrix),
         disturbance_types=np.full_like(inventory.age, 0, dtype=np.uintp),
         input_data=SimpleNamespace(
             decay_parameter=decay_parameter,
