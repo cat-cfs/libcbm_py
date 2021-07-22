@@ -1,5 +1,5 @@
+import os
 import json
-
 from types import SimpleNamespace
 import numpy as np
 import pandas as pd
@@ -48,9 +48,9 @@ class ModelContext:
                 } for f_idx, f in enumerate(FLUX_INDICATORS)]
             }
         self.dll = LibCBMWrapper(
-                LibCBMHandle(
-                    resources.get_libcbm_bin_path(),
-                    json.dumps(libcbm_config)))
+            LibCBMHandle(
+                resources.get_libcbm_bin_path(),
+                json.dumps(libcbm_config)))
 
     def _initialize_dynamics_parameter(self):
         max_vols = pd.DataFrame(
@@ -76,7 +76,7 @@ class ModelContext:
                     left_on="spinup_parameter_id",
                     right_index=True, validate="m:1")
                 .merge(
-                    self.input_data.max_vols,
+                    max_vols,
                     left_on="merch_volume_id",
                     right_index=True, validate="m:1"))
 
@@ -101,6 +101,34 @@ class ModelContext:
         self.state = model_state
 
     def _initialize_disturbance_data(self):
-        self.dm_data=model_functions.initialize_dm(
+        self.disturbance_matrices = model_functions.initialize_dm(
             self.input_data.disturbance_matrix)
-        self.disturbance_types=np.full_like(inventory.age, 0, dtype=np.uintp)
+        self.disturbance_types = np.zeros(self.n_stands, 0, dtype=np.uintp)
+        self.historic_dm_index = model_functions.np_map(
+            self.input_data.inventory.historical_disturbance_type,
+            self.disturbance_matrices.dm_name_index)
+        self.last_pass_dm_index = model_functions.np_map(
+            self.input_data.inventory.historical_disturbance_type,
+            self.disturbance_matrices.dm_name_index)
+
+
+def create_from_csv(dir, decay_parameter_fn="decay_parameter.csv",
+                    disturbance_matrix_fn="disturbance_matrix.csv",
+                    moss_c_parameter_fn="moss_c_parameter.csv",
+                    inventory_fn="inventory.csv",
+                    mean_annual_temperature_fn="mean_annual_temperature.csv",
+                    merch_volume_fn="merch_volume.csv",
+                    spinup_parameter_fn="spinup_parameter.csv"):
+
+    def read_csv(fn):
+        path = os.path.join(dir, decay_parameter_fn)
+        return pd.read_csv(path, index_col="id")
+
+    return ModelContext(
+        decay_parameter=read_csv(decay_parameter_fn),
+        disturbance_matrix=read_csv(disturbance_matrix_fn),
+        moss_c_parameter=read_csv(moss_c_parameter_fn),
+        inventory=read_csv(inventory_fn),
+        mean_annual_temperature=read_csv(mean_annual_temperature_fn),
+        merch_volume=read_csv(merch_volume_fn),
+        spinup_parameter=read_csv(spinup_parameter_fn))
