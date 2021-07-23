@@ -13,10 +13,11 @@ from libcbm import resources
 
 
 class InputData:
-    def __init__(self, decay_parameter, disturbance_matrix, moss_c_parameter,
-                 inventory, mean_annual_temperature, merch_volume,
-                 spinup_parameter):
+    def __init__(self, decay_parameter, disturbance_type, disturbance_matrix,
+                 moss_c_parameter, inventory, mean_annual_temperature,
+                 merch_volume, spinup_parameter):
         self.decay_parameter = decay_parameter
+        self.disturbance_type = disturbance_type
         self.disturbance_matrix = disturbance_matrix
         self.moss_c_parameter = moss_c_parameter
         self.inventory = inventory
@@ -91,12 +92,15 @@ class ModelContext:
             dynamics_param)
 
     def _initialize_pools(self):
-        pools = np.zeros(shape=(self.n_stands, len(Pool)))
-        pools[:, Pool.Input] = 1.0
+        pool_data = np.zeros(shape=(self.n_stands, len(Pool)))
+        pool_data[:, Pool.Input] = 1.0
+        pools = pd.DataFrame(
+            columns=Pool.__members__.keys(),
+            data=pool_data)
         self.pools = pools
 
     def _initialize_model_state(self):
-        initial_age = np.full(self.n_stands, 1, dtype=int)
+        initial_age = np.full(self.n_stands, 0, dtype=int)
         model_state = SimpleNamespace(
             age=initial_age,
             merch_vol=model_functions.get_merch_vol(
@@ -108,16 +112,21 @@ class ModelContext:
     def _initialize_disturbance_data(self):
         self.disturbance_matrices = model_functions.initialize_dm(
             self.input_data.disturbance_matrix)
-        self.disturbance_types = np.zeros(self.n_stands, dtype=np.int64)
-        self.historic_dm_index = model_functions.np_map(
-            self.input_data.inventory.historical_disturbance_type.to_numpy(dtype=str),
-            self.disturbance_matrices.dm_name_index, dtype=np.int64)
+        self.disturbance_types = np.zeros(self.n_stands, dtype=np.uintp)
+        historical_dist_types = \
+            self.input_data.inventory.historical_disturbance_type_id.to_numpy()
+        last_pass_dist_types = \
+            self.input_data.inventory.last_pass_disturbance_type_id.to_numpy()
+        self.historical_dm_index = model_functions.np_map(
+            historical_dist_types,
+            self.disturbance_matrices.dm_dist_type_index, dtype=np.int64)
         self.last_pass_dm_index = model_functions.np_map(
-            self.input_data.inventory.historical_disturbance_type.to_numpy(dtype=str),
-            self.disturbance_matrices.dm_name_index, dtype=np.int64)
+            last_pass_dist_types,
+            self.disturbance_matrices.dm_dist_type_index, dtype=np.int64)
 
 
 def create_from_csv(dir, decay_parameter_fn="decay_parameter.csv",
+                    disturbance_type_fn="disturbance_type.csv",
                     disturbance_matrix_fn="disturbance_matrix.csv",
                     moss_c_parameter_fn="moss_c_parameter.csv",
                     inventory_fn="inventory.csv",
@@ -131,9 +140,10 @@ def create_from_csv(dir, decay_parameter_fn="decay_parameter.csv",
 
     return ModelContext(
         decay_parameter=read_csv(decay_parameter_fn),
-        disturbance_matrix=read_csv(disturbance_matrix_fn, index_col=None),
+        disturbance_type=read_csv(disturbance_type_fn),
+        disturbance_matrix=read_csv(disturbance_matrix_fn),
         moss_c_parameter=read_csv(moss_c_parameter_fn),
-        inventory=read_csv(inventory_fn, index_col=None),
+        inventory=read_csv(inventory_fn),
         mean_annual_temperature=read_csv(mean_annual_temperature_fn),
         merch_volume=read_csv(merch_volume_fn),
         spinup_parameter=read_csv(spinup_parameter_fn))
