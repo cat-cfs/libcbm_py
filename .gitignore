@@ -8,3 +8,4 @@
 /.coverage
 /.pytest_cache
 /cov_html
+*.ipynb
