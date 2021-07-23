@@ -255,7 +255,7 @@ def step(model_context):
     dynamics = annual_process_dynamics(
         model_context.state, model_context.params)
     annual_process_matrices = model_functions.expand_matrix(
-        get_annual_process_matrix(dynamics))
+        get_annual_process_matrix(dynamics), {int(p) for p in Pool})
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.disturbance_matrices.dm_list
