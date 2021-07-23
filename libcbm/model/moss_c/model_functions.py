@@ -14,7 +14,51 @@ class SpinupState(IntEnum):
     End = 4
 
 
-def expand_matrix(mat, initialize_identity=True):
+def expand_matrix(mat, identity_set=None):
+    """Expand a coordinate-matrix-like object into a list of coordinate matrix
+    triples.  The array length of the 3rd element of all rows should be equal.
+
+    Example intput format::
+
+        [
+            [r0, c0, [v0_0,v0_1,...,v0_n]],
+            [r1, c1, [v1_0,v1_1,...,v1_n]],
+            ...
+            [rk, ck, [vk_0,vk_1,...,vk_n]],
+        ]
+
+    Example output format::
+
+        [
+          [
+            [r0, c0, v0_0],
+            [r0, c0, v0_1],
+            ...
+            [r0, c0, v0_n]
+          ],
+          [
+            [r1, c1, v1_0],
+            [r1, c1, v1_1],
+            ...
+            [r1, c1, v1_n]
+          ],
+            [rk, ck, vk_0],
+            [rk, ck, vk_1],
+            ...
+            [rk, ck, vk_n]
+          ]
+        ]
+
+    Args:
+        mat (list): a list of coordinate-matrix-like triples
+        identity_set (iterable, optional): If specified, all values where the
+            row coordinate is equal to the column coordinate that are not
+            specified in the mat parameter are assigned a value of 1.
+            Defaults to None.
+
+    Returns:
+        list: list of numpy.ndarray coordinate matrix triples
+    """
     n_mats = len(mat[0][2])
     n_rows = len(mat)
     out_rows = [float(mat[r][0]) for r in range(0, n_rows)]
@@ -24,30 +68,35 @@ def expand_matrix(mat, initialize_identity=True):
         if np.isscalar(mat[r][2])
         else np.array(mat[r][2])
         for r in range(0, n_rows)]
-    if initialize_identity:
-        identity_set = {int(p) for p in Pool}
 
+    n_output_rows = n_rows
+
+    if identity_set:
+        identity_set = set(identity_set)
         for r in range(0, n_rows):
             if out_rows[r] == out_cols[r]:
                 identity_set.remove(int(out_rows[r]))
+        n_output_rows += len(identity_set)
+        identity_set = np.array(list(identity_set), dtype=float)
     else:
-        identity_set = []
+        identity_set = np.array([], dtype=float)
+
+    output = [np.zeros(shape=(n_output_rows, 3)) for _ in range(0, n_mats)]
     return __expand_matrix(
         n_mats, n_rows,
         numba.typed.List(out_rows),
         numba.typed.List(out_cols),
         numba.typed.List(out_values),
-        numba.typed.List(identity_set))
+        identity_set,
+        output)
 
 
 @numba.njit
 def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
-                    identity_set):
+                    identity_set, output):
 
-    n_output_rows = n_rows + len(identity_set)
-    output = [np.zeros(shape=(n_output_rows, 3)) for _ in range(0, n_mats)]
-    for i in range(0, n_mats):
-        for r, pool in enumerate(identity_set):
+    for r, pool in enumerate(identity_set):
+        for i in range(0, n_mats):
             output[i][r][0] = pool
             output[i][r][1] = pool
             output[i][r][2] = 1.0
