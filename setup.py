@@ -26,13 +26,21 @@ win_x86_64_bin = [
         "volume_to_biomass.lib"]
 ]
 
-ubuntu_18_04_x86_64_bin = [
-    os.path.join(resources_dir, "libcbm_bin", "ubuntu_18_04_x86_64", x)
-    for x in ["cbm.a", "core.a", "libcbm.so", "volume_to_biomass.a"]
-]
+ubuntu_binaries = []
+for ubuntu_ver in ["ubuntu_18_04_x86_64", "ubuntu_20_04_x86_64"]:
+    ubuntu_binaries.extend(
+        [os.path.join(resources_dir, "libcbm_bin", ubuntu_ver, x)
+         for x in ["cbm.a", "core.a", "libcbm.so", "volume_to_biomass.a"]])
+
+mac_os_binaries = []
+for mac_os_ver in ["macosx_10_12_x86_64", "macosx_10_15_x86_64"]:
+    mac_os_binaries.extend(
+        [os.path.join(resources_dir, "libcbm_bin", mac_os_ver, x)
+         for x in ["cbm.a", "core.a", "libcbm.dylib", "volume_to_biomass.a"]])
 
 test_resources = []
-for x in ["cbm3_tutorial2", "cbm3_tutorial6", "sit_rule_based_events"]:
+for x in ["cbm3_tutorial2", "cbm3_tutorial6", "sit_rule_based_events",
+          "moss_c_test_case"]:
     test_resources.append(os.path.join(resources_dir, "test", x, "*.csv"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.json"))
 
@@ -42,7 +50,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="libcbm",
-    version="0.4.8",
+    version="0.5.0",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
@@ -57,8 +65,8 @@ setup(
     packages=find_packages(exclude=['test*']),
     package_data={
         "libcbm":
-            cbm_defaults_db + win_x86_64_bin + ubuntu_18_04_x86_64_bin +
-            cbm_defaults_queries + test_resources
+            cbm_defaults_db + win_x86_64_bin + ubuntu_binaries +
+            mac_os_binaries + cbm_defaults_queries + test_resources
     },
     install_requires=requirements
 )
