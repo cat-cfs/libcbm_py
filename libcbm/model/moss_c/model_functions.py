@@ -66,7 +66,7 @@ def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
 
 def compute(dll, pools, ops, op_indices, op_processes=None,
             flux=None, enabled=None):
-    pools = pools.copy()
+
     op_ids = []
     for i, op in enumerate(ops):
         op_id = dll.allocate_op(pools.shape[0])
@@ -80,7 +80,6 @@ def compute(dll, pools, ops, op_indices, op_processes=None,
         dll.compute_pools(op_ids, pools, enabled)
     for op_id in op_ids:
         dll.free_op(op_id)
-    return pools
 
 
 def build_merch_vol_lookup(merch_volume):
@@ -131,8 +130,8 @@ def initialize_dm(disturbance_matrix_data):
     dm_data = disturbance_matrix_data
     proportions_valid = np.allclose(
         1.0,
-        dm_data[["Name", "Source", "Proportion"]].groupby(
-            ["Name", "Source"]).sum())
+        dm_data[["disturbance_type_id", "source", "proportion"]].groupby(
+            ["disturbance_type_id", "source"]).sum())
     if not proportions_valid:
         raise ValueError("proportions in disturbance matrices do not sum to 1")
 
@@ -141,32 +140,33 @@ def initialize_dm(disturbance_matrix_data):
         np.array([int(p) for p in Pool], dtype=float),
         np.repeat(1.0, len(Pool))])
     dm_list = [identity_matrix]
-    dm_name_index = {"": 0}
-    for dm_name in dm_data.Name.unique():
-        dm_values = dm_data[dm_data.Name == dm_name].copy()
+    dm_dist_type_index = {0: 0}
+    for dist_type_id in dm_data.disturbance_type_id.unique():
+        dm_values = dm_data[
+            dm_data.disturbance_type_id == dist_type_id].copy()
 
         identity_set = {p for p in Pool}
 
-        for i_row, row in dm_values.iterrows():
-            if Pool[row.Source] == Pool[row.Sink]:
-                identity_set.remove(Pool[row.Source])
+        for _, row in dm_values.iterrows():
+            if Pool[row.source] == Pool[row.sink]:
+                identity_set.remove(Pool[row.source])
 
         dm_values = dm_values.append([
-            {"Name": dm_name,
-             "Source": p.name,
-             "Sink": p.name,
-             "Proportion": 1.0} for p in identity_set],
+            {"disturbance_type_id": dist_type_id,
+             "source": p.name,
+             "sink": p.name,
+             "proportion": 1.0} for p in identity_set],
             ignore_index=True)
         mat = np.column_stack([
-            np.array([Pool[p] for p in dm_values.Source], dtype=float),
-            np.array([Pool[p] for p in dm_values.Sink], dtype=float),
-            dm_values.Proportion.to_numpy()
+            np.array([Pool[p] for p in dm_values.source], dtype=float),
+            np.array([Pool[p] for p in dm_values.sink], dtype=float),
+            dm_values.proportion.to_numpy()
         ])
-        dm_name_index[str(dm_name)] = len(dm_list)
+        dm_dist_type_index[dist_type_id] = len(dm_list)
         dm_list.append(mat)
 
     return SimpleNamespace(
-        dm_name_index=dm_name_index,
+        dm_dist_type_index=dm_dist_type_index,
         dm_list=dm_list)
 
 
