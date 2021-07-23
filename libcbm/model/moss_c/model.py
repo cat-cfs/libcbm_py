@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 
 from libcbm.model.moss_c.pools import Pool
+from libcbm.model.moss_c.pools import ANNUAL_PROCESSES
+from libcbm.model.moss_c.pools import DISTURBANCE_PROCESS
 from libcbm.model.moss_c.pools import FLUX_INDICATORS
 from libcbm.model.moss_c import model_functions
 from libcbm.model.moss_c.model_functions import SpinupState
@@ -30,10 +32,11 @@ def f1(merch_vol, a, b):
     Returns:
         np.ndarray: Canopy openess
     """
-    result = np.full_like(merch_vol, 60.0)
-    result[merch_vol != 0.0] = np.power(
-        10, a * np.log10(merch_vol[merch_vol != 0.0]) + b)
-    return result
+
+    return np.where(
+        merch_vol == 0,
+        60,
+        np.power(10, a * np.log10(merch_vol, where=(merch_vol != 0)) + b))
 
 
 def f2(openness, stand_age, c, d):
@@ -255,17 +258,18 @@ def step(model_context):
         get_annual_process_matrix(dynamics))
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
-    disturbance_matrices = model_context.dm_data.dm_list
+    disturbance_matrices = model_context.disturbance_matrices.dm_list
     disturbance_matrix_index = model_context.disturbance_types
-    flux = pd.DataFrame(
+    model_context.flux = pd.DataFrame(
         columns=[x["name"] for x in FLUX_INDICATORS],
         data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
-    model_context.pools = model_functions.compute(
-        model_context.dll,
-        model_context.pools,
-        flux,
-        [annual_process_matrices, disturbance_matrices],
-        np.column_stack([
+    model_functions.compute(
+        dll=model_context.dll,
+        pools=model_context.pools,
+        flux=model_context.flux,
+        op_processes=[ANNUAL_PROCESSES, DISTURBANCE_PROCESS],
+        ops=[annual_process_matrices, disturbance_matrices],
+        op_indices=np.column_stack([
             annual_process_matrix_index,
             disturbance_matrix_index]))
 
@@ -275,4 +279,3 @@ def step(model_context):
             model_context.merch_vol_lookup,
             model_context.state.age,
             model_context.input_data.inventory.merch_volume_id.to_numpy())
-    return flux
