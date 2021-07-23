@@ -112,13 +112,15 @@ def np_map(a, m, dtype):
     Returns:
         numpy.ndarray: the numpy array with replaced mapped values
     """
-    d = numba.typed.Dict(m)
-    return _np_map(a, d, dtype)
+    d = numba.typed.Dict()
+    for k, v in m.items():
+        d[k] = v
+    out = np.ndarray(shape=a.shape, dtype=dtype)
+    return _np_map(a, d, out)
 
 
 @numba.njit
-def _np_map(a, m, dtype):
-    out = np.ndarray(shape=a.shape, dtype=dtype)
+def _np_map(a, m, out):
     for index, value in np.ndenumerate(a):
         if value in m:
             out[index] = m[value]
@@ -139,7 +141,7 @@ def initialize_dm(disturbance_matrix_data):
         np.array([int(p) for p in Pool], dtype=float),
         np.repeat(1.0, len(Pool))])
     dm_list = [identity_matrix]
-    dm_name_index = {None: 0}
+    dm_name_index = {"": 0}
     for dm_name in dm_data.Name.unique():
         dm_values = dm_data[dm_data.Name == dm_name].copy()
 
@@ -160,7 +162,7 @@ def initialize_dm(disturbance_matrix_data):
             np.array([Pool[p] for p in dm_values.Sink], dtype=float),
             dm_values.Proportion.to_numpy()
         ])
-        dm_name_index[dm_name] = len(dm_list)
+        dm_name_index[str(dm_name)] = len(dm_list)
         dm_list.append(mat)
 
     return SimpleNamespace(
