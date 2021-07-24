@@ -71,7 +71,7 @@ def expand_matrix(mat, identity_set=None):
 
     n_output_rows = n_rows
 
-    if identity_set:
+    if identity_set is not None:
         identity_set = set(identity_set)
         for r in range(0, n_rows):
             if out_rows[r] == out_cols[r]:
@@ -115,13 +115,30 @@ def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
 
 def compute(dll, pools, ops, op_indices, op_processes=None,
             flux=None, enabled=None):
+    """Compute pool flows and optionally track the fluxes
 
+    see the methods in :py:class:`libcbm.wrapper.libcbm_wrapper.LibCBMWrapper`
+
+    Args:
+        dll (LibCBMWrapper): instance of libcbm wrapper
+        pools (pandas.DataFrame): pools dataframe (stands by pools)
+        ops (list): list of list of coordinate matrices
+        op_indices (np.ndarray): matrix of op indices
+        op_processes (iterable, optional): flux indicator op processes.
+            Required if flux arg is specified. Defaults to None.
+        flux (pandas.DataFrame, optional): Flux indicators dataframe
+            (stands by flux-indicator). If not specified, no fluxes are
+            tracked. Defaults to None.
+        enabled (numpy.ndarray, optional): Flag array of length n-stands
+            indicating whether or not to include corresponding rows in
+            computation. If set to None, all records are included.
+            Defaults to None.
+    """
     op_ids = []
     for i, op in enumerate(ops):
         op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
-        dll.set_op(op_id, [x for x in op],
-                   np.ascontiguousarray(op_indices[:, i]))
+        dll.set_op(op_id, op, np.ascontiguousarray(op_indices[:, i]))
 
     if flux is not None:
         dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
@@ -132,9 +149,26 @@ def compute(dll, pools, ops, op_indices, op_processes=None,
 
 
 def build_merch_vol_lookup(merch_volume):
-    merch_vol_lookup = {int(i): {} for i in merch_volume.index}
+
+    merch_vol_lookup = {
+        int(i): SimpleNamespace(
+            age_volume_pairs={},
+            max_vol=0,
+            max_age=0
+        )
+        for i in merch_volume.index}
     for _, row in merch_volume.iterrows():
-        merch_vol_lookup[int(row.name)][int(row.age)] = float(row.volume)
+        record = merch_vol_lookup[int(row.name)]
+        volume = float(row.volume)
+        age = int(row.age)
+        if age < 0 or volume < 0:
+            raise ValueError("negative age or volume found")
+        if age >= record.max_age:
+            record.max_age = age
+        if volume >= record.max_vol:
+            record.max_vol = volume
+        record.age_volume_pairs[age] = volume
+
     return merch_vol_lookup
 
 
@@ -142,10 +176,10 @@ def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
     output = np.zeros(shape=age.shape, dtype=float)
     for i, age in np.ndenumerate(age):
         lookup = merch_vol_lookup[merch_vol_id[i]]
-        if age in lookup:
-            output[i] = lookup[age]
-        else:
-            output[i] = max(lookup, key=int)
+        if age in lookup.age_volume_pairs:
+            output[i] = lookup.age_volume_pairs[age]
+        elif age > lookup.max_age:
+            output[i] = lookup.age_volume_pairs[lookup.max_age]
     return output
 
 
