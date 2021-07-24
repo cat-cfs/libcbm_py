@@ -1,6 +1,7 @@
 import unittest
+import pandas as pd
 import numpy as np
-from libcbm.model.moss_c import model_functions
+from libcbm.model.moss_c.model_functions import SpinupState
 
 
 class ModelFunctionsTest(unittest.TestCase):
@@ -58,3 +59,15 @@ class ModelFunctionsTest(unittest.TestCase):
         ]
         for i_mat, mat in enumerate(result):
             self.assertTrue((mat == expected_output[i_mat]).all())
+
+    def test_expand_spinup_state(self):
+        test_data = pd.DataFrame(
+            columns=[
+                "spinup_state", "age", "final_age", "return_interval",
+                "rotation_num", "max_rotations", "last_rotation_slow",
+                "this_rotation_slow"],
+            values=[
+                [SpinupState.AnnualProcesses, 0, ]
+            ])
+
+        advance_spinup_state()
