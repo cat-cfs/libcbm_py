@@ -89,10 +89,10 @@ def expand_matrix(mat, identity_set=None):
         numba.typed.List(out_cols),
         numba.typed.List(out_values),
         identity_set,
-        output)
+        numba.typed.List(output))
 
 
-@numba.njit
+@numba.njit()
 def __expand_matrix(n_mats, n_rows, out_rows, out_cols, out_values,
                     identity_set, output):
 
@@ -202,7 +202,7 @@ def np_map(a, m, dtype):
     return _np_map(a, d, out)
 
 
-@numba.njit
+@numba.njit()
 def _np_map(a, m, out):
     for index, value in np.ndenumerate(a):
         if value in m:
@@ -260,25 +260,40 @@ def to_numpy_namespace(df):
     })
 
 
-#@numba.jit
+@numba.njit()
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
     return abs(
         (last_rotation_slow - this_rotation_slow)
-        / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
+        / (last_rotation_slow + this_rotation_slow) / 2.0) < 0.001
 
 
-#@numba.jit
 def advance_spinup_state(spinup_state, age, final_age, return_interval,
                          rotation_num, max_rotations, last_rotation_slow,
                          this_rotation_slow):
 
     out_state = spinup_state.copy()
-    for i, state in np.ndenumerate(spinup_state):
+    _advance_spinup_state(age.shape[0], spinup_state, age, final_age,
+                          return_interval, rotation_num, max_rotations,
+                          last_rotation_slow, this_rotation_slow, out_state)
+    return out_state
+
+
+@numba.njit()
+def _advance_spinup_state(n_stands, spinup_state, age, final_age,
+                          return_interval, rotation_num, max_rotations,
+                          last_rotation_slow, this_rotation_slow, out_state):
+
+    for i in range(0, n_stands):
+        state = spinup_state[i]
         if state == SpinupState.AnnualProcesses:
             if age[i] >= return_interval[i]:
-                small_slow_diff = _small_slow_diff(
-                    last_rotation_slow[i], this_rotation_slow[i])
 
+                small_slow_diff = (
+                    _small_slow_diff(
+                        last_rotation_slow[i], this_rotation_slow[i])
+                    if (last_rotation_slow[i] > 0) |
+                       (this_rotation_slow[i] > 0)
+                    else False)
                 if small_slow_diff | (rotation_num[i] >= max_rotations[i]):
                     out_state[i] = SpinupState.LastPassEvent
                 else:
