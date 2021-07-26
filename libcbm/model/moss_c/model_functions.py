@@ -152,7 +152,8 @@ def compute(dll, pools, ops, op_indices, op_processes=None,
 
 def np_map(a, m, dtype):
     """Return the mapped value of a according to the dictionary m.
-    Any values in a not present as a key in m will be unchanged.
+    The occurence of any value in a that is not present as a key
+    in m will result in a value error.
 
     Args:
         a (numpy.ndarray): a numpy array
@@ -164,7 +165,7 @@ def np_map(a, m, dtype):
     d = numba.typed.Dict()
     for k, v in m.items():
         d[k] = v
-    out = np.ndarray(shape=a.shape, dtype=dtype)
+    out = np.empty_like(a, dtype=dtype)
     return _np_map(a, d, out)
 
 
@@ -173,6 +174,8 @@ def _np_map(a, m, out):
     for index, value in np.ndenumerate(a):
         if value in m:
             out[index] = m[value]
+        else:
+            raise ValueError("value not present in supplied array")
     return out
 
 
