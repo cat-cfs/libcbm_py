@@ -8,10 +8,11 @@ import numba.typed
 
 
 class SpinupState(IntEnum):
-    AnnualProcesses = 1,
-    HistoricalEvent = 2,
-    LastPassEvent = 3,
-    End = 4
+    AnnualProcesses = 1
+    HistoricalEvent = 2
+    LastPassEvent = 3
+    GrowToFinalAge = 4
+    End = 5
 
 
 def expand_matrix(mat, identity_set=None):
@@ -259,12 +260,14 @@ def to_numpy_namespace(df):
     })
 
 
+#@numba.jit
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
-    return abs((last_rotation_slow - this_rotation_slow)
-               / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
+    return abs(
+        (last_rotation_slow - this_rotation_slow)
+        / (last_rotation_slow+this_rotation_slow)/2.0) < 0.001
 
 
-@numba.jit
+#@numba.jit
 def advance_spinup_state(spinup_state, age, final_age, return_interval,
                          rotation_num, max_rotations, last_rotation_slow,
                          this_rotation_slow):
@@ -274,8 +277,9 @@ def advance_spinup_state(spinup_state, age, final_age, return_interval,
         if state == SpinupState.AnnualProcesses:
             if age[i] >= return_interval[i]:
                 small_slow_diff = _small_slow_diff(
-                    last_rotation_slow[i], this_rotation_slow)
-                if small_slow_diff | rotation_num[i] > max_rotations[i]:
+                    last_rotation_slow[i], this_rotation_slow[i])
+
+                if small_slow_diff | (rotation_num[i] >= max_rotations[i]):
                     out_state[i] = SpinupState.LastPassEvent
                 else:
                     out_state[i] = SpinupState.HistoricalEvent
@@ -284,8 +288,13 @@ def advance_spinup_state(spinup_state, age, final_age, return_interval,
         elif state == SpinupState.HistoricalEvent:
             out_state[i] = SpinupState.AnnualProcesses
         elif state == SpinupState.LastPassEvent:
-            if age < final_age:
-                out_state[i] = SpinupState.AnnualProcesses
-            elif age >= final_age:
+            if age[i] < final_age[i]:
+                out_state[i] = SpinupState.GrowToFinalAge
+            elif age[i] >= final_age[i]:
+                out_state[i] = SpinupState.End
+        elif state == SpinupState.GrowToFinalAge:
+            if age[i] < final_age[i]:
+                out_state[i] = SpinupState.GrowToFinalAge
+            else:
                 out_state[i] = SpinupState.End
     return out_state
