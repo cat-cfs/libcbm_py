@@ -122,12 +122,31 @@ class ModelFunctionsTest(unittest.TestCase):
                 m={1: 2, 2: 1, 3: 4},
                 dtype=int)
 
-    def test_initialize_dm():
-        model_functions.initialize_dm(
-            disturbance_matrix_data=pd.DataFrame({
-                "disturbance_type_id":
-            })
+    def test_initialize_dm(self):
+        result = model_functions.initialize_dm(
+            disturbance_matrix_data=pd.DataFrame(
+                columns=[
+                    "disturbance_type_id", "source", "sink", "proportion"],
+                data=[
+                    [1, 1, 1, 0.2],
+                    [1, 1, 2, 0.2],
+                    [1, 1, 3, 0.6],
+                    [1, 2, 4, 0.45],
+                    [1, 2, 2, 0.55],
+                    [1, 3, 5, 0.5],
+                    [1, 3, 7, 0.5],
+                    [1, 4, 1, 1.0],
+                    [2, 1, 1, 0.2],
+                    [2, 1, 2, 0.2],
+                    [2, 1, 3, 0.6],
+                    [2, 2, 4, 0.45],
+                    [2, 2, 2, 0.55],
+                    [2, 3, 5, 0.5],
+                    [2, 3, 7, 0.5],
+                    [2, 4, 1, 1.0],
+                ])
         )
+        self.assertTrue(result.dm_dist_type_index == {0: 0, 1: 1, 2: 2})
 
     def test_advance_spinup_state(self):
 
