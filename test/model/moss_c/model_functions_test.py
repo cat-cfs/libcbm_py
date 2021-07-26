@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from libcbm.model.moss_c.model_functions import SpinupState
+from libcbm.model.moss_c import model_functions
 
 
 class ModelFunctionsTest(unittest.TestCase):
@@ -60,14 +61,78 @@ class ModelFunctionsTest(unittest.TestCase):
         for i_mat, mat in enumerate(result):
             self.assertTrue((mat == expected_output[i_mat]).all())
 
-    def test_expand_spinup_state(self):
-        test_data = pd.DataFrame(
-            columns=[
-                "spinup_state", "age", "final_age", "return_interval",
-                "rotation_num", "max_rotations", "last_rotation_slow",
-                "this_rotation_slow"],
-            values=[
-                [SpinupState.AnnualProcesses, 0, ]
-            ])
+    def test_advance_spinup_state(self):
 
-        advance_spinup_state()
+        def run_test(expected_output, **input_kwargs):
+            test_kwargs = {
+                k: np.array(v)
+                for k, v in input_kwargs.items()
+            }
+            out = model_functions.advance_spinup_state(**test_kwargs)
+            self.assertTrue(expected_output == out)
+
+        run_test(
+            expected_output=SpinupState.AnnualProcesses,
+            spinup_state=SpinupState.AnnualProcesses,
+            age=0,
+            final_age=100,
+            return_interval=100,
+            rotation_num=0,
+            max_rotations=10,
+            last_rotation_slow=0,
+            this_rotation_slow=0)
+
+        run_test(
+            expected_output=SpinupState.HistoricalEvent,
+            spinup_state=SpinupState.AnnualProcesses,
+            age=100,
+            final_age=100,
+            return_interval=100,
+            rotation_num=0,
+            max_rotations=10,
+            last_rotation_slow=50,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.LastPassEvent,
+            spinup_state=SpinupState.AnnualProcesses,
+            age=100,
+            final_age=100,
+            return_interval=100,
+            rotation_num=7,
+            max_rotations=10,
+            last_rotation_slow=99.9999,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.LastPassEvent,
+            spinup_state=SpinupState.AnnualProcesses,
+            age=100,
+            final_age=100,
+            return_interval=100,
+            rotation_num=10,
+            max_rotations=10,
+            last_rotation_slow=60,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.AnnualProcesses,
+            spinup_state=SpinupState.HistoricalEvent,
+            age=100,
+            final_age=100,
+            return_interval=100,
+            rotation_num=9,
+            max_rotations=10,
+            last_rotation_slow=60,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.GrowToFinalAge,
+            spinup_state=SpinupState.LastPassEvent,
+            age=75,
+            final_age=100,
+            return_interval=100,
+            rotation_num=9,
+            max_rotations=10,
+            last_rotation_slow=60,
+            this_rotation_slow=100)
