@@ -5,6 +5,7 @@ from libcbm.model.moss_c.pools import Pool
 
 import numba
 import numba.typed
+import numba.types
 
 
 class SpinupState(IntEnum):
@@ -147,41 +148,6 @@ def compute(dll, pools, ops, op_indices, op_processes=None,
         dll.compute_pools(op_ids, pools, enabled)
     for op_id in op_ids:
         dll.free_op(op_id)
-
-
-def build_merch_vol_lookup(merch_volume):
-
-    merch_vol_lookup = {
-        int(i): SimpleNamespace(
-            age_volume_pairs={},
-            max_vol=0,
-            max_age=0
-        )
-        for i in merch_volume.index}
-    for _, row in merch_volume.iterrows():
-        record = merch_vol_lookup[int(row.name)]
-        volume = float(row.volume)
-        age = int(row.age)
-        if age < 0 or volume < 0:
-            raise ValueError("negative age or volume found")
-        if age >= record.max_age:
-            record.max_age = age
-        if volume >= record.max_vol:
-            record.max_vol = volume
-        record.age_volume_pairs[age] = volume
-
-    return merch_vol_lookup
-
-
-def get_merch_vol(merch_vol_lookup, age, merch_vol_id):
-    output = np.zeros(shape=age.shape, dtype=float)
-    for i, age in np.ndenumerate(age):
-        lookup = merch_vol_lookup[merch_vol_id[i]]
-        if age in lookup.age_volume_pairs:
-            output[i] = lookup.age_volume_pairs[age]
-        elif age > lookup.max_age:
-            output[i] = lookup.age_volume_pairs[lookup.max_age]
-    return output
 
 
 def np_map(a, m, dtype):
