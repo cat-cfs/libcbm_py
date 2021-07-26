@@ -1,6 +1,7 @@
 import unittest
 from mock import Mock, patch
 import numpy as np
+import pandas as pd
 from libcbm.model.moss_c.model_functions import SpinupState
 from libcbm.model.moss_c import model_functions
 
