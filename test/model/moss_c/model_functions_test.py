@@ -1,5 +1,5 @@
 import unittest
-import pandas as pd
+from mock import Mock, patch
 import numpy as np
 from libcbm.model.moss_c.model_functions import SpinupState
 from libcbm.model.moss_c import model_functions
@@ -61,11 +61,24 @@ class ModelFunctionsTest(unittest.TestCase):
         for i_mat, mat in enumerate(result):
             self.assertTrue((mat == expected_output[i_mat]).all())
 
+
+    def test_compute_with_pools_only(self):
+        dll=Mock()
+        model_functions.compute(
+            dll=dll,
+            pools="pools",
+            ops="ops",
+            op_indices="op_indices",
+            op_processes=None,
+            flux=None,
+            enabled="enabled")
+
+
     def test_advance_spinup_state(self):
 
         def run_test(expected_output, **input_kwargs):
             test_kwargs = {
-                k: np.array(v)
+                k: np.array([v])
                 for k, v in input_kwargs.items()
             }
             out = model_functions.advance_spinup_state(**test_kwargs)
@@ -132,7 +145,40 @@ class ModelFunctionsTest(unittest.TestCase):
             age=75,
             final_age=100,
             return_interval=100,
-            rotation_num=9,
+            rotation_num=10,
+            max_rotations=10,
+            last_rotation_slow=60,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.End,
+            spinup_state=SpinupState.LastPassEvent,
+            age=0,
+            final_age=0,
+            return_interval=100,
+            rotation_num=6,
+            max_rotations=10,
+            last_rotation_slow=99.9999,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.GrowToFinalAge,
+            spinup_state=SpinupState.GrowToFinalAge,
+            age=0,
+            final_age=10,
+            return_interval=100,
+            rotation_num=10,
+            max_rotations=10,
+            last_rotation_slow=60,
+            this_rotation_slow=100)
+
+        run_test(
+            expected_output=SpinupState.End,
+            spinup_state=SpinupState.GrowToFinalAge,
+            age=10,
+            final_age=10,
+            return_interval=100,
+            rotation_num=10,
             max_rotations=10,
             last_rotation_slow=60,
             this_rotation_slow=100)
