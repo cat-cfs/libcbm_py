@@ -107,6 +107,28 @@ class ModelFunctionsTest(unittest.TestCase):
             dll.compute_flux.call_args_list[0].args[4] == "enabled")
         dll.free_op.assert_called_with(12345)
 
+    def test_np_map(self):
+        result = model_functions.np_map(
+            a=np.array([1, 2, 1, 2, 3, 5]),
+            m={1: 2, 2: 1, 3: 4, 5: 4},
+            dtype=int)
+        self.assertTrue(
+            (result == np.array([2, 1, 2, 1, 4, 4], dtype=int)).all())
+
+    def test_np_map_raises_error_on_missing(self):
+        with self.assertRaises(ValueError):
+            model_functions.np_map(
+                a=np.array([1, 2, 1, 2, 3, 5]),
+                m={1: 2, 2: 1, 3: 4},
+                dtype=int)
+
+    def test_initialize_dm():
+        model_functions.initialize_dm(
+            disturbance_matrix_data=pd.DataFrame({
+                "disturbance_type_id":
+            })
+        )
+
     def test_advance_spinup_state(self):
 
         def run_test(expected_output, **input_kwargs):
