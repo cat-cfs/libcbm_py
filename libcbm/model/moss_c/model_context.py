@@ -6,6 +6,7 @@ import pandas as pd
 
 from libcbm.model.moss_c.pools import Pool
 from libcbm.model.moss_c.pools import FLUX_INDICATORS
+from libcbm.model.moss_c.merch_vol_lookup import MerchVolumeLookup
 from libcbm.model.moss_c import model_functions
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
@@ -31,7 +32,7 @@ class ModelContext:
     def __init__(self, *args, **kwargs):
         self.input_data = InputData(**kwargs)
         self.n_stands = len(self.input_data.inventory.index)
-        self.merch_vol_lookup = model_functions.build_merch_vol_lookup(
+        self.merch_vol_lookup = MerchVolumeLookup(
             self.input_data.merch_volume)
         self._initialize_libcbm()
         self._initialize_dynamics_parameter()
@@ -103,8 +104,7 @@ class ModelContext:
         initial_age = np.full(self.n_stands, 0, dtype=int)
         model_state = SimpleNamespace(
             age=initial_age,
-            merch_vol=model_functions.get_merch_vol(
-                self.merch_vol_lookup,
+            merch_vol=self.merch_vol_lookup.get_merch_vol(
                 initial_age,
                 self.input_data.inventory.merch_volume_id.to_numpy()))
         self.state = model_state

@@ -275,7 +275,6 @@ def step(model_context):
 
     model_context.state.age += 1
     model_context.state.merch_vol = \
-        model_functions.get_merch_vol(
-            model_context.merch_vol_lookup,
+        model_context.merch_vol_lookup.get_merch_vol(
             model_context.state.age,
             model_context.input_data.inventory.merch_volume_id.to_numpy())
