@@ -1,6 +1,6 @@
 import os
 import json
-from types import SimpleNamespace
+from types import DynamicClassAttribute, SimpleNamespace
 import numpy as np
 import pandas as pd
 
@@ -92,13 +92,20 @@ class ModelContext:
         self.params = model_functions.to_numpy_namespace(
             dynamics_param)
 
-    def _initialize_pools(self):
-        pool_data = np.zeros(shape=(self.n_stands, len(Pool)))
-        pool_data[:, Pool.Input] = 1.0
-        pools = pd.DataFrame(
+    def get_pools_df(self):
+        return pd.DataFrame(
             columns=Pool.__members__.keys(),
-            data=pool_data)
+            data=self.pools)
+
+    def _initialize_pools(self):
+        pools = np.zeros(shape=(self.n_stands, len(Pool)))
+        pools[:, Pool.Input] = 1.0
         self.pools = pools
+
+    def initialize_flux(self):
+        self.flux = pd.DataFrame(
+            columns=[x["name"] for x in FLUX_INDICATORS],
+            data=np.zeros(shape=(self.n_stands, len(FLUX_INDICATORS))))
 
     def _initialize_model_state(self):
         initial_age = np.full(self.n_stands, 0, dtype=int)
@@ -106,7 +113,10 @@ class ModelContext:
             age=initial_age,
             merch_vol=self.merch_vol_lookup.get_merch_vol(
                 initial_age,
-                self.input_data.inventory.merch_volume_id.to_numpy()))
+                self.params.merch_volume_id),
+            enabled=np.ones(self.n_stands, dtype=int),
+            disturbance_type=np.zeros(self.n_stands, dtype=int))
+
         self.state = model_state
 
     def _initialize_disturbance_data(self):
