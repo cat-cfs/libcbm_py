@@ -115,14 +115,13 @@ class ModelContext:
                 initial_age,
                 self.params.merch_volume_id),
             enabled=np.ones(self.n_stands, dtype=int),
-            disturbance_type=np.zeros(self.n_stands, dtype=int))
+            disturbance_type=np.zeros(self.n_stands, dtype=np.uintp))
 
         self.state = model_state
 
     def _initialize_disturbance_data(self):
         self.disturbance_matrices = model_functions.initialize_dm(
             self.input_data.disturbance_matrix)
-        self.disturbance_types = np.zeros(self.n_stands, dtype=np.uintp)
         historical_dist_types = \
             self.input_data.inventory.historical_disturbance_type_id.to_numpy()
         last_pass_dist_types = \
