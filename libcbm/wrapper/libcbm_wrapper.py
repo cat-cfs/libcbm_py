@@ -149,7 +149,7 @@ class LibCBMWrapper():
             pools (numpy.ndarray or pandas.DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
-            enabled ([type], optional): optional int vector of length
+            enabled (ndarray, optional): optional int vector of length
                 n_stands. If specified, enables or disables flows for each
                 stand, based on the value at each stand index. A value of 0
                 indicates a disabled stand index, and any other value is an
