@@ -22,11 +22,7 @@ class MossCIntegrationTest(unittest.TestCase):
         pool_results = pd.DataFrame()
         flux_results = pd.DataFrame()
 
-        pools = ctx.get_pools_df()
-        pools.insert(0, "t", 0)
-        pool_results = pool_results.append(pools)
-
-        for i in range(1, 125):
+        for i in range(0, 125):
 
             model.step(ctx)
 
@@ -39,4 +35,5 @@ class MossCIntegrationTest(unittest.TestCase):
             flux_results = flux_results.append(flux)
 
         for p in ECOSYSTEM_POOLS:
-            np.allclose(pool_results[p.name], expected_output[p.name])
+            self.assertTrue(
+                np.allclose(pool_results[p.name], expected_output[p.name]))
