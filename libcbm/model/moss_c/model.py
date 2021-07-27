@@ -225,6 +225,32 @@ def get_annual_process_matrix(dynamics_param):
     return mat
 
 
+def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
+                            last_rotation_slow, this_rotation_slow,
+                            rotation_num, historical_dist_type,
+                            last_pass_dist_type, enabled):
+    enabled_count = n_stands
+    for i in range(n_stands):
+        state = spinup_state[i]
+        if state == SpinupState.LastPassEvent:
+            dist_type[i] = last_pass_dist_type[i]
+        elif state == SpinupState.HistoricalEvent:
+            dist_type[i] = historical_dist_type[i]
+            last_rotation_slow[i] = \
+                pools[i, Pool.SphagnumMossSlow] + \
+                pools[i, Pool.FeatherMossSlow]
+            rotation_num[i] += 1
+        else:
+            if state == SpinupState.End:
+                enabled[i] = 0
+                enabled_count -= 1
+            dist_type[i] = 0
+            this_rotation_slow[i] = \
+                pools[i, Pool.SphagnumMossSlow] + \
+                pools[i, Pool.FeatherMossSlow]
+    return enabled_count == 0
+
+
 def spinup(model_context):
     array_shape = model_context.state.age.shape
     spinup_state = np.full(
@@ -243,11 +269,20 @@ def spinup(model_context):
             max_rotations=model_context.params.max_rotations,
             last_rotation_slow=last_rotation_slow,
             this_rotation_slow=this_rotation_slow)
-        last_rotation_slow[spinup_state == SpinupState.HistoricalEvent] = \
-            model_context.pools[Pool.FeatherMossSlow] + \
-            model_context.pools[Pool.SphagnumMossSlow]
-
-        break
+        all_finished = update_spinup_variables(
+            n_stands=model_context.n_stands,
+            spinup_state=spinup_state,
+            dist_type=model_context.state.disturbance_type,
+            pools=model_context.pools,
+            last_rotation_slow=last_rotation_slow,
+            this_rotation_slow=this_rotation_slow,
+            rotation_num=rotation_num,
+            historical_dist_type=model_context.historical_dm_index,
+            last_pass_dist_type=model_context.last_pass_dm_index,
+            enabled=model_context.state.enabled)
+        if all_finished:
+            break
+        step(model_context)
 
 
 def step(model_context):
@@ -260,9 +295,7 @@ def step(model_context):
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.disturbance_matrices.dm_list
     disturbance_matrix_index = model_context.disturbance_types
-    model_context.flux = pd.DataFrame(
-        columns=[x["name"] for x in FLUX_INDICATORS],
-        data=np.zeros(shape=(n_stands, len(FLUX_INDICATORS))))
+    model_context.initialize_flux()
     model_functions.compute(
         dll=model_context.dll,
         pools=model_context.pools,
@@ -277,4 +310,4 @@ def step(model_context):
     model_context.state.merch_vol = \
         model_context.merch_vol_lookup.get_merch_vol(
             model_context.state.age,
-            model_context.input_data.inventory.merch_volume_id.to_numpy())
+            model_context.params.merch_volume_id)
