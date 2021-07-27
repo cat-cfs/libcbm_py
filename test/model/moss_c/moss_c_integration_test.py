@@ -22,7 +22,7 @@ class MossCIntegrationTest(unittest.TestCase):
         pool_results = pd.DataFrame()
         flux_results = pd.DataFrame()
 
-        pools = ctx.pools.copy()
+        pools = ctx.get_pools_df()
         pools.insert(0, "t", 0)
         pool_results = pool_results.append(pools)
 
@@ -30,7 +30,7 @@ class MossCIntegrationTest(unittest.TestCase):
 
             model.step(ctx)
 
-            pools = ctx.pools.copy()
+            pools = ctx.get_pools_df()
             pools.insert(0, "t", i)
             pool_results = pool_results.append(pools)
 
