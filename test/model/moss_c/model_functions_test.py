@@ -7,6 +7,7 @@ from libcbm.model.moss_c.model_functions import SpinupState
 from libcbm.model.moss_c import model_functions
 from libcbm.model.moss_c.pools import Pool
 
+
 class ModelFunctionsTest(unittest.TestCase):
 
     def test_expand_matrix(self):
@@ -157,8 +158,8 @@ class ModelFunctionsTest(unittest.TestCase):
         for k, v in result.dm_dist_type_index.items():
             mat_rows = disturbance_matrix_data[
                 disturbance_matrix_data.disturbance_type_id == k]
-            expected_matrix = scipy.sparse.identity(
-                len(Pool), format="csr", dtype=float)
+            expected_matrix = np.identity(
+                len(Pool), dtype=float)
             for _, row in mat_rows.iterrows():
                 expected_matrix[Pool[row.source], Pool[row.sink]] = \
                     row.proportion
@@ -169,7 +170,7 @@ class ModelFunctionsTest(unittest.TestCase):
                      result_matrix[:, 1].astype(int))),
                 dtype=float)
             self.assertTrue(
-                (expected_matrix.toarray() == result_coo_mat.toarray()).all())
+                (expected_matrix == result_coo_mat.toarray()).all())
 
     def test_to_numpy_namespace(self):
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
