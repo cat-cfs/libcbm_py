@@ -251,42 +251,51 @@ def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
     return enabled_count == 0
 
 
-def spinup(model_context):
-    array_shape = model_context.state.age.shape
-    spinup_state = np.full(
-        array_shape, SpinupState.AnnualProcesses)
-    rotation_num = np.full(array_shape, 0, dtype=int)
-    last_rotation_slow = np.full(array_shape, 0.0, dtype=float)
-    this_rotation_slow = np.full(array_shape, 0.0, dtype=float)
+def spinup(model_context, post_step=None):
 
+    spinup_vars = SimpleNamespace(
+        spinup_state=np.full(
+            model_context.n_stands, SpinupState.AnnualProcesses),
+        rotation_num=np.full(model_context.n_stands, 0, dtype=int),
+        last_rotation_slow=np.full(model_context.n_stands, 0.0, dtype=float),
+        this_rotation_slow=np.full(model_context.n_stands, 0.0, dtype=float))
+    iteration = 0
     while True:
-        spinup_state = model_functions.advance_spinup_state(
-            spinup_state=spinup_state,
+
+        spinup_vars.spinup_state = model_functions.advance_spinup_state(
+            spinup_state=spinup_vars.spinup_state,
             age=model_context.state.age,
             final_age=model_context.params.age,
             return_interval=model_context.params.return_interval,
-            rotation_num=rotation_num,
+            rotation_num=spinup_vars.rotation_num,
             max_rotations=model_context.params.max_rotations,
-            last_rotation_slow=last_rotation_slow,
-            this_rotation_slow=this_rotation_slow)
+            last_rotation_slow=spinup_vars.last_rotation_slow,
+            this_rotation_slow=spinup_vars.this_rotation_slow)
         all_finished = update_spinup_variables(
             n_stands=model_context.n_stands,
-            spinup_state=spinup_state,
+            spinup_state=spinup_vars.spinup_state,
             dist_type=model_context.state.disturbance_type,
             pools=model_context.pools,
-            last_rotation_slow=last_rotation_slow,
-            this_rotation_slow=this_rotation_slow,
-            rotation_num=rotation_num,
+            last_rotation_slow=spinup_vars.last_rotation_slow,
+            this_rotation_slow=spinup_vars.this_rotation_slow,
+            rotation_num=spinup_vars.rotation_num,
             historical_dist_type=model_context.historical_dm_index,
             last_pass_dist_type=model_context.last_pass_dm_index,
             enabled=model_context.state.enabled)
         if all_finished:
             break
         step(model_context)
+        if post_step:
+            post_step(iteration, model_context, spinup_vars)
+        iteration += 1
 
 
 def step(model_context):
     n_stands = len(model_context.state.age)
+    model_context.state.merch_vol = \
+        model_context.merch_vol_lookup.get_merch_vol(
+            model_context.state.age,
+            model_context.params.merch_volume_id)
     dynamics = annual_process_dynamics(
         model_context.state, model_context.params)
     annual_process_matrices = model_functions.expand_matrix(
@@ -294,7 +303,7 @@ def step(model_context):
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.disturbance_matrices.dm_list
-    disturbance_matrix_index = model_context.disturbance_types
+    disturbance_matrix_index = model_context.state.disturbance_type
     model_context.initialize_flux()
     model_functions.compute(
         dll=model_context.dll,
@@ -306,8 +315,6 @@ def step(model_context):
             annual_process_matrix_index,
             disturbance_matrix_index]))
 
-    model_context.state.age += 1
-    model_context.state.merch_vol = \
-        model_context.merch_vol_lookup.get_merch_vol(
-            model_context.state.age,
-            model_context.params.merch_volume_id)
+    model_context.state.age = np.where(
+        disturbance_matrix_index != 0, 0,
+        model_context.state.age + 1)
