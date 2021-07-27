@@ -283,14 +283,19 @@ def spinup(model_context, post_step=None):
             last_pass_dist_type=model_context.last_pass_dm_index,
             enabled=model_context.state.enabled)
         if all_finished:
+            # re-enable everything for subsequent processes
+            model_context.state.enabled = 1
             break
-        step(model_context)
+        step(
+            model_context, disturbance_before_annual_process=False,
+            include_flux=False)
         if post_step:
             post_step(iteration, model_context, spinup_vars)
         iteration += 1
 
 
-def step(model_context):
+def step(model_context, disturbance_before_annual_process=True,
+         include_flux=True):
     n_stands = len(model_context.state.age)
     model_context.state.merch_vol = \
         model_context.merch_vol_lookup.get_merch_vol(
@@ -304,16 +309,31 @@ def step(model_context):
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.disturbance_matrices.dm_list
     disturbance_matrix_index = model_context.state.disturbance_type
-    model_context.initialize_flux()
+
+    op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
+    flux = None
+    if include_flux:
+        model_context.initialize_flux()
+        flux = model_context.flux
+
+    if disturbance_before_annual_process:
+        ops = [disturbance_matrices, annual_process_matrices]
+        op_indices = np.column_stack([
+            disturbance_matrix_index,
+            annual_process_matrix_index])
+    else:
+        ops = [annual_process_matrices, disturbance_matrices]
+        op_indices = np.column_stack([
+            annual_process_matrix_index,
+            disturbance_matrix_index])
+
     model_functions.compute(
         dll=model_context.dll,
         pools=model_context.pools,
-        flux=model_context.flux,
-        op_processes=[ANNUAL_PROCESSES, DISTURBANCE_PROCESS],
-        ops=[annual_process_matrices, disturbance_matrices],
-        op_indices=np.column_stack([
-            annual_process_matrix_index,
-            disturbance_matrix_index]))
+        flux=flux,
+        op_processes=op_processes,
+        ops=ops,
+        op_indices=op_indices)
 
     model_context.state.age = np.where(
         disturbance_matrix_index != 0, 0,
