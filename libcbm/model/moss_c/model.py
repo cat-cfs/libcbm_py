@@ -251,7 +251,31 @@ def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
     return enabled_count == 0
 
 
-def spinup(model_context, post_step=None):
+def _append_spinup_debug_record(spinup_debug, iteration, model_ctx, spinup_vars):
+
+    model_state_t = pd.DataFrame({k: v for k, v in model_ctx.state.__dict__.items()})
+    model_state_t.insert(0, "t", iteration)
+    spinup_debug.model_state = spinup_debug.model_state.append(model_state_t)
+
+    pools_t = model_ctx.get_pools_df()
+    pools_t.insert(0, "t", iteration)
+    spinup_debug.pools = spinup_debug.pools.append(pools_t)
+
+    spinup_vars_t = pd.DataFrame({k: v for k, v in spinup_vars.__dict__.items()})
+    spinup_vars_t.insert(0, "t", iteration)
+    spinup_debug.spinup_vars = spinup_debug.spinup_vars.append(spinup_vars_t)
+
+
+def spinup(model_context, enable_debugging=False):
+
+    if enable_debugging:
+        spinup_debug = SimpleNamespace(
+            model_state=pd.DataFrame(),
+            pools=pd.DataFrame(),
+            spinup_vars=pd.DataFrame()
+        )
+    else:
+        spinup_debug = None
 
     spinup_vars = SimpleNamespace(
         spinup_state=np.full(
@@ -289,9 +313,12 @@ def spinup(model_context, post_step=None):
         step(
             model_context, disturbance_before_annual_process=False,
             include_flux=False)
-        if post_step:
-            post_step(iteration, model_context, spinup_vars)
+        if enable_debugging:
+            _append_spinup_debug_record(
+                spinup_debug, iteration, model_context, spinup_vars)
         iteration += 1
+
+    return spinup_debug
 
 
 def step(model_context, disturbance_before_annual_process=True,
