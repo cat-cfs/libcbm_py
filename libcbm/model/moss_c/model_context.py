@@ -99,6 +99,7 @@ class ModelContext:
 
     def get_pools_df(self):
         return pd.DataFrame(
+            index=self.input_data.inventory.index,
             columns=Pool.__members__.keys(),
             data=self.pools)
 
