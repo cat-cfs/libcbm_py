@@ -34,7 +34,11 @@ for pool in Pool:
     print(pool.name)
 ```
 
-Some moss c model test cases, example datasets are included in the [libcbm test resources dir](https://github.com/cat-cfs/libcbm_py/tree/master/libcbm/resources/test)
+```python
+Pool.Input.value
+```
+
+Some moss c model test cases, and example datasets are included in the [libcbm test resources dir](https://github.com/cat-cfs/libcbm_py/tree/master/libcbm/resources/test)
 
 ```python
 test_data_dir = os.path.join(
