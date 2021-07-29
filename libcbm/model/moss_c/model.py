@@ -344,18 +344,19 @@ def step(model_context, disturbance_before_annual_process=True,
     disturbance_matrices = model_context.disturbance_matrices.dm_list
     disturbance_matrix_index = model_context.state.disturbance_type
 
-    op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
     flux = None
     if include_flux:
         model_context.initialize_flux()
         flux = model_context.flux
 
     if disturbance_before_annual_process:
+        op_processes = [DISTURBANCE_PROCESS, ANNUAL_PROCESSES]
         ops = [disturbance_matrices, annual_process_matrices]
         op_indices = np.column_stack([
             disturbance_matrix_index,
             annual_process_matrix_index])
     else:
+        op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
         ops = [annual_process_matrices, disturbance_matrices]
         op_indices = np.column_stack([
             annual_process_matrix_index,
@@ -369,6 +370,10 @@ def step(model_context, disturbance_before_annual_process=True,
         ops=ops,
         op_indices=op_indices)
 
-    model_context.state.age = np.where(
-        disturbance_matrix_index != 0, 0,
-        model_context.state.age + 1)
+    model_context.state.age = \
+        np.where(
+            model_context.state.enabled == 0,
+            model_context.state.age,
+            np.where(
+                disturbance_matrix_index != 0, 0,
+                model_context.state.age + 1))
