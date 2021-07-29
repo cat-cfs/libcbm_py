@@ -1,6 +1,6 @@
 import os
 import json
-from types import DynamicClassAttribute, SimpleNamespace
+from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
@@ -11,6 +11,17 @@ from libcbm.model.moss_c import model_functions
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
+
+
+def _checked_merge(df1, df2, left_on):
+    merged = df1.merge(
+        df2, left_on=left_on, right_index=True, validate="m:1", how="left")
+    missing_values = merged[merged.isnull().any(axis=1)][left_on]
+    if len(missing_values.index) > 0:
+        raise ValueError(
+            f"missing values for '{left_on}' "
+            f"detected: {list(missing_values.unique()[0:10])}")
+    return merged
 
 
 class InputData:
@@ -64,28 +75,22 @@ class ModelContext:
             {"max_merch_vol": self.input_data.merch_volume.volume.groupby(
                 by=self.input_data.merch_volume.index).max()})
 
-        dynamics_param = (
-            self.input_data.inventory
-                .merge(
-                    self.input_data.moss_c_parameter,
-                    left_on="moss_c_parameter_id",
-                    right_index=True, validate="m:1")
-                .merge(
-                    self.input_data.decay_parameter,
-                    left_on="decay_parameter_id",
-                    right_index=True, validate="m:1")
-                .merge(
-                    self.input_data.mean_annual_temperature,
-                    left_on="mean_annual_temperature_id",
-                    right_index=True, validate="m:1")
-                .merge(
-                    self.input_data.spinup_parameter,
-                    left_on="spinup_parameter_id",
-                    right_index=True, validate="m:1")
-                .merge(
-                    max_vols,
-                    left_on="merch_volume_id",
-                    right_index=True, validate="m:1"))
+        dynamics_param = self.input_data.inventory
+        dynamics_param = _checked_merge(
+            dynamics_param, self.input_data.moss_c_parameter,
+            left_on="moss_c_parameter_id")
+        dynamics_param = _checked_merge(
+            dynamics_param, self.input_data.decay_parameter,
+            left_on="decay_parameter_id")
+        dynamics_param = _checked_merge(
+            dynamics_param, self.input_data.mean_annual_temperature,
+            left_on="mean_annual_temperature_id")
+        dynamics_param = _checked_merge(
+            dynamics_param, self.input_data.spinup_parameter,
+            left_on="spinup_parameter_id")
+        dynamics_param = _checked_merge(
+            dynamics_param, max_vols,
+            left_on="merch_volume_id")
 
         if (dynamics_param.index != self.input_data.inventory.index).any():
             raise ValueError()
