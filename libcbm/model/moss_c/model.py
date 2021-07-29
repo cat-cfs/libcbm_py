@@ -8,6 +8,7 @@
 #
 
 from types import SimpleNamespace
+import numba
 import numpy as np
 import pandas as pd
 
@@ -36,7 +37,9 @@ def f1(merch_vol, a, b):
     return np.where(
         merch_vol == 0,
         60,
-        np.power(10, a * np.log10(merch_vol, where=(merch_vol != 0)) + b))
+        np.power(
+            10, a * np.log10(merch_vol, where=(merch_vol != 0)) + b,
+            where=(merch_vol != 0)))
 
 
 def f2(openness, stand_age, c, d):
@@ -225,6 +228,7 @@ def get_annual_process_matrix(dynamics_param):
     return mat
 
 
+@numba.njit()
 def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
                             last_rotation_slow, this_rotation_slow,
                             rotation_num, historical_dist_type,
@@ -237,8 +241,8 @@ def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
         elif state == SpinupState.HistoricalEvent:
             dist_type[i] = historical_dist_type[i]
             last_rotation_slow[i] = \
-                pools[i, Pool.SphagnumMossSlow] + \
-                pools[i, Pool.FeatherMossSlow]
+                pools[i, Pool.SphagnumMossSlow.value] + \
+                pools[i, Pool.FeatherMossSlow.value]
             rotation_num[i] += 1
         else:
             if state == SpinupState.End:
@@ -246,14 +250,16 @@ def update_spinup_variables(n_stands, spinup_state, dist_type, pools,
                 enabled_count -= 1
             dist_type[i] = 0
             this_rotation_slow[i] = \
-                pools[i, Pool.SphagnumMossSlow] + \
-                pools[i, Pool.FeatherMossSlow]
+                pools[i, Pool.SphagnumMossSlow.value] + \
+                pools[i, Pool.FeatherMossSlow.value]
     return enabled_count == 0
 
 
-def _append_spinup_debug_record(spinup_debug, iteration, model_ctx, spinup_vars):
+def _append_spinup_debug_record(spinup_debug, iteration, model_ctx,
+                                spinup_vars):
 
-    model_state_t = pd.DataFrame({k: v for k, v in model_ctx.state.__dict__.items()})
+    model_state_t = pd.DataFrame(
+        {k: v for k, v in model_ctx.state.__dict__.items()})
     model_state_t.insert(0, "t", iteration)
     spinup_debug.model_state = spinup_debug.model_state.append(model_state_t)
 
@@ -261,7 +267,8 @@ def _append_spinup_debug_record(spinup_debug, iteration, model_ctx, spinup_vars)
     pools_t.insert(0, "t", iteration)
     spinup_debug.pools = spinup_debug.pools.append(pools_t)
 
-    spinup_vars_t = pd.DataFrame({k: v for k, v in spinup_vars.__dict__.items()})
+    spinup_vars_t = pd.DataFrame(
+        {k: v for k, v in spinup_vars.__dict__.items()})
     spinup_vars_t.insert(0, "t", iteration)
     spinup_debug.spinup_vars = spinup_debug.spinup_vars.append(spinup_vars_t)
 
