@@ -3,3 +3,4 @@ pandas
 scipy
 mock
 numexpr
+numba
