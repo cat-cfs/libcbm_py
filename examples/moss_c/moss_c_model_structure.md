@@ -83,3 +83,6 @@ p.drop(columns=["Input","CO2","CH4","CO"]).set_index("t").plot(figsize=(15,10))
 ```python
 spinup_debug.pools
 ```
+```python
+
+```

@@ -21,13 +21,10 @@ from types import SimpleNamespace
 ```
 
 ```python
-%load_ext snakeviz
-```
-
-```python
 from libcbm import resources
 from libcbm.model.moss_c import model_context
 from libcbm.model.moss_c import model
+from libcbm.model.moss_c import pools
 ```
 
 ```python
@@ -41,76 +38,48 @@ ctx = model_context.create_from_csv(data_dir)
 ```
 
 ```python
-%%snakeviz
 model.spinup(ctx)
 ```
 
 ```python
-ctx.get_pools_df()
+pools_by_timestep = pd.DataFrame()
+flux_by_timestep = pd.DataFrame()
 ```
 
 ```python
-ctx
+pools_0 = ctx.get_pools_df()
+pools_0.insert(0, "t", 0)
+pools_by_timestep = pools_by_timestep.append(pools_0)
+
+for t in range(0,100):
+    if t == 20:
+        # disturb everything to demonstrate how this works
+        ctx.state.disturbance_type[:] = 1
+    else: 
+        ctx.state.disturbance_type[:] = 0
+    model.step(ctx)
+    
+    pools_t = ctx.get_pools_df()
+    pools_t.insert(0, "t", t)
+    pools_by_timestep = pools_by_timestep.append(pools_t)
+    
+    flux_t = ctx.flux.copy()
+    flux_t.insert(0, "t", t)
+    flux_by_timestep = flux_by_timestep.append(flux_t)
+    
 ```
 
 ```python
-model.step(ctx)
+pools_by_timestep.groupby("t").sum()[[p.name for p in pools.ECOSYSTEM_POOLS]].plot(figsize=(10,8))
 ```
 
 ```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
+flux_by_timestep[["t","NPPFeatherMoss", "NPPSphagnumMoss"]].groupby("t").sum().plot(figsize=(10,8))
 
 ```
 
 ```python
-dynamics = model.annual_process_dynamics(ctx.state, ctx.params)
-```
-
-```python
-pd.DataFrame({k:v for k, v in dynamics.__dict__.items()})
-```
-
-```python
-pd.DataFrame({k:v for k, v in ctx.params.__dict__.items()})
-```
-
-```python
-model.f7(mean_annual_temp=np.array([-10000]), base_decay_rate=np.array([0.18]), q10=np.array([1]), t_ref=np.array([10]) )
-```
-
-```python
-ctx.params.mean_annual_temp
-```
-
-```python
-np.exp(0)
-```
-
-```python
-np.log(10)
+flux_by_timestep.groupby("t").sum().plot(figsize=(15,10))
 ```
 
 ```python
