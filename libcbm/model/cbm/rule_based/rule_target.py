@@ -189,7 +189,33 @@ def proportion_area_target(area_target_value, inventory, eligible):
             that the sum of area of all disturbed records matches the specified
             area target.
     """
-    raise NotImplementedError()
+    eligible_inventory = inventory.loc[eligible]
+    total_eligible_area = eligible_inventory.area.sum()
+    area_proportion = area_target_value / total_eligible_area
+    total_achieved = area_target_value
+    if area_proportion >= 1:
+        # shortfall
+        area_proportion = 1.0
+        total_achieved = total_eligible_area
+    target = pd.DataFrame({
+        "target_var": eligible_inventory.area * area_proportion,
+        "sort_var": None,
+        "disturbed_index": eligible_inventory.index,
+        "area_proportions": area_proportion
+        })
+
+    num_splits = \
+        len(eligible_inventory.index) if area_proportion < 1.0 else 0
+    return RuleTargetResult(
+        target=target,
+        statistics={
+            "total_eligible_value": total_eligible_area,
+            "total_achieved": total_achieved,
+            "shortfall": area_target_value - total_achieved,
+            "num_records_disturbed": len(eligible_inventory.index),
+            "num_splits": num_splits,
+            "num_eligible": len(eligible_inventory.index)
+        })
 
 
 def sorted_area_target(area_target_value, sort_value, inventory, eligible):
