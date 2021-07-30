@@ -2,6 +2,10 @@ from enum import IntEnum
 
 
 class Pool(IntEnum):
+    """
+    Enumeration of Moss C pools values
+    """
+
     Input = 0,
     FeatherMossLive = 1,
     SphagnumMossLive = 2,
@@ -16,12 +20,15 @@ class Pool(IntEnum):
 
 
 ANNUAL_PROCESSES = 1
+
 DISTURBANCE_PROCESS = 2
 
 BIOMASS_POOLS = [
     Pool.FeatherMossLive,
     Pool.SphagnumMossLive,
 ]
+
+
 DOM_POOLS = [
     Pool.FeatherMossFast,
     Pool.SphagnumMossFast,
