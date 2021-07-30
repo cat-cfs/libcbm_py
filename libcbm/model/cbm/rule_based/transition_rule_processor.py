@@ -120,7 +120,7 @@ class TransitionRuleProcessor(object):
 
         Raises:
             ValueError: a transition rule criteria resulted in the selection of
-                stands targetted by at least one other transition rule
+                stands targeted by at least one other transition rule
 
         Returns:
             tuple:
