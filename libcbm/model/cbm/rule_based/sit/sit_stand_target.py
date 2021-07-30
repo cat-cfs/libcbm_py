@@ -133,6 +133,11 @@ def create_sit_event_target(rule_target, sit_event_row,
             raise ValueError(
                 f"specified sort: '{sort}', target: '{target}' combination "
                 "not valid")
+        if sort == "PROPORTION_OF_EVERY_RECORD":
+            rule_target_result = rule_target.proportion_sort_proportion_target(
+                proportion_target=target,
+                inventory=cbm_vars.inventory,
+                eligible=eligible)
     elif sort == "PROPORTION_OF_EVERY_RECORD":
         if target_type == area_target_type:
             rule_target_result = rule_target.proportion_area_target(
