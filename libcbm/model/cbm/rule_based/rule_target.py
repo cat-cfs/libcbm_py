@@ -47,7 +47,8 @@ def spatially_indexed_target(identifier, inventory):
             specified inventory spatial_reference column
 
     Returns:
-        [type]: [description]
+        RuleTargetResult: object with information on spatially indexed
+            stand to disturb
     """
     match = inventory[inventory.spatial_reference == identifier]
     match_index = match.index
@@ -61,7 +62,7 @@ def spatially_indexed_target(identifier, inventory):
             f"for identifier {identifier}")
     result = pd.DataFrame({
         "target_var": [match.area],
-        "sort_var": [0.0],
+        "sort_var": None,
         "disturbed_index": [match_index[0]],
         "area_proportions":  [1.0]})
     return RuleTargetResult(target=result, statistics=None)
@@ -87,13 +88,9 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         ValueError: less than zero values are detected in target_var
 
     Returns:
-        pandas.DataFrame: a data frame with columns:
-
-            - disturbed_index: the zero based indices of the records that
-                should be disturbed
-            - area_proportion: the proportion of each disturbed index to
-                disturb, 1 indicates the entire record, and < 1 indicates to
-                disturb a proportion.
+        RuleTargetResult: object with information targeting a proportion of
+            or the entirety of a subset of rows in the eligible subset
+            of specified target_var.
     """
     if target < 0:
         raise ValueError("target is less than zero")
@@ -185,6 +182,12 @@ def proportion_area_target(area_target_value, inventory, eligible):
             disturbance.
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
+
+    Returns:
+        RuleTargetResult: object with information targeting a proportion of
+            all records in the eligible subset of the specified inventory such
+            that the sum of area of all disturbed records matches the specified
+            area target.
     """
     raise NotImplementedError()
 
@@ -203,9 +206,11 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible):
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
-    pandas.DataFrame: a data frame specifying the sorted disturbance event
-        area target. Has the same format as the return value of
-        :py:func:`sorted_disturbance_target`
+    Returns:
+        RuleTargetResult: object with information targeting a sorted subset
+            of all records in the eligible subset of the specified inventory
+            such that the total area disturbed matches the specified area
+            target value.
 
     """
     if inventory.shape[0] != sort_value.shape[0]:
@@ -238,13 +243,28 @@ def proportion_merch_target(carbon_target, disturbance_production, inventory,
         eligible (pandas.Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
-    Raises:
-        NotImplementedError: [description]
+    Returns:
+        RuleTargetResult: object with information targeting a proportion of
+            all records in the eligible subset of the specified inventory
+            such that the total carbon produced matches the specified carbon
+            target.
     """
     raise NotImplementedError()
 
 
 def proportion_sort_proportion_target(proportion_target, inventory, eligible):
+    """Compute a
+
+    Args:
+        proportion_target ([type]): [description]
+        inventory ([type]): [description]
+        eligible ([type]): [description]
+
+    Returns:
+        RuleTargetResult: object with information targeting the specified
+            proportion of all records in the eligible subset of the
+            specified inventory.
+    """
     raise NotImplementedError()
 
 
@@ -271,9 +291,10 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
             whether or not each index is eligible for this disturbance target
 
     Returns:
-        pandas.DataFrame: a data frame specifying the sorted disturbance event
-            merchantable C target. Has the same format as the return value of
-            :py:func:`sorted_disturbance_target`
+        RuleTargetResult: object with information targeting a subset of
+            the eligible subset of the specified inventory such that the
+            carbon_target is met.
+
     """
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
