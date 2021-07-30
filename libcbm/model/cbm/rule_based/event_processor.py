@@ -19,7 +19,7 @@ class ProcessEventResult:
             true, and ineligible when false
         rule_target_result (RuleTargetResult): instance of
             :py:class:`libcbm.model.cbm.rule_based.rule_target.RuleTargetResult`
-            indicating targetted stands for this event
+            indicating targeted stands for this event
     """
     def __init__(self, cbm_vars, filter_result, rule_target_result):
 
