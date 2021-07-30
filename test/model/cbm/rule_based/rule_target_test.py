@@ -1,5 +1,6 @@
 import unittest
 from types import SimpleNamespace
+import mock
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm.rule_based import rule_target
@@ -54,7 +55,8 @@ class RuleTargetTest(unittest.TestCase):
             eligible=pd.Series([True, True, True]))
         # cbm sorts descending for disturbance targets (oldest first, etc.)
         self.assertTrue(list(result.target.disturbed_index) == [2, 1, 0])
-        self.assertTrue(list(result.target.area_proportions) == [1.0, 1.0, 1.0])
+        self.assertTrue(
+            list(result.target.area_proportions) == [1.0, 1.0, 1.0])
         self.assertTrue(list(result.target.target_var) == [33, 33, 33])
         self.assertTrue(list(result.target.sort_var) == [3, 2, 1])
 
@@ -282,3 +284,71 @@ class RuleTargetTest(unittest.TestCase):
         for flux_code in flux_indicator_codes:
             self.assertTrue(list(result[flux_code]) == [1, 1, 1])
         self.assertTrue(list(result["Total"]) == [3, 3, 3])
+
+    def test_proportion_area_target(self):
+        mock_inventory = pd.DataFrame({
+            "area": [60.0, 60.0, 60.0, 60.0]
+        })
+        result = rule_target.proportion_area_target(
+            area_target_value=100,
+            inventory=mock_inventory,
+            eligible=pd.Series([True, False, True, False]))
+        self.assertTrue(
+            list(result.target.target_var) == [5 / 6 * 60, 5 / 6 * 60])
+        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(list(result.target.disturbed_index) == [0, 2])
+        self.assertTrue(list(result.target.area_proportions) == [5 / 6, 5 / 6])
+
+    def test_proportion_merch_target(self):
+        mock_inventory = pd.DataFrame({
+            "area": [12.0, 11.0, 10.0, 7.0],
+        })
+        carbon_target = 100.0
+        disturbance_production = pd.Series([5.0, 5.0, 4.0, 10.0])
+        eligible = pd.Series([True, False, True, True])
+        efficiency = 0.9
+        result = rule_target.proportion_merch_target(
+            carbon_target=carbon_target,
+            disturbance_production=disturbance_production,
+            inventory=mock_inventory,
+            efficiency=efficiency,
+            eligible=eligible)
+
+        # the sequence of eligible disturbance production is:
+        # (area*production*efficiency)
+        # 12.0 * 5.0 * 0.9 + 10.0 * 4.0 * 0.9 + 7.0 * 10.0 * 0.9
+        # sum of the above is 54 + 36 + 63 = 153 (tC eligible production)
+        # area proportion = 100/153 = 0.65359477
+
+        self.assertTrue(
+            list(result.target.target_var) ==
+            [12.0 * 5.0 * 0.9 * 100 / 153,
+             10.0 * 4.0 * 0.9 * 100 / 153,
+             7.0 * 10.0 * 0.9 * 100 / 153])
+        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(list(result.target.disturbed_index) == [0, 2, 3])
+        self.assertTrue(
+            list(result.target.area_proportions) == [
+                100 / 153 * 0.9, 100 / 153 * 0.9, 100 / 153 * 0.9
+            ])
+
+    def test_proportion_sort_proportion_target(self):
+        mock_inventory = pd.DataFrame({
+            "area": [10, 20, 30, 40, 50, 60]
+        })
+        eligible = pd.Series([True, False, True, True, False, True])
+        proportion_target = 3/4
+
+        result = rule_target.proportion_sort_proportion_target(
+            proportion_target=proportion_target,
+            inventory=mock_inventory,
+            eligible=eligible)
+
+        self.assertTrue(
+            list(result.target.target_var) == [
+                3 / 4, 3 / 4, 3 / 4, 3 / 4, 3 / 4])
+        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(list(result.target.disturbed_index) == [0, 2, 3, 4])
+        self.assertTrue(
+            list(result.target.area_proportions) == [
+                3 / 4, 3 / 4, 3 / 4, 3 / 4, 3 / 4])
