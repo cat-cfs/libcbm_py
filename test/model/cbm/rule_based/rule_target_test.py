@@ -295,9 +295,23 @@ class RuleTargetTest(unittest.TestCase):
             eligible=pd.Series([True, False, True, False]))
         self.assertTrue(
             list(result.target.target_var) == [5 / 6 * 60, 5 / 6 * 60])
-        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(pd.isnull(result.target.sort_var).all())
         self.assertTrue(list(result.target.disturbed_index) == [0, 2])
         self.assertTrue(list(result.target.area_proportions) == [5 / 6, 5 / 6])
+
+    def test_proportion_area_target_with_shortfall(self):
+        mock_inventory = pd.DataFrame({
+            "area": [60.0, 60.0, 60.0, 60.0]
+        })
+        result = rule_target.proportion_area_target(
+            area_target_value=1000,
+            inventory=mock_inventory,
+            eligible=pd.Series([True, False, True, False]))
+        self.assertTrue(
+            list(result.target.target_var) == [60, 60])
+        self.assertTrue(pd.isnull(result.target.sort_var).all())
+        self.assertTrue(list(result.target.disturbed_index) == [0, 2])
+        self.assertTrue(list(result.target.area_proportions) == [1.0, 1.0])
 
     def test_proportion_merch_target(self):
         mock_inventory = pd.DataFrame({
@@ -325,7 +339,7 @@ class RuleTargetTest(unittest.TestCase):
             [12.0 * 5.0 * 0.9 * 100 / 153,
              10.0 * 4.0 * 0.9 * 100 / 153,
              7.0 * 10.0 * 0.9 * 100 / 153])
-        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(pd.isnull(result.target.sort_var).all())
         self.assertTrue(list(result.target.disturbed_index) == [0, 2, 3])
         self.assertTrue(
             list(result.target.area_proportions) == [
@@ -347,7 +361,7 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(
             list(result.target.target_var) == [
                 3 / 4, 3 / 4, 3 / 4, 3 / 4, 3 / 4])
-        self.assertTrue(result.target.sort_var is None)
+        self.assertTrue(pd.isnull(result.target.sort_var).all())
         self.assertTrue(list(result.target.disturbed_index) == [0, 2, 3, 4])
         self.assertTrue(
             list(result.target.area_proportions) == [
