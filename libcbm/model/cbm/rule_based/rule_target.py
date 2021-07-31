@@ -275,23 +275,71 @@ def proportion_merch_target(carbon_target, disturbance_production, inventory,
             such that the total carbon produced matches the specified carbon
             target.
     """
-    raise NotImplementedError()
+    eligible_inventory = inventory[eligible]
+    eligible_production = disturbance_production[eligible]
+    production = eligible_inventory.area * eligible_production * efficiency
+    total_production = production.sum()
+    proportion = carbon_target / total_production
+    if proportion > 1:
+        proportion = 1.0
+    n_disturbed = len(eligible_inventory.index)
+    target = pd.DataFrame({
+        "target_var": production * proportion,
+        "sort_var": None,
+        "disturbed_index": eligible_inventory.index,
+        "area_proportions": proportion * efficiency
+        })
+    total_achieved = target.target_var.sum()
+    return RuleTargetResult(
+        target, statistics={
+            "total_eligible_value": total_production,
+            "total_achieved": total_achieved,
+            "shortfall": carbon_target - total_achieved,
+            "num_records_disturbed": n_disturbed,
+            "num_splits": n_disturbed if proportion < 1.0 else 0,
+            "num_eligible": n_disturbed
+        })
 
 
 def proportion_sort_proportion_target(proportion_target, inventory, eligible):
-    """Compute a
+    """Create a rule target specifying to the given proportion of all of the
+    eligible stands.
 
     Args:
-        proportion_target ([type]): [description]
-        inventory ([type]): [description]
-        eligible ([type]): [description]
+        proportion_target (float): a proportion of each eligible inventory
+            record's area to disturb
+        inventory (pd.DataFrame): the inventory being targeted for
+            disturbance.
+        eligible (pandas.Series): boolean array indicating
+            whether or not each index is eligible for this disturbance target
 
     Returns:
         RuleTargetResult: object with information targeting the specified
             proportion of all records in the eligible subset of the
             specified inventory.
     """
-    raise NotImplementedError()
+    if proportion_target < 0 or proportion_target > 1.0:
+        raise ValueError(
+            "proportion target may not be less than zero or greater than 1.")
+    eligible_inventory = inventory.loc[eligible]
+
+    n_disturbed = len(eligible_inventory.index)
+
+    target = pd.DataFrame({
+        "target_var": proportion_target,
+        "sort_var": None,
+        "disturbed_index": eligible_inventory.index,
+        "area_proportions": proportion_target
+        })
+    return RuleTargetResult(
+        target, statistics={
+            "total_eligible_value": None,
+            "total_achieved": None,
+            "shortfall": None,
+            "num_records_disturbed": n_disturbed,
+            "num_splits": n_disturbed if proportion_target < 1.0 else 0,
+            "num_eligible": n_disturbed
+        })
 
 
 def sorted_merch_target(carbon_target, disturbance_production, inventory,
