@@ -191,6 +191,19 @@ def proportion_area_target(area_target_value, inventory, eligible):
     """
     eligible_inventory = inventory.loc[eligible]
     total_eligible_area = eligible_inventory.area.sum()
+    if total_eligible_area <= 0:
+        return RuleTargetResult(
+            target=pd.DataFrame(
+                columns=[
+                    "target_var", "sort_var", "disturbed_index",
+                    "area_proportions"]),
+            statistics={
+                "total_eligible_value": total_eligible_area,
+                "total_achieved": 0.0,
+                "shortfall": area_target_value,
+                "num_records_disturbed": 0,
+                "num_splits": 0,
+                "num_eligible": len(eligible_inventory.index)})
     area_proportion = area_target_value / total_eligible_area
     total_achieved = area_target_value
     if area_proportion >= 1:
@@ -279,10 +292,24 @@ def proportion_merch_target(carbon_target, disturbance_production, inventory,
     eligible_production = disturbance_production[eligible]
     production = eligible_inventory.area * eligible_production * efficiency
     total_production = production.sum()
+    n_eligible = len(eligible_inventory.index)
+    if total_production <= 0.0:
+        return RuleTargetResult(
+            target=pd.DataFrame(
+                columns=[
+                    "target_var", "sort_var", "disturbed_index",
+                    "area_proportions"]),
+            statistics={
+                "total_eligible_value": total_production,
+                "total_achieved": 0.0,
+                "shortfall": carbon_target,
+                "num_records_disturbed": 0,
+                "num_splits": 0,
+                "num_eligible": n_eligible})
     proportion = carbon_target / total_production
     if proportion > 1:
         proportion = 1.0
-    n_disturbed = len(eligible_inventory.index)
+
     target = pd.DataFrame({
         "target_var": production * proportion,
         "sort_var": None,
@@ -295,9 +322,9 @@ def proportion_merch_target(carbon_target, disturbance_production, inventory,
             "total_eligible_value": total_production,
             "total_achieved": total_achieved,
             "shortfall": carbon_target - total_achieved,
-            "num_records_disturbed": n_disturbed,
-            "num_splits": n_disturbed if proportion < 1.0 else 0,
-            "num_eligible": n_disturbed
+            "num_records_disturbed": n_eligible,
+            "num_splits": n_eligible if proportion < 1.0 else 0,
+            "num_eligible": n_eligible
         })
 
 
