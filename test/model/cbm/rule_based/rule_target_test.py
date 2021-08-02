@@ -386,7 +386,8 @@ class RuleTargetTest(unittest.TestCase):
 
     def test_proportion_area_target_with_shortfall(self):
         mock_inventory = pd.DataFrame({
-            "area": [60.0, 60.0, 60.0, 60.0]
+            # note 3rd value is 0 area
+            "area": [60.0, 60.0, 0.0, 60.0]
         })
         eligible = pd.Series([True, False, True, False])
         result = rule_target.proportion_area_target(
@@ -394,17 +395,36 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             eligible=eligible)
         self.assertTrue(
-            list(result.target.target_var) == [60, 60])
+            list(result.target.target_var) == [60, 0])
         self.assertTrue(pd.isnull(result.target.sort_var).all())
         self.assertTrue(list(result.target.disturbed_index) == [0, 2])
         self.assertTrue(list(result.target.area_proportions) == [1.0, 1.0])
         self.assertTrue(
             result.statistics["total_eligible_value"] ==
             mock_inventory[eligible].area.sum())
-        self.assertTrue(result.statistics["total_achieved"] == 120)
-        self.assertTrue(result.statistics["shortfall"] == 1000-120)
+        self.assertTrue(result.statistics["total_achieved"] == 60)
+        self.assertTrue(result.statistics["shortfall"] == 1000-60)
         self.assertTrue(
             result.statistics["num_records_disturbed"] == eligible.sum())
+        self.assertTrue(result.statistics["num_splits"] == 0)
+        self.assertTrue(result.statistics["num_eligible"] == eligible.sum())
+
+    def test_proportion_area_target_with_all_zero_areas(self):
+        mock_inventory = pd.DataFrame({
+            "area": [0.0, 0.0, 0.0, 0.0]
+        })
+        eligible = pd.Series([True, False, True, False])
+        result = rule_target.proportion_area_target(
+            area_target_value=1000,
+            inventory=mock_inventory,
+            eligible=eligible)
+        self.assertTrue(len(result.target.index) == 0)
+        self.assertTrue(
+            result.statistics["total_eligible_value"] == 0.0)
+        self.assertTrue(result.statistics["total_achieved"] == 0)
+        self.assertTrue(result.statistics["shortfall"] == 1000)
+        self.assertTrue(
+            result.statistics["num_records_disturbed"] == 0)
         self.assertTrue(result.statistics["num_splits"] == 0)
         self.assertTrue(result.statistics["num_eligible"] == eligible.sum())
 
@@ -566,6 +586,73 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(
             result.statistics["num_records_disturbed"] == 3)
         self.assertTrue(result.statistics["num_splits"] == 3)
+        self.assertTrue(result.statistics["num_eligible"] == 3)
+
+    def test_proportion_merch_target_some_zero_production(self):
+        mock_inventory = pd.DataFrame({
+            "area": [12.0, 11.0, 10.0, 7.0],
+        })
+        carbon_target = 50.0
+        disturbance_production = pd.Series([5.0, 5.0, 0.0, 10.0])
+        eligible = pd.Series([True, False, True, True])
+
+        result = rule_target.proportion_merch_target(
+            carbon_target=carbon_target,
+            disturbance_production=disturbance_production,
+            inventory=mock_inventory,
+            efficiency=1.0,
+            eligible=eligible)
+
+        total_eligible_production = \
+            (disturbance_production[eligible] *
+             mock_inventory[eligible].area).sum()
+        target_proportion = carbon_target / total_eligible_production
+        self.assertTrue(
+            list(result.target.target_var) ==
+            list(disturbance_production[eligible] *
+                 mock_inventory[eligible].area *
+                 target_proportion))
+        self.assertTrue(pd.isnull(result.target.sort_var).all())
+        self.assertTrue(list(result.target.disturbed_index) == [0, 2, 3])
+        self.assertTrue(
+            list(result.target.area_proportions) ==
+            [target_proportion]*eligible.sum())
+
+        self.assertTrue(
+            result.statistics["total_eligible_value"] ==
+            (mock_inventory[eligible].area *
+             disturbance_production[eligible]).sum())
+        self.assertTrue(result.statistics["total_achieved"] == carbon_target)
+        self.assertTrue(result.statistics["shortfall"] == 0)
+        self.assertTrue(
+            result.statistics["num_records_disturbed"] == 3)
+        self.assertTrue(result.statistics["num_splits"] == 3)
+        self.assertTrue(result.statistics["num_eligible"] == 3)
+
+    def test_proportion_merch_target_all_zero_production(self):
+        mock_inventory = pd.DataFrame({
+            "area": [12.0, 11.0, 10.0, 7.0],
+        })
+        carbon_target = 50.0
+        # no disturbance production at all to meet the above target
+        disturbance_production = pd.Series([0.0, 0.0, 0.0, 0.0])
+        eligible = pd.Series([True, False, True, True])
+
+        result = rule_target.proportion_merch_target(
+            carbon_target=carbon_target,
+            disturbance_production=disturbance_production,
+            inventory=mock_inventory,
+            efficiency=1.0,
+            eligible=eligible)
+
+        self.assertTrue(len(result.target.index) == 0)
+        self.assertTrue(
+            result.statistics["total_eligible_value"] == 0)
+        self.assertTrue(result.statistics["total_achieved"] == 0)
+        self.assertTrue(result.statistics["shortfall"] == carbon_target)
+        self.assertTrue(
+            result.statistics["num_records_disturbed"] == 0)
+        self.assertTrue(result.statistics["num_splits"] == 0)
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_proportion_merch_target_shortfall(self):
