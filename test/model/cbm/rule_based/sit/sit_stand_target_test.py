@@ -35,7 +35,22 @@ class SITStandTargetTest(unittest.TestCase):
     targets based on SIT disturbance event input.
     """
 
-    def test_create_sit_event_target_proportion_sort_area_target(self):
+    def test_proportion_sort_proportion_target(self):
+        get_test_function(
+            mock_sit_event_row={
+                "sort_type": "PROPORTION_OF_EVERY_RECORD",
+                "target_type": "Proportion",
+                "target": 0.8,
+                "disturbance_type": "fire"},
+            mock_state_variables="mock_state_vars",
+            mock_pools="mock_pools",
+            mock_random_generator=None
+        ).proportion_sort_proportion_target.assert_called_once_with(
+            proportion_target=0.8,
+            inventory="inventory",
+            eligible="eligible")
+
+    def test_proportion_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "PROPORTION_OF_EVERY_RECORD",
@@ -51,7 +66,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_create_sit_event_target_merch_total_sort_area_target(self):
+    def test_merch_total_sort_area_target(self):
 
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
@@ -82,7 +97,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_create_sit_event_target_merch_sw_sort_area_target(self):
+    def test_merch_sw_sort_area_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -117,7 +132,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_create_sit_event_target_merch_hw_sort_area_target(self):
+    def test_merch_hw_sort_area_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -151,7 +166,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory",
             eligible="eligible")
 
-    def test_create_sit_event_target_random_sort_area_target(self):
+    def test_random_sort_area_target(self):
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
 
         def mock_random_gen(n_values):
@@ -173,7 +188,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_total_stem_snag_sort_area_target(self):
+    def test_total_stem_snag_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "TOTALSTEMSNAG",
@@ -195,7 +210,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_sw_stem_snag_sort_area_target(self):
+    def test_sw_stem_snag_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "SWSTEMSNAG",
@@ -212,7 +227,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_hw_stem_snag_sort_area_target(self):
+    def test_hw_stem_snag_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "HWSTEMSNAG",
@@ -229,7 +244,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_swage_sort_area_target(self):
+    def test_swage_sort_area_target(self):
         """confirm state_variable.age is used as a sort value
         """
         get_test_function(
@@ -248,7 +263,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_hwage_sort_area_target(self):
+    def test_hwage_sort_area_target(self):
         """confirm state_variable.age is used as a sort value
         """
         get_test_function(
@@ -267,7 +282,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_proportion_sort_merch_target(self):
+    def test_proportion_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -299,7 +314,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_merch_total_sort_merch_target(self):
+    def test_merch_total_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -332,7 +347,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_merch_sw_sort_merch_target(self):
+    def test_merch_sw_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -370,7 +385,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_merch_hw_sort_merch_target(self):
+    def test_merch_hw_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -408,7 +423,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_random_sort_merch_target(self):
+    def test_random_sort_merch_target(self):
 
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
 
@@ -447,7 +462,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_total_stem_snag_sort_merch_target(self):
+    def test_total_stem_snag_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
@@ -485,7 +500,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_sw_stem_snag_sort_merch_target(self):
+    def test_sw_stem_snag_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
@@ -518,7 +533,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_hw_stem_snag_sort_merch_target(self):
+    def test_hw_stem_snag_sort_merch_target(self):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3])
 
@@ -551,7 +566,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_proportion_sort_proportion_target(self):
+    def test_age_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "SORT_BY_HW_AGE",
@@ -567,7 +582,7 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible"
         )
 
-    def test_create_sit_event_target_svoid_sort_proportion_target(self):
+    def test_svoid_sort_proportion_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
@@ -582,7 +597,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory"
         )
 
-    def test_create_sit_event_target_svoid_sort_merch_target(self):
+    def test_svoid_sort_merch_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
@@ -597,7 +612,7 @@ class SITStandTargetTest(unittest.TestCase):
             inventory="inventory"
         )
 
-    def test_create_sit_event_target_svoid_sort_area_target(self):
+    def test_svoid_sort_area_target(self):
         get_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
