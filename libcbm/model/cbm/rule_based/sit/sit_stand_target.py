@@ -128,11 +128,11 @@ def create_sit_event_target(rule_target, sit_event_row,
                     random_generator),
                 efficiency=sit_event_row["efficiency"],
                 eligible=eligible)
-    elif target == proportional_target_type:
-        if sort != "PROPORTION_OF_EVERY_RECORD" or sort != "SVOID":
-            raise ValueError(
-                f"specified sort: '{sort}', target: '{target}' combination "
-                "not valid")
+    elif sort == "SVOID":
+        rule_target_result = rule_target.spatially_indexed_target(
+            identifier=sit_event_row["spatial_reference"],
+            inventory=cbm_vars.inventory)
+    elif target_type == proportional_target_type:
         if sort == "PROPORTION_OF_EVERY_RECORD":
             rule_target_result = rule_target.proportion_sort_proportion_target(
                 proportion_target=target,
@@ -151,10 +151,6 @@ def create_sit_event_target(rule_target, sit_event_row,
                 inventory=cbm_vars.inventory,
                 efficiency=sit_event_row["efficiency"],
                 eligible=eligible)
-    elif sort == "SVOID":
-        rule_target_result = rule_target.spatially_indexed_target(
-            identifier=sit_event_row["spatial_reference"],
-            inventory=cbm_vars.inventory)
     if rule_target_result is None:
         raise ValueError(
             f"specified sort ({sort}), target_type ({target_type}) "
