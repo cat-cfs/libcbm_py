@@ -203,3 +203,35 @@ class EventProcessorTest(unittest.TestCase):
                 pd.DataFrame(
                     {"disturbance_type": [
                         9000, 9000, 9000, 0, 0, 0]})))
+
+    def test_apply_rule_based_event_expected_result_no_target_rows(self):
+
+        mock_cbm_vars = SimpleNamespace(
+            classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
+            inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
+            state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
+            pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
+            flux_indicators=pd.DataFrame({"f1": [1, 2, 3, 4]}),
+            params=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+        )
+
+        disturbance_type_id = 9000
+        cbm_vars_result = event_processor.apply_rule_based_event(
+            target=pd.DataFrame({
+                "disturbed_index": pd.Series(),
+                "area_proportions": pd.Series()}),
+            disturbance_type_id=disturbance_type_id,
+            cbm_vars=mock_cbm_vars)
+
+        self.assertTrue(
+            cbm_vars_result.classifiers.equals(mock_cbm_vars.classifiers))
+        self.assertTrue(
+            cbm_vars_result.inventory.equals(mock_cbm_vars.inventory))
+        self.assertTrue(
+            cbm_vars_result.state.equals(mock_cbm_vars.state))
+        self.assertTrue(
+            cbm_vars_result.pools.equals(mock_cbm_vars.pools))
+        self.assertTrue(
+            cbm_vars_result.flux_indicators.equals(mock_cbm_vars.flux_indicators))
+        self.assertTrue(
+            cbm_vars_result.params.equals(mock_cbm_vars.params))
