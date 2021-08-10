@@ -4,6 +4,7 @@
 
 import ctypes
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
+from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm import data_helpers
 
 
@@ -126,6 +127,24 @@ class LibCBMWrapper():
         self.handle.call(
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
             matrix_index.shape[0])
+
+    def set_op_repeating(self, op_id, coordinates, values, matrix_index):
+        """Assigns the specified values associated with repeating coordinates
+        to an allocated block of matrices.
+
+        Args:
+            op_id (int): The id for an allocated block of matrices
+            coordinates (numpy.ndarray): matrix of integer coordinates
+                corresponding to each column of the values.
+                Shape (n_coordinate, 2)
+            values (numpy.ndarray): matrix of float values for each matrix to
+                assign. Shape (n_matrices, n_coordinate).
+            matrix_index (ndarray): an array of length n stands where the
+                value is an index to a row in the specifies values matrix
+        """
+        self.handle.call(
+            "LibCBM_SetOp2", op_id, LibCBM_Matrix_Int(coordinates),
+            LibCBM_Matrix(values), matrix_index, matrix_index.shape[0])
 
     def compute_pools(self, ops, pools, enabled=None):
         """Computes flows between pool values for all stands.
