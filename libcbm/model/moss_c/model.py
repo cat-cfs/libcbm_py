@@ -18,7 +18,9 @@ from libcbm.model.moss_c.pools import DISTURBANCE_PROCESS
 from libcbm.model.moss_c.pools import FLUX_INDICATORS
 from libcbm.model.moss_c import model_functions
 from libcbm.model.moss_c.model_functions import SpinupState
-
+from libcbm.wrapper.libcbm_operation import Operation
+from libcbm.wrapper.libcbm_operation import OperationFormat
+from libcbm.wrapper import libcbm_operation
 
 def f1(merch_vol, a, b):
     """Returns Canopy openess, O(t) as a function of Merch. Volume
@@ -328,6 +330,10 @@ def spinup(model_context, enable_debugging=False):
     return spinup_debug
 
 
+def create_operation(model_context, format, data):
+    return Operation(model_context.dll, format, data)
+
+
 def step(model_context, disturbance_before_annual_process=True,
          include_flux=True):
     n_stands = len(model_context.state.age)
@@ -335,10 +341,9 @@ def step(model_context, disturbance_before_annual_process=True,
         model_context.merch_vol_lookup.get_merch_vol(
             model_context.state.age,
             model_context.params.merch_volume_id)
-    dynamics = annual_process_dynamics(
-        model_context.state, model_context.params)
-    annual_process_matrices = model_functions.expand_matrix(
-        get_annual_process_matrix(dynamics), {int(p) for p in Pool})
+    annual_process_matrices = Operation(
+        data=get_annual_process_matrix(
+            annual_process_dynamics(model_context.state, model_context.params)))
     annual_process_matrix_index = np.array(
         list(range(0, n_stands)), dtype=np.uintp)
     disturbance_matrices = model_context.disturbance_matrices.dm_list
