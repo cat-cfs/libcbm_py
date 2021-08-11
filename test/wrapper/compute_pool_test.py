@@ -181,6 +181,7 @@ class ComputePoolTests(unittest.TestCase):
         })
         n_stands = 10
         pools_array = np.ones(shape=(n_stands, len(pools)))
+        pools_test = pools_array.copy()
 
         matrices = [
             [pools["a"], pools["a"], np.array([1.0, 1.0, 1.0])],
@@ -195,5 +196,22 @@ class ComputePoolTests(unittest.TestCase):
             np.array([0, 1, 2, 0, 1, 2, 0, 1, 2, 0], dtype=np.uint64)
         op_id = dll.allocate_op(n_stands)
         dll.set_op_repeating(op_id, coords, values, matrix_index)
-        dll.compute_pools(np.array([op_id]), pools_array)
-        self.assertTrue(pools)
+        dll.compute_pools(np.array([op_id]), pools_test)
+
+        matrices_np = [
+            np.zeros(shape=(len(pools), len(pools))),
+            np.zeros(shape=(len(pools), len(pools))),
+            np.zeros(shape=(len(pools), len(pools)))]
+        for item in matrices:
+            for i, val in enumerate(item[2]):
+                matrices_np[i][item[0], item[1]] = val
+
+        # working variable required so the original value isn't overwritten
+        pools_expected = pools_array.copy()
+        # create the expected result using the numpy implementation
+        for k in range(n_stands):
+            mat = matrices_np[matrix_index[k]]
+            pools_expected[k, :] = np.matmul(pools_expected[k, :], mat)
+
+        self.assertTrue(
+            np.allclose(pools_expected, pools_test, rtol=1e-12, atol=1e-15))
