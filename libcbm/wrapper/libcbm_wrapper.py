@@ -5,6 +5,7 @@
 import ctypes
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
+from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm import data_helpers
 
 
@@ -120,10 +121,7 @@ class LibCBMWrapper():
                 provided to this function.
 
         """
-        matrices_array = (LibCBM_Matrix * len(matrices))()
-        for i_matrix, matrix in enumerate(matrices):
-            matrices_array[i_matrix] = LibCBM_Matrix(matrix)
-        matrices_p = ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
+        matrices_p = libcbm_wrapper_functions.get_matrix_list_pointer(matrices)
         self.handle.call(
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
             matrix_index.shape[0])
