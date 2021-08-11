@@ -16,41 +16,6 @@ class SpinupState(IntEnum):
     End = 5
 
 
-def compute(dll, pools, ops, op_indices, op_processes=None,
-            flux=None, enabled=None):
-    """Compute pool flows and optionally track the fluxes
-
-    see the methods in :py:class:`libcbm.wrapper.libcbm_wrapper.LibCBMWrapper`
-
-    Args:
-        dll (LibCBMWrapper): instance of libcbm wrapper
-        pools (pandas.DataFrame): pools dataframe (stands by pools)
-        ops (list): list of list of coordinate matrices
-        op_indices (np.ndarray): matrix of op indices
-        op_processes (iterable, optional): flux indicator op processes.
-            Required if flux arg is specified. Defaults to None.
-        flux (pandas.DataFrame, optional): Flux indicators dataframe
-            (stands by flux-indicator). If not specified, no fluxes are
-            tracked. Defaults to None.
-        enabled (numpy.ndarray, optional): Flag array of length n-stands
-            indicating whether or not to include corresponding rows in
-            computation. If set to None, all records are included.
-            Defaults to None.
-    """
-    op_ids = []
-    for i, op in enumerate(ops):
-        op_id = dll.allocate_op(pools.shape[0])
-        op_ids.append(op_id)
-        dll.set_op(op_id, op, np.ascontiguousarray(op_indices[:, i]))
-
-    if flux is not None:
-        dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
-    else:
-        dll.compute_pools(op_ids, pools, enabled)
-    for op_id in op_ids:
-        dll.free_op(op_id)
-
-
 def np_map(a, m, dtype):
     """Return the mapped value of a according to the dictionary m.
     The occurence of any value in a that is not present as a key
