@@ -120,7 +120,7 @@ class ModelContext:
             merch_vol=self.merch_vol_lookup.get_merch_vol(
                 initial_age,
                 self.params.merch_volume_id),
-            enabled=np.ones(self.n_stands, dtype=int),
+            enabled=np.ones(self.n_stands, dtype=np.int32),
             disturbance_type=np.zeros(self.n_stands, dtype=np.uintp))
 
         self.state = model_state

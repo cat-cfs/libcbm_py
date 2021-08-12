@@ -315,7 +315,7 @@ def spinup(model_context, enable_debugging=False):
             enabled=model_context.state.enabled)
         if all_finished:
             # re-enable everything for subsequent processes
-            model_context.state.enabled = 1
+            model_context.state.enabled[:] = 1
             break
         step(
             model_context, disturbance_before_annual_process=False,
