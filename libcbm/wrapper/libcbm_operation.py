@@ -34,10 +34,11 @@ class Operation:
         self.dispose()
 
     def __init_matrix_list(self, data):
-        self.data = data
+        self.__matrix_list = data
         self.__matrix_list_p = \
-            libcbm_wrapper_functions.get_matrix_list_pointer(self.data)
-        self.__matrix_list_len = len(data)
+            libcbm_wrapper_functions.get_matrix_list_pointer(
+                self.__matrix_list)
+        self.__matrix_list_len = len(self.__matrix_list)
 
     def __init_repeating(self, data):
         value_len = 1
