@@ -10,51 +10,6 @@ from libcbm.model.moss_c.pools import Pool
 
 class ModelFunctionsTest(unittest.TestCase):
 
-    def test_compute_with_pools_only(self):
-        dll = Mock()
-        dll.allocate_op.side_effect = lambda _: 12345
-        pools = np.array([[1, 2, 3], [3, 4, 5]])
-        model_functions.compute(
-            dll=dll,
-            pools=pools,
-            ops=[np.array([1])],
-            op_indices=np.array([[1, 2, 3]]),
-            op_processes=None,
-            flux=None,
-            enabled="enabled")
-
-        dll.allocate_op.assert_called_with(2)
-        self.assertTrue(dll.compute_pools.call_args_list[0].args[0] == [12345])
-        self.assertTrue(
-            (dll.compute_pools.call_args_list[0].args[1] == pools).all())
-        self.assertTrue(
-            dll.compute_pools.call_args_list[0].args[2] == "enabled")
-        dll.free_op.assert_called_with(12345)
-
-    def test_compute_with_flux(self):
-        dll = Mock()
-        dll.allocate_op.side_effect = lambda _: 12345
-        pools = np.array([[1, 2, 3], [3, 4, 5]])
-        model_functions.compute(
-            dll=dll,
-            pools=pools,
-            ops=[np.array([1])],
-            op_indices=np.array([[1, 2, 3]]),
-            op_processes="op_processes",
-            flux="flux",
-            enabled="enabled")
-
-        dll.allocate_op.assert_called_with(2)
-        self.assertTrue(dll.compute_flux.call_args_list[0].args[0] == [12345])
-        self.assertTrue(
-            dll.compute_flux.call_args_list[0].args[1] == "op_processes")
-        self.assertTrue(
-            (dll.compute_flux.call_args_list[0].args[2] == pools).all())
-        self.assertTrue(dll.compute_flux.call_args_list[0].args[3] == "flux")
-        self.assertTrue(
-            dll.compute_flux.call_args_list[0].args[4] == "enabled")
-        dll.free_op.assert_called_with(12345)
-
     def test_np_map(self):
         result = model_functions.np_map(
             a=np.array([1, 2, 1, 2, 3, 5]),
