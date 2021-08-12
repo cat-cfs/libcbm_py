@@ -46,7 +46,7 @@ class Operation:
             if isinstance(d[2], np.ndarray):
                 value_len = d[2].shape[0]
                 break
-        coordinates = np.array([[x[0], x[1]] for x in data], dtype=int)
+        coordinates = np.array([[x[0], x[1]] for x in data], dtype=np.int32)
         values = np.column_stack(
             [data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
              for x in data])

@@ -190,7 +190,7 @@ class ComputePoolTests(unittest.TestCase):
             [pools["c"], pools["d"], np.array([1.0, 2.0, 1.0])],
             [pools["d"], pools["d"], np.array([1.0, 2.0, 1.0])]
         ]
-        coords = np.array([[x[0], x[1]] for x in matrices], dtype=int)
+        coords = np.array([[x[0], x[1]] for x in matrices], dtype=np.int32)
         values = np.column_stack([x[2] for x in matrices])
         matrix_index = \
             np.array([0, 1, 2, 0, 1, 2, 0, 1, 2, 0], dtype=np.uint64)
