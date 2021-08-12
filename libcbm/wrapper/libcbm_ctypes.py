@@ -59,7 +59,8 @@ class LibCBM_ctypes():
             ctypes.POINTER(LibCBM_Matrix),  # matrices
             ctypes.c_size_t,  # n_matrices
             ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
-            ctypes.c_size_t  # n_matrix_index
+            ctypes.c_size_t,  # n_matrix_index
+            ctypes.c_int      # init
         )
 
         self._dll.LibCBM_SetOp2.argtypes = (
@@ -69,7 +70,8 @@ class LibCBM_ctypes():
             LibCBM_Matrix_Int,  # coordinates
             LibCBM_Matrix,  # values
             ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
-            ctypes.c_size_t  # n_matrix_index
+            ctypes.c_size_t,  # n_matrix_index
+            ctypes.c_int      # init
         )
 
         self._dll.LibCBM_ComputePools.argtypes = (
