@@ -55,6 +55,9 @@ class LibCBM_Matrix(LibCBM_Matrix_Base):
                 ('values', ctypes.POINTER(_matrix_c_type))]
 
     def __init__(self, matrix):
+        #  hang onto a reference of the matrix to prevent the pointers
+        #  becoming invalid
+        self.matrix = matrix
         LibCBM_Matrix_Base.__init__(
             self, matrix, LibCBM_Matrix._matrix_np_type,
             LibCBM_Matrix._matrix_c_type)
@@ -75,6 +78,9 @@ class LibCBM_Matrix_Int(LibCBM_Matrix_Base):
                 ('values', ctypes.POINTER(_matrix_c_type))]
 
     def __init__(self, matrix):
+        #  hang onto a reference of the matrix to prevent the pointers
+        #  becoming invalid
+        self.matrix = matrix
         LibCBM_Matrix_Base.__init__(
             self, matrix, LibCBM_Matrix_Int._matrix_np_type,
             LibCBM_Matrix_Int._matrix_c_type)
