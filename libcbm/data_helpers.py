@@ -126,7 +126,7 @@ def promote_scalar(value, size, dtype):
     elif isinstance(value, np.ndarray):
         return value
     else:
-        return np.full(value, shape=size, dtype=dtype)
+        return np.full(shape=size, fill_value=value, dtype=dtype)
 
 
 def append_simulation_result(simulation_result, timestep_data, timestep):
