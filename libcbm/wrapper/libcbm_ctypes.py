@@ -7,6 +7,7 @@ import ctypes
 from numpy.ctypeslib import ndpointer
 
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
+from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.cbm import cbm_ctypes
 
@@ -58,7 +59,19 @@ class LibCBM_ctypes():
             ctypes.POINTER(LibCBM_Matrix),  # matrices
             ctypes.c_size_t,  # n_matrices
             ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
-            ctypes.c_size_t  # n_matrix_index
+            ctypes.c_size_t,  # n_matrix_index
+            ctypes.c_int      # init
+        )
+
+        self._dll.LibCBM_SetOp2.argtypes = (
+            ctypes.POINTER(LibCBM_Error),  # error structure
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t,  # op_id
+            LibCBM_Matrix_Int,  # coordinates
+            LibCBM_Matrix,  # values
+            ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
+            ctypes.c_size_t,  # n_matrix_index
+            ctypes.c_int      # init
         )
 
         self._dll.LibCBM_ComputePools.argtypes = (

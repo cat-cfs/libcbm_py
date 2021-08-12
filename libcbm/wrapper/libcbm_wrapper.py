@@ -4,6 +4,8 @@
 
 import ctypes
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
+from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
+from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm import data_helpers
 
 
@@ -48,7 +50,7 @@ class LibCBMWrapper():
         """
         self.handle.call("LibCBM_Free_Op", op_id)
 
-    def set_op(self, op_id, matrices, matrix_index):
+    def set_op(self, op_id, matrices, matrix_index, init=0):
         """Assigns values to an allocated block of matrices.
 
             Example::
@@ -117,15 +119,36 @@ class LibCBMWrapper():
             matrix_index (ndarray): an array of length n stands where the
                 value is an index to a matrix in the specified list of matrices
                 provided to this function.
+            init (int): if set to 0 matrices are initialized with zeros, and
+                if 1 the matrix diagonals are initialized to 1 (identity) prior
+                to assigning matrix values.  Other values will result in an error.
 
         """
-        matrices_array = (LibCBM_Matrix * len(matrices))()
-        for i_matrix, matrix in enumerate(matrices):
-            matrices_array[i_matrix] = LibCBM_Matrix(matrix)
-        matrices_p = ctypes.cast(matrices_array, ctypes.POINTER(LibCBM_Matrix))
+        matrices_p = libcbm_wrapper_functions.get_matrix_list_pointer(matrices)
         self.handle.call(
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
-            matrix_index.shape[0])
+            matrix_index.shape[0], init)
+
+    def set_op_repeating(self, op_id, coordinates, values, matrix_index, init=0):
+        """Assigns the specified values associated with repeating coordinates
+        to an allocated block of matrices.
+
+        Args:
+            op_id (int): The id for an allocated block of matrices
+            coordinates (numpy.ndarray): matrix of integer coordinates
+                corresponding to each column of the values.
+                Shape (n_coordinate, 2)
+            values (numpy.ndarray): matrix of float values for each matrix to
+                assign. Shape (n_matrices, n_coordinate).
+            matrix_index (ndarray): an array of length n stands where the
+                value is an index to a row in the specifies values matrix
+            init (int): if set to 0 matrices are initialized with zeros, and
+                if 1 the matrix diagonals are initialized to 1 (identity) prior
+                to assigning matrix values.  Other values will result in an error.
+        """
+        self.handle.call(
+            "LibCBM_SetOp2", op_id, LibCBM_Matrix_Int(coordinates),
+            LibCBM_Matrix(values), matrix_index, matrix_index.shape[0], init)
 
     def compute_pools(self, ops, pools, enabled=None):
         """Computes flows between pool values for all stands.

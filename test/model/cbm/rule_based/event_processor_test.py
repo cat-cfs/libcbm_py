@@ -218,8 +218,8 @@ class EventProcessorTest(unittest.TestCase):
         disturbance_type_id = 9000
         cbm_vars_result = event_processor.apply_rule_based_event(
             target=pd.DataFrame({
-                "disturbed_index": pd.Series(),
-                "area_proportions": pd.Series()}),
+                "disturbed_index": pd.Series(dtype=int),
+                "area_proportions": pd.Series(dtype=float)}),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars)
 
@@ -232,6 +232,7 @@ class EventProcessorTest(unittest.TestCase):
         self.assertTrue(
             cbm_vars_result.pools.equals(mock_cbm_vars.pools))
         self.assertTrue(
-            cbm_vars_result.flux_indicators.equals(mock_cbm_vars.flux_indicators))
+            cbm_vars_result.flux_indicators.equals(
+                mock_cbm_vars.flux_indicators))
         self.assertTrue(
             cbm_vars_result.params.equals(mock_cbm_vars.params))
