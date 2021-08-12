@@ -1,5 +1,6 @@
 from enum import Enum
 import numpy as np
+from libcbm import data_helpers
 from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
@@ -30,38 +31,51 @@ class Operation:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.__op_id is not None and self.__dll is not None:
-            self.__dll.free_op(self.__op_id)
+        self.dispose()
 
     def __init_matrix_list(self, data):
+        self.data = data
         self.__matrix_list_p = \
-            libcbm_wrapper_functions.get_matrix_list_pointer(data)
+            libcbm_wrapper_functions.get_matrix_list_pointer(self.data)
         self.__matrix_list_len = len(data)
 
     def __init_repeating(self, data):
-        coordinates = np.array([[x[0], x[1]] for x in data], dtype=int)
-        values = np.column_stack([x[2] for x in data])
-        self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
-        self.__repeating_matrix_values = LibCBM_Matrix(values)
+        value_len = 1
+        for d in data:
+            if isinstance(d[2], np.ndarray):
+                value_len = d[2].shape[0]
+                break
+        self.coordinates = np.array([[x[0], x[1]] for x in data], dtype=int)
+        self.values = np.column_stack(
+            [data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
+             for x in data])
+
+        self.__repeating_matrix_coords = LibCBM_Matrix_Int(self.coordinates)
+        self.__repeating_matrix_values = LibCBM_Matrix(self.values)
 
     def __allocate_op(self, size):
         if self.__op_id is not None:
-            self.dll.free_op(self.__op_id)
-        self.__op_id = self.dll.allocate_op(size)
+            self.__dll.free_op(self.__op_id)
+        self.__op_id = self.__dll.allocate_op(size)
+
+    def dispose(self):
+        if self.__op_id is not None and self.__dll is not None:
+            self.__dll.free_op(self.__op_id)
+            self.__op_id = None
 
     def get_op_id(self):
         return self.__op_id
 
-    def set_op(self, matrix_index):
+    def set_matrix_index(self, matrix_index):
         if self.format == OperationFormat.MatrixList:
             self.__allocate_op(matrix_index.shape[0])
-            self.dll.handle.call(
+            self.__dll.handle.call(
                 "LibCBM_SetOp", self.__op_id, self.__matrix_list_p,
                 self.__matrix_list_len, matrix_index,
                 matrix_index.shape[0])
         elif self.format == OperationFormat.RepeatingCoordinates:
             self.__allocate_op(matrix_index.shape[0])
-            self.dll.handle.call(
+            self.__dll.handle.call(
                 "LibCBM_SetOp2", self.__op_id, self.__repeating_matrix_coords,
                 self.__repeating_matrix_values, matrix_index,
                 matrix_index.shape[0])
