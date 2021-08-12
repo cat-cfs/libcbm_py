@@ -45,13 +45,13 @@ class Operation:
             if isinstance(d[2], np.ndarray):
                 value_len = d[2].shape[0]
                 break
-        self.coordinates = np.array([[x[0], x[1]] for x in data], dtype=int)
-        self.values = np.column_stack(
+        coordinates = np.array([[x[0], x[1]] for x in data], dtype=int)
+        values = np.column_stack(
             [data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
              for x in data])
 
-        self.__repeating_matrix_coords = LibCBM_Matrix_Int(self.coordinates)
-        self.__repeating_matrix_values = LibCBM_Matrix(self.values)
+        self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
+        self.__repeating_matrix_values = LibCBM_Matrix(values)
 
     def __allocate_op(self, size):
         if self.__op_id is not None:
@@ -72,13 +72,13 @@ class Operation:
             self.__dll.handle.call(
                 "LibCBM_SetOp", self.__op_id, self.__matrix_list_p,
                 self.__matrix_list_len, matrix_index,
-                matrix_index.shape[0])
+                matrix_index.shape[0], 1)
         elif self.format == OperationFormat.RepeatingCoordinates:
             self.__allocate_op(matrix_index.shape[0])
             self.__dll.handle.call(
                 "LibCBM_SetOp2", self.__op_id, self.__repeating_matrix_coords,
                 self.__repeating_matrix_values, matrix_index,
-                matrix_index.shape[0])
+                matrix_index.shape[0], 1)
 
 
 def compute(dll, pools, operations, op_processes=None,
