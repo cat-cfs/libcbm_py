@@ -370,6 +370,9 @@ def step(model_context, disturbance_before_annual_process=True,
         flux=flux,
         enabled=model_context.state.enabled)
 
+    for op in ops:
+        op.dispose()
+
     model_context.state.age = \
         np.where(
             model_context.state.enabled == 0,
