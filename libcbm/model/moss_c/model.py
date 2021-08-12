@@ -368,7 +368,8 @@ def step(model_context, disturbance_before_annual_process=True,
         flux=flux,
         op_processes=op_processes,
         ops=ops,
-        op_indices=op_indices)
+        op_indices=op_indices,
+        enabled=model_context.state.enabled)
 
     model_context.state.age = \
         np.where(
