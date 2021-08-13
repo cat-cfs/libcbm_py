@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBM &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -34,10 +33,46 @@
         <li class="right" >
           <a href="index.html" title="libcbm"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">CBM</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CBM</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#the-cbm-class">The CBM class</a></li>
+<li><a class="reference internal" href="#module-libcbm.model.cbm.cbm_simulator">Simulator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">libcbm</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_input_and_variables.html"
+                        title="next chapter">CBM Input and Variables</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_model.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -50,9 +85,9 @@
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p>A CBM instance can be initialized by using a composed factory method.</p>
-<span class="target" id="module-libcbm.model.cbm.cbm_factory"></span><dl class="py function">
+<span class="target" id="module-libcbm.model.cbm.cbm_factory"></span><dl class="function">
 <dt id="libcbm.model.cbm.cbm_factory.create">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_factory.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dll_path</span></em>, <em class="sig-param"><span class="n">dll_config_factory</span></em>, <em class="sig-param"><span class="n">cbm_parameters_factory</span></em>, <em class="sig-param"><span class="n">merch_volume_to_biomass_factory</span></em>, <em class="sig-param"><span class="n">classifiers_factory</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_factory.create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_factory.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param">dll_path</em>, <em class="sig-param">dll_config_factory</em>, <em class="sig-param">cbm_parameters_factory</em>, <em class="sig-param">merch_volume_to_biomass_factory</em>, <em class="sig-param">classifiers_factory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_factory.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create and initialize an instance of the CBM model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -165,9 +200,9 @@ ndarrays, and many functions support either.</p>
 </div></blockquote>
 <p>An instance of the CBM model can be created with the
 <a class="reference internal" href="#module-libcbm.model.cbm.cbm_factory" title="libcbm.model.cbm.cbm_factory"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_factory()</span></code></a> function.</p>
-<dl class="py class">
+<dl class="class">
 <dt id="libcbm.model.cbm.cbm_model.CBM">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.cbm_model.</code><code class="sig-name descname">CBM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">compute_functions</span></em>, <em class="sig-param"><span class="n">model_functions</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.model.cbm.cbm_model.</code><code class="sig-name descname">CBM</code><span class="sig-paren">(</span><em class="sig-param">compute_functions</em>, <em class="sig-param">model_functions</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM" title="Permalink to this definition">¶</a></dt>
 <dd><p>The CBM model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -179,9 +214,9 @@ instance of CBMWrapper</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.model.cbm.cbm_model.CBM.init">
-<code class="sig-name descname">init</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">state_variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.init" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">init</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the initial state of CBM variables after spinup and prior
 to starting CBM simulation stepping</p>
 <dl class="field-list simple">
@@ -208,9 +243,9 @@ for a compatible definition</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.model.cbm.cbm_model.CBM.spinup">
-<code class="sig-name descname">spinup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">variables</span></em>, <em class="sig-param"><span class="n">parameters</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.spinup" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">spinup</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em>, <em class="sig-param">debug=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.spinup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the CBM-CFS3 spinup function on an array of stands,
 initializing the specified variables.</p>
 <dl class="field-list simple">
@@ -251,9 +286,9 @@ False.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.model.cbm.cbm_model.CBM.step">
-<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">flux</span></em>, <em class="sig-param"><span class="n">state_variables</span></em>, <em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">flux</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_model.CBM.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances the specified CBM variables through one time step of CBM
 simulation.</p>
 <dl class="field-list simple">
@@ -295,9 +330,9 @@ for a compatible definition.</p></li>
 </div>
 <div class="section" id="module-libcbm.model.cbm.cbm_simulator">
 <span id="simulator"></span><h2>Simulator<a class="headerlink" href="#module-libcbm.model.cbm.cbm_simulator" title="Permalink to this headline">¶</a></h2>
-<dl class="py function">
+<dl class="function">
 <dt id="libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">density</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">classifier_map</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">disturbance_type_map</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">create_in_memory_reporting_func</code><span class="sig-paren">(</span><em class="sig-param">density=False</em>, <em class="sig-param">classifier_map=None</em>, <em class="sig-param">disturbance_type_map=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.create_in_memory_reporting_func" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create storage and a function for complete simulation results.  The
 function return value can be passed to <a class="reference internal" href="#libcbm.model.cbm.cbm_simulator.simulate" title="libcbm.model.cbm.cbm_simulator.simulate"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulate()</span></code></a> to track
 simulation results.</p>
@@ -354,9 +389,9 @@ substitution will occur.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py function">
+<dl class="function">
 <dt id="libcbm.model.cbm.cbm_simulator.simulate">
-<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cbm</span></em>, <em class="sig-param"><span class="n">n_steps</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pool_codes</span></em>, <em class="sig-param"><span class="n">flux_indicator_codes</span></em>, <em class="sig-param"><span class="n">pre_dynamics_func</span></em>, <em class="sig-param"><span class="n">reporting_func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.simulate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.cbm_simulator.</code><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">cbm</em>, <em class="sig-param">n_steps</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pool_codes</em>, <em class="sig-param">flux_indicator_codes</em>, <em class="sig-param">pre_dynamics_func</em>, <em class="sig-param">reporting_func</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.cbm_simulator.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Runs the specified number of timesteps of the CBM model.  Model output
 is processed by the provided reporting_func. The provided
 pre_dynamics_func is called prior to each CBM dynamics step.</p>
@@ -393,45 +428,7 @@ The function returns None.</p></li>
 </div>
 
 
-            <div class="clearer"></div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">CBM</a><ul>
-<li><a class="reference internal" href="#usage">Usage</a></li>
-<li><a class="reference internal" href="#the-cbm-class">The CBM class</a></li>
-<li><a class="reference internal" href="#module-libcbm.model.cbm.cbm_simulator">Simulator</a></li>
-</ul>
-</li>
-</ul>
-
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">libcbm</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="cbm_input_and_variables.html"
-                        title="next chapter">CBM Input and Variables</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/cbm_model.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -451,13 +448,12 @@ The function returns None.</p></li>
         <li class="right" >
           <a href="index.html" title="libcbm"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">CBM</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

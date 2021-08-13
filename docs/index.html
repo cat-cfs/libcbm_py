@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>libcbm &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -30,10 +29,44 @@
         <li class="right" >
           <a href="cbm_model.html" title="CBM"
              accesskey="N">next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">libcbm</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">libcbm</a><ul>
+<li><a class="reference internal" href="#key-features">Key Features</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#code-documentation">Code Documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="cbm_model.html"
+                        title="next chapter">CBM</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -42,7 +75,7 @@
             
   <div class="section" id="libcbm">
 <h1>libcbm<a class="headerlink" href="#libcbm" title="Permalink to this headline">¶</a></h1>
-<p>version 0.3.0</p>
+<p>version 0.6.0</p>
 <p>libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.</p>
 <p>See <a class="reference external" href="http://www.github.com/cat-cfs/libcbm_py">github-page</a></p>
@@ -132,6 +165,11 @@ functions for extending CBM, or developing new CBM-like models.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cbm_core_functions.html">CBM core functionality</a></li>
+<li class="toctree-l1"><a class="reference internal" href="moss_c_model.html">Moss C</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="moss_c_model.html#module-libcbm.model.moss_c.pools">Moss C pools and flux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="moss_c_model.html#module-libcbm.model.moss_c.model_functions">Moss C helper methods</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="libcbm_core_functions.html">LibCBM core functionality</a></li>
 <li class="toctree-l1"><a class="reference internal" href="other_functions.html">Other functions</a></li>
 </ul>
@@ -148,43 +186,7 @@ functions for extending CBM, or developing new CBM-like models.</p>
 </div>
 
 
-            <div class="clearer"></div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">libcbm</a><ul>
-<li><a class="reference internal" href="#key-features">Key Features</a></li>
-<li><a class="reference internal" href="#requirements">Requirements</a></li>
-<li><a class="reference internal" href="#code-documentation">Code Documentation</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-
-  <h4>Next topic</h4>
-  <p class="topless"><a href="cbm_model.html"
-                        title="next chapter">CBM</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/index.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -201,13 +203,12 @@ functions for extending CBM, or developing new CBM-like models.</p>
         <li class="right" >
           <a href="cbm_model.html" title="CBM"
              >next</a> |</li>
-        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">libcbm</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">libcbm  documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>

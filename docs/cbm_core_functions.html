@@ -1,10 +1,9 @@
 
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBM core functionality &#8212; libcbm  documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +15,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="LibCBM core functionality" href="libcbm_core_functions.html" />
+    <link rel="next" title="Moss C" href="moss_c_model.html" />
     <link rel="prev" title="libcbm run of tutorial 2 from CBM-CFS3" href="cbm3_tutorial2.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -29,15 +28,41 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="libcbm_core_functions.html" title="LibCBM core functionality"
+          <a href="moss_c_model.html" title="Moss C"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">CBM core functionality</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
-    </div>  
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cbm3_tutorial2.html"
+                        title="previous chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="moss_c_model.html"
+                        title="next chapter">Moss C</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/cbm_core_functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -47,9 +72,9 @@
   <div class="section" id="cbm-core-functionality">
 <span id="cbm-core-functions"></span><h1>CBM core functionality<a class="headerlink" href="#cbm-core-functionality" title="Permalink to this headline">¶</a></h1>
 <p>The CBM core functionality is the set of low level functions that compose the CBM model.</p>
-<span class="target" id="module-libcbm.wrapper.cbm.cbm_ctypes"></span><dl class="py function">
+<span class="target" id="module-libcbm.wrapper.cbm.cbm_ctypes"></span><dl class="function">
 <dt id="libcbm.wrapper.cbm.cbm_ctypes.initialize_CBM_ctypes">
-<code class="sig-prename descclassname">libcbm.wrapper.cbm.cbm_ctypes.</code><code class="sig-name descname">initialize_CBM_ctypes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dll</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_ctypes.initialize_CBM_ctypes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.wrapper.cbm.cbm_ctypes.</code><code class="sig-name descname">initialize_CBM_ctypes</code><span class="sig-paren">(</span><em class="sig-param">dll</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_ctypes.initialize_CBM_ctypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extends a <a class="reference internal" href="libcbm_core_functions.html#libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes" title="libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes</span></code></a> object
 by wrapping the CBM specific functions contained in the low level c/c++
 library.</p>
@@ -61,9 +86,9 @@ instance the core LibCBM ctypes wrapper.</p>
 </dl>
 </dd></dl>
 
-<dl class="py class">
+<dl class="class">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper">
-<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.cbm.cbm_wrapper.</code><code class="sig-name descname">CBMWrapper</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handle</span></em>, <em class="sig-param"><span class="n">config</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">libcbm.wrapper.cbm.cbm_wrapper.</code><code class="sig-name descname">CBMWrapper</code><span class="sig-paren">(</span><em class="sig-param">handle</em>, <em class="sig-param">config</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exposes low level ctypes wrapper to regular python, for CBM
 specific libcbm functions.</p>
 <p>The base class is <a class="reference internal" href="libcbm_core_functions.html#libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes" title="libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes"><code class="xref py py-class docutils literal notranslate"><span class="pre">libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes</span></code></a></p>
@@ -137,9 +162,9 @@ construction of the “cbm_defaults” value, and
 </ul>
 </dd>
 </dl>
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state">
-<code class="sig-name descname">advance_spinup_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">variables</span></em>, <em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">advance_spinup_state</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_spinup_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances spinup state variables through one spinup step.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -167,9 +192,9 @@ as of the end of this call.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state">
-<code class="sig-name descname">advance_stand_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">state_variables</span></em>, <em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">advance_stand_state</code><span class="sig-paren">(</span><em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">state_variables</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.advance_stand_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Advances CBM stand variables through a timestep based on the
 current simulation state.</p>
 <dl class="field-list simple">
@@ -195,9 +220,9 @@ for a compatible definition.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step">
-<code class="sig-name descname">end_spinup_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">end_spinup_step</code><span class="sig-paren">(</span><em class="sig-param">pools</em>, <em class="sig-param">variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_spinup_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies end-of-timestep changes to the spinup state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -217,9 +242,9 @@ for a compatible definition</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step">
-<code class="sig-name descname">end_step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state_variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">end_step</code><span class="sig-paren">(</span><em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.end_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies end-of-timestep changes to the CBM state</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -233,9 +258,9 @@ for a compatible definition</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops">
-<code class="sig-name descname">get_decay_ops</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dom_decay_op</span></em>, <em class="sig-param"><span class="n">slow_decay_op</span></em>, <em class="sig-param"><span class="n">slow_mixing_op</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">parameters</span></em>, <em class="sig-param"><span class="n">historical_mean_annual_temp</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_decay_ops</code><span class="sig-paren">(</span><em class="sig-param">dom_decay_op</em>, <em class="sig-param">slow_decay_op</em>, <em class="sig-param">slow_mixing_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em>, <em class="sig-param">historical_mean_annual_temp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_decay_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prepares dead organic matter decay bulk matrix operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -267,9 +292,9 @@ Defaults to False.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops">
-<code class="sig-name descname">get_disturbance_ops</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">disturbance_op</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">parameters</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_disturbance_ops</code><span class="sig-paren">(</span><em class="sig-param">disturbance_op</em>, <em class="sig-param">inventory</em>, <em class="sig-param">parameters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_disturbance_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets up CBM disturbance matrices as a bulk matrix operations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -293,9 +318,9 @@ for a compatible definition.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops">
-<code class="sig-name descname">get_merch_volume_growth_ops</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">growth_op</span></em>, <em class="sig-param"><span class="n">overmature_decline_op</span></em>, <em class="sig-param"><span class="n">classifiers</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">state_variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_merch_volume_growth_ops</code><span class="sig-paren">(</span><em class="sig-param">growth_op</em>, <em class="sig-param">overmature_decline_op</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_merch_volume_growth_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes CBM merchantable growth as a bulk matrix operation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -328,9 +353,9 @@ for a compatible definition</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops">
-<code class="sig-name descname">get_turnover_ops</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">biomass_turnover_op</span></em>, <em class="sig-param"><span class="n">snag_turnover_op</span></em>, <em class="sig-param"><span class="n">inventory</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_turnover_ops</code><span class="sig-paren">(</span><em class="sig-param">biomass_turnover_op</em>, <em class="sig-param">snag_turnover_op</em>, <em class="sig-param">inventory</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.get_turnover_ops" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes biomass turnovers and dead organic matter turnovers as
 bulk matrix operations.</p>
 <dl class="field-list simple">
@@ -353,9 +378,9 @@ for a compatible definition.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py method">
+<dl class="method">
 <dt id="libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state">
-<code class="sig-name descname">initialize_land_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">pools</span></em>, <em class="sig-param"><span class="n">state_variables</span></em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">initialize_land_state</code><span class="sig-paren">(</span><em class="sig-param">inventory</em>, <em class="sig-param">pools</em>, <em class="sig-param">state_variables</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper.initialize_land_state" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializes CBM state to values appropriate for after running
 spinup and before starting CBM stepping</p>
 <dl class="field-list simple">
@@ -385,35 +410,7 @@ for a compatible definition.</p></li>
 </div>
 
 
-            <div class="clearer"></div>
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="cbm3_tutorial2.html"
-                        title="previous chapter">libcbm run of tutorial 2 from CBM-CFS3</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="libcbm_core_functions.html"
-                        title="next chapter">LibCBM core functionality</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/cbm_core_functions.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -428,18 +425,17 @@ for a compatible definition.</p></li>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="libcbm_core_functions.html" title="LibCBM core functionality"
+          <a href="moss_c_model.html" title="Moss C"
              >next</a> |</li>
         <li class="right" >
           <a href="cbm3_tutorial2.html" title="libcbm run of tutorial 2 from CBM-CFS3"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">CBM core functionality</a></li> 
+        <li class="nav-item nav-item-0"><a href="index.html">libcbm  documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.
     </div>
   </body>
 </html>
