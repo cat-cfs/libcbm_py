@@ -6,6 +6,8 @@ import os
 import sys
 import warnings
 import platform
+import configparser
+import itertools
 
 
 def get_local_dir():
@@ -31,18 +33,21 @@ def get_test_resources_dir():
     return os.path.join(get_local_dir(), "test")
 
 
+def parse_key_value_file(path):
+
+    cfg = configparser.ConfigParser()
+    cfg.optionxform = str
+    with open(path) as fp:
+        cfg.read_file(
+            itertools.chain(['[global]', os.linesep], fp), source=path)
+        return {k: v.strip("\"'") for k, v in cfg['global'].items()}
+
+
 def get_linux_os_release():
     path = "/etc/os-release"
     if not os.path.exists(path):
         return None
-    with open(path) as fp:
-        d = {}
-        for line in fp:
-            k, v = line.rstrip().split('=')
-            if v.startswith('"'):
-                v = v[1:-1]
-            d[k] = v
-        return d
+    return parse_key_value_file(path)
 
 
 def get_libcbm_bin_path():
@@ -80,28 +85,31 @@ def get_libcbm_bin_path():
         elif os_name == "ubuntu" and version_id == "20.04":
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so")
-        elif platform.system().lower() == "linux":
+        else:
             message = f"unsupported linux distribution: {platform.platform()}"
             warnings.warn(message, RuntimeWarning)
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so")
-        else:
-            raise RuntimeError("unsupported platform")
     # macOS case #
     elif system == "Darwin":
         # This returns a string like '10.8.4' #
         os_release = platform.mac_ver()[0]
         # Split the result #
-        major, minor, patch = os_release.split('.')
-        # The directory name that contains the complied files #
-        dir_name = "macosx_%s_%s_x86_64" % (major, minor)
+        major, minor, _ = os_release.split('.')
+        matched_ver = (
+            int(major) == 10 and
+            int(minor) >= 12 and
+            int(minor) <= 15
+        )
         # Get the full path to the dylib #
-        dylib = os.path.join(local_dir, "libcbm_bin", dir_name, "libcbm.dylib")
+        dylib = os.path.join(
+            local_dir, "libcbm_bin", "macos_64", "libcbm.dylib")
         # Let's hope we have it compiled for that version #
-        msg = "The source distribution for this version of macOS has not been" \
-              " compiled yet. You can do this yourself with the `libcbm_c`" \
-              " repository and `cmake`."
-        if not os.path.exists(dylib): raise RuntimeError(msg)
+        msg = "The source distribution for this version of macOS has not" \
+              " been compiled yet. You can do this yourself with the" \
+              " `libcbm_c` repository and `cmake`."
+        if not matched_ver:
+            raise RuntimeError(msg)
         # Otherwise return #
         return dylib
     # Other cases #
