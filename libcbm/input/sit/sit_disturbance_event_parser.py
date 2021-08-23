@@ -36,8 +36,11 @@ def get_target_types():
 
 
 def parse(disturbance_events, classifiers, classifier_values,
-          classifier_aggregates, disturbance_types, age_classes):
-    """Parses and validates the CBM SIT disturbance event format.
+          classifier_aggregates, disturbance_types, age_classes=None,
+          disturbance_eligibilities=None):
+    """Parses and validates the CBM SIT disturbance event format, or
+    optionally an extended sit disturbance event format where disturbance
+    eligibilites are separate from sit_events and joined by foreign key.
 
     Args:
         disturbance_events (pandas.DataFrame): CBM SIT disturbance events
@@ -56,9 +59,15 @@ def parse(disturbance_events, classifiers, classifier_values,
             disturbance_type column of the disturbance event data. Use the
             return value of:
             :py:func:`libcbm.input.sit.sit_disturbance_types_parser.parse`
-        age_classes (pandas.DataFrame): used to validate and compute age
-            eligibility criteria in disturbance_events. Use the return value
-            of: :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        age_classes (pandas.DataFrame, optional): used to validate and compute
+            age eligibility criteria in disturbance_events. Use the return
+            value of:
+            :py:func:`libcbm.input.sit.sit_age_class_parser.parse`.  If
+            separated disturbance_eligibilites are specified this should be
+            None.
+        disturbance_eligibilities (pandas.DataFrame, optional): table of
+            eligibility expressions.  If specified, the age_classes parameter
+            should be set to None.
 
     Raises:
         ValueError: undefined classifier values were found in the disturbance
@@ -73,6 +82,13 @@ def parse(disturbance_events, classifiers, classifier_values,
     Returns:
         pandas.DataFrame: the validated disturbance events
     """
+    eligibities_included = age_classes is not None
+    if eligibities_included and disturbance_eligibilities is not None:
+        raise ValueError(
+            "both age_classes and disturbance_eligibilities cannot be "
+            "specified")
+
+
     disturbance_event_format = sit_format.get_disturbance_event_format(
           classifiers.name, len(disturbance_events.columns))
 
@@ -102,13 +118,22 @@ def parse(disturbance_events, classifiers, classifier_values,
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff_classifiers}")
 
-    # if age classes are used substitute the age critera based on the age
-    # class id, and raise an error if the id is not defined, and drop
-    # using_age_class from output
-    parse_bool_func = sit_parser.get_parse_bool_func(
-        "events", "using_age_class")
-    events = sit_parser.substitute_using_age_class_rows(
-        events, parse_bool_func, age_classes)
+    if eligibities_included:
+        # if age classes are used substitute the age critera based on the age
+        # class id, and raise an error if the id is not defined, and drop
+        # using_age_class from output
+        parse_bool_func = sit_parser.get_parse_bool_func(
+            "events", "using_age_class")
+        events = sit_parser.substitute_using_age_class_rows(
+            events, parse_bool_func, age_classes)
+        events = events.rename(
+            columns={
+                "min_softwood_age": "min_age",
+                "max_softwood_age": "max_age"})
+
+        events = events.drop(
+            columns=["using_age_class", "min_hardwood_age",
+                     "max_hardwood_age"])
 
     # validate sort type
     valid_sort_types = get_sort_types().keys()
@@ -139,11 +164,5 @@ def parse(disturbance_events, classifiers, classifier_values,
             f"disturbance types) detected: {undefined_disturbances}"
         )
 
-    events = events.rename(
-        columns={
-            "min_softwood_age": "min_age",
-            "max_softwood_age": "max_age"})
 
-    events = events.drop(
-        columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"])
     return events
