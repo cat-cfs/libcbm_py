@@ -316,7 +316,8 @@ def get_disturbance_eligibility_columns(index):
     ]
 
 
-def get_disturbance_event_format(classifier_names, n_columns):
+def get_disturbance_event_format(classifier_names, n_columns,
+                                 include_eligibility_columns=True):
     """Gets a list of column description dictionaries describing the SIT
     disturbance event format
 
@@ -325,6 +326,10 @@ def get_disturbance_event_format(classifier_names, n_columns):
         n_columns (int): the number of columns in disturbance data.  This
             is required because the format has a varying number of optional
             columns.
+        include_eligibility_columns (bool, optional): if set to false the
+            standard age eligibility and carbon eligibility columns are
+            excluded from the result, and an disturbance_eligibility_id
+            column instead is included.
 
     Raises:
         ValueError: specified number of columns is invalid
@@ -339,13 +344,23 @@ def get_disturbance_event_format(classifier_names, n_columns):
         {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)]
 
-    disturbance_age_eligibility = get_age_eligibility_columns(n_classifiers)
-
-    n_age_fields = len(disturbance_age_eligibility)
-    disturbance_eligibility = get_disturbance_eligibility_columns(
-        n_classifiers + n_age_fields)
-    n_eligibility_fields = len(disturbance_eligibility)
-    index = n_classifiers + n_age_fields + n_eligibility_fields
+    eligibiliy_cols = []
+    if include_eligibility_columns:
+        disturbance_age_eligibility = get_age_eligibility_columns(
+            n_classifiers)
+        n_age_fields = len(disturbance_age_eligibility)
+        disturbance_eligibility = get_disturbance_eligibility_columns(
+            n_classifiers + n_age_fields)
+        n_eligibility_fields = len(disturbance_eligibility)
+        index = n_classifiers + n_age_fields + n_eligibility_fields
+        eligibiliy_cols.extend(disturbance_age_eligibility)
+        eligibiliy_cols.extend(disturbance_eligibility)
+    else:
+        eligibiliy_cols.append({
+            "name": "disturbance_eligibility_id", "index": n_classifiers,
+            "type": int,
+        })
+        index = n_classifiers + 1
     event_target = [
         {"name": "efficiency", "index": index, "type": float,
          "min_value": 0, "max_value": 1},
@@ -369,5 +384,4 @@ def get_disturbance_event_format(classifier_names, n_columns):
         raise ValueError(
             "specified number of columns invalid.  Expected at most "
             "{}".format(index + 7))
-    return classifier_set + disturbance_age_eligibility + \
-        disturbance_eligibility + event_target
+    return classifier_set + eligibiliy_cols + event_target
