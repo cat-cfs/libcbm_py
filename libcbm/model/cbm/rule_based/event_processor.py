@@ -28,15 +28,15 @@ class ProcessEventResult:
         self.rule_target_result = rule_target_result
 
 
-def process_event(event_filter, undisturbed, target_func,
+def process_event(event_filters, undisturbed, target_func,
                   disturbance_type_id, cbm_vars):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
 
     Args:
-        event_filter (object): a filter object containing information to deem
-            stands eligible or ineligible for events
+        event_filters (list): a list of filter objects containing information
+            to deem stands eligible or ineligible for events
             See :py:mod:`libcbm.model.cbm.rule_based.rule_filter`
         undisturbed (pandas.Series): a boolean value series indicating each
             specified index is eligible (True) or ineligible (False) for
@@ -55,7 +55,7 @@ def process_event(event_filter, undisturbed, target_func,
             disturbance event
     """
 
-    filter_result = rule_filter.evaluate_filter(event_filter)
+    filter_result = rule_filter.evaluate_filters(event_filters)
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
