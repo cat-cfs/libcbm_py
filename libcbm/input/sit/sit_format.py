@@ -342,7 +342,7 @@ def get_disturbance_event_format(classifier_names, n_columns,
 
     classifier_set = [
         {"name": c, "index": i, "type": str}
-        for i, c in enumerate(classifier_names)]
+         for i, c in enumerate(classifier_names)]
 
     eligibiliy_cols = []
     if include_eligibility_columns:
@@ -385,3 +385,9 @@ def get_disturbance_event_format(classifier_names, n_columns,
             "specified number of columns invalid.  Expected at most "
             "{}".format(index + 7))
     return classifier_set + eligibiliy_cols + event_target
+
+
+def get_disturbance_eligibility_format():
+    return [
+        {"name": "disturbance_eligibility_id", "type": int}
+    ]
