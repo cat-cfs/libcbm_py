@@ -37,7 +37,7 @@ def evaluate_filters(*filter_objs):
     """evaluates the specified sequence of filter object
 
     Args:
-        filter_obj (object): object with properties:
+        filter_obj (list): list of objects with properties:
 
             - expression (str): a boolean expression to filter the values
                 in local_dict. The variables are defined as the keys in
