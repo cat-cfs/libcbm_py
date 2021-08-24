@@ -35,9 +35,30 @@ def get_target_types():
         "M": "Merchantable"}
 
 
+def parse_eligibilities(disturbance_events, disturbance_eligibilities):
+    disturbance_eligibility_format = \
+        sit_format.get_disturbance_eligibility_format()
+
+    eligibilities = sit_parser.unpack_table(
+        disturbance_eligibilities, disturbance_eligibility_format,
+        "disturbance eligibilities")
+
+    # confirm that each row in the disturbance events with an
+    # eligibility id >= 0 has a corresponding record in the eligibilities
+    # table
+    missing_ids = (
+        set(disturbance_events["disturbance_eligibility_id"]) -
+        set(eligibilities["disturbance_eligibility_id"]))
+    if missing_ids:
+        raise ValueError(
+            "disturbance_eligibility_id values found in sit_events "
+            f"but not in sit_disturbance_eligibilities {missing_ids}")
+    return eligibilities
+
+
 def parse(disturbance_events, classifiers, classifier_values,
           classifier_aggregates, disturbance_types, age_classes=None,
-          disturbance_eligibilities=None):
+          separate_eligibilities=False):
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
     eligibilites are separate from sit_events and joined by foreign key.
@@ -62,12 +83,9 @@ def parse(disturbance_events, classifiers, classifier_values,
         age_classes (pandas.DataFrame, optional): used to validate and compute
             age eligibility criteria in disturbance_events. Use the return
             value of:
-            :py:func:`libcbm.input.sit.sit_age_class_parser.parse`.  If
-            separated disturbance_eligibilites are specified this should be
-            None.
+            :py:func:`libcbm.input.sit.sit_age_class_parser.parse`.
         disturbance_eligibilities (pandas.DataFrame, optional): table of
-            eligibility expressions.  If specified, the age_classes parameter
-            should be set to None.
+            eligibility expressions.
 
     Raises:
         ValueError: undefined classifier values were found in the disturbance
@@ -82,15 +100,10 @@ def parse(disturbance_events, classifiers, classifier_values,
     Returns:
         pandas.DataFrame: the validated disturbance events
     """
-    eligibities_included = age_classes is not None
-    if eligibities_included and disturbance_eligibilities is not None:
-        raise ValueError(
-            "both age_classes and disturbance_eligibilities cannot be "
-            "specified")
-
 
     disturbance_event_format = sit_format.get_disturbance_event_format(
-          classifiers.name, len(disturbance_events.columns))
+          classifiers.name, len(disturbance_events.columns),
+          include_eligibility_columns=not separate_eligibilities)
 
     events = sit_parser.unpack_table(
         disturbance_events, disturbance_event_format, "disturbance events")
@@ -118,7 +131,7 @@ def parse(disturbance_events, classifiers, classifier_values,
                 "Undefined classifier values detected: "
                 f"classifier: '{row.name}', values: {diff_classifiers}")
 
-    if eligibities_included:
+    if not separate_eligibilities:
         # if age classes are used substitute the age critera based on the age
         # class id, and raise an error if the id is not defined, and drop
         # using_age_class from output
@@ -163,6 +176,5 @@ def parse(disturbance_events, classifiers, classifier_values,
             "Undefined disturbance type ids (as defined in sit "
             f"disturbance types) detected: {undefined_disturbances}"
         )
-
 
     return events
