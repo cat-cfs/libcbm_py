@@ -53,7 +53,8 @@ class SITEventProcessor():
 
         return compute_disturbance_production
 
-    def _process_event(self, eligible, sit_event, cbm_vars):
+    def _process_event(self, eligible, sit_event, cbm_vars,
+                       sit_eligibilities=None):
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
@@ -67,6 +68,22 @@ class SITEventProcessor():
             disturbance_production_func=compute_disturbance_production,
             random_generator=self.random_generator)
 
+        if sit_eligibilities is None:
+            event_filters = self._create_sit_event_filter(sit_event, cbm_vars)
+        #else:
+        #    event_filter =
+
+
+        process_event_result = event_processor.process_event(
+            event_filter=event_filters,
+            undisturbed=eligible,
+            target_func=target_factory,
+            disturbance_type_id=sit_event["disturbance_type_id"],
+            cbm_vars=cbm_vars)
+
+        return process_event_result
+
+    def _create_sit_event_filters(self, sit_event, cbm_vars):
         pool_filter_expression, pool_filter_cols = \
             sit_stand_filter.create_pool_filter_expression(
                 sit_event)
@@ -77,7 +94,7 @@ class SITEventProcessor():
             sit_stand_filter.create_last_disturbance_type_filter(
                 sit_event)
 
-        event_filter = rule_filter.merge_filters(
+        return [
             rule_filter.create_filter(
                 expression=pool_filter_expression,
                 data=cbm_vars.pools,
@@ -93,16 +110,7 @@ class SITEventProcessor():
             rule_filter.create_filter(
                 expression=dist_type_filter_expression,
                 data=cbm_vars.state,
-                columns=dist_type_cols))
-
-        process_event_result = event_processor.process_event(
-            event_filter=event_filter,
-            undisturbed=eligible,
-            target_func=target_factory,
-            disturbance_type_id=sit_event["disturbance_type_id"],
-            cbm_vars=cbm_vars)
-
-        return process_event_result
+                columns=dist_type_cols)]
 
     def _event_iterator(self, sit_events):
 
@@ -116,7 +124,8 @@ class SITEventProcessor():
         for event_index, sorted_event in sorted_events.iterrows():
             yield event_index, dict(sorted_event)
 
-    def process_events(self, time_step, sit_events, cbm_vars):
+    def process_events(self, time_step, sit_events, cbm_vars,
+                       sit_eligibilities=None):
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
         timestep.
@@ -135,6 +144,8 @@ class SITEventProcessor():
                 :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
             cbm_vars (object): an object containing dataframes that store cbm
                 simulation state and variables
+            sit_eligibilities (pandas.DataFrame): table of eligibility
+                expressions with foreign key "disturbance_eligibility_id"
 
         Returns:
             object: expanded and updated cbm_vars
