@@ -95,7 +95,8 @@ def read(config, config_dir):
 
 
 def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
-          sit_inventory, sit_yield, sit_events, sit_transitions):
+          sit_inventory, sit_yield, sit_events=None, sit_transitions=None,
+          disturbance_eligibilities=None):
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
     containing the validated result.
@@ -128,9 +129,10 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         sit_age_classes (pandas.DataFrame): SIT formatted age classes
         sit_inventory (pandas.DataFrame): SIT formatted inventory
         sit_yield (pandas.DataFrame): SIT formatted yield curves
-        sit_events (pandas.DataFrame or None): SIT formatted disturbance events
-        sit_transitions (pandas.DataFrame or None): SIT formatted transition
-            rules
+        sit_events (pandas.DataFrame, optional): SIT formatted disturbance
+            events
+        sit_transitions (pandas.DataFrame, optional): SIT formatted transition
+            rules. Defaults to None.
 
     Returns:
         object: an object containing parsed and validated SIT dataset
@@ -149,11 +151,19 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         s.disturbance_types, s.age_classes)
     s.yield_table = sit_yield_parser.parse(
         sit_yield, s.classifiers, s.classifier_values, s.age_classes)
+
     if sit_events is not None:
+        separate_eligibilities = False
+        if disturbance_eligibilities is not None:
+            separate_eligibilities = True
         s.disturbance_events = sit_disturbance_event_parser.parse(
             sit_events, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types,
-            s.age_classes)
+            s.age_classes, separate_eligibilities)
+        if disturbance_eligibilities is not None:
+            s.disturbance_eligibilities = \
+                sit_disturbance_event_parser.parse_eligibilities(
+                    s.disturbance_events, disturbance_eligibilities)
     else:
         s.disturbance_events = None
     if sit_transitions is not None:
