@@ -127,7 +127,6 @@ def create_state_filter_expression(sit_data, age_only):
             :py:func:`libcbm.model.rule_based.rule_filter module`
     """
 
-    columns = set()
     expression_tokens = []
     if age_only:
         filter_mappings = get_state_variable_age_filter_mappings()

@@ -19,12 +19,6 @@ class SITStandFilterTest(unittest.TestCase):
             "(age >= 10)",
             ""]
 
-        expected_columns = [
-            ["age"],
-            ["age"],
-            ["age"],
-            []]
-
         mock_sit_transitions_data = pd.DataFrame(
             data=mock_data,
             columns=["min_age", "max_age"])
@@ -58,12 +52,6 @@ class SITStandFilterTest(unittest.TestCase):
             "(age <= 7)",
             "(age >= 10) & (time_since_last_disturbance >= 30)",
             ""]
-
-        expected_columns = [
-            ["age", "time_since_last_disturbance"],
-            ["age"],
-            ["age", "time_since_last_disturbance"],
-            []]
 
         mock_sit_transitions_data = pd.DataFrame(
             data=mock_data,

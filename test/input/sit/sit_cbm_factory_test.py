@@ -37,8 +37,8 @@ class SITCBMFactoryTest(unittest.TestCase):
             pre_dynamics_func=rule_based_processor.pre_dynamic_func,
             reporting_func=reporting_func)
         self.assertTrue(
-            results.pools[results.pools.timestep == 0].shape[0]
-            == inventory.shape[0])
+            results.pools[results.pools.timestep == 0].shape[0] ==
+            inventory.shape[0])
         self.assertTrue(
             len(rule_based_processor.sit_event_stats_by_timestep) > 0)
 

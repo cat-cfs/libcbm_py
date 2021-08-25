@@ -342,7 +342,7 @@ def get_disturbance_event_format(classifier_names, n_columns,
 
     classifier_set = [
         {"name": c, "index": i, "type": str}
-         for i, c in enumerate(classifier_names)]
+        for i, c in enumerate(classifier_names)]
 
     eligibiliy_cols = []
     if include_eligibility_columns:

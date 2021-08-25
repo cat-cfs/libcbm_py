@@ -98,8 +98,8 @@ def to_numpy_namespace(df):
 @numba.njit()
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
     return abs(
-        (last_rotation_slow - this_rotation_slow)
-        / (last_rotation_slow + this_rotation_slow) / 2.0) < 0.001
+        (last_rotation_slow - this_rotation_slow) /
+        (last_rotation_slow + this_rotation_slow) / 2.0) < 0.001
 
 
 def advance_spinup_state(spinup_state, age, final_age, return_interval,

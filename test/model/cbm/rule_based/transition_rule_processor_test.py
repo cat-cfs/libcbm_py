@@ -309,7 +309,6 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(list(cbm_vars.flux_indicators.f1) == [10, 10])
             self.assertTrue(list(cbm_vars.flux_indicators.f2) == [100, 100])
 
-
     def test_multiple_records_multiple_split_transitions(self):
         mock_classifier_filter_builder = Mock()
         mock_state_variable_filter_func = Mock()

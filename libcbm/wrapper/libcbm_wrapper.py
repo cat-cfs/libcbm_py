@@ -121,7 +121,8 @@ class LibCBMWrapper():
                 provided to this function.
             init (int): if set to 0 matrices are initialized with zeros, and
                 if 1 the matrix diagonals are initialized to 1 (identity) prior
-                to assigning matrix values.  Other values will result in an error.
+                to assigning matrix values.  Other values will result in an
+                error.
 
         """
         matrices_p = libcbm_wrapper_functions.get_matrix_list_pointer(matrices)
@@ -129,7 +130,8 @@ class LibCBMWrapper():
             "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
             matrix_index.shape[0], init)
 
-    def set_op_repeating(self, op_id, coordinates, values, matrix_index, init=0):
+    def set_op_repeating(self, op_id, coordinates, values, matrix_index,
+                         init=0):
         """Assigns the specified values associated with repeating coordinates
         to an allocated block of matrices.
 
@@ -144,7 +146,8 @@ class LibCBMWrapper():
                 value is an index to a row in the specifies values matrix
             init (int): if set to 0 matrices are initialized with zeros, and
                 if 1 the matrix diagonals are initialized to 1 (identity) prior
-                to assigning matrix values.  Other values will result in an error.
+                to assigning matrix values.  Other values will result in an
+                error.
         """
         self.handle.call(
             "LibCBM_SetOp2", op_id, LibCBM_Matrix_Int(coordinates),

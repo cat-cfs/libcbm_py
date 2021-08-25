@@ -191,4 +191,3 @@ class SITClassifierParserTest(unittest.TestCase):
             sit_classifier_parser.parse(sit_classifiers_table)
 
         self.assertTrue(list(classifiers.id) == [1, 2])
-
