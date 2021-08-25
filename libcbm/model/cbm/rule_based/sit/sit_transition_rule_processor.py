@@ -21,7 +21,7 @@ def state_variable_filter_func(tr_group_key, state_variables):
     Returns:
         object: a filter object
     """
-    state_filter_expression, state_filter_cols = \
+    state_filter_expression = \
         sit_stand_filter.create_state_filter_expression(
             tr_group_key, True)
     return rule_filter.create_filter(
