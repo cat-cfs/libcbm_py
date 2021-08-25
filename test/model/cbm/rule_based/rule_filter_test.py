@@ -9,8 +9,8 @@ class RuleFilterTest(unittest.TestCase):
     def test_evaluate_filter_none_result(self):
         mock_filter = SimpleNamespace()
         mock_filter.expression = None
-        self.assertTrue(rule_filter.evaluate_filters(mock_filter) is None)
-        self.assertTrue(rule_filter.evaluate_filters(None) is None)
+        self.assertTrue(rule_filter.evaluate_filters(mock_filter) is True)
+        self.assertTrue(rule_filter.evaluate_filters(None) is True)
 
     def test_create_filter_expected_output(self):
         result = rule_filter.create_filter(

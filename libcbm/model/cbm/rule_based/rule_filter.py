@@ -49,12 +49,12 @@ def evaluate_filters(*filter_objs):
         np.ndarray: filter result
 
     """
-    output = None
+    output = True
     for filter_obj in filter_objs:
         if not filter_obj or not filter_obj.expression:
             continue
         result = numexpr.evaluate(filter_obj.expression, filter_obj.local_dict)
-        if output is None:
+        if output is True:
             output = result
         else:
             output = np.logical_and(output, result)
