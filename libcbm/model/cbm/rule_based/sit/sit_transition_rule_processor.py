@@ -26,8 +26,7 @@ def state_variable_filter_func(tr_group_key, state_variables):
             tr_group_key, True)
     return rule_filter.create_filter(
         expression=state_filter_expression,
-        data={"age": state_variables.age},
-        columns=state_filter_cols)
+        data={"age": state_variables.age})
 
 
 def sit_transition_rule_iterator(sit_transitions, classifier_names):
