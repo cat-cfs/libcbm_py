@@ -83,10 +83,10 @@ class TransitionRuleProcessor(object):
                 cbm_vars.classifiers),
             rule_filter.create_filter(
                 expression=f"(disturbance_type_id == {dist_type_target})",
-                data={"disturbance_type_id": cbm_vars.params.disturbance_type},
-                columns=["disturbance_type_id"])]
+                data={"disturbance_type_id": cbm_vars.params.disturbance_type})
+            ]
 
-        filter_result = rule_filter.evaluate_filters(tr_filters)
+        filter_result = rule_filter.evaluate_filters(*tr_filters)
         return filter_result
 
     def _get_transition_classifier_set(self, transition_rule):
