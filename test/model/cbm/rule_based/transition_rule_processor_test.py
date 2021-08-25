@@ -117,8 +117,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             flux=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
-            mock_rule_filter.evaluate_filter.side_effect = \
-                lambda filter_obj: np.array([True], dtype=bool)
+            mock_rule_filter.evaluate_filters.side_effect = \
+                lambda *args: np.array([True], dtype=bool)
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
             self.assertTrue(list(transition_mask) == [True])
@@ -201,8 +201,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             flux_indicators=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
-            mock_rule_filter.evaluate_filter.side_effect = \
-                lambda filter_obj: np.array([True], dtype=bool)
+            mock_rule_filter.evaluate_filters.side_effect = \
+                lambda *args: np.array([True], dtype=bool)
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
 
@@ -291,8 +291,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             flux_indicators=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
-            mock_rule_filter.evaluate_filter.side_effect = \
-                lambda filter_obj: np.array([True], dtype=bool)
+            mock_rule_filter.evaluate_filters.side_effect = \
+                lambda *args: np.array([True], dtype=bool)
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
 
@@ -308,6 +308,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(list(cbm_vars.pools.p1) == [11, 11])
             self.assertTrue(list(cbm_vars.flux_indicators.f1) == [10, 10])
             self.assertTrue(list(cbm_vars.flux_indicators.f2) == [100, 100])
+
 
     def test_multiple_records_multiple_split_transitions(self):
         mock_classifier_filter_builder = Mock()
@@ -378,8 +379,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             # for the test, indexes 0 and 2 will be eligible
-            mock_rule_filter.evaluate_filter.side_effect = \
-                lambda filter_obj: np.array([True, False, True], dtype=bool)
+            mock_rule_filter.evaluate_filters.side_effect = \
+                lambda *args: np.array([True, False, True], dtype=bool)
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                  tr_group_key, tr_group, transition_mask, mock_cbm_vars)
 

@@ -20,9 +20,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
 
             create_state_filter_expression = Mock()
             create_state_filter_expression.side_effect = \
-                lambda a, b: (
-                    "mock_state_filter_expression",
-                    "mock_state_filter_cols")
+                lambda a, b: "mock_state_filter_expression"
             sit_stand_filter.create_state_filter_expression = \
                 create_state_filter_expression
 
@@ -39,9 +37,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                 mock_tr_group_key, True)
             rule_filter.create_filter.assert_called_once_with(
                 expression="mock_state_filter_expression",
-                data={"age": "mock_age"},
-                columns="mock_state_filter_cols"
-            )
+                data={"age": "mock_age"})
 
     def test_sit_transition_rule_iterator(self):
         mock_sit_transitions = pd.DataFrame({
