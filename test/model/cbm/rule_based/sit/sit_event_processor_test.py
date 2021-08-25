@@ -54,13 +54,11 @@ class SITEventProcessorTest(unittest.TestCase):
                 params=mock_params)
             # mock filter
             rule_filter = mocks["rule_filter"]
-            rule_filter.merge_filters = Mock()
-            rule_filter.merge_filters.side_effect = \
-                lambda *filters: "mock_merged_filter"
+
             rule_filter.create_filter = Mock()
-            rule_filter.evaluate_filter = "mock_evaluate_filter"
+            rule_filter.evaluate_filters = "mock_evaluate_filters"
             rule_filter.create_filter.side_effect = \
-                lambda expression, data, columns: "mock_filter"
+                lambda expression, data: "mock_filter"
 
             # mock rule target
             mocks["rule_target"].compute_disturbance_production = Mock()
@@ -69,7 +67,7 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_event_processor = mocks["event_processor"]
             mock_event_processor.process_event = Mock()
 
-            def mock_process_event(event_filter, undisturbed, target_func,
+            def mock_process_event(event_filters, undisturbed, target_func,
                                    disturbance_type_id, cbm_vars):
                 call_count = mock_event_processor.process_event.call_count
 
@@ -81,7 +79,6 @@ class SITEventProcessorTest(unittest.TestCase):
 
                 n_stands = cbm_vars.inventory.shape[0]
                 self.assertTrue(list(undisturbed) == [True]*n_stands)
-                self.assertTrue(event_filter == "mock_merged_filter")
                 self.assertTrue(target_func == "mock_target_factory")
                 self.assertTrue(cbm_vars.classifiers.equals(mock_classifiers))
                 self.assertTrue(cbm_vars.inventory.equals(mock_inventory))
@@ -106,11 +103,10 @@ class SITEventProcessorTest(unittest.TestCase):
             sit_stand_filter = mocks["sit_stand_filter"]
             sit_stand_filter.create_pool_filter_expression = Mock()
             sit_stand_filter.create_pool_filter_expression.side_effect = \
-                lambda sit_event: ("(mock_pool > 1)", ["mock_pool"])
+                lambda sit_event: "(mock_pool > 1)"
             sit_stand_filter.create_state_filter_expression = Mock()
             sit_stand_filter.create_state_filter_expression.side_effect = \
-                lambda sit_event, age_only: \
-                ("(mock_variable == 7)", ["mock_variable"])
+                lambda sit_event, age_only: "(mock_variable == 7)"
             sit_stand_filter.create_last_disturbance_type_filter = Mock()
             sit_stand_filter.create_last_disturbance_type_filter.side_effect \
                 = lambda sit_event: ("", [])
