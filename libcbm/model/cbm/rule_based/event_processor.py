@@ -55,7 +55,7 @@ def process_event(event_filters, undisturbed, target_func,
             disturbance event
     """
 
-    filter_result = rule_filter.evaluate_filters(event_filters)
+    filter_result = rule_filter.evaluate_filters(*event_filters)
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
