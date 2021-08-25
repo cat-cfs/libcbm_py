@@ -69,13 +69,19 @@ class SITEventProcessor():
             random_generator=self.random_generator)
 
         if sit_eligibilities is None:
-            event_filters = self._create_sit_event_filter(sit_event, cbm_vars)
-        #else:
-        #    event_filter =
-
+            event_filters = self._create_sit_event_filters(sit_event, cbm_vars)
+        else:
+            event_filters = [
+                rule_filter.create_filter(
+                    expression=sit_eligibilities.pool_filter_expression,
+                    data=cbm_vars.pools),
+                rule_filter.create_filter(
+                    expression=sit_eligibilities.state_filter_expression,
+                    data=cbm_vars.state
+                )]
 
         process_event_result = event_processor.process_event(
-            event_filter=event_filters,
+            event_filters=event_filters,
             undisturbed=eligible,
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
@@ -84,33 +90,30 @@ class SITEventProcessor():
         return process_event_result
 
     def _create_sit_event_filters(self, sit_event, cbm_vars):
-        pool_filter_expression, pool_filter_cols = \
+        pool_filter_expression = \
             sit_stand_filter.create_pool_filter_expression(
                 sit_event)
-        state_filter_expression, state_filter_cols = \
+        state_filter_expression = \
             sit_stand_filter.create_state_filter_expression(
                 sit_event, False)
-        dist_type_filter_expression, dist_type_cols = \
+        dist_type_filter_expression = \
             sit_stand_filter.create_last_disturbance_type_filter(
                 sit_event)
 
         return [
             rule_filter.create_filter(
                 expression=pool_filter_expression,
-                data=cbm_vars.pools,
-                columns=pool_filter_cols),
+                data=cbm_vars.pools),
             rule_filter.create_filter(
                 expression=state_filter_expression,
-                data=cbm_vars.state,
-                columns=state_filter_cols),
+                data=cbm_vars.state),
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
                     sit_event, cbm_vars.classifiers.columns.tolist()),
                 cbm_vars.classifiers),
             rule_filter.create_filter(
                 expression=dist_type_filter_expression,
-                data=cbm_vars.state,
-                columns=dist_type_cols)]
+                data=cbm_vars.state)]
 
     def _event_iterator(self, sit_events):
 
