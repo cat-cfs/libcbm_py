@@ -82,21 +82,23 @@ def read(config, config_dir):
     sit_inventory = load_table(config["inventory"], config_dir)
     sit_yield = load_table(config["yield"], config_dir)
     sit_events = load_table(config["events"], config_dir) \
-        if config["events"] else None
+        if "events" in config and config["events"] else None
+    sit_eligibilities = load_table(config["eligibilities"], config_dir) \
+        if "eligibilities" in config and config["eligibilities"] else None
     sit_transitions = load_table(config["transitions"], config_dir) \
-        if config["transitions"] else None
+        if "transitions" in config and config["transitions"] else None
     # Validate data #
     sit_data = parse(
         sit_classifiers, sit_disturbance_types, sit_age_classes,
-        sit_inventory, sit_yield, sit_events, sit_transitions
-    )
+        sit_inventory, sit_yield, sit_events, sit_transitions,
+        sit_eligibilities)
     # Return #
     return sit_data
 
 
 def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
           sit_inventory, sit_yield, sit_events=None, sit_transitions=None,
-          disturbance_eligibilities=None):
+          sit_eligibilities=None):
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
     containing the validated result.
@@ -121,6 +123,9 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
      - transition_rules: a pandas.DataFrame of the transition rules based on
         sit_transitions.  If the sit_transitions parameter is None this field
         is None.
+     - disturbance_eligibilities: a pandas.DataFrame of the disturbance event
+        eligibilities based on sit_eligibilities.  If the sit_events parameter
+        is None this field is None.
 
     Args:
         sit_classifiers (pandas.DataFrame): SIT formatted classifiers
@@ -133,6 +138,8 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
             events
         sit_transitions (pandas.DataFrame, optional): SIT formatted transition
             rules. Defaults to None.
+        sit_eligibilities (pandas.DataFrame, optional): SIT formatted
+            disturbance eligibilities. Defaults to None.
 
     Returns:
         object: an object containing parsed and validated SIT dataset
@@ -154,16 +161,16 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
 
     if sit_events is not None:
         separate_eligibilities = False
-        if disturbance_eligibilities is not None:
+        if sit_eligibilities is not None:
             separate_eligibilities = True
         s.disturbance_events = sit_disturbance_event_parser.parse(
             sit_events, s.classifiers, s.classifier_values,
             s.classifier_aggregates, s.disturbance_types,
             s.age_classes, separate_eligibilities)
-        if disturbance_eligibilities is not None:
+        if sit_eligibilities is not None:
             s.disturbance_eligibilities = \
                 sit_disturbance_event_parser.parse_eligibilities(
-                    s.disturbance_events, disturbance_eligibilities)
+                    s.disturbance_events, sit_eligibilities)
     else:
         s.disturbance_events = None
     if sit_transitions is not None:
