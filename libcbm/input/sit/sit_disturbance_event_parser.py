@@ -38,7 +38,7 @@ def get_target_types():
 
 def parse_eligibilities(disturbance_events, disturbance_eligibilities):
     """Parse and validate disturbance eligibilities which are a libcbm-specific
-    alternative to the "eligibility columns" in the cbm-cfs3 sit_disturbance
+    alternative to the eligibility columns in the cbm-cfs3 sit_disturbance
     events input.
 
     The benifit of this format is that the number of columns in sit_events is
@@ -59,14 +59,20 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
     * The id field in the disturbance_eligibilities corresponds to
     * expressions are parsed by the numexpr library
     * note brackets are required around nested boolean expressions
-      joined by a boolean operator (eg &, |)
+      joined by a boolean operator (eg &)
     * for both pool_filter_expression, and state_filter_expression,
       the expressions must evaluate to a True or False value.  False
       indicates that the stand records being evaluated for the
       corresponding disturbance event deemed ineligible for the
       disturbance. True indicates that the expressions does not
       eliminate the stand from eligibility.
-    * the final eligibility is evaluated as follows:
+    * for pool_filter_expression any CBM pool is acceptable.  The pool names
+      are defined in the cbm_defaults database tables.
+    * for state_filter_expression any of the state values may be used in the
+      boolean expression. See:
+     :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
+
+    The final eligibility is evaluated as follows:
 
      ====================== ======================= =================
      pool_filter_expression state_filter_expression deemed_ineligible
@@ -76,12 +82,6 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
      FALSE                  NULL or TRUE            TRUE
      FALSE                  FALSE                   TRUE
      ====================== ======================= =================
-
-      * for pool_filter_expression any CBM pool is acceptable.  The pool names
-        are defined in the cbm_defaults database tables.
-      * for state_filter_expression any of the state values may be used in the
-        boolean expression. See:
-        :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
 
     Args:
         disturbance_events (pandas.DataFrame): alternate form of CBM-CFS3
