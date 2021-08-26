@@ -37,6 +37,70 @@ def get_target_types():
 
 
 def parse_eligibilities(disturbance_events, disturbance_eligibilities):
+    """Parse and validate disturbance eligibilities which are a libcbm-specific
+    alternative to the "eligibility columns" in the cbm-cfs3 sit_disturbance
+    events input.
+
+    The benifit of this format is that the number of columns in sit_events is
+    greatly reduced, and arbitrary boolean expressions of stand pool and state
+    values, rather than min/max ranges supported in the CBM3-SIT format may be
+    used.
+
+    Example disturbance_eligibilities table:
+
+    | id | pool_filter_expression                | state_filter_expression |
+    | -- | ------------------------------------- | ----------------------- |
+    | 1  | (SoftwoodMerch + HardwoodMerch) >= 10 | NULL                    |
+    | 2  | (SoftwoodMerch + HardwoodMerch) >= 10 | (age > 5) & (age < 100) |
+    | 3  | NULL                                  | NULL                    |
+
+    * The id field in the disturbance_eligibilities corresponds to
+    * expressions are parsed by the
+      [numexpr](https://github.com/pydata/numexpr) library
+      * note brackets are required around nested boolean expressions
+        joined by a boolean operator (eg &, |)
+    * for both pool_filter_expression, and state_filter_expression,
+      the expressions must evaluate to a True or False value.  False
+      indicates that the stand records being evaluated for the
+      corresponding disturbance event deemed ineligible for the
+      disturbance. True indicates that the expressions does not
+      eliminate the stand from eligibility.
+    * the final eligibility is evaluated as follows:
+
+    | pool_filter_expression | state_filter_expression | deemed_ineligible |
+    | ---------------------- | ----------------------- | ----------------- |
+    | NULL or TRUE           | NULL or TRUE            | FALSE             |
+    | NULL or TRUE           | FALSE                   | TRUE              |
+    | FALSE                  | NULL or TRUE            | TRUE              |
+    | FALSE                  | FALSE                   | TRUE              |
+
+      * for pool_filter_expression any CBM pool is acceptable.  The pool names
+        are defined in the cbm_defaults database tables.
+      * for state_filter_expression any of the state values may be used in the
+        boolean expression. See:
+        :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
+
+    Args:
+        disturbance_events (pandas.DataFrame): alternate form of CBM-CFS3
+            sit_events: the 21 eligibility columns and the using age class
+            and min-max columns are omitted.
+        disturbance_eligibilities (pandas.DataFrame): table of id (int),
+            state_filter expression (str), pool filter expression (str).
+            The disturbance event `disturbance_eligibility_id` column
+            corresponds to the id column in this table.
+
+    Raises:
+        ValueError: disturbance_eligibility_id values found in the specified
+            sit_events were not present in the provided
+            disturbance_eligibilities table.
+        ValueError: at lease one null id value was detected in the id column
+            of the specified disturbance_eligibilities table.
+        ValueError: duplicate id value was detected in the id column of the
+            specified disturbance_eligibilities table.
+
+    Returns:
+        pandas.DataFrame: the validated event eligibilities table
+    """
     disturbance_eligibility_format = \
         sit_format.get_disturbance_eligibility_format()
 
