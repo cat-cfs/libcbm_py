@@ -39,9 +39,11 @@ for mac_os_ver in ["macosx_10_12_x86_64", "macosx_10_15_x86_64"]:
          for x in ["cbm.a", "core.a", "libcbm.dylib", "volume_to_biomass.a"]])
 
 test_resources = []
-for x in ["cbm3_tutorial2", "cbm3_tutorial6", "sit_rule_based_events",
-          "moss_c_test_case", "moss_c_multiple_stands"]:
+for x in ["cbm3_tutorial2", "cbm3_tutorial2_eligibilities", "cbm3_tutorial6",
+          "sit_rule_based_events", "moss_c_test_case",
+          "moss_c_multiple_stands"]:
     test_resources.append(os.path.join(resources_dir, "test", x, "*.csv"))
+    test_resources.append(os.path.join(resources_dir, "test", x, "*.xlsx"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.json"))
 
 
@@ -50,7 +52,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="libcbm",
-    version="0.6.2",
+    version="0.6.4",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
