@@ -48,17 +48,18 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
 
     Example disturbance_eligibilities table:
 
-    | id | pool_filter_expression                | state_filter_expression |
-    | -- | ------------------------------------- | ----------------------- |
-    | 1  | (SoftwoodMerch + HardwoodMerch) >= 10 | NULL                    |
-    | 2  | (SoftwoodMerch + HardwoodMerch) >= 10 | (age > 5) & (age < 100) |
-    | 3  | NULL                                  | NULL                    |
+     ==   =====================================  =======================
+     id   pool_filter_expression                 state_filter_expression
+     ==   =====================================  =======================
+     1    (SoftwoodMerch + HardwoodMerch) >= 10  NULL
+     2    (SoftwoodMerch + HardwoodMerch) >= 10  (age > 5) & (age < 100)
+     3    NULL                                   NULL
+     ==   =====================================  =======================
 
     * The id field in the disturbance_eligibilities corresponds to
-    * expressions are parsed by the
-      [numexpr](https://github.com/pydata/numexpr) library
-      * note brackets are required around nested boolean expressions
-        joined by a boolean operator (eg &, |)
+    * expressions are parsed by the numexpr library
+    * note brackets are required around nested boolean expressions
+      joined by a boolean operator (eg &, |)
     * for both pool_filter_expression, and state_filter_expression,
       the expressions must evaluate to a True or False value.  False
       indicates that the stand records being evaluated for the
@@ -67,12 +68,14 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
       eliminate the stand from eligibility.
     * the final eligibility is evaluated as follows:
 
-    | pool_filter_expression | state_filter_expression | deemed_ineligible |
-    | ---------------------- | ----------------------- | ----------------- |
-    | NULL or TRUE           | NULL or TRUE            | FALSE             |
-    | NULL or TRUE           | FALSE                   | TRUE              |
-    | FALSE                  | NULL or TRUE            | TRUE              |
-    | FALSE                  | FALSE                   | TRUE              |
+     ====================== ======================= =================
+     pool_filter_expression state_filter_expression deemed_ineligible
+     ====================== ======================= =================
+     NULL or TRUE           NULL or TRUE            FALSE
+     NULL or TRUE           FALSE                   TRUE
+     FALSE                  NULL or TRUE            TRUE
+     FALSE                  FALSE                   TRUE
+     ====================== ======================= =================
 
       * for pool_filter_expression any CBM pool is acceptable.  The pool names
         are defined in the cbm_defaults database tables.
@@ -86,7 +89,7 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
             and min-max columns are omitted.
         disturbance_eligibilities (pandas.DataFrame): table of id (int),
             state_filter expression (str), pool filter expression (str).
-            The disturbance event `disturbance_eligibility_id` column
+            The disturbance event disturbance_eligibility_id column
             corresponds to the id column in this table.
 
     Raises:
