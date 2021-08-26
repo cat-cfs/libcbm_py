@@ -285,3 +285,69 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                 e, classifiers, classifier_values, aggregates,
                 self.get_mock_disturbance_types(),
                 self.get_mock_age_classes())
+
+    def test_undefined_sort_type_value_error(self):
+        """check if an error is raised when an undefined disturbance type
+        value is specified
+        """
+        event = {
+            "classifier_set": ["a", "?"],
+            "age_eligibility": ["True", -1, -1, -1, -1],
+            "eligibility": [-1] * self.get_num_eligibility_cols(),
+            "target": [1.0, 99999999, "A", "1", "dist1", "1", 100]}
+
+        classifiers, classifier_values, aggregates = \
+            self.get_mock_classifiers()
+        with self.assertRaises(ValueError):
+            e = self.assemble_disturbance_events_table([event])
+            sit_disturbance_event_parser.parse(
+                e, classifiers, classifier_values, aggregates,
+                self.get_mock_disturbance_types(),
+                self.get_mock_age_classes())
+
+    def test_parse_eligibilities(self):
+        event = {
+            "classifier_set": ["a", "?"],
+            "age_eligibility": [],
+            "eligibility": [1],
+            "target": [1.0, 1, "A", "1", "dist1", "1", 100]}
+        classifiers, classifier_values, aggregates = \
+            self.get_mock_classifiers()
+        e = self.assemble_disturbance_events_table([event])
+        sit_events = sit_disturbance_event_parser.parse(
+            e, classifiers, classifier_values, aggregates,
+            self.get_mock_disturbance_types(),
+            None, separate_eligibilities=True)
+        elgibilities_input = pd.DataFrame(
+            columns=["id", "pool_filter", "state_filter"],
+            data=[
+                [1, "pool_expression_1", "state_expression_1"]]
+        )
+        sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
+            sit_events, elgibilities_input)
+        self.assertTrue(
+            list(sit_eligibilities.columns) ==
+            [x["name"] for x
+             in sit_format.get_disturbance_eligibility_format()])
+
+    def test_parse_eligibilities_error_on_missing_id(self):
+        event = {
+            "classifier_set": ["a", "?"],
+            "age_eligibility": [],
+            "eligibility": [2],  # missing
+            "target": [1.0, 1, "A", "1", "dist1", "1", 100]}
+        classifiers, classifier_values, aggregates = \
+            self.get_mock_classifiers()
+        e = self.assemble_disturbance_events_table([event])
+        sit_events = sit_disturbance_event_parser.parse(
+            e, classifiers, classifier_values, aggregates,
+            self.get_mock_disturbance_types(),
+            None, separate_eligibilities=True)
+        elgibilities_input = pd.DataFrame(
+            columns=["id", "pool_filter", "state_filter"],
+            data=[
+                [1, "", ""]]
+        )
+        with self.assertRaises(ValueError):
+            sit_disturbance_event_parser.parse_eligibilities(
+                sit_events, elgibilities_input)
