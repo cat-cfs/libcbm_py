@@ -422,4 +422,5 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
         classifier_aggregates=sit.sit_data.classifier_aggregates,
         sit_events=initialize_events(sit),
         sit_transitions=initialize_transition_rules(sit),
-        tr_constants=tr_constants)
+        tr_constants=tr_constants,
+        sit_disturbance_eligibilities=sit.sit_data.disturbance_eligibilities)
