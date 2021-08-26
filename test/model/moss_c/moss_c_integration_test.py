@@ -37,3 +37,14 @@ class MossCIntegrationTest(unittest.TestCase):
         for p in ECOSYSTEM_POOLS:
             self.assertTrue(
                 np.allclose(pool_results[p.name], expected_output[p.name]))
+
+    def test_integration_spinup(self):
+        test_data_dir = os.path.join(
+            resources.get_test_resources_dir(),
+            "moss_c_test_case")
+
+        ctx = model_context.create_from_csv(test_data_dir)
+        spinup_debug = model.spinup(ctx, enable_debugging=True)
+        self.assertTrue(spinup_debug is not None)
+
+        self.assertTrue(model.spinup(ctx, enable_debugging=False) is None)
