@@ -389,5 +389,7 @@ def get_disturbance_event_format(classifier_names, n_columns,
 
 def get_disturbance_eligibility_format():
     return [
-        {"name": "disturbance_eligibility_id", "type": int}
+        {"name": "disturbance_eligibility_id", "index": 0, "type": int},
+        {"name": "pool_filter_expression", "index": 1, "type": str},
+        {"name": "state_filter_expression", "index": 2, "type": str}
     ]
