@@ -171,8 +171,11 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
             s.disturbance_eligibilities = \
                 sit_disturbance_event_parser.parse_eligibilities(
                     s.disturbance_events, sit_eligibilities)
+        else:
+            s.disturbance_eligibilities = None
     else:
         s.disturbance_events = None
+        s.disturbance_eligibilities = None
     if sit_transitions is not None:
         s.transition_rules = sit_transition_rule_parser.parse(
             sit_transitions, s.classifiers, s.classifier_values,
