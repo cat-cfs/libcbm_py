@@ -13,7 +13,8 @@ from libcbm.model.cbm.rule_based.sit import sit_event_processor
 
 def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
                                      classifier_aggregates, sit_events,
-                                     sit_transitions, tr_constants):
+                                     sit_transitions, tr_constants,
+                                     sit_disturbance_eligibilities):
 
     classifier_filter = ClassifierFilter(
         classifiers_config=classifiers_config,
@@ -39,16 +40,18 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
         random_generator=random_func)
 
     return SITRuleBasedProcessor(
-        event_processor, tr_processor, sit_events, sit_transitions)
+        event_processor, tr_processor, sit_events, sit_transitions,
+        sit_disturbance_eligibilities)
 
 
 class SITRuleBasedProcessor():
 
     def __init__(self, event_processor, transition_rule_processor,
-                 sit_events, sit_transitions):
+                 sit_events, sit_transitions, sit_eligibilities):
         self.event_processor = event_processor
         self.transition_rule_processor = transition_rule_processor
         self.sit_events = sit_events
+        self.sit_eligibilities = sit_eligibilities
         self.sit_event_stats_by_timestep = {}
         self.sit_transitions = sit_transitions
 
@@ -61,7 +64,8 @@ class SITRuleBasedProcessor():
         cbm_vars, stats_df = self.event_processor.process_events(
             time_step=time_step,
             sit_events=self.sit_events,
-            cbm_vars=cbm_vars)
+            cbm_vars=cbm_vars,
+            sit_eligibilities=self.sit_eligibilities)
         self.sit_event_stats_by_timestep[time_step] = stats_df
         return cbm_vars
 

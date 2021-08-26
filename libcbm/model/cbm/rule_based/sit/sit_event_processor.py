@@ -54,7 +54,7 @@ class SITEventProcessor():
         return compute_disturbance_production
 
     def _process_event(self, eligible, sit_event, cbm_vars,
-                       sit_eligibilities=None):
+                       sit_eligibility=None):
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
@@ -68,15 +68,15 @@ class SITEventProcessor():
             disturbance_production_func=compute_disturbance_production,
             random_generator=self.random_generator)
 
-        if sit_eligibilities is None:
+        if sit_eligibility is None:
             event_filters = self._create_sit_event_filters(sit_event, cbm_vars)
         else:
             event_filters = [
                 rule_filter.create_filter(
-                    expression=sit_eligibilities.pool_filter_expression,
+                    expression=sit_eligibility.pool_filter_expression,
                     data=cbm_vars.pools),
                 rule_filter.create_filter(
-                    expression=sit_eligibilities.state_filter_expression,
+                    expression=sit_eligibility.state_filter_expression,
                     data=cbm_vars.state
                 )]
 
@@ -161,10 +161,20 @@ class SITEventProcessor():
             sit_events.time_step == time_step].copy()
 
         stats_rows = []
+        eligibilty_expressions = None
+        if sit_eligibilities is not None:
+            eligibilty_expressions = {
+                int(row.disturbance_eligibility_id): row
+                for _, row in sit_eligibilities.iterrows()
+            }
         for event_index, sit_event in self._event_iterator(time_step_events):
             eligible = cbm_vars.params.disturbance_type <= 0
+            expression = None
+            if eligibilty_expressions:
+                expression = eligibilty_expressions[
+                    int(sit_event["disturbance_eligibility_id"])]
             process_event_result = self._process_event(
-                eligible, sit_event, cbm_vars)
+                eligible, sit_event, cbm_vars, expression)
             stats = process_event_result.rule_target_result.statistics
             stats["sit_event_index"] = event_index
             stats_rows.append(stats)
