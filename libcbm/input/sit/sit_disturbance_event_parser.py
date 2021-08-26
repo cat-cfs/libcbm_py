@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import numpy as np
+import pandas as pd
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
@@ -53,6 +54,15 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
         raise ValueError(
             "disturbance_eligibility_id values found in sit_events "
             f"but not in sit_disturbance_eligibilities {missing_ids}")
+    if pd.isnull(eligibilities.disturbance_eligibility_id).any():
+        raise ValueError(
+            "null values detected in eligibilities disturbance_eligibility_id "
+            "column")
+    if eligibilities.disturbance_eligibility_id.duplicated().any():
+        raise ValueError(
+            "duplicated disturbance_eligibility_id values detected in "
+            "eligibilities")
+    eligibilities = eligibilities.fillna("")
     return eligibilities
 
 
