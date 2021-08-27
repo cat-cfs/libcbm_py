@@ -41,7 +41,7 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
     alternative to the eligibility columns in the cbm-cfs3 sit_disturbance
     events input.
 
-    The benifit of this format is that the number of columns in sit_events is
+    The benefit of this format is that the number of columns in sit_events is
     greatly reduced, and arbitrary boolean expressions of stand pool and state
     values, rather than min/max ranges supported in the CBM3-SIT format may be
     used.
@@ -56,7 +56,7 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
      3    NULL                                   NULL
      ==   =====================================  =======================
 
-    * The id field in the disturbance_eligibilities corresponds to
+    * The id field in the disturbance_eligibilities corresponds to sit events
     * expressions are parsed by the numexpr library
     * note brackets are required around nested boolean expressions
       joined by a boolean operator (eg &)
