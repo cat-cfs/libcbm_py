@@ -18,7 +18,8 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'libcbm'
-copyright = '2019, Her Majesty the Queen in Right of Canada, as represented by the Minister of Natural Resources Canada'
+copyright = ('2019, Her Majesty the Queen in Right of Canada, as represented '
+             'by the Minister of Natural Resources Canada')
 author = 'Scott Morken'
 
 
@@ -27,7 +28,8 @@ author = 'Scott Morken'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage',
+extensions = [
+    'sphinx.ext.autodoc', 'sphinx.ext.coverage',
     'sphinx.ext.napoleon', 'nbsphinx']
 
 # Add any paths that contain templates here, relative to this directory.

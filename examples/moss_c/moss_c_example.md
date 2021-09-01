@@ -51,7 +51,7 @@ pools_0 = ctx.get_pools_df()
 pools_0.insert(0, "t", 0)
 pools_by_timestep = pools_by_timestep.append(pools_0)
 
-for t in range(0,100):
+for t in range(1,100):
     if t == 20:
         # disturb everything to demonstrate how this works
         ctx.state.disturbance_type[:] = 1

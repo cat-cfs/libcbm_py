@@ -49,7 +49,7 @@ class MerchVolumeLookupTest(unittest.TestCase):
             ))
 
         with self.assertRaises(ValueError):
-            output = mv_lookup.get_merch_vol(
+            mv_lookup.get_merch_vol(
                 age=np.array([2]),
                 merch_vol_id=np.array([1]))
 

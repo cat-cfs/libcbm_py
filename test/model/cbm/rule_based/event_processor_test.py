@@ -69,11 +69,11 @@ class EventProcessorTest(unittest.TestCase):
 
             mock_evaluate_filter_return = \
                 [False, True, True, False]
-            mock_rule_filter.evaluate_filter = Mock()
-            mock_rule_filter.evaluate_filter.side_effect = \
+            mock_rule_filter.evaluate_filters = Mock()
+            mock_rule_filter.evaluate_filters.side_effect = \
                 lambda _: mock_evaluate_filter_return
 
-            mock_event_filter = "mock_event_filter"
+            mock_event_filters = ["mock_event_filter"]
 
             mock_undisturbed = [True, True, True, True]
 
@@ -94,14 +94,14 @@ class EventProcessorTest(unittest.TestCase):
             mock_target_func.side_effect = target_func
 
             res = event_processor.process_event(
-                event_filter=mock_event_filter,
+                event_filters=mock_event_filters,
                 undisturbed=mock_undisturbed,
                 target_func=mock_target_func,
                 disturbance_type_id=disturbance_type_id,
                 cbm_vars=mock_cbm_vars)
 
-            mock_rule_filter.evaluate_filter.assert_called_once_with(
-                "mock_event_filter")
+            mock_rule_filter.evaluate_filters.assert_called_once_with(
+                *mock_event_filters)
             mock_target_func.assert_called_once()
 
             # no splits occurred here, so the inputs are returned

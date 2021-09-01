@@ -1,5 +1,4 @@
 import unittest
-from mock import Mock, patch
 import numpy as np
 import pandas as pd
 import scipy.sparse

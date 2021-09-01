@@ -1102,8 +1102,10 @@ dictionary</p>
 
 <dl class="function">
 <dt id="libcbm.input.sit.sit_disturbance_event_parser.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_events</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parses and validates the CBM SIT disturbance event format.</p>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">disturbance_events</em>, <em class="sig-param">classifiers</em>, <em class="sig-param">classifier_values</em>, <em class="sig-param">classifier_aggregates</em>, <em class="sig-param">disturbance_types</em>, <em class="sig-param">age_classes=None</em>, <em class="sig-param">separate_eligibilities=False</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses and validates the CBM SIT disturbance event format, or
+optionally an extended sit disturbance event format where disturbance
+eligibilites are separate from sit_events and joined by foreign key.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1123,9 +1125,12 @@ return value of:
 disturbance_type column of the disturbance event data. Use the
 return value of:
 <code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_types_parser.parse()</span></code></p></li>
-<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em>) – used to validate and compute age
-eligibility criteria in disturbance_events. Use the return value
-of: <a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a></p></li>
+<li><p><strong>age_classes</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – used to validate and compute
+age eligibility criteria in disturbance_events. Use the return
+value of:
+<a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.parse" title="libcbm.input.sit.sit_age_class_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_age_class_parser.parse()</span></code></a>.</p></li>
+<li><p><strong>disturbance_eligibilities</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – table of
+eligibility expressions.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
@@ -1142,6 +1147,131 @@ of: <a class="reference internal" href="#libcbm.input.sit.sit_age_class_parser.p
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>the validated disturbance events</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="libcbm.input.sit.sit_disturbance_event_parser.parse_eligibilities">
+<code class="sig-prename descclassname">libcbm.input.sit.sit_disturbance_event_parser.</code><code class="sig-name descname">parse_eligibilities</code><span class="sig-paren">(</span><em class="sig-param">disturbance_events</em>, <em class="sig-param">disturbance_eligibilities</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_disturbance_event_parser.parse_eligibilities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and validate disturbance eligibilities which are a libcbm-specific
+alternative to the eligibility columns in the cbm-cfs3 sit_disturbance
+events input.</p>
+<p>The benifit of this format is that the number of columns in sit_events is
+greatly reduced, and arbitrary boolean expressions of stand pool and state
+values, rather than min/max ranges supported in the CBM3-SIT format may be
+used.</p>
+<p>Example disturbance_eligibilities table:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 60%" />
+<col style="width: 37%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>id</p></th>
+<th class="head"><p>pool_filter_expression</p></th>
+<th class="head"><p>state_filter_expression</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>(SoftwoodMerch + HardwoodMerch) &gt;= 10</p></td>
+<td><p>NULL</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>(SoftwoodMerch + HardwoodMerch) &gt;= 10</p></td>
+<td><p>(age &gt; 5) &amp; (age &lt; 100)</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>NULL</p></td>
+<td><p>NULL</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<ul class="simple">
+<li><p>The id field in the disturbance_eligibilities corresponds to</p></li>
+<li><p>expressions are parsed by the numexpr library</p></li>
+<li><p>note brackets are required around nested boolean expressions
+joined by a boolean operator (eg &amp;)</p></li>
+<li><p>for both pool_filter_expression, and state_filter_expression,
+the expressions must evaluate to a True or False value.  False
+indicates that the stand records being evaluated for the
+corresponding disturbance event deemed ineligible for the
+disturbance. True indicates that the expressions does not
+eliminate the stand from eligibility.</p></li>
+<li><p>for pool_filter_expression any CBM pool is acceptable.  The pool names
+are defined in the cbm_defaults database tables.</p></li>
+<li><p>for state_filter_expression any of the state values may be used in the
+boolean expression. See:</p></li>
+</ul>
+<blockquote>
+<div><p><a class="reference internal" href="cbm_input_and_variables.html#libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables" title="libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables()</span></code></a></p>
+</div></blockquote>
+<p>The final eligibility is evaluated as follows:</p>
+<blockquote>
+<div><table class="docutils align-default">
+<colgroup>
+<col style="width: 35%" />
+<col style="width: 37%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>pool_filter_expression</p></th>
+<th class="head"><p>state_filter_expression</p></th>
+<th class="head"><p>deemed_ineligible</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>NULL or TRUE</p></td>
+<td><p>NULL or TRUE</p></td>
+<td><p>FALSE</p></td>
+</tr>
+<tr class="row-odd"><td><p>NULL or TRUE</p></td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
+</tr>
+<tr class="row-even"><td><p>FALSE</p></td>
+<td><p>NULL or TRUE</p></td>
+<td><p>TRUE</p></td>
+</tr>
+<tr class="row-odd"><td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>disturbance_events</strong> (<em>pandas.DataFrame</em>) – alternate form of CBM-CFS3
+sit_events: the 21 eligibility columns and the using age class
+and min-max columns are omitted.</p></li>
+<li><p><strong>disturbance_eligibilities</strong> (<em>pandas.DataFrame</em>) – table of id (int),
+state_filter expression (str), pool filter expression (str).
+The disturbance event disturbance_eligibility_id column
+corresponds to the id column in this table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – disturbance_eligibility_id values found in the specified
+    sit_events were not present in the provided
+    disturbance_eligibilities table.</p></li>
+<li><p><strong>ValueError</strong> – at lease one null id value was detected in the id column
+    of the specified disturbance_eligibilities table.</p></li>
+<li><p><strong>ValueError</strong> – duplicate id value was detected in the id column of the
+    specified disturbance_eligibilities table.</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the validated event eligibilities table</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>pandas.DataFrame</p>
@@ -1447,7 +1577,7 @@ base.</p>
 
 <dl class="function">
 <dt id="libcbm.input.sit.sit_format.get_disturbance_event_format">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_event_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_event_format" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_format.</code><code class="sig-name descname">get_disturbance_event_format</code><span class="sig-paren">(</span><em class="sig-param">classifier_names</em>, <em class="sig-param">n_columns</em>, <em class="sig-param">include_eligibility_columns=True</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_format.get_disturbance_event_format" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of column description dictionaries describing the SIT
 disturbance event format</p>
 <dl class="field-list simple">
@@ -1457,6 +1587,10 @@ disturbance event format</p>
 <li><p><strong>n_columns</strong> (<em>int</em>) – the number of columns in disturbance data.  This
 is required because the format has a varying number of optional
 columns.</p></li>
+<li><p><strong>include_eligibility_columns</strong> (<em>bool</em><em>, </em><em>optional</em>) – if set to false the
+standard age eligibility and carbon eligibility columns are
+excluded from the result, and an disturbance_eligibility_id
+column instead is included.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
@@ -1893,7 +2027,7 @@ or pandas.read_excel function.</p>
 
 <dl class="function">
 <dt id="libcbm.input.sit.sit_reader.parse">
-<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">sit_classifiers</em>, <em class="sig-param">sit_disturbance_types</em>, <em class="sig-param">sit_age_classes</em>, <em class="sig-param">sit_inventory</em>, <em class="sig-param">sit_yield</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">sit_transitions</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.parse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.input.sit.sit_reader.</code><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param">sit_classifiers</em>, <em class="sig-param">sit_disturbance_types</em>, <em class="sig-param">sit_age_classes</em>, <em class="sig-param">sit_inventory</em>, <em class="sig-param">sit_yield</em>, <em class="sig-param">sit_events=None</em>, <em class="sig-param">sit_transitions=None</em>, <em class="sig-param">sit_eligibilities=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.input.sit.sit_reader.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parses and validates CBM Standard import tool formatted data including
 the complicated interdependencies in the SIT format. Returns an object
 containing the validated result.</p>
@@ -1942,6 +2076,12 @@ is None.</p>
 </dd>
 </dl>
 </li>
+<li><dl class="simple">
+<dt>disturbance_eligibilities: a pandas.DataFrame of the disturbance event</dt><dd><p>eligibilities based on sit_eligibilities.  If the sit_events parameter
+is None this field is None.</p>
+</dd>
+</dl>
+</li>
 </ul>
 </div></blockquote>
 <dl class="field-list simple">
@@ -1953,9 +2093,12 @@ types</p></li>
 <li><p><strong>sit_age_classes</strong> (<em>pandas.DataFrame</em>) – SIT formatted age classes</p></li>
 <li><p><strong>sit_inventory</strong> (<em>pandas.DataFrame</em>) – SIT formatted inventory</p></li>
 <li><p><strong>sit_yield</strong> (<em>pandas.DataFrame</em>) – SIT formatted yield curves</p></li>
-<li><p><strong>sit_events</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – SIT formatted disturbance events</p></li>
-<li><p><strong>sit_transitions</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – SIT formatted transition
-rules</p></li>
+<li><p><strong>sit_events</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – SIT formatted disturbance
+events</p></li>
+<li><p><strong>sit_transitions</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – SIT formatted transition
+rules. Defaults to None.</p></li>
+<li><p><strong>sit_eligibilities</strong> (<em>pandas.DataFrame</em><em>, </em><em>optional</em>) – SIT formatted
+disturbance eligibilities. Defaults to None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

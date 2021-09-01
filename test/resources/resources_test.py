@@ -65,7 +65,6 @@ class ResourcesTest(unittest.TestCase):
         finally:
             os.unlink(temp_file.name)
 
-
     @patch("libcbm.resources.sys")
     def test_fail_on_32_bit_system(self, sys):
         sys.maxsize = 2 ^ 32 - 1
