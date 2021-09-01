@@ -76,17 +76,17 @@ class TransitionRuleProcessor(object):
         classifier_set = [
             tr_group_key[x]
             for x in cbm_vars.classifiers.columns.tolist()]
-        tr_filter = rule_filter.merge_filters(
+        tr_filters = [
             self.state_variable_filter_func(tr_group_key, cbm_vars.state),
             self.classifier_filter_builder.create_classifiers_filter(
                 classifier_set,
                 cbm_vars.classifiers),
             rule_filter.create_filter(
                 expression=f"(disturbance_type_id == {dist_type_target})",
-                data={"disturbance_type_id": cbm_vars.params.disturbance_type},
-                columns=["disturbance_type_id"]))
+                data={"disturbance_type_id": cbm_vars.params.disturbance_type})
+            ]
 
-        filter_result = rule_filter.evaluate_filter(tr_filter)
+        filter_result = rule_filter.evaluate_filters(*tr_filters)
         return filter_result
 
     def _get_transition_classifier_set(self, transition_rule):

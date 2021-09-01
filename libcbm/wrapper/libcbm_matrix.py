@@ -19,7 +19,7 @@ class LibCBM_Matrix_Base(ctypes.Structure):
         ValueError: matrix must be of the correct type
     """
     def __init__(self, matrix, matrix_np_type, matrix_c_type):
-        if len(matrix.shape) == 1 and matrix.shape[0] == 1:
+        if matrix.size == 1:
             self.rows = 1
             self.cols = 1
         elif len(matrix.shape) == 2:

@@ -57,6 +57,22 @@ class SITInventoryParserTest(unittest.TestCase):
         self.assertTrue(result.area.sum() == 3)
         self.assertTrue(set(result.age) == {100, 4, 1, 2})
 
+    def test_exception_on_missing_age_class_id(self):
+        """Checks the age class expansion feature "using_age_class"
+        """
+        inventory_table = pd.DataFrame(
+            data=[
+                ("b", "a", "TRUE", "MISSING", 1, 0, 0),
+                ("a", "a", False, 100, 1, 0, 0),
+                ("a", "a", "-1", 4, 1, 0, 0)])
+
+        classifiers, classifier_values = self.get_mock_classifiers()
+        age_classes = self.get_mock_age_classes()
+        with self.assertRaises(ValueError):
+            sit_inventory_parser.parse(
+                inventory_table, classifiers, classifier_values, None,
+                age_classes)
+
     def test_expected_result_with_numeric_classifiers(self):
         """Checks that numeric classifiers that appear in inventory data
         are parsed as strings

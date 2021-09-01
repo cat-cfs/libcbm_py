@@ -8,7 +8,8 @@ from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
 
 
 class LibCBMHandle(LibCBM_ctypes):
-    """Initialize a libcbm handle with the specified pools, and flux indicators.
+    """Initialize a libcbm handle with the specified pools, and flux
+    indicators.
 
     Arguments:
         dll_path (str): path to the libcbm compiled library
@@ -84,10 +85,8 @@ class LibCBMHandle(LibCBM_ctypes):
     def __exit__(self, exc_type, exc_value, traceback):
         """frees the allocated libcbm pointer"""
         if self.pointer:
-            err = LibCBM_Error()
-            self._dll.LibCBM_Free(ctypes.byref(err), self.pointer)
-            if err.Error != 0:
-                raise RuntimeError(err.getErrorMessage())
+            self.call("LibCBM_Free")
+            self.pointer = 0
 
     def call(self, func_name, *args):
         """Call a libcbm C/C++ function.  The specified args are passed
@@ -108,6 +107,6 @@ class LibCBMHandle(LibCBM_ctypes):
         func = getattr(self._dll, func_name)
         args = (ctypes.byref(self.err), self.pointer) + args
         result = func(*args)
-        if self.err.Error != 0:
+        if self.err.getError() != 0:
             raise RuntimeError(self.err.getErrorMessage())
         return result

@@ -19,30 +19,22 @@ class SITStandFilterTest(unittest.TestCase):
             "(age >= 10)",
             ""]
 
-        expected_columns = [
-            ["age"],
-            ["age"],
-            ["age"],
-            []]
-
         mock_sit_transitions_data = pd.DataFrame(
             data=mock_data,
             columns=["min_age", "max_age"])
 
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            exp, cols = \
+            exp = \
                 sit_stand_filter.create_state_filter_expression(
                     row,
                     sit_stand_filter.get_state_variable_age_filter_mappings())
             self.assertTrue(exp == expected_expressions[i_row])
-            self.assertTrue(set(cols) == set(expected_columns[i_row]))
 
     def test_create_last_disturbance_type_filter(self):
-        exp, cols = sit_stand_filter.create_last_disturbance_type_filter(
+        exp = sit_stand_filter.create_last_disturbance_type_filter(
             {"LastDistTypeID": 1})
         self.assertTrue(exp == "(last_disturbance_type == 1)")
-        self.assertTrue(cols == ["last_disturbance_type"])
 
     def test_expected_result_on_create_state_variable_filter(self):
 
@@ -61,23 +53,16 @@ class SITStandFilterTest(unittest.TestCase):
             "(age >= 10) & (time_since_last_disturbance >= 30)",
             ""]
 
-        expected_columns = [
-            ["age", "time_since_last_disturbance"],
-            ["age"],
-            ["age", "time_since_last_disturbance"],
-            []]
-
         mock_sit_transitions_data = pd.DataFrame(
             data=mock_data,
             columns=mock_data_columns)
 
         rows = mock_sit_transitions_data.to_dict("records")
         for i_row, row in enumerate(rows):
-            exp, cols = \
+            exp = \
                 sit_stand_filter.create_state_filter_expression(
                     row, False)
             self.assertTrue(exp == expected_expressions[i_row])
-            self.assertTrue(set(cols) == set(expected_columns[i_row]))
 
     def test_get_pool_variable_filter_mappings_expected_value(self):
 
@@ -104,15 +89,13 @@ class SITStandFilterTest(unittest.TestCase):
             expected_columns.update(set(x[1]))
 
         rows = mock_sit_events.to_dict("records")
-        expression0, columns0 = \
+        expression0 = \
             sit_stand_filter.create_pool_filter_expression(rows[0])
         self.assertTrue(expression0 == expected_expression)
-        self.assertTrue(set(columns0) == set(expected_columns))
 
-        expression1, columns1 = \
+        expression1 = \
             sit_stand_filter.create_pool_filter_expression(rows[1])
         self.assertTrue(expression1 == "")
-        self.assertTrue(set(columns1) == set())
 
     def test_get_classifier_set_expected_result(self):
         mock_classifiers = ["a", "b", "c"]

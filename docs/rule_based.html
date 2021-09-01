@@ -188,15 +188,15 @@ simulation state and variables</p></li>
 
 <dl class="function">
 <dt id="libcbm.model.cbm.rule_based.event_processor.process_event">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filter</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.event_processor.</code><code class="sig-name descname">process_event</code><span class="sig-paren">(</span><em class="sig-param">event_filters</em>, <em class="sig-param">undisturbed</em>, <em class="sig-param">target_func</em>, <em class="sig-param">disturbance_type_id</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.event_processor.process_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a CBM rule based event by filtering and targeting a subset of
 the specified inventory.  In the case of merchantable or area targets
 splits may occur to meet a disturbance target exactly.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>event_filter</strong> (<em>object</em>) – a filter object containing information to deem
-stands eligible or ineligible for events
+<li><p><strong>event_filters</strong> (<em>list</em>) – a list of filter objects containing information
+to deem stands eligible or ineligible for events
 See <a class="reference internal" href="#module-libcbm.model.cbm.rule_based.rule_filter" title="libcbm.model.cbm.rule_based.rule_filter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">libcbm.model.cbm.rule_based.rule_filter</span></code></a></p></li>
 <li><p><strong>undisturbed</strong> (<em>pandas.Series</em>) – a boolean value series indicating each
 specified index is eligible (True) or ineligible (False) for
@@ -226,7 +226,7 @@ simulation state and variables</p></li>
 
 <span class="target" id="module-libcbm.model.cbm.rule_based.rule_filter"></span><dl class="function">
 <dt id="libcbm.model.cbm.rule_based.rule_filter.create_filter">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_filter.</code><code class="sig-name descname">create_filter</code><span class="sig-paren">(</span><em class="sig-param">expression</em>, <em class="sig-param">data</em>, <em class="sig-param">columns</em>, <em class="sig-param">column_variable_map=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_filter.create_filter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_filter.</code><code class="sig-name descname">create_filter</code><span class="sig-paren">(</span><em class="sig-param">expression</em>, <em class="sig-param">data</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_filter.create_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a filter object for filtering a pandas dataframe using an
 expression.</p>
 <dl class="field-list simple">
@@ -236,11 +236,6 @@ expression.</p>
 column_variable_map</p></li>
 <li><p><strong>data</strong> (<em>pandas.DataFrame</em><em>, </em><em>dict</em><em> or </em><em>object</em>) – the data to for which to
 create a filter</p></li>
-<li><p><strong>columns</strong> (<em>list</em>) – the columns involved in the expression</p></li>
-<li><p><strong>column_variable_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – a mapping of the column names
-to variable names in the expression. Default None. If None, the
-column names themselves are assumed to be present in the
-expression.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -269,12 +264,12 @@ local_dict.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="libcbm.model.cbm.rule_based.rule_filter.evaluate_filter">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_filter.</code><code class="sig-name descname">evaluate_filter</code><span class="sig-paren">(</span><em class="sig-param">filter_obj</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_filter.evaluate_filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>evaluates the specified filter object</p>
+<dt id="libcbm.model.cbm.rule_based.rule_filter.evaluate_filters">
+<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_filter.</code><code class="sig-name descname">evaluate_filters</code><span class="sig-paren">(</span><em class="sig-param">*filter_objs</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_filter.evaluate_filters" title="Permalink to this definition">¶</a></dt>
+<dd><p>evaluates the specified sequence of filter object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>filter_obj</strong> (<em>object</em>) – <p>object with properties:</p>
+<dd class="field-odd"><p><strong>filter_obj</strong> (<em>list</em>) – <p>list of objects with properties:</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>expression (str): a boolean expression to filter the values</dt><dd><p>in local_dict. The variables are defined as the keys in
@@ -295,45 +290,6 @@ local_dict.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="libcbm.model.cbm.rule_based.rule_filter.merge_filters">
-<code class="sig-prename descclassname">libcbm.model.cbm.rule_based.rule_filter.</code><code class="sig-name descname">merge_filters</code><span class="sig-paren">(</span><em class="sig-param">*filters</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.rule_filter.merge_filters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Merge filters into a single filter</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>filters</strong> (<em>iterable</em>) – <p>a list of objects with properties:</p>
-<ul class="simple">
-<li><dl class="simple">
-<dt>expression (str): a boolean expression to filter the values</dt><dd><p>in local_dict. The variables are defined as the keys in
-local_dict.</p>
-</dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>local_dict (dict): a dictionary containing named numpy</dt><dd><p>variables to filter.</p>
-</dd>
-</dl>
-</li>
-</ul>
-</p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – At least 2 of the specified filters contains the same
-    variable</p>
-</dd>
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>the merge of the specified filters, with the same properties</dt><dd><p>as the input objects</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -763,7 +719,7 @@ random numbers in the returned sequence.</p></li>
 </dl>
 <dl class="method">
 <dt id="libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events">
-<code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em>, <em class="sig-param">sit_eligibilities=None</em><span class="sig-paren">)</span><a class="headerlink" href="#libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor.process_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process sit_events for the start of the given timestep, computing a
 new simulation state, and the disturbance types to apply for the
 timestep.</p>
@@ -782,6 +738,8 @@ Expected format is the same as the return value of:
 <a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_disturbance_event_parser.parse" title="libcbm.input.sit.sit_disturbance_event_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_event_parser.parse()</span></code></a></p></li>
 <li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
 simulation state and variables</p></li>
+<li><p><strong>sit_eligibilities</strong> (<em>pandas.DataFrame</em>) – table of eligibility
+expressions with foreign key “disturbance_eligibility_id”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -817,7 +775,7 @@ random numbers in the returned sequence.</p></li>
 </dl>
 <dl class="method">
 <dt>
-<code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em><span class="sig-paren">)</span></dt>
+<code class="sig-name descname">process_events</code><span class="sig-paren">(</span><em class="sig-param">time_step</em>, <em class="sig-param">sit_events</em>, <em class="sig-param">cbm_vars</em>, <em class="sig-param">sit_eligibilities=None</em><span class="sig-paren">)</span></dt>
 <dd><p>Process sit_events for the start of the given timestep, computing a
 new simulation state, and the disturbance types to apply for the
 timestep.</p>
@@ -836,6 +794,8 @@ Expected format is the same as the return value of:
 <a class="reference internal" href="cbm_sit.html#libcbm.input.sit.sit_disturbance_event_parser.parse" title="libcbm.input.sit.sit_disturbance_event_parser.parse"><code class="xref py py-func docutils literal notranslate"><span class="pre">libcbm.input.sit.sit_disturbance_event_parser.parse()</span></code></a></p></li>
 <li><p><strong>cbm_vars</strong> (<em>object</em>) – an object containing dataframes that store cbm
 simulation state and variables</p></li>
+<li><p><strong>sit_eligibilities</strong> (<em>pandas.DataFrame</em>) – table of eligibility
+expressions with foreign key “disturbance_eligibility_id”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

@@ -51,7 +51,6 @@ def create_pool_filter_expression(sit_data):
             These values are intended for use with the
             :py:func:`libcbm.model.rule_based.rule_filter module`
     """
-    columns = set()
     expression_tokens = []
 
     mappings = get_pool_variable_filter_mappings()
@@ -60,7 +59,6 @@ def create_pool_filter_expression(sit_data):
             # by convention, SIT criteria less than 0 are considered null
             # criteria
             continue
-        columns.update(set(pool_values))
         expression_tokens.append(
             "({pool_expression} {operator} {value})".format(
                 pool_expression="({})".format(" + ".join(pool_values)),
@@ -69,7 +67,7 @@ def create_pool_filter_expression(sit_data):
             ))
 
     expression = " & ".join(expression_tokens)
-    return expression, columns
+    return expression
 
 
 def get_state_variable_age_filter_mappings():
@@ -129,7 +127,6 @@ def create_state_filter_expression(sit_data, age_only):
             :py:func:`libcbm.model.rule_based.rule_filter module`
     """
 
-    columns = set()
     expression_tokens = []
     if age_only:
         filter_mappings = get_state_variable_age_filter_mappings()
@@ -141,7 +138,6 @@ def create_state_filter_expression(sit_data, age_only):
             # by convention, SIT criteria less than 0 are considered null
             # criteria
             continue
-        columns.add(state_variable_column)
         expression_tokens.append(
             "({state_variable} {operator} {value})".format(
                 state_variable=state_variable_column,
@@ -150,19 +146,18 @@ def create_state_filter_expression(sit_data, age_only):
             ))
 
     expression = " & ".join(expression_tokens)
-    return expression, columns
+    return expression
 
 
 def create_last_disturbance_type_filter(sit_data):
 
     if int(sit_data["LastDistTypeID"]) == -1:
-        return "", []
+        return ""
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",
         value=sit_data["LastDistTypeID"])
-    columns = ["last_disturbance_type"]
-    return expression, columns
+    return expression
 
 
 def get_classifier_set(sit_data_row, classifiers):
