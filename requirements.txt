@@ -6,3 +6,4 @@ numba
 pyyaml
 mock
 openpyxl
+xlrd
