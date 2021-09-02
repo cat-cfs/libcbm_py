@@ -1,9 +1,8 @@
 numpy
-pandas>=1.2.5
+pandas>=1.1.5
 scipy
 numexpr
 numba
 pyyaml
 mock
 openpyxl
-xlrd
