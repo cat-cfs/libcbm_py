@@ -1,13 +1,13 @@
 {
     "import_config": {
-        "classifiers":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "classifiers"}},
-        "disturbance_types": {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_types"}},
-        "age_classes":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "age_classes"}},
-        "inventory":         {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "inventory"}},
-        "yield":             {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "growth_and_yield"}},
-        "events":            {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_events"}},
-        "transitions": 	     {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "transition_rules"}},
-        "eligibilities": 	 {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "eligibilities"}}
+        "classifiers":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "classifiers", "engine": "openpyxl"}},
+        "disturbance_types": {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_types", "engine": "openpyxl"}},
+        "age_classes":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "age_classes", "engine": "openpyxl"}},
+        "inventory":         {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "inventory", "engine": "openpyxl"}},
+        "yield":             {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "growth_and_yield", "engine": "openpyxl"}},
+        "events":            {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_events", "engine": "openpyxl"}},
+        "transitions": 	     {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "transition_rules", "engine": "openpyxl"}},
+        "eligibilities": 	 {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "eligibilities", "engine": "openpyxl"}}
     },
     "mapping_config": {
         "nonforest": null,
