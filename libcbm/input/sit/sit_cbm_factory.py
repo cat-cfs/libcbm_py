@@ -5,6 +5,7 @@
 import os
 import json
 from types import SimpleNamespace
+from contextlib import contextmanager
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_factory
@@ -355,6 +356,7 @@ def load_sit(config_path, db_path=None):
     return sit
 
 
+@contextmanager
 def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
@@ -375,7 +377,7 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         dll_path = resources.get_libcbm_bin_path()
     if parameters_factory is None:
         parameters_factory = sit.defaults.get_parameters_factory()
-    cbm = cbm_factory.create(
+    with cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=sit.defaults.get_configuration_factory(),
         cbm_parameters_factory=parameters_factory,
@@ -387,9 +389,9 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
                     sit.sit_data.classifier_values, sit.sit_data.age_classes,
                     sit.sit_mapping)),
         classifiers_factory=lambda: get_classifiers(
-            sit.sit_data.classifiers, sit.sit_data.classifier_values))
-
-    return cbm
+            sit.sit_data.classifiers, sit.sit_data.classifier_values)
+    ) as cbm:
+        yield cbm
 
 
 def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
