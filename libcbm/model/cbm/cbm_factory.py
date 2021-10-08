@@ -4,6 +4,7 @@
 
 
 import json
+from contextlib import contextmanager
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
@@ -28,6 +29,7 @@ def _dataframe_to_json(df):
         "data": df.values.tolist()}
 
 
+@contextmanager
 def create(dll_path, dll_config_factory, cbm_parameters_factory,
            merch_volume_to_biomass_factory, classifiers_factory):
     """Create and initialize an instance of the CBM model
@@ -84,26 +86,26 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
             merch_volume_to_biomass_factory=merch_volumes,
             classifiers_factory=classifiers)
 
-    Returns:
+    Yields:
         :py:class:`libcbm.model.cbm.CBM`: an initialized instance of the CBM
             model
     """
 
     configuration_string = json.dumps(dll_config_factory())
-    libcbm_handle = LibCBMHandle(dll_path, configuration_string)
-    libcbm_wrapper = LibCBMWrapper(libcbm_handle)
+    with LibCBMHandle(dll_path, configuration_string) as libcbm_handle:
+        libcbm_wrapper = LibCBMWrapper(libcbm_handle)
 
-    merch_volume_to_biomass_config = merch_volume_to_biomass_factory()
-    classifiers_config = classifiers_factory()
-    parameters = {
-        k: _dataframe_to_json(v) for k, v in cbm_parameters_factory().items()}
-    cbm_config = {
-        "cbm_defaults": parameters,
-        "merch_volume_to_biomass": merch_volume_to_biomass_config,
-        "classifiers": classifiers_config["classifiers"],
-        "classifier_values": classifiers_config["classifier_values"],
-    }
+        merch_volume_to_biomass_config = merch_volume_to_biomass_factory()
+        classifiers_config = classifiers_factory()
+        parameters = {
+            k: _dataframe_to_json(v) for k, v in cbm_parameters_factory().items()}
+        cbm_config = {
+            "cbm_defaults": parameters,
+            "merch_volume_to_biomass": merch_volume_to_biomass_config,
+            "classifiers": classifiers_config["classifiers"],
+            "classifier_values": classifiers_config["classifier_values"],
+        }
 
-    cbm_config_string = json.dumps(cbm_config)
-    cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config_string)
-    return CBM(libcbm_wrapper, cbm_wrapper)
+        cbm_config_string = json.dumps(cbm_config)
+        cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config_string)
+        yield CBM(libcbm_wrapper, cbm_wrapper)
