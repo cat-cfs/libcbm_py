@@ -1,5 +1,6 @@
 import os
 import json
+from contextlib import contextmanager
 from types import SimpleNamespace
 import pandas as pd
 
@@ -138,13 +139,16 @@ def setup_cbm_vars(sit):
     return cbm_vars
 
 
+@contextmanager
 def get_rule_based_processor(sit, random_func=None, parameters_factory=None):
 
-    cbm = sit_cbm_factory.initialize_cbm(
-        sit, dll_path=None, parameters_factory=parameters_factory)
-    rule_based_processor = \
-        sit_cbm_factory.create_sit_rule_based_processor(sit, cbm, random_func)
-    return rule_based_processor
+    with sit_cbm_factory.initialize_cbm(
+        sit, dll_path=None, parameters_factory=parameters_factory
+    ) as cbm:
+        rule_based_processor = \
+            sit_cbm_factory.create_sit_rule_based_processor(
+                sit, cbm, random_func)
+        yield rule_based_processor
 
 
 def get_disturbance_type_ids(sit_disturbance_types, disturbance_types):
