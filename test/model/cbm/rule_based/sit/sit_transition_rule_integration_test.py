@@ -30,7 +30,8 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         cbm_vars.params.disturbance_type = helpers.get_disturbance_type_ids(
             sit.sit_data.disturbance_types, ["dist1"])[0]
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
-        cbm_vars_result = sit_rule_based_processor.tr_func(cbm_vars=cbm_vars)
+        with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.tr_func(
+                cbm_vars=cbm_vars)
 
         self.assertTrue(cbm_vars_result.inventory.shape[0] == 2)

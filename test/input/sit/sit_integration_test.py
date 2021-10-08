@@ -56,17 +56,17 @@ class SITIntegrationTest(unittest.TestCase):
         )
         sit = sit_cbm_factory.initialize_sit_objects(sit)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
-        cbm = sit_cbm_factory.initialize_cbm(sit)
-        results, reporting_func = \
-            cbm_simulator.create_in_memory_reporting_func()
-        cbm_simulator.simulate(
-            cbm,
-            n_steps=1,
-            classifiers=classifiers,
-            inventory=inventory,
-            pool_codes=sit.defaults.get_pools(),
-            flux_indicator_codes=sit.defaults.get_flux_indicators(),
-            pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
-            reporting_func=reporting_func)
-        # there should be 2 rows, timestep 0 and timestep 1
-        self.assertTrue(results.pools.shape[0] == 2)
+        with sit_cbm_factory.initialize_cbm(sit) as cbm:
+            results, reporting_func = \
+                cbm_simulator.create_in_memory_reporting_func()
+            cbm_simulator.simulate(
+                cbm,
+                n_steps=1,
+                classifiers=classifiers,
+                inventory=inventory,
+                pool_codes=sit.defaults.get_pools(),
+                flux_indicator_codes=sit.defaults.get_flux_indicators(),
+                pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
+                reporting_func=reporting_func)
+            # there should be 2 rows, timestep 0 and timestep 1
+            self.assertTrue(results.pools.shape[0] == 2)

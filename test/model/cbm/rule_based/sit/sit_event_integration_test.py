@@ -33,20 +33,21 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+        with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        # records 0 and 3 are the disturbed records: both are eligible, they
-        # are the oldest stands, and together they exactly satisfy the target.
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types,
-                ["dist1", None, None, "dist1"]))
+            # records 0 and 3 are the disturbed records: both are eligible,
+            # they are the oldest stands, and together they exactly satisfy
+            # the target.
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types,
+                    ["dist1", None, None, "dist1"]))
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
         self.assertTrue(stats_row["total_eligible_value"] == 15.0)
         self.assertTrue(stats_row["total_achieved"] == 10.0)
         self.assertTrue(stats_row["shortfall"] == 0.0)
@@ -81,20 +82,22 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([99, 100, 98, 100])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+        with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        # records 0 and 3 are the disturbed records: both are eligible, they
-        # are the oldest stands, and together they exactly satisfy the target.
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types,
-                [None, "dist1", None, None]))
+            # records 0 and 3 are the disturbed records: both are eligible,
+            # they are the oldest stands, and together they exactly satisfy
+            # the target.
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types,
+                    [None, "dist1", None, None]))
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+
         self.assertTrue(stats_row["total_eligible_value"] == 5.0)
         self.assertTrue(stats_row["total_achieved"] == 5.0)
         self.assertTrue(stats_row["shortfall"] == 5.0)
@@ -133,19 +136,19 @@ class SITEventIntegrationTest(unittest.TestCase):
         # will be disturbed
         cbm_vars.state.age = np.array([100, 99, 98, 97, 96])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+        with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        expected_disturbance_types = helpers.get_disturbance_type_ids(
-            sit.sit_data.disturbance_types,
-            ["dist1", "dist1", None, "dist2", "dist2"])
+            expected_disturbance_types = helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types,
+                ["dist1", "dist1", None, "dist2", "dist2"])
 
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            expected_disturbance_types)
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                expected_disturbance_types)
 
-        stats = sit_rule_based_processor.sit_event_stats_by_timestep[1]
+            stats = sit_rule_based_processor.sit_event_stats_by_timestep[1]
         self.assertTrue(stats.iloc[0]["sit_event_index"] == 1)
         self.assertTrue(stats.iloc[0]["total_eligible_value"] == 25.0)
         self.assertTrue(stats.iloc[0]["total_achieved"] == 10.0)
@@ -187,23 +190,23 @@ class SITEventIntegrationTest(unittest.TestCase):
         # and the second will be split into 1 and 4 hectare stands.
         cbm_vars.state.age = np.array([99, 100])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(sit)
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+        with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types, ["dist1", "dist1", None]))
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types, ["dist1", "dist1", None]))
 
-        self.assertTrue(cbm_vars.pools.shape[0] == 3)
-        self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
-        self.assertTrue(cbm_vars.state.shape[0] == 3)
-        # note the age sort order caused the first record to split
-        self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
+            self.assertTrue(cbm_vars.pools.shape[0] == 3)
+            self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+            self.assertTrue(cbm_vars.state.shape[0] == 3)
+            # note the age sort order caused the first record to split
+            self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
         self.assertTrue(stats_row["total_eligible_value"] == 10.0)
         self.assertTrue(stats_row["total_achieved"] == 6.0)
         self.assertTrue(stats_row["shortfall"] == 0.0)
@@ -233,14 +236,15 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(
+        with helpers.get_rule_based_processor(
             sit, random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults))
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+            parameters_factory=helpers.get_parameters_factory(sit.defaults)
+        ) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
         self.assertTrue(stats_row["total_eligible_value"] == 10.0)
         self.assertTrue(stats_row["total_achieved"] == 10.0)
         self.assertTrue(stats_row["shortfall"] == 0.0)
@@ -276,20 +280,21 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100, 98])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(
+        with helpers.get_rule_based_processor(
             sit, random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults))
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=1, cbm_vars=cbm_vars)
+            parameters_factory=helpers.get_parameters_factory(sit.defaults)
+        ) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=1, cbm_vars=cbm_vars)
 
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types,
-                ["dist2", "dist2", "dist2"]))
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types,
+                    ["dist2", "dist2", "dist2"]))
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[1].iloc[0]
         self.assertTrue(stats_row["total_eligible_value"] == 9.0)
         self.assertTrue(stats_row["total_achieved"] == 9.0)
         self.assertTrue(stats_row["shortfall"] == 1.0)
@@ -320,26 +325,27 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.SoftwoodMerch = 1.0
         cbm_vars.state.age = np.array([99, 100])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(
+        with helpers.get_rule_based_processor(
             sit, random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults))
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=4, cbm_vars=cbm_vars)
+            parameters_factory=helpers.get_parameters_factory(sit.defaults)
+        ) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=4, cbm_vars=cbm_vars)
 
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types,
-                ["dist2", "dist2", None]))
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types,
+                    ["dist2", "dist2", None]))
 
-        self.assertTrue(cbm_vars.pools.shape[0] == 3)
-        self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
-        self.assertTrue(cbm_vars.state.shape[0] == 3)
-        # note the age sort order caused the first record to split
-        self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
+            self.assertTrue(cbm_vars.pools.shape[0] == 3)
+            self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+            self.assertTrue(cbm_vars.state.shape[0] == 3)
+            # note the age sort order caused the first record to split
+            self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
 
-        stats_row = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[4].iloc[0]
+            stats_row = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[4].iloc[0]
         self.assertTrue(stats_row["total_eligible_value"] == 10.0)
         self.assertTrue(stats_row["total_achieved"] == 7.0)
         self.assertTrue(stats_row["shortfall"] == 0.0)
@@ -375,21 +381,23 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars.pools.HardwoodMerch = 1.0
         cbm_vars.state.age = np.array([50])
 
-        sit_rule_based_processor = helpers.get_rule_based_processor(
+        with helpers.get_rule_based_processor(
             sit, random_func=np.ones,  # don't really do a random sort
-            parameters_factory=helpers.get_parameters_factory(sit.defaults))
-        cbm_vars_result = sit_rule_based_processor.dist_func(
-            time_step=100, cbm_vars=cbm_vars)
-        self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
-            helpers.get_disturbance_type_ids(
-                sit.sit_data.disturbance_types,
-                ["dist1", "dist2", "dist3", None]))
+            parameters_factory=helpers.get_parameters_factory(sit.defaults)
+        ) as sit_rule_based_processor:
+            cbm_vars_result = sit_rule_based_processor.dist_func(
+                time_step=100, cbm_vars=cbm_vars)
+            self.assertTrue(
+                list(cbm_vars_result.params.disturbance_type) ==
+                helpers.get_disturbance_type_ids(
+                    sit.sit_data.disturbance_types,
+                    ["dist1", "dist2", "dist3", None]))
 
-        self.assertTrue(list(cbm_vars.inventory.area) == [20, 100, 20, 860])
+            self.assertTrue(
+                list(cbm_vars.inventory.area) == [20, 100, 20, 860])
 
-        stats = \
-            sit_rule_based_processor.sit_event_stats_by_timestep[100]
+            stats = \
+                sit_rule_based_processor.sit_event_stats_by_timestep[100]
         self.assertTrue(stats.iloc[0]["total_eligible_value"] == 1000.0)
         self.assertTrue(stats.iloc[0]["total_achieved"] == 20.0)
         self.assertTrue(stats.iloc[0]["shortfall"] == 0.0)
