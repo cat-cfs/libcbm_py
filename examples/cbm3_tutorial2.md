@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.4.1
+      format_version: '1.3'
+      jupytext_version: 1.13.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -47,38 +47,29 @@ Initialize and validate the inventory in the sit dataset
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 ```
 
-Initialize an instance of the CBM model
-
-```python
-cbm = sit_cbm_factory.initialize_cbm(sit)
-```
-
 Create storage and a function for storing CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
 
 ```python
 results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
 ```
 
-Create a function to apply rule based disturbance events and transition rules based on the SIT input
-
-```python
-rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
-```
-
 ## Simulation
-The following line of code spins up the CBM inventory and runs it through 200 timesteps. 
 
 ```python
-cbm_simulator.simulate(
-    cbm,
-    n_steps              = 200,
-    classifiers          = classifiers,
-    inventory            = inventory,
-    pool_codes           = sit.defaults.get_pools(),
-    flux_indicator_codes = sit.defaults.get_flux_indicators(),
-    pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
-    reporting_func       = reporting_func
-)
+with sit_cbm_factory.initialize_cbm(sit) as cbm:
+    # Create a function to apply rule based disturbance events and transition rules based on the SIT input
+    rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+    # The following line of code spins up the CBM inventory and runs it through 200 timesteps.
+    cbm_simulator.simulate(
+        cbm,
+        n_steps              = 200,
+        classifiers          = classifiers,
+        inventory            = inventory,
+        pool_codes           = sit.defaults.get_pools(),
+        flux_indicator_codes = sit.defaults.get_flux_indicators(),
+        pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
+        reporting_func       = reporting_func
+    )
 ```
 
 ## Pool Results
@@ -208,4 +199,8 @@ sit.sit_data.yield_table
 
 ```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
+```
+
+```python
+
 ```

@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.4.1
+      format_version: '1.3'
+      jupytext_version: 1.13.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -16,6 +16,7 @@ jupyter:
 ```python
 import pandas as pd
 import numpy as np
+from contextlib import contextmanager
 import cProfile 
 import plotly.graph_objects as go 
 %matplotlib inline
@@ -32,13 +33,13 @@ from libcbm import resources
 
 ```python
 db_path = resources.get_cbm_defaults_path()
-classifiers = lambda : cbm_config.classifier_config([
+classifiers_factory = lambda : cbm_config.classifier_config([
     cbm_config.classifier(
         "c1",
         values=[cbm_config.classifier_value("c1_v1")])
 ])
 
-merch_volumes = lambda : cbm_config.merch_volume_to_biomass_config(
+merch_volumes_factory = lambda : cbm_config.merch_volume_to_biomass_config(
     db_path=db_path,
     merch_volume_curves=[
         cbm_config.merch_volume_curve(
@@ -52,12 +53,13 @@ merch_volumes = lambda : cbm_config.merch_volume_to_biomass_config(
 ```
 
 ```python
-cbm = cbm_factory.create(
-    dll_path=resources.get_libcbm_bin_path(),
-    dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(db_path),
-    cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(db_path),
-    merch_volume_to_biomass_factory=merch_volumes,
-    classifiers_factory=classifiers)
+def create_cbm():
+    return cbm_factory.create(
+        dll_path=resources.get_libcbm_bin_path(),
+        dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(db_path),
+        cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(db_path),
+        merch_volume_to_biomass_factory=merch_volumes_factory,
+        classifiers_factory=classifiers_factory)
 ```
 
 ```python
@@ -65,6 +67,7 @@ ref = CBMDefaultsReference(db_path)
 ```
 
 ```python
+
 n_stands = 1000
 
 pools = cbm_variables.initialize_pools(n_stands, ref.get_pools())
@@ -90,15 +93,19 @@ classifiers = classifiers=pd.DataFrame({
 ```
 
 ```python
-cProfile.run('cbm.spinup(classifiers, inventory, pools, spinup_variables, spinup_params)')
+with create_cbm() as cbm:
+    cProfile.run('cbm.spinup(classifiers, inventory, pools, spinup_variables, spinup_params)')
+    
 ```
 
 ```python
-cProfile.run('cbm.init(inventory, pools, cbm_state)')
+with create_cbm() as cbm:
+    cProfile.run('cbm.init(inventory, pools, cbm_state)')
 ```
 
 ```python
-cProfile.run('for i in range(0,200): cbm.step(classifiers, inventory, pools, flux_indicators, cbm_state, cbm_params)')
+with create_cbm() as cbm:
+    cProfile.run('for i in range(0,200): cbm.step(classifiers, inventory, pools, flux_indicators, cbm_state, cbm_params)')
 ```
 
 # total time used for numeric processing of 1000 stands 

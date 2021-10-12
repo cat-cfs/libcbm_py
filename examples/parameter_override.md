@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.4.1
+      format_version: '1.3'
+      jupytext_version: 1.13.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -56,23 +56,23 @@ def run_cbm_random():
         return default_parameters
 
     # use the above random parameter factory as the source for CBM parameters
-    cbm = sit_cbm_factory.initialize_cbm(sit, parameters_factory=random_parameter_factory)
+    with sit_cbm_factory.initialize_cbm(sit, parameters_factory=random_parameter_factory) as cbm:
     
-    results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
-    rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+        results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
+        rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
 
-    cbm_simulator.simulate(
-        cbm,
-        n_steps              = 20,
-        classifiers          = classifiers,
-        inventory            = inventory,
-        pool_codes           = sit.defaults.get_pools(),
-        flux_indicator_codes = sit.defaults.get_flux_indicators(),
-        pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
-        reporting_func       = reporting_func
-    )
-    # return a single pool value to illustrate the effect of the randomly drawn parameter
-    return results.pools[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()
+        cbm_simulator.simulate(
+            cbm,
+            n_steps              = 20,
+            classifiers          = classifiers,
+            inventory            = inventory,
+            pool_codes           = sit.defaults.get_pools(),
+            flux_indicator_codes = sit.defaults.get_flux_indicators(),
+            pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
+            reporting_func       = reporting_func
+        )
+        # return a single pool value to illustrate the effect of the randomly drawn parameter
+        return results.pools[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()
 ```
 
 ```python
