@@ -26,7 +26,7 @@ def get_cbm_defaults_path():
         str: path to the bundled database
     """
     return os.path.join(
-        get_local_dir(), "cbm_defaults_db", "cbm_defaults_2020.db")
+        get_local_dir(), "cbm_defaults_db", "cbm_defaults_v1.2.7739.338.db")
 
 
 def get_test_resources_dir():

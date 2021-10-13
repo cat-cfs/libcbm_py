@@ -11,9 +11,7 @@ resources_dir = "resources"
 
 cbm_defaults_db = [
     os.path.join(resources_dir, "cbm_defaults_db", x)
-    for x in ["cbm_defaults_2018.db",
-              "cbm_defaults_2019.db",
-              "cbm_defaults_2020.db"]]
+    for x in ["cbm_defaults_v1.2.7739.338"]]
 
 cbm_defaults_queries = [
     os.path.join(resources_dir, "cbm_defaults_queries", "*.sql")
