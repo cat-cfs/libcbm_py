@@ -59,7 +59,10 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
             cbm_vars.pools.multiply(cbm_vars.inventory.area, axis=0)
         results.pools = data_helpers.append_simulation_result(
             results.pools, timestep_pools, timestep)
-        if timestep > 0:
+        if (
+            cbm_vars.flux_indicators is not None and
+            len(cbm_vars.flux_indicators.index) > 0
+        ):
             timestep_flux = cbm_vars.flux_indicators \
                 if density else cbm_vars.flux_indicators.multiply(
                     cbm_vars.inventory.area, axis=0)
@@ -103,7 +106,8 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
 
 
 def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
-             flux_indicator_codes, pre_dynamics_func, reporting_func):
+             flux_indicator_codes, pre_dynamics_func, reporting_func,
+             spinup_params=None, spinup_reporting_func=None):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
     pre_dynamics_func is called prior to each CBM dynamics step.
@@ -127,21 +131,38 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
             into the current CBM timestep.
         reporting_func (function): a function which accepts the simulation
             timestep and all CBM variables for reporting results by timestep.
-            The layout of the CBM variables is the same as the return value of:
-            :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-            The function returns None.
+            An example compatible function factory is
+            :py:func:`create_in_memory_reporting_func` which stores the
+            results in memory.
+        spinup_params (object): collection of spinup specific parameters. See
+            :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
+            for object format
+        spinup_reporting_func (function, optional): a function which accepts
+            the spinup iteration, and all spinup variables.  Specifying this
+            function will result in a performance penalty as the per-iteration
+            spinup results are computed and tracked. An example compatible
+            function factory is :py:func:`create_in_memory_reporting_func`
+            which stores the results in memory.  If unspecified spinup results
+            are not tracked. Defaults to None.
     """
     n_stands = inventory.shape[0]
 
-    spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
+    if spinup_params is None:
+        spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
+    else:
+        spinup_params = cbm_variables._make_contiguous(spinup_params)
+
     spinup_variables = cbm_variables.initialize_spinup_variables(n_stands)
 
     cbm_vars = cbm_variables.initialize_simulation_variables(
         classifiers, inventory, pool_codes, flux_indicator_codes)
 
+    cbm_vars = cbm_variables.prepare(cbm_vars)
     cbm.spinup(
         cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
-        spinup_variables, spinup_params)
+        spinup_variables, spinup_params,
+        flux=cbm_vars.flux_indicators if spinup_reporting_func else None,
+        reporting_func=spinup_reporting_func)
     cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)
     for time_step in range(1, int(n_steps) + 1):
