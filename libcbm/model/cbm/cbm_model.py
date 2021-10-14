@@ -4,7 +4,7 @@
 
 
 import pandas as pd
-from libcbm import data_helpers
+from types import SimpleNamespace
 
 
 def get_op_names():
@@ -61,7 +61,7 @@ class CBM:
         self.op_processes = get_op_processes()
 
     def spinup(self, classifiers, inventory, pools, variables, parameters,
-               debug=False):
+               flux=None, reporting_func=None):
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
@@ -84,14 +84,26 @@ class CBM:
             parameters (object): spinup parameters. See:
                 :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
                 for a compatible definition
-            debug (bool, optional) If true this function will return a pandas
-                dataframe of selected spinup state variables. Defaults to
-                False.
+            flux (pandas.DataFrame or numpy.ndarray, Optional): CBM flux
+                values of dimension n_stands by n_flux_indicators. Set with
+                the flux indicator values for pool flows that occur for each
+                spinup timestep. Column order is important. See:
+                :py:func:`libcbm.model.cbm.cbm_variables.initialize_flux`
+                for a compatible definition.  If set to None, flux for each
+                spinup step will not be computed. Defaults to None.
+            reporting_func (function): a function which accepts the spinup
+                iteration spinup variables for reporting results by spinup
+                iteration. The function returns None.
 
         Returns:
             pandas.DataFrame or None: returns a debug dataframe if parameter
                 debug is set to true, and None otherwise.
         """
+        if flux is not None and reporting_func is None:
+            # can use reporting func without flux, but it does not make any
+            # sense to compute flux and not use reporting func since the result
+            # will not be visible
+            raise ValueError("flux specified without reporting_func")
 
         n_stands = pools.shape[0]
 
@@ -135,27 +147,39 @@ class CBM:
             self.model_functions.get_disturbance_ops(
                 ops["disturbance"], inventory, variables)
 
-            self.compute_functions.compute_pools(
-                [ops[x] for x in op_schedule], pools,
-                variables.enabled)
+            if flux is None:
+                self.compute_functions.compute_pools(
+                    [ops[x] for x in op_schedule], pools,
+                    variables.enabled)
+            else:
+                # zero the memory (simply using flux *= 0.0 caused a copy
+                # with a change in contiguity in some cases!)
+                if isinstance(flux, pd.DataFrame):
+                    flux.values[:] = 0
+                else:
+                    flux[:] = 0
+                self.compute_functions.compute_flux(
+                    [ops[x] for x in op_schedule],
+                    [self.op_processes[x] for x in op_schedule],
+                    pools, flux, variables.enabled
+                )
+            if reporting_func:
+                reporting_func(iteration, SimpleNamespace(
+                    pools=pools,
+                    flux_indicators=flux,
+                    state=pd.DataFrame(data={
+                        k: v for k, v
+                        in vars(variables).items()
+                        if v is not None}),
+                    classifiers=classifiers,
+                    params=pd.DataFrame(data={
+                        k: v for k, v
+                        in vars(parameters).items()
+                        if v is not None}),
+                    inventory=inventory
+                ))
 
             self.model_functions.end_spinup_step(pools, variables)
-
-            if debug:
-                debug_output = data_helpers.append_simulation_result(
-                    debug_output,
-                    pd.DataFrame(
-                        data={
-                            "age": variables.age,
-                            "slow_pools": variables.slowPools,
-                            "spinup_state": variables.spinup_state,
-                            "rotation": variables.rotation,
-                            "last_rotation_c": variables.lastRotationSlowC,
-                            "step": variables.step,
-                            "disturbance_type": variables.disturbance_type
-                        }),
-                    iteration)
-
             iteration = iteration + 1
 
         for op_name in self.op_names:
