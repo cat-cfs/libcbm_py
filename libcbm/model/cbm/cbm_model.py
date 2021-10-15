@@ -231,8 +231,75 @@ class CBM:
         self.model_functions.initialize_land_state(
             inventory, pools, state_variables)
 
-    def step(self, classifiers, inventory, pools, flux, state_variables,
-             parameters):
+    def step_start(self, cbm_vars):
+        # zero the memory (simply using flux *= 0.0 caused a copy
+        # with a change in contiguity in some cases!)
+        if isinstance(cbm_vars.flux, pd.DataFrame):
+            cbm_vars.flux.values[:] = 0
+        else:
+            cbm_vars.flux[:] = 0
+
+        self.model_functions.advance_stand_state(
+            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state_variables,
+            cbm_vars.parameters)
+
+    def step_disturbance(self, cbm_vars):
+        n_stands = cbm_vars.pools.shape[0]
+        disturbance_op = self.compute_functions.allocate_op(n_stands)
+        self.model_functions.get_disturbance_ops(
+            disturbance_op, cbm_vars.inventory, cbm_vars.parameters)
+
+        self.compute_functions.compute_flux(
+            [disturbance_op], [self.op_processes["disturbance"]],
+            cbm_vars.pools, cbm_vars.flux, enabled=None)
+        # enabled = none on line above is due to a possible bug in CBM3. This
+        # is very much an edge case:
+        # stands can be disturbed despite having all other C-dynamics processes
+        # disabled (which happens in peatland)
+        self.compute_functions.free_op(disturbance_op)
+
+    def step_annual_process(self, cbm_vars):
+
+        n_stands = cbm_vars.pools.shape[0]
+
+        ops = {
+            x: self.compute_functions.allocate_op(n_stands)
+            for x in self.op_names}
+
+        self.model_functions.get_merch_volume_growth_ops(
+            ops["growth"], ops["overmature_decline"], cbm_vars.classifiers,
+            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state_variables)
+
+        self.model_functions.get_turnover_ops(
+            ops["snag_turnover"], ops["biomass_turnover"],
+            cbm_vars.inventory)
+
+        self.model_functions.get_decay_ops(
+            ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
+            cbm_vars.inventory, cbm_vars.parameters)
+
+        annual_process_op_schedule = [
+            "growth",
+            "snag_turnover",
+            "biomass_turnover",
+            "overmature_decline",
+            "growth",
+            "dom_decay",
+            "slow_decay",
+            "slow_mixing"
+            ]
+
+        self.compute_functions.compute_flux(
+            [ops[x] for x in annual_process_op_schedule],
+            [self.op_processes[x] for x in annual_process_op_schedule],
+            cbm_vars.pools, cbm_vars.flux, cbm_vars.state_variables.enabled)
+        for op_name in self.op_names:
+            self.compute_functions.free_op(ops[op_name])
+
+    def step_end(self, cbm_vars):
+        self.model_functions.end_step(cbm_vars.state_variables)
+
+    def step(self, cbm_vars):
         """Advances the specified CBM variables through one time step of CBM
         simulation.
 
@@ -265,63 +332,7 @@ class CBM:
                 for a compatible definition.
         """
 
-        # zero the memory (simply using flux *= 0.0 caused a copy
-        # with a change in contiguity in some cases!)
-        if isinstance(flux, pd.DataFrame):
-            flux.values[:] = 0
-        else:
-            flux[:] = 0
-
-        n_stands = pools.shape[0]
-
-        ops = {
-            x: self.compute_functions.allocate_op(n_stands)
-            for x in self.op_names}
-
-        annual_process_op_schedule = [
-            "growth",
-            "snag_turnover",
-            "biomass_turnover",
-            "overmature_decline",
-            "growth",
-            "dom_decay",
-            "slow_decay",
-            "slow_mixing"
-            ]
-
-        self.model_functions.advance_stand_state(
-            classifiers, inventory, state_variables, parameters)
-
-        self.model_functions.get_disturbance_ops(
-            ops["disturbance"], inventory, parameters)
-
-        self.compute_functions.compute_flux(
-            [ops["disturbance"]], [self.op_processes["disturbance"]],
-            pools, flux, enabled=None)
-
-        # enabled = none on line above is due to a possible bug in CBM3. This
-        # is very much an edge case:
-        # stands can be disturbed despite having all other C-dynamics processes
-        # disabled (which happens in peatland)
-
-        self.model_functions.get_merch_volume_growth_ops(
-            ops["growth"], ops["overmature_decline"], classifiers, inventory,
-            pools, state_variables)
-
-        self.model_functions.get_turnover_ops(
-            ops["snag_turnover"], ops["biomass_turnover"],
-            inventory)
-
-        self.model_functions.get_decay_ops(
-            ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            inventory, parameters)
-
-        self.compute_functions.compute_flux(
-            [ops[x] for x in annual_process_op_schedule],
-            [self.op_processes[x] for x in annual_process_op_schedule],
-            pools, flux, state_variables.enabled)
-
-        self.model_functions.end_step(state_variables)
-
-        for op_name in self.op_names:
-            self.compute_functions.free_op(ops[op_name])
+        self.step_start(cbm_vars)
+        self.step_disturbance(cbm_vars)
+        self.step_annual_process(cbm_vars)
+        self.step_end(cbm_vars)
