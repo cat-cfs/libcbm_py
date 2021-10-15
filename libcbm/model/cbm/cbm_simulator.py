@@ -106,7 +106,8 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
 
 
 def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
-             flux_indicator_codes, pre_dynamics_func, reporting_func,
+             flux_indicator_codes, reporting_func,
+             step_disturbance_func=None, pre_dynamics_func=None,
              spinup_params=None, spinup_reporting_func=None):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
@@ -122,18 +123,24 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
         pool_codes (list): a list of strings describing each of the CBM pools
         flux_indicator_codes (list): a list of strings describing the CBM flux
             indicators.
-        pre_dynamics_func (function): A function which accepts the simulation
-            timestep and all CBM variables, and which is called prior to
-            computing C dynamics  The layout of the CBM variables is the same
-            as the return value of:
-            :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-            The function returns all CBM variables which will then be passed
-            into the current CBM timestep.
         reporting_func (function): a function which accepts the simulation
             timestep and all CBM variables for reporting results by timestep.
             An example compatible function factory is
             :py:func:`create_in_memory_reporting_func` which stores the
             results in memory.
+        step_disturbance_func (function, optional): A function which accepts
+            the simulation timestep and all CBM variables, and returns all CBM
+            variables. Called prior to CBM annual process routines.  If
+            unspecified the default CBM disturbance routine based on
+            cbm_vars.parameters.disturabnce_type is used. For default see:
+            :py:func:`libcbm.model.cbm.cbm_model.CBM.step_disturbance`
+        pre_dynamics_func (function, optional): A function which accepts the
+            simulation timestep and all CBM variables, and which is called
+            prior to computing C dynamics  The layout of the CBM variables is
+            the same as the return value of:
+            :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
+            The function returns all CBM variables which will then be passed
+            into the current CBM timestep.
         spinup_params (object): collection of spinup specific parameters. See
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
             for object format
@@ -145,26 +152,24 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
             which stores the results in memory.  If unspecified spinup results
             are not tracked. Defaults to None.
     """
-    n_stands = inventory.shape[0]
-
-    if spinup_params is None:
-        spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
-
-    spinup_variables = cbm_variables.initialize_spinup_variables(n_stands)
 
     cbm_vars = cbm_variables.initialize_simulation_variables(
         classifiers, inventory, pool_codes, flux_indicator_codes)
 
-    cbm_vars = cbm_variables.prepare(cbm_vars)
-    cbm.spinup(
-        cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
-        spinup_variables, spinup_params,
-        flux=cbm_vars.flux if spinup_reporting_func else None,
-        reporting_func=spinup_reporting_func)
-    cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
+    spinup_vars = cbm_variables.initialize_spinup_variables(
+        cbm_vars, spinup_params,
+        include_flux=spinup_reporting_func is not None)
+
+    cbm.spinup(spinup_vars, reporting_func=spinup_reporting_func)
+    cbm_vars = cbm.init(cbm_vars)
     reporting_func(0, cbm_vars)
+    if not step_disturbance_func:
+        step_disturbance_func = cbm.step_disturbance
     for time_step in range(1, int(n_steps) + 1):
         cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm_vars = cbm_variables.prepare(cbm_vars)
-        cbm.step(cbm_vars)
+        cbm_vars = cbm.step_start(cbm_vars)
+        cbm_vars = step_disturbance_func(cbm_vars)
+        cbm_vars = cbm.step_annual_process(cbm_vars)
+        cbm_vars = cbm.step_end(cbm_vars)
         reporting_func(time_step, cbm_vars)
