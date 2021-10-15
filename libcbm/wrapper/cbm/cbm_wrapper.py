@@ -369,6 +369,14 @@ class CBMWrapper(LibCBM_ctypes):
             data_helpers.get_nullable_ndarray(
                 p.mean_annual_temp) \
             if "mean_annual_temp" in p.__dict__ else None
+
+        if mean_annual_temp is not None:
+            # If the mean annual temperature is specified, then omit the
+            # spatial unit, whose only purpose in the context of the decay
+            # routine is to fetch the mean annual temperature value from
+            # the CBM defaults database
+            spatial_unit = None
+
         self.handle.call(
             "LibCBM_GetDecayOps", opIds, n, spatial_unit,
             historical_mean_annual_temp, mean_annual_temp)
