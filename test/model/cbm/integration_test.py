@@ -82,5 +82,7 @@ def test_integration():
             flux_indicator_codes=ref.get_flux_indicators(),
             pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
             reporting_func=cbm_reporting_func,
+            spinup_params=cbm_variables.initialize_spinup_parameters(
+                n_stands, 50, 5, 5, -1),
             spinup_reporting_func=spinup_reporting_func)
         assert len(cbm_results.pools.index) == (n_steps + 1) * n_stands
