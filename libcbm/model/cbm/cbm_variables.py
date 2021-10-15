@@ -106,7 +106,7 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
     return parameters
 
 
-def initialize_spinup_variables(n_stands):
+def initialize_spinup_state_variables(n_stands):
     """Creates a collection of vectors used as working/state variables for
     the spinup routine.
 
@@ -309,6 +309,23 @@ def prepare(cbm_vars):
                 _make_contiguous(cbm_vars.__dict__[field])
 
     return cbm_vars
+
+
+def initialize_spinup_variables(cbm_vars, spinup_params=None,
+                                include_flux=False):
+
+    n_stands = cbm_vars.inventory.shape[0]
+    if spinup_params is None:
+        spinup_params = initialize_spinup_parameters(n_stands)
+
+    spinup_vars = SimpleNamespace()
+    spinup_vars.pools = cbm_vars.pools
+    spinup_vars.flux = cbm_vars.flux if include_flux else None
+    spinup_vars.parameters = spinup_params
+    spinup_vars.state = initialize_spinup_state_variables(n_stands)
+    spinup_vars.inventory = cbm_vars.inventory
+    spinup_vars.classifiers = cbm_vars.classifiers
+    return spinup_vars
 
 
 def initialize_simulation_variables(classifiers, inventory, pool_codes,
