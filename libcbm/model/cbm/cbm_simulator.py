@@ -149,8 +149,6 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
 
     if spinup_params is None:
         spinup_params = cbm_variables.initialize_spinup_parameters(n_stands)
-    else:
-        spinup_params = cbm_variables._make_contiguous(spinup_params)
 
     spinup_variables = cbm_variables.initialize_spinup_variables(n_stands)
 
