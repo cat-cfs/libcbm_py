@@ -166,7 +166,5 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
     for time_step in range(1, int(n_steps) + 1):
         cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm_vars = cbm_variables.prepare(cbm_vars)
-        cbm.step(
-            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
-            cbm_vars.flux_indicators, cbm_vars.state, cbm_vars.params)
+        cbm.step(cbm_vars)
         reporting_func(time_step, cbm_vars)
