@@ -110,7 +110,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
 
         mock_cbm_vars = SimpleNamespace(
             classifiers=pd.DataFrame({"c1": [1], "c2": [1]}),
-            params=pd.DataFrame({"reset_age": np.array([1, 2])}))
+            parameters=pd.DataFrame({"reset_age": np.array([1, 2])}))
 
         mock_transition_rule_processor = Mock()
         mock_apply_transition_rule = Mock()

@@ -26,7 +26,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
             id values will be returned.
         disturbance_type_map (dict, optional): a disturbance type map for
             subsituting the internally defined disturbance type id with names
-            or other ids in the params and state tables.  If set to none no
+            or other ids in the parameters and state tables.  If set to none no
             substitution will occur.
 
     Returns:
@@ -39,7 +39,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
                     - state (pandas.DataFrame) state results storage
                     - classifiers (pandas.DataFrame) classifiers results
                         storage
-                    - params (pandas.DataFrame) cbm params storage
+                    - parameters (pandas.DataFrame) cbm params storage
                     - area (pandas.DataFrame) area storage
 
                 2. func: a function for appending to the above results
@@ -51,7 +51,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
     results.flux = None
     results.state = None
     results.classifiers = None
-    results.params = None
+    results.parameters = None
     results.area = None
 
     def append_simulation_result(timestep, cbm_vars):
@@ -60,11 +60,11 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
         results.pools = data_helpers.append_simulation_result(
             results.pools, timestep_pools, timestep)
         if (
-            cbm_vars.flux_indicators is not None and
-            len(cbm_vars.flux_indicators.index) > 0
+            cbm_vars.flux is not None and
+            len(cbm_vars.flux.index) > 0
         ):
-            timestep_flux = cbm_vars.flux_indicators \
-                if density else cbm_vars.flux_indicators.multiply(
+            timestep_flux = cbm_vars.flux \
+                if density else cbm_vars.flux.multiply(
                     cbm_vars.inventory.area, axis=0)
             results.flux = data_helpers.append_simulation_result(
                 results.flux, timestep_flux, timestep)
@@ -76,14 +76,14 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
                 return disturbance_type_map[dist_id]
 
         state = cbm_vars.state.copy()
-        params = cbm_vars.params.copy()
+        params = cbm_vars.parameters.copy()
         if disturbance_type_map:
             state.last_disturbance_type = \
                 cbm_vars.state.last_disturbance_type.apply(
                     disturbance_type_map_func)
 
             params.disturbance_type = \
-                cbm_vars.params.disturbance_type.apply(
+                cbm_vars.parameters.disturbance_type.apply(
                     disturbance_type_map_func)
 
         results.state = data_helpers.append_simulation_result(
@@ -100,8 +100,8 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
                 timestep)
         results.area = data_helpers.append_simulation_result(
             results.area, cbm_vars.inventory.loc[:, ["area"]], timestep)
-        results.params = data_helpers.append_simulation_result(
-            results.params, params, timestep)
+        results.parameters = data_helpers.append_simulation_result(
+            results.parameters, params, timestep)
     return results, append_simulation_result
 
 
@@ -159,7 +159,7 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
     cbm.spinup(
         cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.pools,
         spinup_variables, spinup_params,
-        flux=cbm_vars.flux_indicators if spinup_reporting_func else None,
+        flux=cbm_vars.flux if spinup_reporting_func else None,
         reporting_func=spinup_reporting_func)
     cbm.init(cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
     reporting_func(0, cbm_vars)

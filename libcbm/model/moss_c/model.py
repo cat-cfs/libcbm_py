@@ -296,10 +296,10 @@ def spinup(model_context, enable_debugging=False):
         spinup_vars.spinup_state = model_functions.advance_spinup_state(
             spinup_state=spinup_vars.spinup_state,
             age=model_context.state.age,
-            final_age=model_context.params.age,
-            return_interval=model_context.params.return_interval,
+            final_age=model_context.parameters.age,
+            return_interval=model_context.parameters.return_interval,
             rotation_num=spinup_vars.rotation_num,
-            max_rotations=model_context.params.max_rotations,
+            max_rotations=model_context.parameters.max_rotations,
             last_rotation_slow=spinup_vars.last_rotation_slow,
             this_rotation_slow=spinup_vars.this_rotation_slow)
         all_finished = update_spinup_variables(
@@ -334,9 +334,9 @@ def step(model_context, disturbance_before_annual_process=True,
     model_context.state.merch_vol = \
         model_context.merch_vol_lookup.get_merch_vol(
             model_context.state.age,
-            model_context.params.merch_volume_id)
+            model_context.parameters.merch_volume_id)
     dynamics_param = annual_process_dynamics(
-        model_context.state, model_context.params)
+        model_context.state, model_context.parameters)
     annual_process_matrix = get_annual_process_matrix(dynamics_param)
     annual_process_matrices = libcbm_operation.Operation(
         model_context.dll,

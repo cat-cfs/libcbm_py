@@ -83,7 +83,9 @@ class TransitionRuleProcessor(object):
                 cbm_vars.classifiers),
             rule_filter.create_filter(
                 expression=f"(disturbance_type_id == {dist_type_target})",
-                data={"disturbance_type_id": cbm_vars.params.disturbance_type})
+                data={
+                    "disturbance_type_id": cbm_vars.parameters.disturbance_type
+                })
             ]
 
         filter_result = rule_filter.evaluate_filters(*tr_filters)
@@ -161,8 +163,8 @@ class TransitionRuleProcessor(object):
             # a copy of each of the state variables to split off the
             # percentage for the current group member
             pools = cbm_vars.pools[eligible].copy()
-            flux = cbm_vars.flux_indicators[eligible].copy()
-            params = cbm_vars.params[eligible].copy()
+            flux = cbm_vars.flux[eligible].copy()
+            params = cbm_vars.parameters[eligible].copy()
             state = cbm_vars.state[eligible].copy()
             inventory = cbm_vars.inventory[eligible].copy()
             classifiers = cbm_vars.classifiers[eligible].copy()
@@ -216,7 +218,7 @@ class TransitionRuleProcessor(object):
         cbm_vars.state.loc[eligible, "regeneration_delay"] = \
             tr_group.iloc[0].regeneration_delay
 
-        cbm_vars.params.loc[eligible, "reset_age"] = \
+        cbm_vars.parameters.loc[eligible, "reset_age"] = \
             tr_group.iloc[0].reset_age
 
         if len(proportions) > 1:
@@ -228,11 +230,12 @@ class TransitionRuleProcessor(object):
                 pool_split).reset_index(drop=True)
             cbm_vars.state = cbm_vars.state.append(
                 state_split).reset_index(drop=True)
-            cbm_vars.params = cbm_vars.params.append(
+            cbm_vars.parameters = cbm_vars.parameters.append(
                 params_split).reset_index(drop=True)
-            cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
+            cbm_vars.flux = cbm_vars.flux.append(
                 flux_split).reset_index(drop=True)
 
         cbm_vars.state = cbm_vars.state.astype({'regeneration_delay': 'int32'})
-        cbm_vars.params = cbm_vars.params.astype({'reset_age': 'int32'})
+        cbm_vars.parameters = cbm_vars.parameters.astype(
+            {'reset_age': 'int32'})
         return transition_mask_output, cbm_vars

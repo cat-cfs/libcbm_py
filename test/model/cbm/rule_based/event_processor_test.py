@@ -50,7 +50,7 @@ class EventProcessorTest(unittest.TestCase):
             mock_params = pd.DataFrame(
                 {"disturbance_type": [0, 0, 0, 0]})
 
-            mock_flux_indicators = pd.DataFrame([
+            mock_flux = pd.DataFrame([
                 [0, 0],
                 [0, 0],
                 [0, 0],
@@ -62,8 +62,8 @@ class EventProcessorTest(unittest.TestCase):
                 inventory=mock_inventory,
                 state=mock_state_variables,
                 pools=mock_pools,
-                flux_indicators=mock_flux_indicators,
-                params=mock_params
+                flux=mock_flux,
+                parameters=mock_params
             )
             disturbance_type_id = 5
 
@@ -114,9 +114,9 @@ class EventProcessorTest(unittest.TestCase):
             self.assertTrue(
                 res.cbm_vars.state.equals(mock_state_variables))
             self.assertTrue(
-                res.cbm_vars.flux_indicators.equals(mock_flux_indicators))
+                res.cbm_vars.flux.equals(mock_flux))
             self.assertTrue(
-                res.cbm_vars.params.equals(mock_params))
+                res.cbm_vars.parameters.equals(mock_params))
 
     def test_apply_rule_based_event_expected_result_with_no_split(self):
 
@@ -125,8 +125,8 @@ class EventProcessorTest(unittest.TestCase):
             inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
             state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
             pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
-            flux_indicators=pd.DataFrame({"f1": [1, 2, 3, 4]}),
-            params=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+            flux=pd.DataFrame({"f1": [1, 2, 3, 4]}),
+            parameters=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
         )
         disturbance_type_id = 11
         cbm_vars = event_processor.apply_rule_based_event(
@@ -149,10 +149,10 @@ class EventProcessorTest(unittest.TestCase):
             cbm_vars.pools.equals(
                 pd.DataFrame({"p1": [1, 2, 3, 4]})))
         self.assertTrue(
-            cbm_vars.flux_indicators.equals(
+            cbm_vars.flux.equals(
                 pd.DataFrame({"f1": [1, 2, 3, 4]})))
         self.assertTrue(
-            cbm_vars.params.equals(
+            cbm_vars.parameters.equals(
                 pd.DataFrame({"disturbance_type": [0, 11, 11, 0]})))
 
     def test_apply_rule_based_event_expected_result_with_split(self):
@@ -162,8 +162,8 @@ class EventProcessorTest(unittest.TestCase):
             inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
             state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
             pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
-            flux_indicators=pd.DataFrame({"f1": [1, 2, 3, 4]}),
-            params=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+            flux=pd.DataFrame({"f1": [1, 2, 3, 4]}),
+            parameters=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
         )
 
         disturbance_type_id = 9000
@@ -196,10 +196,10 @@ class EventProcessorTest(unittest.TestCase):
             cbm_vars_result.state.equals(
                 pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(
-            cbm_vars_result.flux_indicators.equals(
+            cbm_vars_result.flux.equals(
                 pd.DataFrame({"f1": [1, 2, 3, 4, 2, 3]})))
         self.assertTrue(
-            cbm_vars_result.params.equals(
+            cbm_vars_result.parameters.equals(
                 pd.DataFrame(
                     {"disturbance_type": [
                         9000, 9000, 9000, 0, 0, 0]})))
@@ -211,8 +211,8 @@ class EventProcessorTest(unittest.TestCase):
             inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
             state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
             pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
-            flux_indicators=pd.DataFrame({"f1": [1, 2, 3, 4]}),
-            params=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+            flux=pd.DataFrame({"f1": [1, 2, 3, 4]}),
+            parameters=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
         )
 
         disturbance_type_id = 9000
@@ -232,7 +232,7 @@ class EventProcessorTest(unittest.TestCase):
         self.assertTrue(
             cbm_vars_result.pools.equals(mock_cbm_vars.pools))
         self.assertTrue(
-            cbm_vars_result.flux_indicators.equals(
-                mock_cbm_vars.flux_indicators))
+            cbm_vars_result.flux.equals(
+                mock_cbm_vars.flux))
         self.assertTrue(
-            cbm_vars_result.params.equals(mock_cbm_vars.params))
+            cbm_vars_result.parameters.equals(mock_cbm_vars.parameters))

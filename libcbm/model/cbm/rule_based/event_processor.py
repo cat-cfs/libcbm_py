@@ -98,7 +98,7 @@ def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
 
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
-    cbm_vars.params.disturbance_type[target_index] = disturbance_type_id
+    cbm_vars.parameters.disturbance_type[target_index] = disturbance_type_id
 
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
@@ -129,13 +129,13 @@ def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
         cbm_vars.pools = cbm_vars.pools.append(
             cbm_vars.pools.iloc[split_index].copy()
             ).reset_index(drop=True)
-        cbm_vars.flux_indicators = cbm_vars.flux_indicators.append(
-            cbm_vars.flux_indicators.iloc[split_index].copy()
+        cbm_vars.flux = cbm_vars.flux.append(
+            cbm_vars.flux.iloc[split_index].copy()
             ).reset_index(drop=True)
 
-        new_params = cbm_vars.params.iloc[split_index].copy()
+        new_params = cbm_vars.parameters.iloc[split_index].copy()
         new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)
-        cbm_vars.params = cbm_vars.params.append(
+        cbm_vars.parameters = cbm_vars.parameters.append(
             new_params).reset_index(drop=True)
 
     return cbm_vars

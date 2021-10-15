@@ -41,7 +41,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             # they are the oldest stands, and together they exactly satisfy
             # the target.
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist1", None, None, "dist1"]))
@@ -90,7 +90,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             # they are the oldest stands, and together they exactly satisfy
             # the target.
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     [None, "dist1", None, None]))
@@ -145,7 +145,7 @@ class SITEventIntegrationTest(unittest.TestCase):
                 ["dist1", "dist1", None, "dist2", "dist2"])
 
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 expected_disturbance_types)
 
             stats = sit_rule_based_processor.sit_event_stats_by_timestep[1]
@@ -195,12 +195,12 @@ class SITEventIntegrationTest(unittest.TestCase):
                 time_step=1, cbm_vars=cbm_vars)
 
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types, ["dist1", "dist1", None]))
 
             self.assertTrue(cbm_vars.pools.shape[0] == 3)
-            self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+            self.assertTrue(cbm_vars.flux.shape[0] == 3)
             self.assertTrue(cbm_vars.state.shape[0] == 3)
             # note the age sort order caused the first record to split
             self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
@@ -253,7 +253,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_eligible"] == 2)
 
         self.assertTrue(
-            list(cbm_vars_result.params.disturbance_type) ==
+            list(cbm_vars_result.parameters.disturbance_type) ==
             helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types, ["dist2", "dist2"]))
 
@@ -288,7 +288,7 @@ class SITEventIntegrationTest(unittest.TestCase):
                 time_step=1, cbm_vars=cbm_vars)
 
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist2", "dist2", "dist2"]))
@@ -333,13 +333,13 @@ class SITEventIntegrationTest(unittest.TestCase):
                 time_step=4, cbm_vars=cbm_vars)
 
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist2", "dist2", None]))
 
             self.assertTrue(cbm_vars.pools.shape[0] == 3)
-            self.assertTrue(cbm_vars.flux_indicators.shape[0] == 3)
+            self.assertTrue(cbm_vars.flux.shape[0] == 3)
             self.assertTrue(cbm_vars.state.shape[0] == 3)
             # note the age sort order caused the first record to split
             self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
@@ -388,7 +388,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=100, cbm_vars=cbm_vars)
             self.assertTrue(
-                list(cbm_vars_result.params.disturbance_type) ==
+                list(cbm_vars_result.parameters.disturbance_type) ==
                 helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist1", "dist2", "dist3", None]))

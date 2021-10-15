@@ -348,7 +348,7 @@ class RuleTargetTest(unittest.TestCase):
 
         mock_cbm_vars = SimpleNamespace(
             pools=mock_pools,
-            flux_indicators=mock_flux,
+            flux=mock_flux,
             inventory=mock_inventory)
         compute_functions.free_op = mock_free_op
         result = rule_target.compute_disturbance_production(

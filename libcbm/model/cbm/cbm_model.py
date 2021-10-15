@@ -166,13 +166,13 @@ class CBM:
             if reporting_func:
                 reporting_func(iteration, SimpleNamespace(
                     pools=pools,
-                    flux_indicators=flux,
+                    flux=flux,
                     state=pd.DataFrame(data={
                         k: v for k, v
                         in vars(variables).items()
                         if v is not None}),
                     classifiers=classifiers,
-                    params=pd.DataFrame(data={
+                    parameters=pd.DataFrame(data={
                         k: v for k, v
                         in vars(parameters).items()
                         if v is not None}),
@@ -240,7 +240,7 @@ class CBM:
             cbm_vars.flux[:] = 0
 
         self.model_functions.advance_stand_state(
-            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state_variables,
+            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state,
             cbm_vars.parameters)
 
     def step_disturbance(self, cbm_vars):
@@ -268,7 +268,7 @@ class CBM:
 
         self.model_functions.get_merch_volume_growth_ops(
             ops["growth"], ops["overmature_decline"], cbm_vars.classifiers,
-            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state_variables)
+            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
 
         self.model_functions.get_turnover_ops(
             ops["snag_turnover"], ops["biomass_turnover"],
@@ -292,12 +292,12 @@ class CBM:
         self.compute_functions.compute_flux(
             [ops[x] for x in annual_process_op_schedule],
             [self.op_processes[x] for x in annual_process_op_schedule],
-            cbm_vars.pools, cbm_vars.flux, cbm_vars.state_variables.enabled)
+            cbm_vars.pools, cbm_vars.flux, cbm_vars.state.enabled)
         for op_name in self.op_names:
             self.compute_functions.free_op(ops[op_name])
 
     def step_end(self, cbm_vars):
-        self.model_functions.end_step(cbm_vars.state_variables)
+        self.model_functions.end_step(cbm_vars.state)
 
     def step(self, cbm_vars):
         """Advances the specified CBM variables through one time step of CBM

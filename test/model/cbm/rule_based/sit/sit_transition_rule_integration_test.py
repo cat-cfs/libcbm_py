@@ -27,8 +27,9 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         # in order for the transition to occur, the disturbance type needs to
         # be set, normally this would be done beforehand by the sit rule based
         # events.
-        cbm_vars.params.disturbance_type = helpers.get_disturbance_type_ids(
-            sit.sit_data.disturbance_types, ["dist1"])[0]
+        cbm_vars.parameters.disturbance_type = \
+            helpers.get_disturbance_type_ids(
+                sit.sit_data.disturbance_types, ["dist1"])[0]
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.tr_func(

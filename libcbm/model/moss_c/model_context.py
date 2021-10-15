@@ -94,7 +94,7 @@ class ModelContext:
 
         if (dynamics_param.index != self.input_data.inventory.index).any():
             raise ValueError()
-        self.params = model_functions.to_numpy_namespace(
+        self.parameters = model_functions.to_numpy_namespace(
             dynamics_param)
 
     def get_pools_df(self):
@@ -119,7 +119,7 @@ class ModelContext:
             age=initial_age,
             merch_vol=self.merch_vol_lookup.get_merch_vol(
                 initial_age,
-                self.params.merch_volume_id),
+                self.parameters.merch_volume_id),
             enabled=np.ones(self.n_stands, dtype=np.int32),
             disturbance_type=np.zeros(self.n_stands, dtype=np.uintp))
 

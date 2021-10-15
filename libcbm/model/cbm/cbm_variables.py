@@ -303,7 +303,7 @@ def prepare(cbm_vars):
         cbm_vars (object): the cbm variables to validate and prepare
     """
 
-    for field in ["pools", "flux_indicators", "classifiers"]:
+    for field in ["pools", "flux", "classifiers"]:
         if field in cbm_vars.__dict__:
             cbm_vars.__dict__[field] = \
                 _make_contiguous(cbm_vars.__dict__[field])
@@ -326,7 +326,7 @@ def initialize_simulation_variables(classifiers, inventory, pool_codes,
             labels for the resulting cbm_vars.pools DataFrame.
         flux_indicator_codes (list): the list of string flux indicator names
             which act as column labels for the resulting
-            cbm_vars.flux_indicators DataFrame.
+            cbm_vars.flux DataFrame.
 
     Returns:
         object: Returns the cbm_vars object for simulating CBM.
@@ -334,8 +334,8 @@ def initialize_simulation_variables(classifiers, inventory, pool_codes,
     n_stands = inventory.shape[0]
     cbm_vars = SimpleNamespace()
     cbm_vars.pools = initialize_pools(n_stands, pool_codes)
-    cbm_vars.flux_indicators = initialize_flux(n_stands, flux_indicator_codes)
-    cbm_vars.params = initialize_cbm_parameters(n_stands)
+    cbm_vars.flux = initialize_flux(n_stands, flux_indicator_codes)
+    cbm_vars.parameters = initialize_cbm_parameters(n_stands)
     cbm_vars.state = initialize_cbm_state_variables(n_stands)
     cbm_vars.inventory = initialize_inventory(inventory)
     cbm_vars.classifiers = initialize_classifiers(classifiers)

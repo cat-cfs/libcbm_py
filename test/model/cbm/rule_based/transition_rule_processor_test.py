@@ -113,7 +113,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             inventory=mock_inventory,
             pools=mock_pools,
             state=mock_state_variables,
-            params=mock_params,
+            parameters=mock_params,
             flux=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
@@ -124,7 +124,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(list(transition_mask) == [True])
             self.assertTrue(list(cbm_vars.state.regeneration_delay) == [10])
             self.assertTrue(list(cbm_vars.state.age) == [0])
-            self.assertTrue(list(cbm_vars.params.reset_age) == [40])
+            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40])
 
             # note the changed classifier id
             self.assertTrue(list(cbm_vars.classifiers.a) == [2])
@@ -197,8 +197,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             inventory=mock_inventory,
             pools=mock_pools,
             state=mock_state_variables,
-            params=mock_params,
-            flux_indicators=mock_flux)
+            parameters=mock_params,
+            flux=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             mock_rule_filter.evaluate_filters.side_effect = \
@@ -209,7 +209,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(list(transition_mask) == [True, True])
             self.assertTrue(list(cbm_vars.state.regeneration_delay) == [10, 0])
             self.assertTrue(list(cbm_vars.state.age) == [0, 0])
-            self.assertTrue(list(cbm_vars.params.reset_age) == [40, -1])
+            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40, -1])
 
             # note the changed classifier id for index 0, but not for index 1
             # (because of the remainder split)
@@ -224,8 +224,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(list(cbm_vars.pools.p0) == [1, 1])
             self.assertTrue(list(cbm_vars.pools.p1) == [4, 4])
 
-            self.assertTrue(list(cbm_vars.flux_indicators.f1) == [0, 0])
-            self.assertTrue(list(cbm_vars.flux_indicators.f2) == [0, 0])
+            self.assertTrue(list(cbm_vars.flux.f1) == [0, 0])
+            self.assertTrue(list(cbm_vars.flux.f2) == [0, 0])
 
     def test_single_record_split_transition(self):
         mock_classifier_filter_builder = Mock()
@@ -287,8 +287,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             inventory=mock_inventory,
             pools=mock_pools,
             state=mock_state_variables,
-            params=mock_params,
-            flux_indicators=mock_flux)
+            parameters=mock_params,
+            flux=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             mock_rule_filter.evaluate_filters.side_effect = \
@@ -300,14 +300,14 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(
                 list(cbm_vars.state.regeneration_delay) == [10, -1])
             self.assertTrue(list(cbm_vars.state.age) == [0, 0])
-            self.assertTrue(list(cbm_vars.params.reset_age) == [40, 21])
+            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40, 21])
             self.assertTrue(list(cbm_vars.classifiers.a) == [2, 1])
             self.assertTrue(list(cbm_vars.classifiers.b) == [3, 4])
             self.assertTrue(list(cbm_vars.inventory.area) == [0.35, 0.65])
             self.assertTrue(list(cbm_vars.pools.p0) == [33, 33])
             self.assertTrue(list(cbm_vars.pools.p1) == [11, 11])
-            self.assertTrue(list(cbm_vars.flux_indicators.f1) == [10, 10])
-            self.assertTrue(list(cbm_vars.flux_indicators.f2) == [100, 100])
+            self.assertTrue(list(cbm_vars.flux.f1) == [10, 10])
+            self.assertTrue(list(cbm_vars.flux.f2) == [100, 100])
 
     def test_multiple_records_multiple_split_transitions(self):
         mock_classifier_filter_builder = Mock()
@@ -373,8 +373,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             inventory=mock_inventory,
             pools=mock_pools,
             state=mock_state_variables,
-            params=mock_params,
-            flux_indicators=mock_flux)
+            parameters=mock_params,
+            flux=mock_flux)
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             # for the test, indexes 0 and 2 will be eligible
@@ -386,9 +386,9 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             result = cbm_vars.inventory \
                 .join(cbm_vars.classifiers) \
                 .join(cbm_vars.state) \
-                .join(cbm_vars.params) \
+                .join(cbm_vars.parameters) \
                 .join(cbm_vars.pools) \
-                .join(cbm_vars.flux_indicators) \
+                .join(cbm_vars.flux) \
                 .join(
                     pd.DataFrame(
                         {"transition_mask": transition_mask}))

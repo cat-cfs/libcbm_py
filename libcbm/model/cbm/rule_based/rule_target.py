@@ -464,7 +464,7 @@ def compute_disturbance_production(model_functions, compute_functions,
         disturbance_op, cbm_vars.inventory, disturbance_type)
 
     # zero the flux indicators
-    cbm_vars.flux_indicators.values[:] = 0
+    cbm_vars.flux.values[:] = 0
 
     cbm_vars = cbm_variables.prepare(cbm_vars)
 
@@ -474,7 +474,7 @@ def compute_disturbance_production(model_functions, compute_functions,
     # compute the flux based on the specified disturbance type
     compute_functions.compute_flux(
         [disturbance_op], [disturbance_op_process_id],
-        pools_copy, cbm_vars.flux_indicators,
+        pools_copy, cbm_vars.flux,
         enabled=eligible.astype(np.int32))
 
     compute_functions.free_op(disturbance_op)
@@ -482,12 +482,12 @@ def compute_disturbance_production(model_functions, compute_functions,
     # carbon pools
     return pd.DataFrame(data={
         "DisturbanceSoftProduction":
-            cbm_vars.flux_indicators["DisturbanceSoftProduction"],
+            cbm_vars.flux["DisturbanceSoftProduction"],
         "DisturbanceHardProduction":
-            cbm_vars.flux_indicators["DisturbanceHardProduction"],
+            cbm_vars.flux["DisturbanceHardProduction"],
         "DisturbanceDOMProduction":
-            cbm_vars.flux_indicators["DisturbanceDOMProduction"],
+            cbm_vars.flux["DisturbanceDOMProduction"],
         "Total":
-            cbm_vars.flux_indicators["DisturbanceSoftProduction"] +
-            cbm_vars.flux_indicators["DisturbanceHardProduction"] +
-            cbm_vars.flux_indicators["DisturbanceDOMProduction"]})
+            cbm_vars.flux["DisturbanceSoftProduction"] +
+            cbm_vars.flux["DisturbanceHardProduction"] +
+            cbm_vars.flux["DisturbanceDOMProduction"]})
