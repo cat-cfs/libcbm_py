@@ -104,38 +104,11 @@ def _create_classifier_value_maps(sit):
     """
     classifiers_config = get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values)
-    sit.classifier_names = {}
-    sit.classifier_ids = {}
-    sit.classifier_value_ids = {}
-    sit.classifier_value_names = {}
-
-    for classifier_data in classifiers_config["classifiers"]:
-        sit.classifier_names[classifier_data["id"]] = \
-            classifier_data["name"]
-        sit.classifier_ids[classifier_data["name"]] = \
-            classifier_data["id"]
-
-    for classifier_value_data in classifiers_config["classifier_values"]:
-        classifier_id = classifier_value_data["classifier_id"]
-        classifier_name = sit.classifier_names[classifier_id]
-        classifier_value_id = classifier_value_data["id"]
-        classifier_value_name = classifier_value_data["value"]
-
-        if classifier_name in sit.classifier_value_ids:
-            sit.classifier_value_ids[
-                classifier_name][classifier_value_name] = classifier_value_id
-        else:
-            sit.classifier_value_ids[classifier_name] = {
-                classifier_value_name: classifier_value_id
-            }
-
-        if classifier_id in sit.classifier_value_names:
-            sit.classifier_value_names[classifier_id][classifier_value_id] = \
-                classifier_value_name
-        else:
-            sit.classifier_value_names[classifier_id] = {
-                classifier_value_id: classifier_value_name
-            }
+    idx = cbm_config.get_classifier_indexes(classifiers_config)
+    sit.classifier_names = idx["classifier_names"]
+    sit.classifier_ids = idx["classifier_ids"]
+    sit.classifier_value_ids = idx["classifier_value_ids"]
+    sit.classifier_value_names = idx["classifier_value_names"]
 
 
 def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
@@ -363,7 +336,7 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 
     Args:
         sit (object): sit instance as returned by :py:func:`load_sit`
-        dll_path (str): path to the libcbm compiled library, if not
+        dll_path (str, optional): path to the libcbm compiled library, if not
             specified a default value is used.
         parameters_factory (func, optional): a parameterless function that
             returns parameters for the cbm model.  If unspecified the sit

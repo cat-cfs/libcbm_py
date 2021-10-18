@@ -165,6 +165,63 @@ def classifier_config(classifiers):
     return result
 
 
+def get_classifier_indexes(classifier_config):
+    """Build an object with indexes for the specified classifier_config.
+
+    Args:
+        classifier_config (dict):  See the return value of
+            :py:func:`classifier_config` for the format.
+
+    Returns:
+        dict: a dictionary with the following members:
+
+            * "classifier_names": dictionary of classifier id to classifier
+              name
+            * "classifier_ids": dictionary of classifier name to classifier
+              id
+            * "classifier_value_ids": nested dictionary of classifier name
+              (outer key) to classifier value name (inner key) to classifier
+              value id.
+            * "classifier_value_names": nested dictionary of classifier name
+              (outer key) to classifier value id (inner key) to classifier
+              value name
+    """
+    indexes = dict(
+        classifier_names={},
+        classifier_ids={},
+        classifier_value_ids={},
+        classifier_value_names={})
+
+    for classifier_data in classifier_config["classifiers"]:
+        indexes.classifier_names[classifier_data["id"]] = \
+            classifier_data["name"]
+        indexes.classifier_ids[classifier_data["name"]] = \
+            classifier_data["id"]
+
+    for classifier_value_data in classifier_config["classifier_values"]:
+        classifier_id = classifier_value_data["classifier_id"]
+        classifier_name = indexes.classifier_names[classifier_id]
+        classifier_value_id = classifier_value_data["id"]
+        classifier_value_name = classifier_value_data["value"]
+
+        if classifier_name in indexes.classifier_value_ids:
+            indexes.classifier_value_ids[
+                classifier_name][classifier_value_name] = classifier_value_id
+        else:
+            indexes.classifier_value_ids[classifier_name] = {
+                classifier_value_name: classifier_value_id
+            }
+
+        if classifier_id in indexes.classifier_value_names:
+            indexes.classifier_value_names[
+                classifier_id][classifier_value_id] = classifier_value_name
+        else:
+            indexes.classifier_value_names[classifier_id] = {
+                classifier_value_id: classifier_value_name
+            }
+    return indexes
+
+
 def merch_volume_curve(classifier_set, merch_volumes):
     """Formats merchantable volume growth curve data for libcbm CBM model
     consumption.
