@@ -164,9 +164,11 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
     cbm_vars = cbm.init(cbm_vars)
     reporting_func(0, cbm_vars)
     if not step_disturbance_func:
+        # apply the default disturbance step function
         step_disturbance_func = cbm.step_disturbance
     for time_step in range(1, int(n_steps) + 1):
-        cbm_vars = pre_dynamics_func(time_step, cbm_vars)
+        if pre_dynamics_func:
+            cbm_vars = pre_dynamics_func(time_step, cbm_vars)
         cbm_vars = cbm_variables.prepare(cbm_vars)
         cbm_vars = cbm.step_start(cbm_vars)
         cbm_vars = step_disturbance_func(cbm_vars)
