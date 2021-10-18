@@ -110,6 +110,7 @@ def load_cbm_flux_indicators(sqlite_path):
 
                 [
                     {
+                        "name": "flux_1"
                         "id": 1,
                         "index": 0,
                         "process_id": 1,
@@ -132,8 +133,9 @@ def load_cbm_flux_indicators(sqlite_path):
         for row in flux_indicator_rows:
             flux_indicator = {
                 "id": row[0],
+                "name": row[1],
                 "index": index,
-                "process_id": row[1],
+                "process_id": row[2],
                 "source_pools": [],
                 "sink_pools": []
             }
