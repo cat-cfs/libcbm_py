@@ -358,3 +358,26 @@ class CBM:
         """
         self.model_functions.end_step(cbm_vars.state)
         return cbm_vars
+
+    def step(self, cbm_vars):
+        """Run all default cbm step methods.  It is assumed that any
+        records in the specified cbm_vars that require the spinup routine
+        have been passed into the :py:func:`init` and :py:func:`spinup`
+        and methods in this class.
+
+
+        See:
+        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
+        for definition of the cbm_vars object
+
+        Args:
+            cbm_vars (object): cbm_vars object
+
+        Returns:
+            object: cbm_vars
+        """
+        cbm_vars = self.step_start(cbm_vars)
+        cbm_vars = self.step_disturbance(cbm_vars)
+        cbm_vars = self.step_annual_process(cbm_vars)
+        cbm_vars = self.step_end(cbm_vars)
+        return cbm_vars
