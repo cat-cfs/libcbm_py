@@ -7,8 +7,8 @@ from libcbm import resources
 
 
 def _safe_map(series, map):
-    """Helper method to ensure an error is thrown if any series value
-    is not present in the specified map's keys.
+    """Helper method to ensure an error is thrown if any value in a
+    mapped series is null
 
     Args:
         series (pandas.Series): the series to map
@@ -16,10 +16,10 @@ def _safe_map(series, map):
             `Series.map` map parameter
 
     Raises:
-        ValueError: The mapped series (see :py:func:`pandas.Series.map`)
+        ValueError: at least one value in the mapped series was null
 
     Returns:
-        pd.Series: the mapped series
+        pd.Series: The mapped series (see :py:func:`pandas.Series.map`)
     """
     out_series = series.map(map)
     null_values = pd.isnull(out_series)
@@ -124,6 +124,15 @@ class StandCBMFactory:
             db_path=self._db_path, merch_volume_curves=merch_volume_list
         )
 
+    def get_disturbance_type_map(self):
+        return {
+            r["disturbance_type_id"]: r["disturbance_type_name"]
+            for r in self.defaults_ref.disturbance_type_ref}
+
+    def get_classifier_map(self):
+        return self._classifier_idx[
+            "classifier_value_names"].copy()
+
     def _get_classifier_value_ids(self, classifier_name,
                                   classifier_value_name_series):
         classifier_value_name_map = self._classifier_idx[
@@ -161,7 +170,7 @@ class StandCBMFactory:
                 * age: inventory age [years]
                 * area: inventory area [hectares]
                 * delay: inventory spinup delay [years]
-                * landclass: unfccc land class name (defined in db.landclass)
+                * land_class: unfccc land class name (defined in db.landclass)
                 * afforestation_pre_type: afforestation pre-type name (defined
                   in db)
                 * historic_disturbance_type: historic disturbance type name
@@ -190,11 +199,33 @@ class StandCBMFactory:
             data={
                 "age": inventory_df.age,
                 "area": inventory_df.area,
-                "spatial_unit": self.defaults_ref.get_spatial_unit_id(),
-                "afforestation_pre_type_id": self.defaults_ref.get_afforestation_pre_type_id(),
-                "land_class": self.defaults_ref.get_land_class_id(),
-                "historical_disturbance_type": self.defaults_ref.get_disturbance_type_id(),
-                "last_pass_disturbance_type": self.defaults_ref.get_disturbance_type_id(),
+                "spatial_unit": _safe_map(
+                    inventory_df.index,
+                    lambda x: self.defaults_ref.get_spatial_unit_id(
+                        str(inventory_df.admin_boundary.iloc[x]),
+                        str(inventory_df.eco_boundary.iloc[x]))
+                ),
+                "afforestation_pre_type_id": _safe_map(
+                    inventory_df.afforestation_pre_type,
+                    lambda x: (
+                        -1 if pd.isnull(x) else
+                        self.defaults_ref.get_afforestation_pre_type_id(x))
+                    ),
+                "land_class": _safe_map(
+                    inventory_df.land_class,
+                    self.defaults_ref.get_land_class_id),
+                "historical_disturbance_type": _safe_map(
+                    inventory_df.historic_disturbance_type,
+                    lambda x: (
+                        -1 if pd.isnull(x) else
+                        self.defaults_ref.get_disturbance_type_id(x))
+                    ),
+                "last_pass_disturbance_type": _safe_map(
+                    inventory_df.last_pass_disturbance_type,
+                    lambda x: (
+                        -1 if pd.isnull(x) else
+                        self.defaults_ref.get_disturbance_type_id(x))
+                    ),
                 "delay": inventory_df.delay
             })
         return classifiers, inventory
@@ -208,7 +239,5 @@ class StandCBMFactory:
             cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
                 self._db_path
             ),
-            merch_volume_to_biomass_factory=self.merch_volumes_factory(
-                self._db_path, self._locale, self._merch_volumes
-            ),
-            classifiers_factory=self.classifiers_factory(self._classifiers))
+            merch_volume_to_biomass_factory=self.merch_volumes_factory,
+            classifiers_factory=self.classifiers_factory)
