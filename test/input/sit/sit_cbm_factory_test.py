@@ -107,7 +107,7 @@ class SITCBMFactoryTest(unittest.TestCase):
         self.assertTrue(
             len(sit.classifier_value_ids) == len(classifiers.index))
         self.assertTrue(
-            len(sit.classifier_value_names) == len(classifiers.index))
+            len(sit.classifier_value_names) == len(classifier_values.index))
         self.assertTrue(
             set(classifiers.name) == set(sit.classifier_value_ids.keys()))
         self.assertTrue(
@@ -123,6 +123,6 @@ class SITCBMFactoryTest(unittest.TestCase):
                 set(sit.classifier_value_ids[classifier_name].keys()) ==
                 set(expected_classifier_names))
 
-            self.assertTrue(
-                set(sit.classifier_value_names[classifier_id].values()) ==
-                set(expected_classifier_names))
+        self.assertTrue(
+            set(classifier_values.name) ==
+            set(sit.classifier_value_names.values()))
