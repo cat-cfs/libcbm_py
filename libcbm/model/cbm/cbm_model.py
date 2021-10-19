@@ -50,8 +50,12 @@ class CBM:
             instance of LibCBMWrapper.
         model_functions (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper): an
             instance of CBMWrapper
+        pool_codes (list): list of pool code names (non localizable)
+        flux_indicator_codes (list): list of flux indicator code names (non
+            localizable)
     """
-    def __init__(self, compute_functions, model_functions):
+    def __init__(self, compute_functions, model_functions, pool_codes,
+                 flux_indicator_codes):
 
         self.compute_functions = compute_functions
         self.model_functions = model_functions
@@ -59,6 +63,9 @@ class CBM:
         self.op_names = get_op_names()
 
         self.op_processes = get_op_processes()
+
+        self.pool_codes = pool_codes
+        self.flux_indicator_codes = flux_indicator_codes
 
     def spinup(self, cbm_vars, reporting_func=None):
         """Run the CBM-CFS3 spinup function on an array of stands,

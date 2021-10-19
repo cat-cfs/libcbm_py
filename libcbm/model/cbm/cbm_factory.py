@@ -91,7 +91,8 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
             model
     """
 
-    configuration_string = json.dumps(dll_config_factory())
+    dll_config = dll_config_factory()
+    configuration_string = json.dumps(dll_config)
     with LibCBMHandle(dll_path, configuration_string) as libcbm_handle:
         libcbm_wrapper = LibCBMWrapper(libcbm_handle)
 
@@ -109,4 +110,8 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
 
         cbm_config_string = json.dumps(cbm_config)
         cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config_string)
-        yield CBM(libcbm_wrapper, cbm_wrapper)
+        yield CBM(
+            libcbm_wrapper, cbm_wrapper,
+            pool_codes=[p["name"] for p in dll_config["pools"]],
+            flux_indicator_codes=[
+                f["name"] for f in dll_config["flux_indicators"]])
