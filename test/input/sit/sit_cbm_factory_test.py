@@ -32,8 +32,6 @@ class SITCBMFactoryTest(unittest.TestCase):
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
-                pool_codes=sit.defaults.get_pools(),
-                flux_indicator_codes=sit.defaults.get_flux_indicators(),
                 pre_dynamics_func=rule_based_processor.pre_dynamic_func,
                 reporting_func=reporting_func)
             self.assertTrue(
@@ -63,8 +61,6 @@ class SITCBMFactoryTest(unittest.TestCase):
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
-                pool_codes=sit.defaults.get_pools(),
-                flux_indicator_codes=sit.defaults.get_flux_indicators(),
                 pre_dynamics_func=rule_based_processor.pre_dynamic_func,
                 reporting_func=reporting_func)
             self.assertTrue(

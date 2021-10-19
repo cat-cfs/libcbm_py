@@ -64,8 +64,6 @@ class SITIntegrationTest(unittest.TestCase):
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
-                pool_codes=sit.defaults.get_pools(),
-                flux_indicator_codes=sit.defaults.get_flux_indicators(),
                 pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
                 reporting_func=reporting_func)
             # there should be 2 rows, timestep 0 and timestep 1

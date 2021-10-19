@@ -105,8 +105,7 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
     return results, append_simulation_result
 
 
-def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
-             flux_indicator_codes, reporting_func,
+def simulate(cbm, n_steps, classifiers, inventory, reporting_func,
              step_disturbance_func=None, pre_dynamics_func=None,
              spinup_params=None, spinup_reporting_func=None):
     """Runs the specified number of timesteps of the CBM model.  Model output
@@ -120,9 +119,6 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
             in the inventory
         inventory (pandas.DataFrame): CBM inventory which defines the initial
             state of the simulation
-        pool_codes (list): a list of strings describing each of the CBM pools
-        flux_indicator_codes (list): a list of strings describing the CBM flux
-            indicators.
         reporting_func (function): a function which accepts the simulation
             timestep and all CBM variables for reporting results by timestep.
             An example compatible function factory is
@@ -154,7 +150,7 @@ def simulate(cbm, n_steps, classifiers, inventory, pool_codes,
     """
 
     cbm_vars = cbm_variables.initialize_simulation_variables(
-        classifiers, inventory, pool_codes, flux_indicator_codes)
+        classifiers, inventory, cbm.pool_codes, cbm.flux_indicator_codes)
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
         cbm_vars, spinup_params,
