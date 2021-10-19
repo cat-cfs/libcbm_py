@@ -193,30 +193,30 @@ def get_classifier_indexes(classifier_config):
         classifier_value_names={})
 
     for classifier_data in classifier_config["classifiers"]:
-        indexes.classifier_names[classifier_data["id"]] = \
+        indexes["classifier_names"][classifier_data["id"]] = \
             classifier_data["name"]
-        indexes.classifier_ids[classifier_data["name"]] = \
+        indexes["classifier_ids"][classifier_data["name"]] = \
             classifier_data["id"]
 
     for classifier_value_data in classifier_config["classifier_values"]:
         classifier_id = classifier_value_data["classifier_id"]
-        classifier_name = indexes.classifier_names[classifier_id]
+        classifier_name = indexes["classifier_names"][classifier_id]
         classifier_value_id = classifier_value_data["id"]
         classifier_value_name = classifier_value_data["value"]
 
-        if classifier_name in indexes.classifier_value_ids:
-            indexes.classifier_value_ids[
+        if classifier_name in indexes["classifier_value_ids"]:
+            indexes["classifier_value_ids"][
                 classifier_name][classifier_value_name] = classifier_value_id
         else:
-            indexes.classifier_value_ids[classifier_name] = {
+            indexes["classifier_value_ids"][classifier_name] = {
                 classifier_value_name: classifier_value_id
             }
 
-        if classifier_id in indexes.classifier_value_names:
-            indexes.classifier_value_names[
+        if classifier_id in indexes["classifier_value_names"]:
+            indexes["classifier_value_names"][
                 classifier_id][classifier_value_id] = classifier_value_name
         else:
-            indexes.classifier_value_names[classifier_id] = {
+            indexes["classifier_value_names"][classifier_id] = {
                 classifier_value_id: classifier_value_name
             }
     return indexes
