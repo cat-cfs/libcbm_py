@@ -212,13 +212,15 @@ def get_classifier_indexes(classifier_config):
                 classifier_value_name: classifier_value_id
             }
 
-        if classifier_id in indexes["classifier_value_names"]:
-            indexes["classifier_value_names"][
-                classifier_id][classifier_value_id] = classifier_value_name
+        if classifier_value_id not in indexes["classifier_value_names"]:
+            indexes["classifier_value_names"][classifier_value_id] = \
+                classifier_value_name
         else:
-            indexes["classifier_value_names"][classifier_id] = {
-                classifier_value_id: classifier_value_name
-            }
+            raise ValueError(
+                f"classifier_value_id {classifier_value_id} associated with "
+                f"more than one classifier value: {classifier_value_name}, "
+                f"{indexes['classifier_value_names'][classifier_value_id]}")
+
     return indexes
 
 
