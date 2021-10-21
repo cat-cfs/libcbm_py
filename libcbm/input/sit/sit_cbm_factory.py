@@ -11,6 +11,7 @@ import numpy as np
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.input.sit import sit_transition_rule_parser
+from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
@@ -217,24 +218,27 @@ def initialize_inventory(sit):
     return classifiers_result, inventory_result
 
 
-def initialize_events(sit):
+def initialize_events(disturbance_events, sit_mapping):
     """Returns a copy of the parsed sit events with the disturbance type id
     resulting from the SIT configuration.
 
     Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
+        disturbance_events (pandas.DataFrame): parsed sit_events data. See
+            :py:func:`libcbm.input.sit.sit_disturbance_event_parser.parse`
+        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): instance of
+            SITMapping to fetch disturbance type ids from the disturbance data.
 
     Returns:
         pandas.DataFrame: the disturbance events with an added
             "disturbance_type_id" column.
     """
-    if sit.sit_data.disturbance_events is None:
+    if disturbance_events is None:
         return None
-    sit_events = sit.sit_data.disturbance_events.copy()
-    sit_events["disturbance_type_id"] = \
-        sit.sit_mapping.get_sit_disturbance_type_id(
-            sit_events.disturbance_type)
-    return sit_events
+    disturbance_events = disturbance_events.copy()
+    disturbance_events["disturbance_type_id"] = \
+        sit_mapping.get_sit_disturbance_type_id(
+            disturbance_events.disturbance_type)
+    return disturbance_events
 
 
 def initialize_transition_rules(sit):
@@ -367,7 +371,10 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         yield cbm
 
 
-def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
+def create_sit_rule_based_processor(
+    sit, cbm, random_func=np.random.rand, sit_events=None,
+    sit_disturbance_eligibilities=None, sit_transition_rules=None
+):
     """initializes a class for processing SIT rule based disturbances.
 
     Args:
@@ -381,6 +388,9 @@ def create_sit_rule_based_processor(sit, cbm, random_func=np.random.rand):
         SITRuleBasedProcessor: an object for processing SIT rule based
             disturbances
     """
+
+    sit_events_parsed = None
+    if sit_events:
 
     classifiers_config = get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values)
