@@ -257,7 +257,8 @@ class CBM:
         self.model_functions.advance_stand_state(
             cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state,
             cbm_vars.parameters)
-        # reset the disturbance type for all stands at the start of the timestep
+        # reset the disturbance type for all stands at the start of the
+        # timestep
         cbm_vars.parameters.disturbance_type[:] = 0
         return cbm_vars
 

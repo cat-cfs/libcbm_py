@@ -28,4 +28,3 @@ class LibCBM_Matrix_Test(unittest.TestCase):
         with self.assertRaises(ValueError):
             arr = np.ones(shape=(3, 2), dtype=float, order="F")
             LibCBM_Matrix(arr)
-        #np.ones(shape=((1, 1, 1,)))]:

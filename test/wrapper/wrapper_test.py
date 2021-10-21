@@ -20,6 +20,7 @@ TEST_CONFIG = {
     ]
 }
 
+
 class WrapperTest(unittest.TestCase):
 
     def test_initialization_error(self):
