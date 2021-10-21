@@ -1,8 +1,6 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
-import numpy as np
 import pandas as pd
 
 from libcbm.model.cbm.rule_based import event_processor
@@ -154,9 +152,6 @@ class SITEventProcessor():
             object: expanded and updated cbm_vars
 
         """
-        n_stands = cbm_vars.inventory.shape[0]
-        cbm_vars.parameters.disturbance_type = np.zeros(
-            n_stands, dtype=np.int32)
 
         time_step_events = sit_events[
             sit_events.time_step == time_step].copy()
