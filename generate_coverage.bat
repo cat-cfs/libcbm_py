@@ -1,5 +1,5 @@
 :: note to include numba routines in coverage, set disable it with the option
-SET DISABLE_JIT=True
+SET NUMBA_DISABLE_JIT=1
 :: can also be done in the .numba_config.yml file in this dir
 pytest --cov=libcbm --cov-report html
 python ./convert_example_notebooks.py
