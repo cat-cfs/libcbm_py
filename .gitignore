@@ -7,5 +7,5 @@
 /dist
 /.coverage
 /.pytest_cache
-/cov_html
+/htmlcov
 *.ipynb
