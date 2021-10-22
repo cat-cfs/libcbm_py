@@ -25,11 +25,12 @@ class ComputeProductionTest(unittest.TestCase):
 
         model_functions = SimpleNamespace()
 
-        def mock_get_disturbance_ops(op, inventory, disturbance_type):
+        def mock_get_disturbance_ops(op, inventory, parameters):
             self.assertTrue(op == 999)
             self.assertTrue(inventory.equals(mock_inventory))
             self.assertTrue(
-                (disturbance_type == mock_disturbance_type).all()[0])
+                (parameters.disturbance_type ==
+                 mock_disturbance_type).all())
 
         model_functions.get_disturbance_ops = mock_get_disturbance_ops
 

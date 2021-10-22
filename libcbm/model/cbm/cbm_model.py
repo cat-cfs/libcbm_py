@@ -299,10 +299,14 @@ class CBM:
         # allocate space for computing the Carbon flows
         disturbance_op = self.compute_functions.allocate_op(n_stands)
 
-        # set the disturbance type for all records
-        disturbance_type = pd.DataFrame({
-            "disturbance_type":
-                np.ones(n_stands, dtype=np.int32) * disturbance_type})
+        if np.ndim(disturbance_type) == 0:
+            # set the disturbance type for all records
+            disturbance_type = SimpleNamespace(
+                disturbance_type=np.full(
+                    n_stands, disturbance_type, dtype=np.int32))
+        else:
+            disturbance_type = SimpleNamespace(
+                disturbance_type=disturbance_type)
         self.model_functions.get_disturbance_ops(
             disturbance_op, cbm_vars.inventory, disturbance_type)
 
