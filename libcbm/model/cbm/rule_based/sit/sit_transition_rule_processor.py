@@ -82,8 +82,7 @@ class SITTransitionRuleProcessor:
         """
         if sit_transitions is None:
             return cbm_vars
-        cbm_vars.parameters.reset_age = np.ones(
-            cbm_vars.parameters.reset_age.shape[0], dtype=np.int32) * -1
+
         classifiers = cbm_vars.classifiers
         n_stands = classifiers.shape[0]
         classifier_names = classifiers.columns.tolist()

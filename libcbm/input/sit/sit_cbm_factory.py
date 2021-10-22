@@ -372,8 +372,9 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 
 
 def create_sit_rule_based_processor(
-    sit, cbm, random_func=np.random.rand, sit_events=None,
-    sit_disturbance_eligibilities=None, sit_transition_rules=None
+    sit, cbm, random_func=np.random.rand, reset_parameters=True,
+    sit_events=None, sit_disturbance_eligibilities=None,
+    sit_transition_rules=None
 ):
     """initializes a class for processing SIT rule based disturbances.
 
@@ -383,6 +384,10 @@ def create_sit_rule_based_processor(
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
             Defaults to np.random.rand.
+        reset_parameters (bool): if set to true,
+            cbm_vars.parameters.disturbance_type and
+            cbm_vars.parameters.reset_age will be reset prior to computing
+            new disturbances and transition rules.
         sit_events (pandas.DataFrame, optional): if specified the returned rule
             base processor is based on the specified sit_events input.  The
             value will be parsed and validated (sit_classifiers,
@@ -465,4 +470,5 @@ def create_sit_rule_based_processor(
         sit_transitions=_initialize_transition_rules(
             transition_rules, sit.sit_mapping),
         tr_constants=tr_constants,
-        sit_disturbance_eligibilities=disturbance_eligibilities)
+        sit_disturbance_eligibilities=disturbance_eligibilities,
+        reset_parameters=reset_parameters)

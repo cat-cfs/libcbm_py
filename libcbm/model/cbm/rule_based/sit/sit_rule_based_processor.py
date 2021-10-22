@@ -14,7 +14,8 @@ from libcbm.model.cbm.rule_based.sit import sit_event_processor
 def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
                                      classifier_aggregates, sit_events,
                                      sit_transitions, tr_constants,
-                                     sit_disturbance_eligibilities):
+                                     sit_disturbance_eligibilities,
+                                     reset_parameters):
 
     classifier_filter = ClassifierFilter(
         classifiers_config=classifiers_config,
@@ -41,19 +42,22 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
 
     return SITRuleBasedProcessor(
         event_processor, tr_processor, sit_events, sit_transitions,
-        sit_disturbance_eligibilities)
+        sit_disturbance_eligibilities, reset_parameters)
 
 
 class SITRuleBasedProcessor():
 
     def __init__(self, event_processor, transition_rule_processor,
-                 sit_events, sit_transitions, sit_eligibilities):
+                 sit_events, sit_transitions, sit_disturbance_eligibilities,
+                 reset_parameters):
+
         self.event_processor = event_processor
         self.transition_rule_processor = transition_rule_processor
         self.sit_events = sit_events
-        self.sit_eligibilities = sit_eligibilities
+        self.sit_disturbance_eligibilities = sit_disturbance_eligibilities
         self.sit_event_stats_by_timestep = {}
         self.sit_transitions = sit_transitions
+        self._reset_parameters = reset_parameters
 
     def tr_func(self, cbm_vars):
         cbm_vars = self.transition_rule_processor.process_transition_rules(
@@ -65,11 +69,14 @@ class SITRuleBasedProcessor():
             time_step=time_step,
             sit_events=self.sit_events,
             cbm_vars=cbm_vars,
-            sit_eligibilities=self.sit_eligibilities)
+            sit_eligibilities=self.sit_disturbance_eligibilities)
         self.sit_event_stats_by_timestep[time_step] = stats_df
         return cbm_vars
 
-    def pre_dynamic_func(self, time_step, cbm_vars):
+    def pre_dynamics_func(self, time_step, cbm_vars):
+        if self._reset_parameters:
+            cbm_vars.parameters.disturbance_type[:] = 0
+            cbm_vars.parameters.reset_age[:] = -1
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
         cbm_vars.classifiers = pd.DataFrame(
