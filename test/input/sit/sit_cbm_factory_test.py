@@ -32,7 +32,7 @@ class SITCBMFactoryTest(unittest.TestCase):
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
-                pre_dynamics_func=rule_based_processor.pre_dynamic_func,
+                pre_dynamics_func=rule_based_processor.pre_dynamics_func,
                 reporting_func=reporting_func)
             self.assertTrue(
                 results.pools[results.pools.timestep == 0].shape[0] ==
@@ -61,7 +61,7 @@ class SITCBMFactoryTest(unittest.TestCase):
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
-                pre_dynamics_func=rule_based_processor.pre_dynamic_func,
+                pre_dynamics_func=rule_based_processor.pre_dynamics_func,
                 reporting_func=reporting_func)
             self.assertTrue(
                 results.pools[results.pools.timestep == 0].shape[0] ==

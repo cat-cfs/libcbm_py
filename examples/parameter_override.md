@@ -45,7 +45,7 @@ def run_cbm_random():
 
     def random_parameter_factory():
         # update the default parameters table "turnover_parameters"
-        
+
         turnover_parameters = default_parameters["turnover_parameters"].copy()
         #fetch the StemAnnualTurnoverRate series from the dataframe
         stem_turnover_rate = turnover_parameters["StemAnnualTurnoverRate"]
@@ -57,7 +57,7 @@ def run_cbm_random():
 
     # use the above random parameter factory as the source for CBM parameters
     with sit_cbm_factory.initialize_cbm(sit, parameters_factory=random_parameter_factory) as cbm:
-    
+
         results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
         rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
 
@@ -66,7 +66,7 @@ def run_cbm_random():
             n_steps              = 20,
             classifiers          = classifiers,
             inventory            = inventory,
-            pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
+            pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
             reporting_func       = reporting_func
         )
         # return a single pool value to illustrate the effect of the randomly drawn parameter
@@ -74,7 +74,7 @@ def run_cbm_random():
 ```
 
 ```python
-# run 20 iterations of the random parameter override 
+# run 20 iterations of the random parameter override
 results = {f"sw_stem_snag_iteration_{i}": run_cbm_random()["SoftwoodStemSnag"] for i in range(1,20+1)}
 ```
 

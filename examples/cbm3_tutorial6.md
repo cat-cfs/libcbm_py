@@ -22,7 +22,7 @@ import pandas as pd
 ```
 
 Import the required packages from libcbm
- 
+
     - sit_cbm_factory: a module for initializing the CBM model from the CBM Standard import tool format
     - cbm_simulator: simulates the sit dataset using the CBM model
     - libcbm.resources: gets files for tutorial 2 that are bundled in libcbm
@@ -75,7 +75,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         n_steps              = 200,
         classifiers          = classifiers,
         inventory            = inventory,
-        pre_dynamics_func    = rule_based_processor.pre_dynamic_func,
+        pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
         reporting_func       = reporting_func
     )
 ```
