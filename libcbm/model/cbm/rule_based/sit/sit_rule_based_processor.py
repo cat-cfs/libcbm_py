@@ -35,8 +35,7 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
         ))
 
     event_processor = sit_event_processor.SITEventProcessor(
-        model_functions=cbm.model_functions,
-        compute_functions=cbm.compute_functions,
+        cbm=cbm,
         classifier_filter_builder=classifier_filter,
         random_generator=random_func)
 

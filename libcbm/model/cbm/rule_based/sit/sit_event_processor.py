@@ -14,12 +14,7 @@ class SITEventProcessor():
     """SITEventProcessor processes standard import tool format events.
 
     Args:
-        model_functions (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper):
-            The collection of CBM dynamics functions, which are used by this
-            class to compute Carbon production due to disturbance events for
-            MerchC targets.
-        compute_functions (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): Used
-            to compute carbon dynamics flows for MerchC targets.
+        cbm (object): CBM model
         classifier_filter_builder (ClassifierFilter):
             object used to construct and evaluate classifier filters to
             include or exclude stands from event and transition eligibility
@@ -27,24 +22,17 @@ class SITEventProcessor():
             whose single argument is an integer that specifies the number of
             random numbers in the returned sequence.
     """
-    def __init__(self, model_functions, compute_functions,
-                 classifier_filter_builder, random_generator):
+    def __init__(self, cbm, classifier_filter_builder, random_generator):
 
-        self.model_functions = model_functions
-        self.compute_functions = compute_functions
+        self.cbm = cbm
         self.classifier_filter_builder = classifier_filter_builder
         self.random_generator = random_generator
 
-    def _get_compute_disturbance_production(self, model_functions,
-                                            compute_functions,
-                                            eligible):
+    def _get_compute_disturbance_production(self, cbm, eligible):
 
-        def compute_disturbance_production(cbm_vars,
-                                           disturbance_type_id):
+        def compute_disturbance_production(cbm_vars, disturbance_type_id):
 
-            return rule_target.compute_disturbance_production(
-                model_functions=model_functions,
-                compute_functions=compute_functions,
+            return cbm.compute_disturbance_production(
                 cbm_vars=cbm_vars,
                 disturbance_type=disturbance_type_id,
                 eligible=eligible)
@@ -56,8 +44,7 @@ class SITEventProcessor():
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
-                model_functions=self.model_functions,
-                compute_functions=self.compute_functions,
+                cbm=self.cbm,
                 eligible=eligible)
 
         target_factory = sit_stand_target.create_sit_event_target_factory(

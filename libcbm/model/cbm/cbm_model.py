@@ -4,7 +4,9 @@
 
 
 import pandas as pd
+import numpy as np
 from types import SimpleNamespace
+from libcbm.model.cbm import cbm_variables
 
 
 def get_op_names():
@@ -258,6 +260,80 @@ class CBM:
             cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state,
             cbm_vars.parameters)
         return cbm_vars
+
+    def compute_disturbance_production(self, cbm_vars, disturbance_type,
+                                       eligible):
+        """Computes a series of disturbance production values based on
+
+        Args:
+            cbm_vars (object): object containing current simulation state
+            disturbance_type (numpy.ndarray, int): The integer code or array
+                specifying the disturbance type(s).
+            eligible (numpy.ndarray): Bit values where True specifies the index
+                is eligible for the disturbance, and false the opposite. In the
+                returned result False indices will be set with 0's.
+
+        Returns:
+            pandas.DataFrame: dataframe describing the C production associated
+                with applying the specified disturbance type on the specified
+                pools.  All columns are expressed as area density values
+                in units tonnes C/ha.
+
+                Fields:
+
+                    - DisturbanceSoftProduction: the softwood C production
+                    - DisturbanceSoftProduction: the hardwood C production
+                    - DisturbanceDOMProduction: the dead organic matter C
+                        production
+                    - Total: the row sums of the above three values
+
+        """
+        # this is by convention in the cbm_defaults database
+        disturbance_op_process_id = get_op_processes()["disturbance"]
+
+        # The number of stands is the number of rows in the inventory table.
+        # The set of inventory here is assumed to be the eligible for
+        # disturbance filtered subset of records
+        n_stands = cbm_vars.inventory.shape[0]
+
+        # allocate space for computing the Carbon flows
+        disturbance_op = self.compute_functions.allocate_op(n_stands)
+
+        # set the disturbance type for all records
+        disturbance_type = pd.DataFrame({
+            "disturbance_type":
+                np.ones(n_stands, dtype=np.int32) * disturbance_type})
+        self.model_functions.get_disturbance_ops(
+            disturbance_op, cbm_vars.inventory, disturbance_type)
+
+        # zero the flux indicators
+        cbm_vars.flux.values[:] = 0
+
+        cbm_vars = cbm_variables.prepare(cbm_vars)
+
+        pools_copy = np.array(
+            cbm_vars.pools, copy=True, order="C", dtype=np.float64)
+
+        # compute the flux based on the specified disturbance type
+        self.compute_functions.compute_flux(
+            [disturbance_op], [disturbance_op_process_id],
+            pools_copy, cbm_vars.flux,
+            enabled=eligible.astype(np.int32))
+
+        self.compute_functions.free_op(disturbance_op)
+        # computes C harvested by applying the disturbance matrix to the
+        # specified carbon pools
+        return pd.DataFrame(data={
+            "DisturbanceSoftProduction":
+                cbm_vars.flux["DisturbanceSoftProduction"],
+            "DisturbanceHardProduction":
+                cbm_vars.flux["DisturbanceHardProduction"],
+            "DisturbanceDOMProduction":
+                cbm_vars.flux["DisturbanceDOMProduction"],
+            "Total":
+                cbm_vars.flux["DisturbanceSoftProduction"] +
+                cbm_vars.flux["DisturbanceHardProduction"] +
+                cbm_vars.flux["DisturbanceDOMProduction"]})
 
     def step_disturbance(self, cbm_vars):
         """Compute disturbance dynamics and compute disturbance flux on the

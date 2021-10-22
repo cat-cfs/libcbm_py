@@ -123,9 +123,12 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_compute_functions = "mock_compute_functions"
             mock_random_generator = "mock_random_generator"
 
-            sit_event_processor = SITEventProcessor(
+            cbm = SimpleNamespace(
                 model_functions=mock_model_functions,
-                compute_functions=mock_compute_functions,
+                compute_functions=mock_compute_functions
+            )
+            sit_event_processor = SITEventProcessor(
+                cbm,
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator)
 
