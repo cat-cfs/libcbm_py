@@ -303,8 +303,6 @@ class CBM:
         disturbance_op_process_id = get_op_processes()["disturbance"]
 
         # The number of stands is the number of rows in the inventory table.
-        # The set of inventory here is assumed to be the eligible for
-        # disturbance filtered subset of records
         n_stands = cbm_vars.inventory.shape[0]
 
         # allocate space for computing the Carbon flows
