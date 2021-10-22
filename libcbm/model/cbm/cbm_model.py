@@ -313,16 +313,15 @@ class CBM:
         if disturbance_type is not None:
             if np.ndim(disturbance_type) == 0:
                 # set the disturbance type for all records
-                disturbance_type = SimpleNamespace(
-                    disturbance_type=np.full(
-                        n_stands, disturbance_type, dtype=np.int32))
-            else:
-                disturbance_type = SimpleNamespace(
-                    disturbance_type=disturbance_type)
+                disturbance_type = np.full(
+                    n_stands, disturbance_type, dtype=np.int32)
+            # else: just use the provided array data
         else:
             disturbance_type = cbm_vars.parameters.disturbance_type
+
         self.model_functions.get_disturbance_ops(
-            disturbance_op, cbm_vars.inventory, disturbance_type)
+            disturbance_op, cbm_vars.inventory,
+            SimpleNamespace(disturbance_type=disturbance_type))
 
         flux = cbm_variables.initialize_flux(
             n_stands, self.flux_indicator_codes)
