@@ -265,32 +265,3 @@ def expand_age_class_inventory(inventory, age_classes):
         .reset_index(drop=True)
 
     return result
-
-
-def get_map_land_class_func(land_classes, on_error):
-    """Returns a function for mapping land class to land class id.
-
-    Args:
-        land_classes (dict): a dictionary of landclass id (int, key)
-            to land class value (str, value)
-        on_error (func): a function of a single parameter, if the
-            specified id is not found call this function with that id
-
-    Returns:
-        str, or None: the mapped value if it exists or None
-    """
-    def map_land_class(land_class_id):
-        """function for mapping land class to land class id.
-
-        Args:
-            land_class_id (int): land class id
-
-        Returns:
-            str, or None: the mapped value if it exists or None
-        """
-        try:
-            return land_classes[land_class_id]
-        except KeyError:
-            on_error(id)
-            return None
-    return map_land_class
