@@ -261,7 +261,7 @@ class CBM:
             cbm_vars.parameters)
         return cbm_vars
 
-    def compute_disturbance_production(self, cbm_vars, disturbance_type,
+    def compute_disturbance_production(self, cbm_vars, disturbance_type=None,
                                        eligible=None, density=True):
         """Computes a series of disturbance production values based on the
         current pools in cbm_vars, and disturbance matrices associated with
@@ -271,8 +271,9 @@ class CBM:
 
         Args:
             cbm_vars (object): object containing current simulation state
-            disturbance_type (numpy.ndarray, int): The integer code or array
-                specifying the disturbance type(s).
+            disturbance_type (numpy.ndarray, int, optional): The integer code
+                or array specifying the disturbance type(s). If not specified,
+                the value of cbm_vars.parameters.disturbance_type is used.
             eligible (numpy.ndarray, optional): Bit values where True
                 specifies the index is eligible for the disturbance, and
                 false the opposite. In the returned result False indices
@@ -309,21 +310,22 @@ class CBM:
         # allocate space for computing the Carbon flows
         disturbance_op = self.compute_functions.allocate_op(n_stands)
 
-        if np.ndim(disturbance_type) == 0:
-            # set the disturbance type for all records
-            disturbance_type = SimpleNamespace(
-                disturbance_type=np.full(
-                    n_stands, disturbance_type, dtype=np.int32))
+        if disturbance_type is not None:
+            if np.ndim(disturbance_type) == 0:
+                # set the disturbance type for all records
+                disturbance_type = SimpleNamespace(
+                    disturbance_type=np.full(
+                        n_stands, disturbance_type, dtype=np.int32))
+            else:
+                disturbance_type = SimpleNamespace(
+                    disturbance_type=disturbance_type)
         else:
-            disturbance_type = SimpleNamespace(
-                disturbance_type=disturbance_type)
+            disturbance_type = cbm_vars.parameters.disturbance_type
         self.model_functions.get_disturbance_ops(
             disturbance_op, cbm_vars.inventory, disturbance_type)
 
-        # zero the flux indicators
-        cbm_vars.flux.values[:] = 0
-
-        cbm_vars = cbm_variables.prepare(cbm_vars)
+        flux = cbm_variables.initialize_flux(
+            n_stands, self.flux_indicator_codes)
 
         pools_copy = np.array(
             cbm_vars.pools, copy=True, order="C", dtype=np.float64)
@@ -331,7 +333,7 @@ class CBM:
         # compute the flux based on the specified disturbance type
         self.compute_functions.compute_flux(
             [disturbance_op], [disturbance_op_process_id],
-            pools_copy, cbm_vars.flux,
+            pools_copy, flux,
             enabled=(
                 eligible.astype(np.int32)
                 if eligible is not None else None))
@@ -341,15 +343,15 @@ class CBM:
         # specified carbon pools
         df = pd.DataFrame(data={
             "DisturbanceSoftProduction":
-                cbm_vars.flux["DisturbanceSoftProduction"],
+                flux["DisturbanceSoftProduction"],
             "DisturbanceHardProduction":
-                cbm_vars.flux["DisturbanceHardProduction"],
+                flux["DisturbanceHardProduction"],
             "DisturbanceDOMProduction":
-                cbm_vars.flux["DisturbanceDOMProduction"],
+                flux["DisturbanceDOMProduction"],
             "Total":
-                cbm_vars.flux["DisturbanceSoftProduction"] +
-                cbm_vars.flux["DisturbanceHardProduction"] +
-                cbm_vars.flux["DisturbanceDOMProduction"]})
+                flux["DisturbanceSoftProduction"] +
+                flux["DisturbanceHardProduction"] +
+                flux["DisturbanceDOMProduction"]})
         if density:
             return df
         else:
