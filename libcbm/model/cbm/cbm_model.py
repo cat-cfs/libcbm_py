@@ -262,16 +262,26 @@ class CBM:
         return cbm_vars
 
     def compute_disturbance_production(self, cbm_vars, disturbance_type,
-                                       eligible):
-        """Computes a series of disturbance production values based on
+                                       eligible=None, density=True):
+        """Computes a series of disturbance production values based on the
+        current pools in cbm_vars, and disturbance matrices associated with
+        cbm_vars.parameters.disturbance type by default, and the specified
+        disturbance_type scalar, or array otherwise.  Does not change values
+        in cbm_vars.
 
         Args:
             cbm_vars (object): object containing current simulation state
             disturbance_type (numpy.ndarray, int): The integer code or array
                 specifying the disturbance type(s).
-            eligible (numpy.ndarray): Bit values where True specifies the index
-                is eligible for the disturbance, and false the opposite. In the
-                returned result False indices will be set with 0's.
+            eligible (numpy.ndarray, optional): Bit values where True
+                specifies the index is eligible for the disturbance, and
+                false the opposite. In the returned result False indices
+                will be set with 0's.  Specifying None is equivant to an
+                full array of True values. Defaults to None.
+            density (bool, optional): if set to True the return value is
+                expressed in units of tonnes Carbon/hectare, and if False
+                the return value is expressed in units of tonnes Carbon.
+                Defaults to True.
 
         Returns:
             pandas.DataFrame: dataframe describing the C production associated
@@ -322,12 +332,14 @@ class CBM:
         self.compute_functions.compute_flux(
             [disturbance_op], [disturbance_op_process_id],
             pools_copy, cbm_vars.flux,
-            enabled=eligible.astype(np.int32))
+            enabled=(
+                eligible.astype(np.int32)
+                if eligible is not None else None))
 
         self.compute_functions.free_op(disturbance_op)
         # computes C harvested by applying the disturbance matrix to the
         # specified carbon pools
-        return pd.DataFrame(data={
+        df = pd.DataFrame(data={
             "DisturbanceSoftProduction":
                 cbm_vars.flux["DisturbanceSoftProduction"],
             "DisturbanceHardProduction":
@@ -338,6 +350,10 @@ class CBM:
                 cbm_vars.flux["DisturbanceSoftProduction"] +
                 cbm_vars.flux["DisturbanceHardProduction"] +
                 cbm_vars.flux["DisturbanceDOMProduction"]})
+        if density:
+            return df
+        else:
+            return df.multiply(cbm_vars.inventory.area, axis=0)
 
     def step_disturbance(self, cbm_vars):
         """Compute disturbance dynamics and compute disturbance flux on the
