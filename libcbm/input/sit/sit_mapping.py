@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import numpy as np
 
 
@@ -450,23 +451,19 @@ class SITMapping():
         Returns:
             pandas.Series: The series of landclass ids
         """
+        if is_numeric_dtype(land_class):
+            land_class = land_class.astype(int)
         land_classes_by_code = {
             x["code"]: x["land_class_id"]
             for x in self.sit_cbm_defaults.get_land_classes()}
-        land_class_id = {x for x in land_classes_by_code.values()}
-        if land_class.dtype == object:
-            undefined_land_classes = np.setdiff1d(
-                land_class.unique(), list(land_classes_by_code.keys()))
-            if len(undefined_land_classes) > 0:
-                raise ValueError(
-                    "the specified landclass values are undefined: "
-                    f"{undefined_land_classes}")
-            return land_class.map(land_classes_by_code)
-        else:
-            undefined_land_classes = np.setdiff1d(
-                land_class.unique(), list(land_class_id))
-            if len(undefined_land_classes) > 0:
-                raise ValueError(
-                    "the specified landclass ids are undefined: "
-                    f"{undefined_land_classes}")
-            return land_class.copy()
+        land_classes_by_code.update({
+            str(x["land_class_id"]): x["land_class_id"]
+            for x in self.sit_cbm_defaults.get_land_classes()})
+
+        undefined_land_classes = np.setdiff1d(
+            land_class.astype(str).unique(), list(land_classes_by_code.keys()))
+        if len(undefined_land_classes) > 0:
+            raise ValueError(
+                "the specified landclass values are undefined: "
+                f"{undefined_land_classes}")
+        return land_class.astype(str).map(land_classes_by_code)
