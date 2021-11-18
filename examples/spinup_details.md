@@ -59,14 +59,14 @@ inventory = pd.DataFrame(
 
 n_stands = len(inventory.index)
 
-# the following spinup parameters can be specified here directly.  
-# If they are not specified, they will be pulled from the 
+# the following spinup parameters can be specified here directly.
+# If they are not specified, they will be pulled from the
 # cbm_defaults database on a per-Spatial Unit basis
-# these values can be mixes of either scalar, or of the same length 
+# these values can be mixes of either scalar, or of the same length
 # as inventory.shape[0]
 spinup_params = cbm_variables.initialize_spinup_parameters(
     n_stands=n_stands,
-    return_interval=np.array([150, 160]),
+    return_interval=np.array([150, 160], dtype=np.int32),
     min_rotations=5,
     max_rotations=10,
     mean_annual_temp=10)
@@ -93,7 +93,7 @@ with cbm_factory.initialize_cbm() as cbm:
         reporting_func=cbm_reporting_func,
         spinup_params=spinup_params,
         spinup_reporting_func=spinup_reporting_func)
-    
+
 ```
 
 ```python
