@@ -50,7 +50,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="libcbm",
-    version="0.9.0",
+    version="0.9.3",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
