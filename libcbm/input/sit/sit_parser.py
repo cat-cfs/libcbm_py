@@ -238,9 +238,9 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
                 "age classes.")
 
     age_class_start_year_map = {
-        x.name: x.start_year for x in age_classes.itertuples()}
+        x.name: int(x.start_year) for x in age_classes.itertuples()}
     age_class_end_year_map = {
-        x.name: x.end_year for x in age_classes.itertuples()}
+        x.name: int(x.end_year) for x in age_classes.itertuples()}
     using_age_class_rows.min_softwood_age = using_age_class_rows \
         .min_softwood_age.astype(str).map(age_class_start_year_map)
     using_age_class_rows.min_hardwood_age = using_age_class_rows \
@@ -264,6 +264,11 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
     # return the final substituted rows
     result = non_using_age_class_rows.append(using_age_class_rows) \
         .reset_index(drop=True)
+
+    result.min_softwood_age = result.min_softwood_age.astype(int)
+    result.min_hardwood_age = result.min_hardwood_age.astype(int)
+    result.max_softwood_age = result.max_softwood_age.astype(int)
+    result.max_hardwood_age = result.max_hardwood_age.astype(int)
 
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
