@@ -122,7 +122,7 @@ def parse(transition_rules, classifiers, classifier_values,
     invalid_grouped = grouped[
         grouped.percent > (100 + GROUPED_PERCENT_ERR_MAX)]
     if len(invalid_grouped) > 0:
-        invalid_percents = [x.Index for x in grouped.head().itertuples()]
+        invalid_percents = [x.Index for x in invalid_grouped.head().itertuples()]
         raise ValueError(
             "the following groups have a total percent greater than 100%: "
             f"{invalid_percents}")
