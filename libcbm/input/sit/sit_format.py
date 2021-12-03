@@ -184,7 +184,7 @@ def get_transition_rules_format(classifier_names, n_columns):
         {"name": "reset_age", "index": regeneration_delay_index + 1,
          "min_value": -1, "type": int},
         {"name": "percent", "index": regeneration_delay_index + 2,
-         "min_value": 0, "max_value": 100, "type": int},
+         "min_value": 0, "max_value": 100, "type": float},
     ]
     spatial_reference = [
         {"name": "spatial_reference", "index": regeneration_delay_index + 3,
