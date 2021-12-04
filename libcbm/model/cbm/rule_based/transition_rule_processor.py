@@ -139,7 +139,11 @@ class TransitionRuleProcessor(object):
         # sets the transitioned array with the transition filter result
         eligible = np.logical_and(
             np.logical_not(transition_mask), filtered)
+
         transition_mask_output = np.logical_or(transition_mask, eligible)
+
+        if not eligible.any():
+            return transition_mask_output, cbm_vars
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max)
