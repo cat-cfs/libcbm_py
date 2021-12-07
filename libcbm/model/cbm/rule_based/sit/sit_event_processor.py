@@ -62,8 +62,11 @@ class SITEventProcessor():
                     data=cbm_vars.pools),
                 rule_filter.create_filter(
                     expression=sit_eligibility.state_filter_expression,
-                    data=cbm_vars.state
-                )]
+                    data=cbm_vars.state),
+                self.classifier_filter_builder.create_classifiers_filter(
+                    sit_stand_filter.get_classifier_set(
+                        sit_event, cbm_vars.classifiers.columns.tolist()),
+                    cbm_vars.classifiers)]
 
         process_event_result = event_processor.process_event(
             event_filters=event_filters,
