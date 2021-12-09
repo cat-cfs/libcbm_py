@@ -36,11 +36,3 @@ jobs:
       run: |
         pip install pytest
         pytest
-    - name: Run example notebooks
-      run: |
-        pip install jupytext
-        pip install nbval
-        pip install matplotlib
-        pip install .
-        python convert_example_notebooks.py
-        pytest --nbval-lax ./examples
