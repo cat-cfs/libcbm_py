@@ -48,6 +48,31 @@ def get_classifiers(classifiers, classifier_values):
     return config
 
 
+def _create_disturbance_type_maps(sit):
+    """Create maps from the internally defined sequential sit disturbance type
+    id to all of:
+
+
+        * default_disturbance_id_map - maps to the default disturbance type id
+        * disturbance_id_map - maps to the sit disturbance type input "id"
+            field (col 0)
+        * disturbance_name_map - maps to the sit disturbance type input "name"
+            field (col 1)
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+    """
+    sit.default_disturbance_id_map = {
+        row.sit_disturbance_type_id: row.default_disturbance_type_id
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+    sit.disturbance_id_map = {
+        row.sit_disturbance_type_id: row.id
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+    sit.disturbance_name_map = {
+        row.sit_disturbance_type_id: row["name"]
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+
+
 def _create_classifier_value_maps(sit):
     """Creates dictionaries for fetching internally defined identifiers
     and attaches them to the specified sit object instance. Values can
@@ -312,6 +337,7 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     sit.db_path = db_path
     sit.defaults = sit_defaults
     _create_classifier_value_maps(sit)
+    _create_disturbance_type_maps(sit)
     return sit
 
 
