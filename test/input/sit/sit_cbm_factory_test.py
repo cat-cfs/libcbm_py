@@ -72,7 +72,12 @@ class SITCBMFactoryTest(unittest.TestCase):
     @patch("libcbm.input.sit.sit_cbm_factory.resources")
     @patch("libcbm.input.sit.sit_cbm_factory.SITCBMDefaults")
     @patch("libcbm.input.sit.sit_cbm_factory.SITMapping")
-    def test_classifier_maps(self, SITMapping, SITCBMDefaults, resources):
+    def test_sit_maps(self, SITMapping, SITCBMDefaults, resources):
+
+        sit_mapping = Mock()
+        sit_mapping.get_default_disturbance_type_id.side_effect = \
+            lambda x: x.map({"a": "default_a", "b": "default_b"})
+        SITMapping.side_effect = lambda *args, **kwargs: sit_mapping
 
         classifiers = pd.DataFrame(
             columns=["id", "name"],
@@ -97,10 +102,14 @@ class SITCBMFactoryTest(unittest.TestCase):
             sit_data=SimpleNamespace(
                 classifiers=classifiers,
                 classifier_values=classifier_values,
-                disturbance_types=Mock()
-            ),
-            sit_mapping=Mock()
+                disturbance_types=pd.DataFrame(
+                    columns=["sit_disturbance_type_id", "id", "name"],
+                    data=[
+                        [1, "DISTID1", "a"],
+                        [2, "DISTID2", "b"]])
+            )
         )
+
         sit_cbm_factory.initialize_sit_objects(sit)
         self.assertTrue(len(sit.classifier_names) == len(classifiers.index))
         self.assertTrue(len(sit.classifier_ids) == len(classifiers.index))
@@ -126,3 +135,15 @@ class SITCBMFactoryTest(unittest.TestCase):
         self.assertTrue(
             set(classifier_values.name) ==
             set(sit.classifier_value_names.values()))
+
+        self.assertTrue(
+            sit.default_disturbance_id_map == {1: "default_a", 2: "default_b"}
+        )
+
+        self.assertTrue(
+            sit.disturbance_id_map == {1: "DISTID1", 2: "DISTID2"}
+        )
+
+        self.assertTrue(
+            sit.disturbance_name_map == {1: "a", 2: "b"}
+        )
