@@ -50,7 +50,9 @@ classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 Create storage and a function for storing CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
 
 ```python
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
+results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
+    classifier_map=sit.classifier_value_names,
+    disturbance_type_map=sit.disturbance_name_map)
 ```
 
 ## Simulation
@@ -70,10 +72,14 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
     )
 ```
 
+```python
+results.classifiers
+```
+
 ## Pool Results
 
 ```python
-pi = results.pools
+pi = results.classifiers.merge(results.pools, left_on=["identifier", "timestep"], right_on=["identifier", "timestep"])
 ```
 
 ```python
