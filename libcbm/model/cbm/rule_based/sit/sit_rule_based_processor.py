@@ -74,8 +74,8 @@ class SITRuleBasedProcessor():
 
     def pre_dynamics_func(self, time_step, cbm_vars):
         if self._reset_parameters:
-            cbm_vars.parameters.disturbance_type[:] = 0
-            cbm_vars.parameters.reset_age[:] = -1
+            cbm_vars.parameters.disturbance_type.loc[:] = 0
+            cbm_vars.parameters.reset_age.loc[:] = -1
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
         cbm_vars.classifiers = pd.DataFrame(

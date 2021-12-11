@@ -98,7 +98,8 @@ def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
 
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
-    cbm_vars.parameters.disturbance_type[target_index] = disturbance_type_id
+    cbm_vars.parameters.disturbance_type.iloc[target_index] \
+        = disturbance_type_id
 
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
