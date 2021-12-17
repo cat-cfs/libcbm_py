@@ -265,16 +265,29 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
     result = non_using_age_class_rows.append(using_age_class_rows) \
         .reset_index(drop=True)
 
-    result.min_softwood_age = result.min_softwood_age.astype(int)
-    result.min_hardwood_age = result.min_hardwood_age.astype(int)
-    result.max_softwood_age = result.max_softwood_age.astype(int)
-    result.max_hardwood_age = result.max_hardwood_age.astype(int)
+    # convert to float then to int in case the columns are stored as
+    # strings in float format (which fails on astype(int))
+    result.min_softwood_age = result.min_softwood_age.astype(float).astype(int)
+    result.min_hardwood_age = result.min_hardwood_age.astype(float).astype(int)
+    result.max_softwood_age = result.max_softwood_age.astype(float).astype(int)
+    result.max_hardwood_age = result.max_hardwood_age.astype(float).astype(int)
 
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
+    has_null_min_age_criteria = (
+        (result.min_softwood_age < 0) | (result.min_hardwood_age < 0)
+    )
+    has_null_max_age_criteria = (
+        (result.max_softwood_age < 0) | (result.max_hardwood_age < 0)
+    )
     differing_age_criteria = result.loc[
-        (result.min_softwood_age != result.min_hardwood_age) |
-        (result.max_softwood_age != result.max_hardwood_age)]
+        (
+            (result.min_softwood_age != result.min_hardwood_age)
+            & ~has_null_min_age_criteria) |
+        (
+            (result.max_softwood_age != result.max_hardwood_age)
+            & ~has_null_max_age_criteria)
+    ]
     if len(differing_age_criteria) > 0:
         raise ValueError(
             "Values of column min_softwood_age must equal values of column "
