@@ -156,7 +156,7 @@ def create_last_disturbance_type_filter(sit_data):
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",
-        value=sit_data["LastDistTypeID"])
+        value=int(sit_data["LastDistTypeID"]))
     return expression
 
 
