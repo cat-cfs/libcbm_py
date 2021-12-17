@@ -215,7 +215,7 @@ class SITTransitionRuleParserTest(unittest.TestCase):
         # hw and sw differ with "using age class" feature
         cases[0]["age_eligibility"] = ["true", "age1", "age2", "age0", "age1"]
         # hw and sw differ
-        cases[1]["age_eligibility"] = ["false", "-1", "10", "1", "10"]
+        cases[1]["age_eligibility"] = ["false", "2", "10", "1", "10"]
 
         for case in cases:
             transition_table = self.assemble_transition_table([case])
