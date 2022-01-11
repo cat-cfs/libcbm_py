@@ -68,6 +68,8 @@ class Operation:
         return self.__op_id
 
     def set_matrix_index(self, matrix_index):
+        if not matrix_index.dtype == np.uintp:
+            matrix_index = matrix_index.astype(np.uintp)
         if self.format == OperationFormat.MatrixList:
             self.__allocate_op(matrix_index.shape[0])
             self.__dll.handle.call(
