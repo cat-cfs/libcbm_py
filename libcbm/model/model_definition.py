@@ -9,7 +9,7 @@ from libcbm import resources
 
 
 @contextmanager
-def create_model(pools, flux_indicators):
+def create_model(pools: list[dict], flux_indicators: list[dict]):
 
     libcbm_config = {
         "pools": [
@@ -34,32 +34,40 @@ def create_model(pools, flux_indicators):
         )
 
 
+class ModelVars():
+    def __init__(self, size, n_pools, n_flux):
+        self.pools = np.zeros(shape=(int(size), n_pools))
+        self.flux = np.zeros(shape=(int(size), n_flux))
+
+
 class ModelHandle():
 
-    def __init__(self, wrapper, pools, flux_indicators):
+    def __init__(
+        self,
+        wrapper: LibCBMWrapper,
+        pools: list[dict],
+        flux_indicators: list[dict]
+    ):
         self.wrapper = wrapper
         self.pools = pools
         self.flux_indicators = flux_indicators
 
-    def allocate_pools(self, n):
-        return np.zeros(shape=(n, len(self.pools)))
+    def allocate_model_vars(self, n: int):
+        return ModelVars(n, len(self.pools), len(self.flux_indicators))
 
-    def allocate_flux(self, n):
-        return np.zeros(shape=(n, len(self.flux_indicators)))
-
-    def _matrix_rc(self, value):
+    def _matrix_rc(self, value: list):
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
             value)
 
-    def _matrix_list(self, value):
+    def _matrix_list(self, value: list):
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.MatrixList,
             value)
 
-    def create_operation(self, matrices, fmt):
+    def create_operation(self, matrices: list, fmt: str):
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
@@ -80,14 +88,22 @@ class ModelHandle():
         else:
             raise ValueError("unknown format")
 
-    def compute(self, pools, flux, operations, op_processes, enabled):
+    def compute(
+        self,
+        model_vars: ModelVars,
+        operations: list[libcbm_operation.Operation],
+        op_processes: list[int],
+        enabled: np.ndarray
+    ):
+        model_vars.pools = np.ascontiguousarray(model_vars.pools)
+        model_vars.flux = np.ascontiguousarray(model_vars.flux)
         libcbm_operation.compute(
             dll=self.wrapper,
-            pools=pools,
+            pools=model_vars.pools,
             operations=operations,
-            op_processes=op_processes,
-            flux=flux,
-            enabled=enabled)
+            op_processes=[int(o) for o in op_processes],
+            flux=model_vars.flux,
+            enabled=enabled.astype(int) if enabled is not None else None)
 
     def create_output_processor(self, type="in_memory"):
         return ModelOutputProcessor(self)
@@ -100,18 +116,22 @@ class ModelOutputProcessor():
         self.pools = pd.DataFrame()
         self.flux = pd.DataFrame()
 
-    def append_results(self, t, pools, flux):
+    def append_results(self, t: int, model_vars: ModelVars):
         pools_t = pd.DataFrame(
             columns=self.model_handle.pools.keys(),
-            data=pools.copy())
+            data=model_vars.pools.copy())
         pools_t.insert(0, "timestep", t)
+        pools_t.reset_index(inplace=True)
         self.pools = self.pools.append(pools_t)
+        self.pools.reset_index(inplace=True, drop=True)
 
         flux_t = pd.DataFrame(
             columns=[
                 x["name"] for x in
                 self.model_handle.flux_indicators],
-            data=flux.copy()
+            data=model_vars.flux.copy()
         )
         flux_t.insert(0, "timestep", t)
+        flux_t.reset_index(inplace=True)
         self.flux = self.flux.append(flux_t)
+        self.flux.reset_index(inplace=True, drop=True)
