@@ -242,11 +242,3 @@ with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
     }
 })
 ```
-
-``` {r}
-output_processor$pools$groupby("timestep")$sum()$plot(figsize=list(15,10))
-```
-
-```python
-output_processor.flux.groupby("timestep").sum().plot(figsize=(15,10))
-```
