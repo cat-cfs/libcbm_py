@@ -1,0 +1,252 @@
+---
+title: "model_definition.rmd"
+output: html_document
+---
+
+``` {r}
+library(ggplot2)
+library(reshape2)
+
+library(reticulate)
+
+model_definition <- import("libcbm.model.model_definition")
+```
+
+``` {r}
+pool_def = dict(
+  Input=0,
+  WoodyBiomass=1,
+  Foliage=2,
+  SlowDOM=3,
+  MediumDOM=4,
+  FastDOM=5,
+  CO2=6,
+  Products=7
+)
+```
+
+``` {r}
+processes = dict(
+  GrowthAndMortality = 0,
+  Decay = 1,
+  Disturbance = 2
+)
+```
+
+``` {r}
+flux_indicators = c(
+    dict(
+        name="NPP",
+        process_id=processes["GrowthAndMortality"],
+        source_pools=list(
+            pool_def["Input"],
+            pool_def["Foliage"]
+        ),
+        sink_pools=list(
+            pool_def["WoodyBiomass"],
+            pool_def["Foliage"],
+            pool_def["FastDOM"]
+        )
+    ),
+    dict(
+        name="DecayEmissions",
+        process_id=processes["Decay"],
+        source_pools=list(
+            pool_def["SlowDOM"],
+            pool_def["MediumDOM"],
+            pool_def["FastDOM"]
+        ),
+        sink_pools=c(
+            pool_def["CO2"]
+        )
+    ),
+    dict(
+        name="DisturbanceEmissions",
+        process_id=processes["Disturbance"],
+        source_pools=list(
+            pool_def["WoodyBiomass"],
+            pool_def["Foliage"],
+            pool_def["SlowDOM"],
+            pool_def["MediumDOM"],
+            pool_def["FastDOM"]
+        ),
+        sink_pools=c(
+            pool_def["CO2"]
+        )
+    ),
+    dict(
+        name="HarvestProduction",
+        process_id=processes["Disturbance"],
+        source_pools=list(
+            pool_def["WoodyBiomass"],
+            pool_def["Foliage"],
+            pool_def["MediumDOM"]
+        ),
+        sink_pools=list(
+            pool_def["Products"]
+        )
+    )
+)
+```
+
+``` {r}
+weibull_cumulative <- function(x, k=2.3, y=1) {
+    c = (x/y) ^ k
+    return(1 - exp(-c))
+}
+
+get_npp_matrix <- function(model, age) {
+    # creates NPP flows based on an age passed to the cumulative weibull distribution
+    n_stands = length(age)
+    npp = matrix(weibull_cumulative((age+1)/100.0) - weibull_cumulative(age/100.0))
+    op = model$create_operation(
+        matrices=list(
+            list("Input", "WoodyBiomass", npp),
+            list("Input", "Foliage", npp/10.0)
+        ),
+        fmt="repeating_coordinates")
+
+    op$set_matrix_index(matrix(seq(0, n_stands-1)))
+    return(op)
+}
+```
+
+``` {r}
+
+get_mortality_matrix <- function(model, n_stands) {
+
+    op = model$create_operation(
+        matrices=list(
+            list("WoodyBiomass", "WoodyBiomass", 1.0),
+            list("WoodyBiomass", "MediumDOM", 0.01),
+            list("Foliage", "Foliage", 1.0),
+            list("Foliage", "FastDOM", 0.95)
+        ),
+        fmt="repeating_coordinates"
+    )
+    # set every stand to point at the 0th matrix:
+    # they all share the same simple mortality matrix
+    op$set_matrix_index(matrix(rep(0, n_stands)))
+    return(op)
+}
+```
+
+``` {r}
+get_decay_matrix <- function(model, n_stands) {
+    op = model$create_operation(
+        matrices=list(
+            list("SlowDOM", "SlowDOM", 0.97),
+            list("SlowDOM", "CO2", 0.03),
+
+            list("MediumDOM", "MediumDOM", 0.85),
+            list("MediumDOM", "SlowDOM", 0.10),
+            list("MediumDOM", "CO2", 0.05),
+
+            list("FastDOM", "FastDOM", 0.65),
+            list("FastDOM", "MediumDOM", 0.25),
+            list("FastDOM", "CO2", 0.10)
+        ),
+        fmt="repeating_coordinates"
+    )
+    op$set_matrix_index(matrix(rep(0, n_stands)))
+    return(op)
+}
+```
+
+``` {r}
+disturbance_type_ids = c(
+    none=0,
+    fire=1,
+    harvest=2
+)
+
+get_disturbance_matrix <- function(model, disturbance_types) {
+
+    no_disturbance = list()
+
+    fire_matrix = list(
+        list("WoodyBiomass", "WoodyBiomass", 0.0),
+        list("WoodyBiomass", "CO2", 0.85),
+        list("WoodyBiomass", "MediumDOM", 0.15),
+        list("Foliage", "Foliage", 0.0),
+        list("Foliage", "CO2", 0.95),
+        list("Foliage", "FastDOM", 0.05)
+    )
+    harvest_matrix = list(
+        list("WoodyBiomass", "WoodyBiomass", 0.0),
+        list("WoodyBiomass", "Products", 0.85),
+        list("WoodyBiomass", "MediumDOM", 0.15),
+        list("Foliage", "Foliage", 0.0),
+        list("Foliage", "FastDOM", 1.0)
+    )
+
+    op = model$create_operation(
+        matrices=list(
+            no_disturbance, fire_matrix, harvest_matrix
+        ),
+        fmt="matrix_list"
+    )
+    op$set_matrix_index(matrix(disturbance_types))
+    return(op)
+}
+
+```
+
+``` {r}
+with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
+
+    output_processor = model$create_output_processor()
+    n_stands = 20000
+    vars = model$allocate_model_vars(n_stands)
+
+    vars$pools[, 1] = 1.0
+
+    stand_age = rep(0, n_stands)
+
+    timesteps <- 0:100
+    for(t in timesteps) {
+        print(t)
+        # add some simplistic disturbance scheduling
+        disturbance_types = sample( c(0,1,2), n_stands, replace=TRUE, prob=c(0.995, 0.003, 0.002) )
+
+        # reset flux at start of every time step
+        vars$flux[,] = 0.0
+
+        # prepare the matrix operations
+        operations = list(
+            get_disturbance_matrix(model, disturbance_types),
+            get_npp_matrix(model, stand_age),
+            get_mortality_matrix(model, n_stands),
+            get_decay_matrix(model, n_stands)
+        )
+
+        # associate each above operation with a flux indicator category
+        op_processes = list(
+            processes["Disturbance"],
+            processes["GrowthAndMortality"],
+            processes["GrowthAndMortality"],
+            processes["Decay"]
+        )
+
+        # enabled array can be used to disable(0)/enable(1)
+        # dynamics per index
+        enabled = matrix(rep(1, n_stands))
+
+        model$compute(vars, operations, op_processes, enabled)
+        for(op in operations){
+            op$dispose()
+        }
+        output_processor$append_results(t, vars)
+        stand_age[disturbance_types != 0] = 0
+        stand_age = stand_age + 1
+    }
+})
+```
+
+``` {r}
+output_processor$pools$groupby("timestep")$sum()$plot(figsize=list(15,10))
+```
+
+```python
+output_processor.flux.groupby("timestep").sum().plot(figsize=(15,10))
+```
