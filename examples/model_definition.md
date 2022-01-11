@@ -56,7 +56,7 @@ flux_indicators = [
             pool_def["WoodyBiomass"],
             pool_def["Foliage"],
             pool_def["FastDOM"],
-        ]   
+        ]
     },
     {
         "name": "DecayEmissions",
@@ -104,11 +104,11 @@ def get_npp_matrix(model, age):
     npp = weibull_cumulative((age+1)/100.0) - weibull_cumulative(age/100.0)
     op = model.create_operation(
         matrices=[
-            ["Input", "WoodyBiomass", np.full(n_stands, npp)],
-            ["Input", "Foliage", np.full(n_stands, npp/10.0)],
-        ], 
+            ["Input", "WoodyBiomass", npp],
+            ["Input", "Foliage", npp/10.0],
+        ],
         fmt="repeating_coordinates")
-    
+
     op.set_matrix_index(np.arange(0, n_stands))
     return op
 ```
@@ -123,14 +123,14 @@ def get_mortality_matrix(model, n_stands):
 
     op = model.create_operation(
         matrices=[
-            ["WoodyBiomass", "WoodyBiomass", 1.0], 
+            ["WoodyBiomass", "WoodyBiomass", 1.0],
             ["WoodyBiomass", "MediumDOM", 0.01],
             ["Foliage", "Foliage", 1.0],
             ["Foliage", "FastDOM", 0.95],
         ],
         fmt="repeating_coordinates"
     )
-    # set every stand to point at the 0th matrix: 
+    # set every stand to point at the 0th matrix:
     # they all share the same simple mortality matrix
     op.set_matrix_index(np.full(n_stands, 0))
     return op
@@ -140,13 +140,13 @@ def get_mortality_matrix(model, n_stands):
 def get_decay_matrix(model, n_stands):
     op = model.create_operation(
         matrices=[
-            ["SlowDOM", "SlowDOM", 0.97],
-            ["SlowDOM", "CO2", 0.03],
-            
+            ["SlowDOM", "SlowDOM", 0.99],
+            ["SlowDOM", "CO2", 0.01],
+
             ["MediumDOM", "MediumDOM", 0.85],
             ["MediumDOM", "SlowDOM", 0.10],
             ["MediumDOM", "CO2", 0.05],
-            
+
             ["FastDOM", "FastDOM", 0.65],
             ["FastDOM", "MediumDOM", 0.25],
             ["FastDOM", "CO2", 0.10],
@@ -165,9 +165,9 @@ disturbance_type_ids = {
 }
 
 def get_disturbance_matrix(model, disturbance_types):
-    
+
     no_disturbance = [
-        
+
     ]
     fire_matrix = [
         ["WoodyBiomass", "WoodyBiomass", 0.0],
@@ -179,83 +179,97 @@ def get_disturbance_matrix(model, disturbance_types):
     ]
     harvest_matrix = [
         ["WoodyBiomass", "WoodyBiomass", 0.0],
-        ["WoodyBiomass", "Products", 0.85],        
+        ["WoodyBiomass", "Products", 0.85],
         ["WoodyBiomass", "MediumDOM", 0.15],
         ["Foliage", "Foliage", 0.0],
-        ["Foliage", "FastDOM", 1.0]  
+        ["Foliage", "FastDOM", 1.0]
     ]
-    
+
     op = model.create_operation(
         matrices=[
-            no_disturbance, fire_matrix, harvest_matrix            
+            no_disturbance, fire_matrix, harvest_matrix
         ],
         fmt="matrix_list"
     )
     op.set_matrix_index(disturbance_types)
     return op
-    
-    
+
+
 ```
 
 ```python
 with model_definition.create_model(pool_def, flux_indicators) as model:
-
+    rng = np.random.default_rng()
     output_processor = model.create_output_processor()
-    n_stands = 100
-    pools = model.allocate_pools(n_stands)
-    pools[:, pool_def["Input"]] = 1.0
+    n_stands = 10
+    model_vars = model.allocate_model_vars(n_stands)
+    model_vars.pools[:, pool_def["Input"]] = 1.0
 
-    flux = model.allocate_flux(n_stands)
     stand_age = np.full(n_stands, 0)
-    
-    for t in range(0, 100):
-        
+
+    for t in range(0, 1000):
+
         # add some simplistic disturbance scheduling
-        if t == 85:
-            disturbance_types = np.full(n_stands, disturbance_type_ids["fire"])  
-        elif t == 50:
+        
+        if (t % 150) == 0:
+            disturbance_types = np.full(n_stands, disturbance_type_ids["fire"])
+        elif t == 950:
             disturbance_types = np.full(n_stands, disturbance_type_ids["harvest"])
         else:
             disturbance_types = np.full(n_stands, disturbance_type_ids["none"])
-        
+
         # reset flux at start of every time step
-        flux[:] = 0.0
-        
+        model_vars.flux[:] = 0.0
+
         # prepare the matrix operations
         operations = [
             get_disturbance_matrix(model, disturbance_types),
             get_npp_matrix(model, stand_age),
             get_mortality_matrix(model, n_stands),
-            get_decay_matrix(model, n_stands),            
+            get_decay_matrix(model, n_stands),
         ]
 
-        # associate each above operations with a flux indicator category
+        # associate each above operation with a flux indicator category
         op_processes = [
             processes["Disturbance"],
             processes["GrowthAndMortality"],
             processes["GrowthAndMortality"],
-            processes["Decay"],            
+            processes["Decay"],
         ]
 
         # enabled can be used to disable(0)/enable(1) dynamics per index
         enabled=np.full(n_stands, 1)
-        
-        model.compute(pools, flux, operations, op_processes, enabled)
+
+        model.compute(model_vars, operations, op_processes, enabled)
         for op in operations:
             op.dispose()
-        output_processor.append_results(t, pools, flux)
+        output_processor.append_results(t, model_vars)
         stand_age[disturbance_types != 0] = 0
         stand_age += 1
-        
+
 
 ```
 
 ```python
-output_processor.pools.groupby("timestep").sum().plot(figsize=(15,10))
+output_processor.pools.columns
 ```
 
 ```python
-output_processor.flux.groupby("timestep").sum().plot(figsize=(15,10))
+output_processor.pools[
+    ['timestep','WoodyBiomass', 'Foliage', 'SlowDOM',
+     'MediumDOM', 'FastDOM']
+].groupby("timestep").sum().plot(figsize=(15,10))
+```
+
+```python
+output_processor.flux[
+    ['timestep', 'NPP', 'DecayEmissions', 'DisturbanceEmissions',
+     'HarvestProduction']
+].groupby("timestep").sum().plot(figsize=(15,10))
+```
+
+```python
+
 ```
 
 ```python
