@@ -95,11 +95,14 @@ def get_libcbm_bin_path():
         # This returns a string like '10.8.4' #
         os_release = platform.mac_ver()[0]
         # Split the result #
-        major, minor, _ = os_release.split('.')
+        version_tokens = os_release.split('.')
+        major = version_tokens[0]
+        minor = version_tokens[1]
         matched_ver = (
             int(major) == 10 and
-            int(minor) >= 12 and
-            int(minor) <= 15
+            int(minor) >= 12
+        ) or (
+            int(major) == 11
         )
         # Get the full path to the dylib #
         dylib = os.path.join(
