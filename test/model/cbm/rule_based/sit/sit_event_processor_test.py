@@ -119,9 +119,11 @@ class SITEventProcessorTest(unittest.TestCase):
                 lambda sit_event, age_only: "(mock_variable == 7)"
             )
             sit_stand_filter.create_last_disturbance_type_filter = Mock()
-            sit_stand_filter.create_last_disturbance_type_filter.side_effect = lambda sit_event: (
-                "",
-                [],
+            sit_stand_filter.create_last_disturbance_type_filter.side_effect = (  # noqa 501
+                lambda sit_event: (
+                    "",
+                    [],
+                )
             )
 
             # mock sit_stand_target

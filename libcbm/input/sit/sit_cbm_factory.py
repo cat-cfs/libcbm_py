@@ -185,7 +185,8 @@ def get_merch_volumes(
         )
         merch_vols = []
         for _, match_row in match.iterrows():
-            vols = match_row.iloc[len(classifiers) + 1 :]
+            start_range = len(classifiers) + 1
+            vols = match_row.iloc[start_range:]
             merch_vols.append(
                 {
                     "species_id": match_row["leading_species"],
@@ -259,11 +260,15 @@ def initialize_inventory(sit):
             "land_class": sit_mapping.get_land_class_id(
                 sit_data.inventory.land_class
             ),
-            "historical_disturbance_type": sit_mapping.get_sit_disturbance_type_id(
-                sit_data.inventory.historical_disturbance_type
+            "historical_disturbance_type": (
+                sit_mapping.get_sit_disturbance_type_id(
+                    sit_data.inventory.historical_disturbance_type
+                )
             ),
-            "last_pass_disturbance_type": sit_mapping.get_sit_disturbance_type_id(
-                sit_data.inventory.last_pass_disturbance_type
+            "last_pass_disturbance_type": (
+                sit_mapping.get_sit_disturbance_type_id(
+                    sit_data.inventory.last_pass_disturbance_type
+                )
             ),
         }
     )
@@ -418,15 +423,17 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         dll_path=dll_path,
         dll_config_factory=sit.defaults.get_configuration_factory(),
         cbm_parameters_factory=parameters_factory,
-        merch_volume_to_biomass_factory=lambda: cbm_config.merch_volume_to_biomass_config(
-            db_path=sit.db_path,
-            merch_volume_curves=get_merch_volumes(
-                sit.sit_data.yield_table,
-                sit.sit_data.classifiers,
-                sit.sit_data.classifier_values,
-                sit.sit_data.age_classes,
-                sit.sit_mapping,
-            ),
+        merch_volume_to_biomass_factory=(
+            lambda: cbm_config.merch_volume_to_biomass_config(
+                db_path=sit.db_path,
+                merch_volume_curves=get_merch_volumes(
+                    sit.sit_data.yield_table,
+                    sit.sit_data.classifiers,
+                    sit.sit_data.classifier_values,
+                    sit.sit_data.age_classes,
+                    sit.sit_mapping,
+                ),
+            )
         ),
         classifiers_factory=lambda: get_classifiers(
             sit.sit_data.classifiers, sit.sit_data.classifier_values

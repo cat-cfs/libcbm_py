@@ -228,7 +228,9 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             )
 
     def test_undefined_sort_type_error(self):
-        """check if an error is raised when an invalid sort type is specified"""
+        """
+        check if an error is raised when an invalid sort type is specified
+        """
         event = {
             "classifier_set": ["a", "?"],
             "age_eligibility": ["True", -1, -1, -1, -1],

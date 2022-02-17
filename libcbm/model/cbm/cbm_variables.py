@@ -277,15 +277,21 @@ def initialize_inventory(inventory):
             "age": inventory.age.to_numpy(dtype=np.int32),
             "area": inventory.area.to_numpy(dtype=np.float64),
             "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
-            "afforestation_pre_type_id": inventory.afforestation_pre_type_id.to_numpy(
-                dtype=np.int32
+            "afforestation_pre_type_id": (
+                inventory.afforestation_pre_type_id.to_numpy(
+                    dtype=np.int32
+                )
             ),
             "land_class": inventory.land_class.to_numpy(dtype=np.int32),
-            "historical_disturbance_type": inventory.historical_disturbance_type.to_numpy(
-                dtype=np.int32
+            "historical_disturbance_type": (
+                inventory.historical_disturbance_type.to_numpy(
+                    dtype=np.int32
+                )
             ),
-            "last_pass_disturbance_type": inventory.last_pass_disturbance_type.to_numpy(
-                dtype=np.int32
+            "last_pass_disturbance_type": (
+                inventory.last_pass_disturbance_type.to_numpy(
+                    dtype=np.int32
+                )
             ),
             "delay": inventory.delay.to_numpy(dtype=np.int32),
         }

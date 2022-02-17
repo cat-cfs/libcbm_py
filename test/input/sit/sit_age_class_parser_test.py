@@ -19,7 +19,9 @@ class SITAgeClassParserTest(unittest.TestCase):
             sit_age_class_parser.parse(pd.DataFrame([(0, 0), (1, 0)]))
 
     def test_non_numeric_size_error(self):
-        """Check that a non numeric value for the size column results in error"""
+        """
+        Check that a non numeric value for the size column results in error
+        """
         with self.assertRaises(ValueError):
             sit_age_class_parser.parse(pd.DataFrame([(0, 0), (1, "a")]))
 
@@ -29,7 +31,9 @@ class SITAgeClassParserTest(unittest.TestCase):
             sit_age_class_parser.parse(pd.DataFrame([(0, 0), (1, 1), (1, 1)]))
 
     def test_generate_sit_age_classes(self):
-        """checks the output of the test_generate_sit_age_classes helper method"""
+        """
+        checks the output of the test_generate_sit_age_classes helper method
+        """
         for class_size, n_classes in [(1, 5), (2, 10), (10, 20)]:
             n = len(range(1, n_classes, class_size))
             result = sit_age_class_parser.generate_sit_age_classes(

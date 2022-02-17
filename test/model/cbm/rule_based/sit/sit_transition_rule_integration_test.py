@@ -1,6 +1,6 @@
 import unittest
 
-import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers as helpers
+import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers as helpers  # noqa 501
 
 
 class SITTransitionRuleIntegrationTest(unittest.TestCase):

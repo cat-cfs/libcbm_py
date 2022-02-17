@@ -5,7 +5,9 @@ from libcbm.input.sit import sit_parser
 
 class SITParserTest(unittest.TestCase):
     def test_unpack_table_raises_on_duplicate_column(self):
-        """checks that if any 2 columns are the identical, an error is thrown"""
+        """
+        checks that if any 2 columns are the identical, an error is thrown
+        """
         with self.assertRaises(ValueError):
             sit_parser.unpack_table(
                 table=pd.DataFrame([("0", "0")]),

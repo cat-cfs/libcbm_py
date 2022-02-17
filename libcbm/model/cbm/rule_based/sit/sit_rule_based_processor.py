@@ -40,7 +40,7 @@ def sit_rule_based_processor_factory(
             classifiers_config=classifiers_config,
             grouped_percent_err_max=tr_constants.group_err_max,
             wildcard=tr_constants.wildcard,
-            transition_classifier_postfix=tr_constants.classifier_value_postfix,
+            transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
         )
     )
 

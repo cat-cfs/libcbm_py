@@ -10,7 +10,9 @@ from libcbm.input.sit import sit_format
 
 
 def get_sort_types():
-    """Gets the CBM standard import tool sorting id/name pairs as a dictionary"""
+    """
+    Gets the CBM standard import tool sorting id/name pairs as a dictionary
+    """
     return {
         1: "PROPORTION_OF_EVERY_RECORD",
         2: "MERCHCSORT_TOTAL",
