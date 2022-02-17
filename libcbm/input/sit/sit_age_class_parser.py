@@ -99,41 +99,47 @@ def parse(age_class_table):
         pandas.DataFrame: a dataframe describing the age classes.
     """
     table = sit_parser.unpack_table(
-        age_class_table, sit_format.get_age_class_format(),
-        "age classes")
+        age_class_table, sit_format.get_age_class_format(), "age classes"
+    )
 
     result = []
     for i, row in enumerate(table.itertuples()):
         size = row.class_size
         if i == 0:
             if size != 0:
-                raise ValueError(
-                    "First age class row expected to have 0 size")
-            result.append({
-                "name": row.id,
-                "class_size": 0,
-                "start_year": 0,
-                "end_year": 0
-            })
+                raise ValueError("First age class row expected to have 0 size")
+            result.append(
+                {
+                    "name": row.id,
+                    "class_size": 0,
+                    "start_year": 0,
+                    "end_year": 0,
+                }
+            )
         else:
             start_year = result[-1]["end_year"] + 1
             if size == 0:
                 raise ValueError(
                     "All age class rows other than the"
-                    "first one must have size > 0")
-            result.append({
-                "name": row.id,
-                "class_size": row.class_size,
-                "start_year": start_year,
-                "end_year": start_year + row.class_size - 1
-            })
+                    "first one must have size > 0"
+                )
+            result.append(
+                {
+                    "name": row.id,
+                    "class_size": row.class_size,
+                    "start_year": start_year,
+                    "end_year": start_year + row.class_size - 1,
+                }
+            )
 
     age_classes = pd.DataFrame(
-        result, columns=["name", "class_size", "start_year", "end_year"])
+        result, columns=["name", "class_size", "start_year", "end_year"]
+    )
 
     duplicates = age_classes.groupby("name").size()
     duplicates = list(duplicates[duplicates > 1].index)
     if len(duplicates) > 0:
         raise ValueError(
-            f"duplicate names detected in age classes {duplicates}")
+            f"duplicate names detected in age classes {duplicates}"
+        )
     return age_classes

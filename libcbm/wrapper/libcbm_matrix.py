@@ -18,6 +18,7 @@ class LibCBM_Matrix_Base(ctypes.Structure):
         ValueError: matrix must have either 2 dimensions or be a scalar
         ValueError: matrix must be of the correct type
     """
+
     def __init__(self, matrix, matrix_np_type, matrix_c_type):
         if matrix.size == 1:
             self.rows = 1
@@ -28,13 +29,14 @@ class LibCBM_Matrix_Base(ctypes.Structure):
         else:
             raise ValueError(
                 "matrix must have either 2 dimensions or be a single cell "
-                "matrix")
+                "matrix"
+            )
         if not matrix.dtype == matrix_np_type:
             raise ValueError(
                 "matrix must be of type {0}. Got {1}".format(
-                    matrix_np_type,
-                    matrix.dtype
-                ))
+                    matrix_np_type, matrix.dtype
+                )
+            )
         if not matrix.flags["C_CONTIGUOUS"]:
             raise ValueError("specified matrix is not C_CONTIGUOUS")
         self.values = matrix.ctypes.data_as(ctypes.POINTER(matrix_c_type))
@@ -47,20 +49,26 @@ class LibCBM_Matrix(LibCBM_Matrix_Base):
     Args:
         matrix (numpy.ndarray): a 2 dimensional numpy array, or single value
     """
+
     _matrix_c_type = ctypes.c_double
     _matrix_np_type = np.double
 
-    _fields_ = [('rows', ctypes.c_ssize_t),
-                ('cols', ctypes.c_ssize_t),
-                ('values', ctypes.POINTER(_matrix_c_type))]
+    _fields_ = [
+        ("rows", ctypes.c_ssize_t),
+        ("cols", ctypes.c_ssize_t),
+        ("values", ctypes.POINTER(_matrix_c_type)),
+    ]
 
     def __init__(self, matrix):
         #  hang onto a reference of the matrix to prevent the pointers
         #  becoming invalid
         self.matrix = matrix
         LibCBM_Matrix_Base.__init__(
-            self, matrix, LibCBM_Matrix._matrix_np_type,
-            LibCBM_Matrix._matrix_c_type)
+            self,
+            matrix,
+            LibCBM_Matrix._matrix_np_type,
+            LibCBM_Matrix._matrix_c_type,
+        )
 
 
 class LibCBM_Matrix_Int(LibCBM_Matrix_Base):
@@ -70,17 +78,23 @@ class LibCBM_Matrix_Int(LibCBM_Matrix_Base):
     Args:
         matrix (numpy.ndarray): a 2 dimensional numpy array, or single value
     """
+
     _matrix_c_type = ctypes.c_int
     _matrix_np_type = np.int32
 
-    _fields_ = [('rows', ctypes.c_ssize_t),
-                ('cols', ctypes.c_ssize_t),
-                ('values', ctypes.POINTER(_matrix_c_type))]
+    _fields_ = [
+        ("rows", ctypes.c_ssize_t),
+        ("cols", ctypes.c_ssize_t),
+        ("values", ctypes.POINTER(_matrix_c_type)),
+    ]
 
     def __init__(self, matrix):
         #  hang onto a reference of the matrix to prevent the pointers
         #  becoming invalid
         self.matrix = matrix
         LibCBM_Matrix_Base.__init__(
-            self, matrix, LibCBM_Matrix_Int._matrix_np_type,
-            LibCBM_Matrix_Int._matrix_c_type)
+            self,
+            matrix,
+            LibCBM_Matrix_Int._matrix_np_type,
+            LibCBM_Matrix_Int._matrix_c_type,
+        )

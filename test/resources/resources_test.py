@@ -6,7 +6,6 @@ from libcbm import resources
 
 
 class ResourcesTest(unittest.TestCase):
-
     def test_get_local_dir(self):
         self.assertTrue(os.path.exists(resources.get_local_dir()))
 
@@ -33,35 +32,38 @@ class ResourcesTest(unittest.TestCase):
 
     def test_parse_key_value_file(self):
         mock_os_release_file = [
-           'NAME=Fedora',
-           'VERSION="17 (Beefy Miracle)"',
-           'ID=fedora',
-           'VERSION_ID=17',
-           'PRETTY_NAME="Fedora 17 (Beefy Miracle)"',
-           'ANSI_COLOR="0;34"',
-           'CPE_NAME="cpe:/o:fedoraproject:fedora:17"',
-           'HOME_URL="https://fedoraproject.org/"',
-           'BUG_REPORT_URL="https://bugzilla.redhat.com/"'
+            "NAME=Fedora",
+            'VERSION="17 (Beefy Miracle)"',
+            "ID=fedora",
+            "VERSION_ID=17",
+            'PRETTY_NAME="Fedora 17 (Beefy Miracle)"',
+            'ANSI_COLOR="0;34"',
+            'CPE_NAME="cpe:/o:fedoraproject:fedora:17"',
+            'HOME_URL="https://fedoraproject.org/"',
+            'BUG_REPORT_URL="https://bugzilla.redhat.com/"',
         ]
 
-        temp_file = NamedTemporaryFile('w', delete=False)
+        temp_file = NamedTemporaryFile("w", delete=False)
         temp_file.write(os.linesep.join(mock_os_release_file))
         temp_file.close()
 
         try:
             result = resources.parse_key_value_file(temp_file.name)
 
-            self.assertTrue(result == {
-                "NAME": "Fedora",
-                "VERSION": "17 (Beefy Miracle)",
-                "ID": "fedora",
-                "VERSION_ID": "17",
-                "PRETTY_NAME": "Fedora 17 (Beefy Miracle)",
-                "ANSI_COLOR": "0;34",
-                "CPE_NAME": "cpe:/o:fedoraproject:fedora:17",
-                "HOME_URL": "https://fedoraproject.org/",
-                "BUG_REPORT_URL": "https://bugzilla.redhat.com/"
-            })
+            self.assertTrue(
+                result
+                == {
+                    "NAME": "Fedora",
+                    "VERSION": "17 (Beefy Miracle)",
+                    "ID": "fedora",
+                    "VERSION_ID": "17",
+                    "PRETTY_NAME": "Fedora 17 (Beefy Miracle)",
+                    "ANSI_COLOR": "0;34",
+                    "CPE_NAME": "cpe:/o:fedoraproject:fedora:17",
+                    "HOME_URL": "https://fedoraproject.org/",
+                    "BUG_REPORT_URL": "https://bugzilla.redhat.com/",
+                }
+            )
         finally:
             os.unlink(temp_file.name)
 
@@ -89,14 +91,8 @@ class ResourcesTest(unittest.TestCase):
     def test_linux_versions(self, platform, get_linux_os_release):
 
         supported_os_releases = [
-            {
-                "NAME": "UBUNTU",
-                "VERSION_ID": "18.04"
-            },
-            {
-                "NAME": "Ubuntu",
-                "VERSION_ID": "20.04"
-            }
+            {"NAME": "UBUNTU", "VERSION_ID": "18.04"},
+            {"NAME": "Ubuntu", "VERSION_ID": "20.04"},
         ]
         for mock_os_release in supported_os_releases:
             platform.system.side_effect = lambda: "Linux"
@@ -106,13 +102,11 @@ class ResourcesTest(unittest.TestCase):
     @patch("libcbm.resources.get_linux_os_release")
     @patch("libcbm.resources.platform")
     @patch("libcbm.resources.warnings")
-    def test_unsupported_linux_versions(self, warnings, platform,
-                                        get_linux_os_release):
+    def test_unsupported_linux_versions(
+        self, warnings, platform, get_linux_os_release
+    ):
 
-        unsupported_os_release = {
-            "NAME": "UNKNOWN",
-            "VERSION_ID": "40.00"
-        }
+        unsupported_os_release = {"NAME": "UNKNOWN", "VERSION_ID": "40.00"}
         platform.system.side_effect = lambda: "Linux"
         get_linux_os_release.side_effect = lambda: unsupported_os_release
         self.assertTrue(os.path.exists(resources.get_libcbm_bin_path()))

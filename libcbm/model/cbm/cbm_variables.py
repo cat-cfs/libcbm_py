@@ -25,8 +25,8 @@ def initialize_pools(n_stands, pool_codes):
         pandas.DataFrame: A dataframe for storing CBM pools
     """
     pools = pd.DataFrame(
-        data=np.zeros((n_stands, len(pool_codes))),
-        columns=pool_codes)
+        data=np.zeros((n_stands, len(pool_codes))), columns=pool_codes
+    )
 
     # By convention the libcbm CBM implementation uses an input pool at
     # index 0 whose value is always 1.0.
@@ -53,12 +53,17 @@ def initialize_flux(n_stands, flux_indicator_codes):
     """
     return pd.DataFrame(
         data=np.zeros((n_stands, len(flux_indicator_codes))),
-        columns=flux_indicator_codes)
+        columns=flux_indicator_codes,
+    )
 
 
-def initialize_spinup_parameters(n_stands, return_interval=None,
-                                 min_rotations=None, max_rotations=None,
-                                 mean_annual_temp=None):
+def initialize_spinup_parameters(
+    n_stands,
+    return_interval=None,
+    min_rotations=None,
+    max_rotations=None,
+    mean_annual_temp=None,
+):
     """Create spinup parameters as a collection of variable vectors
 
     The variables here are all of length N stands and are row-aligned with
@@ -96,13 +101,17 @@ def initialize_spinup_parameters(n_stands, return_interval=None,
 
     parameters = SimpleNamespace()
     parameters.return_interval = data_helpers.promote_scalar(
-        return_interval, n_stands, dtype=np.int32)
+        return_interval, n_stands, dtype=np.int32
+    )
     parameters.min_rotations = data_helpers.promote_scalar(
-        min_rotations, n_stands, dtype=np.int32)
+        min_rotations, n_stands, dtype=np.int32
+    )
     parameters.max_rotations = data_helpers.promote_scalar(
-        max_rotations, n_stands, dtype=np.int32)
+        max_rotations, n_stands, dtype=np.int32
+    )
     parameters.mean_annual_temp = data_helpers.promote_scalar(
-        mean_annual_temp, n_stands, dtype=np.float64)
+        mean_annual_temp, n_stands, dtype=np.float64
+    )
     return parameters
 
 
@@ -139,8 +148,9 @@ def initialize_spinup_state_variables(n_stands):
     return variables
 
 
-def initialize_cbm_parameters(n_stands, disturbance_type=0,
-                              reset_age=-1, mean_annual_temp=None):
+def initialize_cbm_parameters(
+    n_stands, disturbance_type=0, reset_age=-1, mean_annual_temp=None
+):
     """Create CBM parameters as a collection of variable vectors
 
     The variables here are all of length N stands and are row-aligned with
@@ -181,13 +191,16 @@ def initialize_cbm_parameters(n_stands, disturbance_type=0,
 
     data = {
         "disturbance_type": data_helpers.promote_scalar(
-            disturbance_type, n_stands, dtype=np.int32),
+            disturbance_type, n_stands, dtype=np.int32
+        ),
         "reset_age": data_helpers.promote_scalar(
-            reset_age, n_stands, dtype=np.int32)
+            reset_age, n_stands, dtype=np.int32
+        ),
     }
     if mean_annual_temp:
         data["mean_annual_temp"] = data_helpers.promote_scalar(
-            mean_annual_temp, n_stands, dtype=np.float64)
+            mean_annual_temp, n_stands, dtype=np.float64
+        )
     parameters = pd.DataFrame(data=data)
     return parameters
 
@@ -205,17 +218,20 @@ def initialize_cbm_state_variables(n_stands):
     Returns:
         pandas.DataFrame: a dataframe containing the CBM state variables.
     """
-    state_variables = pd.DataFrame({
-        "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
-        "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
-        "time_since_land_class_change": np.ones(n_stands, dtype=np.int32) * -1,
-        "growth_enabled": np.zeros(n_stands, dtype=np.int32),
-        "enabled": np.ones(n_stands, dtype=np.int32),
-        "land_class": np.zeros(n_stands, dtype=np.int32),
-        "age": np.zeros(n_stands, dtype=np.int32),
-        "growth_multiplier": np.ones(n_stands, dtype=np.float64),
-        "regeneration_delay": np.zeros(n_stands, dtype=np.int32)
-    })
+    state_variables = pd.DataFrame(
+        {
+            "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
+            "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
+            "time_since_land_class_change": np.ones(n_stands, dtype=np.int32)
+            * -1,
+            "growth_enabled": np.zeros(n_stands, dtype=np.int32),
+            "enabled": np.ones(n_stands, dtype=np.int32),
+            "land_class": np.zeros(n_stands, dtype=np.int32),
+            "age": np.zeros(n_stands, dtype=np.int32),
+            "growth_multiplier": np.ones(n_stands, dtype=np.float64),
+            "regeneration_delay": np.zeros(n_stands, dtype=np.int32),
+        }
+    )
 
     return state_variables
 
@@ -256,25 +272,31 @@ def initialize_inventory(inventory):
     Returns:
         pandas.DataFrame: dataframe containing the inventory data.
     """
-    return pd.DataFrame({
-        "age": inventory.age.to_numpy(dtype=np.int32),
-        "area": inventory.area.to_numpy(dtype=np.float64),
-        "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
-        "afforestation_pre_type_id":
-            inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32),
-        "land_class": inventory.land_class.to_numpy(dtype=np.int32),
-        "historical_disturbance_type":
-            inventory.historical_disturbance_type.to_numpy(dtype=np.int32),
-        "last_pass_disturbance_type":
-            inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32),
-        "delay": inventory.delay.to_numpy(dtype=np.int32)})
+    return pd.DataFrame(
+        {
+            "age": inventory.age.to_numpy(dtype=np.int32),
+            "area": inventory.area.to_numpy(dtype=np.float64),
+            "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
+            "afforestation_pre_type_id": inventory.afforestation_pre_type_id.to_numpy(
+                dtype=np.int32
+            ),
+            "land_class": inventory.land_class.to_numpy(dtype=np.int32),
+            "historical_disturbance_type": inventory.historical_disturbance_type.to_numpy(
+                dtype=np.int32
+            ),
+            "last_pass_disturbance_type": inventory.last_pass_disturbance_type.to_numpy(
+                dtype=np.int32
+            ),
+            "delay": inventory.delay.to_numpy(dtype=np.int32),
+        }
+    )
 
 
 def initialize_classifiers(classifiers):
     """converts classifiers table to required type"""
     return pd.DataFrame(
-        data=classifiers.to_numpy(dtype=np.int32),
-        columns=list(classifiers))
+        data=classifiers.to_numpy(dtype=np.int32), columns=list(classifiers)
+    )
 
 
 def _make_contiguous(df):
@@ -290,8 +312,8 @@ def _make_contiguous(df):
 
     if not df.values.flags["C_CONTIGUOUS"]:
         return pd.DataFrame(
-            columns=df.columns.tolist(),
-            data=np.ascontiguousarray(df))
+            columns=df.columns.tolist(), data=np.ascontiguousarray(df)
+        )
     return df
 
 
@@ -305,14 +327,16 @@ def prepare(cbm_vars):
 
     for field in ["pools", "flux", "classifiers"]:
         if field in cbm_vars.__dict__:
-            cbm_vars.__dict__[field] = \
-                _make_contiguous(cbm_vars.__dict__[field])
+            cbm_vars.__dict__[field] = _make_contiguous(
+                cbm_vars.__dict__[field]
+            )
 
     return cbm_vars
 
 
-def initialize_spinup_variables(cbm_vars, spinup_params=None,
-                                include_flux=False):
+def initialize_spinup_variables(
+    cbm_vars, spinup_params=None, include_flux=False
+):
 
     n_stands = cbm_vars.inventory.shape[0]
     if spinup_params is None:
@@ -328,8 +352,9 @@ def initialize_spinup_variables(cbm_vars, spinup_params=None,
     return spinup_vars
 
 
-def initialize_simulation_variables(classifiers, inventory, pool_codes,
-                                    flux_indicator_codes):
+def initialize_simulation_variables(
+    classifiers, inventory, pool_codes, flux_indicator_codes
+):
     """Packages and initializes the cbm variables (cbm_vars) as an object with
     named properties
 

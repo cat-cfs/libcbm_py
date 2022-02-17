@@ -23,7 +23,8 @@ def get_op_names():
         "dom_decay",
         "slow_decay",
         "slow_mixing",
-        "disturbance"]
+        "disturbance",
+    ]
 
 
 def get_op_processes():
@@ -41,7 +42,8 @@ def get_op_processes():
         "dom_decay": 2,
         "slow_decay": 2,
         "slow_mixing": 2,
-        "disturbance": 3}
+        "disturbance": 3,
+    }
 
 
 class CBM:
@@ -56,8 +58,14 @@ class CBM:
         flux_indicator_codes (list): list of flux indicator code names (non
             localizable)
     """
-    def __init__(self, compute_functions, model_functions, pool_codes,
-                 flux_indicator_codes):
+
+    def __init__(
+        self,
+        compute_functions,
+        model_functions,
+        pool_codes,
+        flux_indicator_codes,
+    ):
 
         self.compute_functions = compute_functions
         self.model_functions = model_functions
@@ -117,15 +125,21 @@ class CBM:
 
         ops = {
             x: self.compute_functions.allocate_op(n_stands)
-            for x in self.op_names}
+            for x in self.op_names
+        }
 
         self.model_functions.get_turnover_ops(
-            ops["snag_turnover"], ops["biomass_turnover"], cbm_vars.inventory)
+            ops["snag_turnover"], ops["biomass_turnover"], cbm_vars.inventory
+        )
 
         self.model_functions.get_decay_ops(
-            ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            cbm_vars.inventory, cbm_vars.parameters,
-            historical_mean_annual_temp=True)
+            ops["dom_decay"],
+            ops["slow_decay"],
+            ops["slow_mixing"],
+            cbm_vars.inventory,
+            cbm_vars.parameters,
+            historical_mean_annual_temp=True,
+        )
 
         op_schedule = [
             "growth",
@@ -136,30 +150,39 @@ class CBM:
             "dom_decay",
             "slow_decay",
             "slow_mixing",
-            "disturbance"
-            ]
+            "disturbance",
+        ]
 
         iteration = 0
 
         while True:
 
             n_finished = self.model_functions.advance_spinup_state(
-                cbm_vars.inventory, cbm_vars.state, cbm_vars.parameters)
+                cbm_vars.inventory, cbm_vars.state, cbm_vars.parameters
+            )
 
             if n_finished == n_stands:
                 break
 
             self.model_functions.get_merch_volume_growth_ops(
-                ops["growth"], ops["overmature_decline"], cbm_vars.classifiers,
-                cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
+                ops["growth"],
+                ops["overmature_decline"],
+                cbm_vars.classifiers,
+                cbm_vars.inventory,
+                cbm_vars.pools,
+                cbm_vars.state,
+            )
 
             self.model_functions.get_disturbance_ops(
-                ops["disturbance"], cbm_vars.inventory, cbm_vars.state)
+                ops["disturbance"], cbm_vars.inventory, cbm_vars.state
+            )
 
             if cbm_vars.flux is None:
                 self.compute_functions.compute_pools(
-                    [ops[x] for x in op_schedule], cbm_vars.pools,
-                    cbm_vars.state.enabled)
+                    [ops[x] for x in op_schedule],
+                    cbm_vars.pools,
+                    cbm_vars.state.enabled,
+                )
             else:
                 # zero the memory (simply using flux *= 0.0 caused a copy
                 # with a change in contiguity in some cases!)
@@ -170,26 +193,38 @@ class CBM:
                 self.compute_functions.compute_flux(
                     [ops[x] for x in op_schedule],
                     [self.op_processes[x] for x in op_schedule],
-                    cbm_vars.pools, cbm_vars.flux, cbm_vars.state.enabled
+                    cbm_vars.pools,
+                    cbm_vars.flux,
+                    cbm_vars.state.enabled,
                 )
             if reporting_func:
-                reporting_func(iteration, SimpleNamespace(
-                    pools=cbm_vars.pools,
-                    flux=cbm_vars.flux,
-                    state=pd.DataFrame(data={
-                        k: v for k, v
-                        in vars(cbm_vars.state).items()
-                        if v is not None}),
-                    classifiers=cbm_vars.classifiers,
-                    parameters=pd.DataFrame(data={
-                        k: v for k, v
-                        in vars(cbm_vars.parameters).items()
-                        if v is not None}),
-                    inventory=cbm_vars.inventory
-                ))
+                reporting_func(
+                    iteration,
+                    SimpleNamespace(
+                        pools=cbm_vars.pools,
+                        flux=cbm_vars.flux,
+                        state=pd.DataFrame(
+                            data={
+                                k: v
+                                for k, v in vars(cbm_vars.state).items()
+                                if v is not None
+                            }
+                        ),
+                        classifiers=cbm_vars.classifiers,
+                        parameters=pd.DataFrame(
+                            data={
+                                k: v
+                                for k, v in vars(cbm_vars.parameters).items()
+                                if v is not None
+                            }
+                        ),
+                        inventory=cbm_vars.inventory,
+                    ),
+                )
 
             self.model_functions.end_spinup_step(
-                cbm_vars.pools, cbm_vars.state)
+                cbm_vars.pools, cbm_vars.state
+            )
             iteration = iteration + 1
 
         for op_name in self.op_names:
@@ -231,7 +266,8 @@ class CBM:
         cbm_vars.state.land_class = cbm_vars.inventory.land_class
 
         self.model_functions.initialize_land_state(
-            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
+            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state
+        )
         return cbm_vars
 
     def step_start(self, cbm_vars):
@@ -257,12 +293,16 @@ class CBM:
             cbm_vars.flux[:] = 0
 
         self.model_functions.advance_stand_state(
-            cbm_vars.classifiers, cbm_vars.inventory, cbm_vars.state,
-            cbm_vars.parameters)
+            cbm_vars.classifiers,
+            cbm_vars.inventory,
+            cbm_vars.state,
+            cbm_vars.parameters,
+        )
         return cbm_vars
 
-    def compute_disturbance_production(self, cbm_vars, disturbance_type=None,
-                                       eligible=None, density=True):
+    def compute_disturbance_production(
+        self, cbm_vars, disturbance_type=None, eligible=None, density=True
+    ):
         """Computes a series of disturbance production values based on the
         current pools in cbm_vars, and disturbance matrices associated with
         cbm_vars.parameters.disturbance type by default, and the specified
@@ -312,43 +352,50 @@ class CBM:
             if np.ndim(disturbance_type) == 0:
                 # set the disturbance type for all records
                 disturbance_type = np.full(
-                    n_stands, disturbance_type, dtype=np.int32)
+                    n_stands, disturbance_type, dtype=np.int32
+                )
             # else: just use the provided array data
         else:
             disturbance_type = cbm_vars.parameters.disturbance_type
 
         self.model_functions.get_disturbance_ops(
-            disturbance_op, cbm_vars.inventory,
-            SimpleNamespace(disturbance_type=disturbance_type))
+            disturbance_op,
+            cbm_vars.inventory,
+            SimpleNamespace(disturbance_type=disturbance_type),
+        )
 
         flux = cbm_variables.initialize_flux(
-            n_stands, self.flux_indicator_codes)
+            n_stands, self.flux_indicator_codes
+        )
 
         pools_copy = np.array(
-            cbm_vars.pools, copy=True, order="C", dtype=np.float64)
+            cbm_vars.pools, copy=True, order="C", dtype=np.float64
+        )
 
         # compute the flux based on the specified disturbance type
         self.compute_functions.compute_flux(
-            [disturbance_op], [disturbance_op_process_id],
-            pools_copy, flux,
+            [disturbance_op],
+            [disturbance_op_process_id],
+            pools_copy,
+            flux,
             enabled=(
-                eligible.astype(np.int32)
-                if eligible is not None else None))
+                eligible.astype(np.int32) if eligible is not None else None
+            ),
+        )
 
         self.compute_functions.free_op(disturbance_op)
         # computes C harvested by applying the disturbance matrix to the
         # specified carbon pools
-        df = pd.DataFrame(data={
-            "DisturbanceSoftProduction":
-                flux["DisturbanceSoftProduction"],
-            "DisturbanceHardProduction":
-                flux["DisturbanceHardProduction"],
-            "DisturbanceDOMProduction":
-                flux["DisturbanceDOMProduction"],
-            "Total":
-                flux["DisturbanceSoftProduction"] +
-                flux["DisturbanceHardProduction"] +
-                flux["DisturbanceDOMProduction"]})
+        df = pd.DataFrame(
+            data={
+                "DisturbanceSoftProduction": flux["DisturbanceSoftProduction"],
+                "DisturbanceHardProduction": flux["DisturbanceHardProduction"],
+                "DisturbanceDOMProduction": flux["DisturbanceDOMProduction"],
+                "Total": flux["DisturbanceSoftProduction"]
+                + flux["DisturbanceHardProduction"]
+                + flux["DisturbanceDOMProduction"],
+            }
+        )
         if density:
             return df
         else:
@@ -380,11 +427,16 @@ class CBM:
         n_stands = cbm_vars.pools.shape[0]
         disturbance_op = self.compute_functions.allocate_op(n_stands)
         self.model_functions.get_disturbance_ops(
-            disturbance_op, cbm_vars.inventory, cbm_vars.parameters)
+            disturbance_op, cbm_vars.inventory, cbm_vars.parameters
+        )
 
         self.compute_functions.compute_flux(
-            [disturbance_op], [self.op_processes["disturbance"]],
-            cbm_vars.pools, cbm_vars.flux, enabled=None)
+            [disturbance_op],
+            [self.op_processes["disturbance"]],
+            cbm_vars.pools,
+            cbm_vars.flux,
+            enabled=None,
+        )
         # enabled = none on line above is due to a possible bug in CBM3. This
         # is very much an edge case:
         # stands can be disturbed despite having all other C-dynamics processes
@@ -411,19 +463,29 @@ class CBM:
 
         ops = {
             x: self.compute_functions.allocate_op(n_stands)
-            for x in self.op_names}
+            for x in self.op_names
+        }
 
         self.model_functions.get_merch_volume_growth_ops(
-            ops["growth"], ops["overmature_decline"], cbm_vars.classifiers,
-            cbm_vars.inventory, cbm_vars.pools, cbm_vars.state)
+            ops["growth"],
+            ops["overmature_decline"],
+            cbm_vars.classifiers,
+            cbm_vars.inventory,
+            cbm_vars.pools,
+            cbm_vars.state,
+        )
 
         self.model_functions.get_turnover_ops(
-            ops["snag_turnover"], ops["biomass_turnover"],
-            cbm_vars.inventory)
+            ops["snag_turnover"], ops["biomass_turnover"], cbm_vars.inventory
+        )
 
         self.model_functions.get_decay_ops(
-            ops["dom_decay"], ops["slow_decay"], ops["slow_mixing"],
-            cbm_vars.inventory, cbm_vars.parameters)
+            ops["dom_decay"],
+            ops["slow_decay"],
+            ops["slow_mixing"],
+            cbm_vars.inventory,
+            cbm_vars.parameters,
+        )
 
         annual_process_op_schedule = [
             "growth",
@@ -433,13 +495,16 @@ class CBM:
             "growth",
             "dom_decay",
             "slow_decay",
-            "slow_mixing"
-            ]
+            "slow_mixing",
+        ]
 
         self.compute_functions.compute_flux(
             [ops[x] for x in annual_process_op_schedule],
             [self.op_processes[x] for x in annual_process_op_schedule],
-            cbm_vars.pools, cbm_vars.flux, cbm_vars.state.enabled)
+            cbm_vars.pools,
+            cbm_vars.flux,
+            cbm_vars.state.enabled,
+        )
         for op_name in self.op_names:
             self.compute_functions.free_op(ops[op_name])
         return cbm_vars

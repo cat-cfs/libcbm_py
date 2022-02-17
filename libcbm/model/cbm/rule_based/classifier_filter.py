@@ -7,10 +7,11 @@ from types import SimpleNamespace
 from libcbm.input.sit import sit_classifier_parser
 
 
-class ClassifierFilter():
+class ClassifierFilter:
     """ClassifierFilter creates a filter for deeming stands
     eligible or ineligible for disturbance or transition.
     """
+
     def __init__(self, classifiers_config, classifier_aggregates):
         self.wildcard_keyword = sit_classifier_parser.get_wildcard_keyword()
         self.classifiers_config = classifiers_config
@@ -21,7 +22,8 @@ class ClassifierFilter():
         }
         self.classifier_value_lookup = {
             x["name"]: self._get_classifier_value_index(x["id"])
-            for x in self.classifiers_config["classifiers"]}
+            for x in self.classifiers_config["classifiers"]
+        }
         self.aggregate_value_lookup = {
             x["name"]: self._get_classifier_aggregate_index(x["id"])
             for x in self.classifiers_config["classifiers"]
@@ -35,14 +37,16 @@ class ClassifierFilter():
             classifier_name = self.classifier_lookup[classifier_id]
             result[aggregate["name"]] = [
                 self.classifier_value_lookup[classifier_name][y]
-                for y in aggregate["classifier_values"]]
+                for y in aggregate["classifier_values"]
+            ]
         return result
 
     def _get_classifier_value_index(self, classifier_id):
         return {
-            x["value"]: x["id"] for x
-            in self.classifiers_config["classifier_values"]
-            if x["classifier_id"] == classifier_id}
+            x["value"]: x["id"]
+            for x in self.classifiers_config["classifier_values"]
+            if x["classifier_id"] == classifier_id
+        }
 
     def create_classifiers_filter(self, classifier_set, classifier_values):
         """Creates a filter based on the specified classifier set to select a
@@ -75,13 +79,15 @@ class ClassifierFilter():
 
         """
 
-        if self.n_classifiers != classifier_values.shape[1] or \
-           self.n_classifiers != len(classifier_set):
+        if self.n_classifiers != classifier_values.shape[
+            1
+        ] or self.n_classifiers != len(classifier_set):
             raise ValueError(
                 "mismatch in number of classifiers: "
                 f"classifier_set {len(classifier_set)}, "
                 f"classifiers_config: {self.n_classifiers}, "
-                f"classifier value columns {classifier_values.shape[1]}")
+                f"classifier value columns {classifier_values.shape[1]}"
+            )
 
         expression_tokens = []
 
@@ -89,17 +95,21 @@ class ClassifierFilter():
             return f"c_{num}"
 
         for i_classifier, classifier in enumerate(
-                self.classifiers_config["classifiers"]):
+            self.classifiers_config["classifiers"]
+        ):
             classifier_set_value = classifier_set[i_classifier]
             classifier_name = classifier["name"]
             classifier_id_by_name = self.classifier_value_lookup[
-                classifier_name]
+                classifier_name
+            ]
             aggregates = self.aggregate_value_lookup[classifier_name]
             if classifier_set_value in classifier_id_by_name:
                 expression_tokens.append(
                     "({0} == {1})".format(
                         get_classifier_variable(i_classifier),
-                        str(classifier_id_by_name[classifier_set_value])))
+                        str(classifier_id_by_name[classifier_set_value]),
+                    )
+                )
             elif classifier_set_value in aggregates:
                 aggregate_expression_tokens = []
                 aggregate_values = aggregates[classifier_set_value]
@@ -107,12 +117,16 @@ class ClassifierFilter():
                     aggregate_expression_tokens.append(
                         "({0} == {1})".format(
                             get_classifier_variable(i_classifier),
-                            str(classifier_value_id)))
+                            str(classifier_value_id),
+                        )
+                    )
                 expression_tokens.append(
-                    "({})".format(" | ".join(aggregate_expression_tokens)))
+                    "({})".format(" | ".join(aggregate_expression_tokens))
+                )
             elif classifier_set_value != self.wildcard_keyword:
                 raise ValueError(
-                    f"undefined classifier set value {classifier_set_value}")
+                    f"undefined classifier set value {classifier_set_value}"
+                )
 
         result = SimpleNamespace()
         result.expression = ""
@@ -124,5 +138,6 @@ class ClassifierFilter():
         result.expression = " & ".join(expression_tokens)
         result.local_dict = {
             get_classifier_variable(i): classifier_values[x["name"]].to_numpy()
-            for i, x in enumerate(self.classifiers_config["classifiers"])}
+            for i, x in enumerate(self.classifiers_config["classifiers"])
+        }
         return result

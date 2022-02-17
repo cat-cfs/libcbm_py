@@ -34,12 +34,19 @@ def get_classifier_format(n_columns):
 
     if n_columns < 3:
         raise ValueError(
-            "specified number of columns invalid.  Expected at least 3.")
+            "specified number of columns invalid.  Expected at least 3."
+        )
     elif n_columns >= 4:
-        classifier_format.extend([{
-            "name": "aggregate_value_{}".format(i-2), "index": i,
-            "type": str
-        } for i in range(3, n_columns)])
+        classifier_format.extend(
+            [
+                {
+                    "name": "aggregate_value_{}".format(i - 2),
+                    "index": i,
+                    "type": str,
+                }
+                for i in range(3, n_columns)
+            ]
+        )
     return classifier_format
 
 
@@ -67,12 +74,14 @@ def get_disturbance_type_format(n_columns):
     ]
     if n_columns < 2:
         raise ValueError(
-            "specified number of columns invalid.  Expected at least 2.")
+            "specified number of columns invalid.  Expected at least 2."
+        )
     elif n_columns == 3:
         disturbance_type_format.append({"name": "description", "index": 2})
     elif n_columns > 3:
         raise ValueError(
-            "specified number of columns invalid.  Expected at most 3.")
+            "specified number of columns invalid.  Expected at most 3."
+        )
     return disturbance_type_format
 
 
@@ -108,22 +117,25 @@ def get_yield_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
     classifier_values = [
         {"name": c, "index": i, "type": str}
-        for i, c in enumerate(classifier_names)]
-    leading_species_col = [{
-        "name": "leading_species", "index": n_classifiers}]
+        for i, c in enumerate(classifier_names)
+    ]
+    leading_species_col = [{"name": "leading_species", "index": n_classifiers}]
     vol_index = n_classifiers + 1
     if n_columns < vol_index + 1:
         # in SIT vol_index is the 0th age volume, so at least 2 volumes need
         # to be here for anything to happen in CBM
         raise ValueError(
-            "at least {0} columns are required".format(vol_index + 1))
+            "at least {0} columns are required".format(vol_index + 1)
+        )
     volumes = [
         {
-            "name": "v{}".format(i-vol_index),
+            "name": "v{}".format(i - vol_index),
             "index": i,
             "min_value": 0,
-            "type": float}
-        for i in range(vol_index, n_columns)]
+            "type": float,
+        }
+        for i in range(vol_index, n_columns)
+    ]
 
     return classifier_values + leading_species_col + volumes
 
@@ -145,7 +157,7 @@ def get_age_eligibility_columns(base_index):
         {"name": "min_softwood_age", "index": base_index + 1},
         {"name": "max_softwood_age", "index": base_index + 2},
         {"name": "min_hardwood_age", "index": base_index + 3},
-        {"name": "max_hardwood_age", "index": base_index + 4}
+        {"name": "max_hardwood_age", "index": base_index + 4},
     ]
 
 
@@ -170,33 +182,51 @@ def get_transition_rules_format(classifier_names, n_columns):
     n_classifiers = len(classifier_names)
     classifier_set_src = [
         {"name": c, "index": i, "type": str}
-        for i, c in enumerate(classifier_names)]
+        for i, c in enumerate(classifier_names)
+    ]
     age_eligibility = get_age_eligibility_columns(n_classifiers)
-    disturbance_type = [{
-        "name": "disturbance_type",
-        "index": n_classifiers+5,
-        "type": str}]
+    disturbance_type = [
+        {"name": "disturbance_type", "index": n_classifiers + 5, "type": str}
+    ]
 
     regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
     post_transition = [
-        {"name": "regeneration_delay", "index": regeneration_delay_index,
-         "min_value": 0, "type": int},
-        {"name": "reset_age", "index": regeneration_delay_index + 1,
-         "min_value": -1, "type": int},
-        {"name": "percent", "index": regeneration_delay_index + 2,
-         "min_value": 0, "max_value": 100, "type": float},
+        {
+            "name": "regeneration_delay",
+            "index": regeneration_delay_index,
+            "min_value": 0,
+            "type": int,
+        },
+        {
+            "name": "reset_age",
+            "index": regeneration_delay_index + 1,
+            "min_value": -1,
+            "type": int,
+        },
+        {
+            "name": "percent",
+            "index": regeneration_delay_index + 2,
+            "min_value": 0,
+            "max_value": 100,
+            "type": float,
+        },
     ]
     spatial_reference = [
-        {"name": "spatial_reference", "index": regeneration_delay_index + 3,
-         "type": int}
+        {
+            "name": "spatial_reference",
+            "index": regeneration_delay_index + 3,
+            "type": int,
+        }
     ]
     tr_cset_postfix = get_tr_classifier_set_postfix()
     classifier_set_dest = [
         {
             "name": f"{c}{tr_cset_postfix}",
             "index": i + n_classifiers + len(age_eligibility) + 1,
-            "type": str}
-        for i, c in enumerate(classifier_names)]
+            "type": str,
+        }
+        for i, c in enumerate(classifier_names)
+    ]
     result = []
     result.extend(classifier_set_src)  # source classifier set
     result.extend(age_eligibility)
@@ -206,7 +236,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     if n_columns < len(result):
         raise ValueError(
             "specified number of columns invalid.  Expected at least "
-            "{}".format(len(result)))
+            "{}".format(len(result))
+        )
     if n_columns == len(result):
         return result
     elif n_columns == len(result) + 1:
@@ -215,7 +246,8 @@ def get_transition_rules_format(classifier_names, n_columns):
     else:
         raise ValueError(
             "incorrect number of columns in transition rules. "
-            "Expected at most {}".format(len(result) + 1))
+            "Expected at most {}".format(len(result) + 1)
+        )
 
 
 def get_inventory_format(classifier_names, n_columns):
@@ -238,41 +270,67 @@ def get_inventory_format(classifier_names, n_columns):
 
     classifier_set = [
         {"name": c, "index": i, "type": str}
-        for i, c in enumerate(classifier_names)]
+        for i, c in enumerate(classifier_names)
+    ]
 
     inventory = [
         {"name": "using_age_class", "index": n_classifiers, "type": str},
         # age can be a string (for "using_age_class" support, so no min value
         # is specified)
         {"name": "age", "index": n_classifiers + 1},
-        {"name": "area", "index": n_classifiers + 2, "min_value": 0,
-         "type": float},
-        {"name": "delay", "index": n_classifiers + 3, "min_value": 0,
-         "type": int},
-        {"name": "land_class", "index": n_classifiers + 4}]
+        {
+            "name": "area",
+            "index": n_classifiers + 2,
+            "min_value": 0,
+            "type": float,
+        },
+        {
+            "name": "delay",
+            "index": n_classifiers + 3,
+            "min_value": 0,
+            "type": int,
+        },
+        {"name": "land_class", "index": n_classifiers + 4},
+    ]
 
     if n_columns > n_classifiers + 6:
-        inventory.extend([
-            {"name": "historical_disturbance_type",
-             "index": n_classifiers + 5, "type": str},
-            {"name": "last_pass_disturbance_type",
-             "index": n_classifiers + 6, "type": str}])
+        inventory.extend(
+            [
+                {
+                    "name": "historical_disturbance_type",
+                    "index": n_classifiers + 5,
+                    "type": str,
+                },
+                {
+                    "name": "last_pass_disturbance_type",
+                    "index": n_classifiers + 6,
+                    "type": str,
+                },
+            ]
+        )
     if n_columns == n_classifiers + 6:
         raise ValueError(
             "Invalid number of columns: both historical and last pass "
-            "disturbance types must be defined.")
+            "disturbance types must be defined."
+        )
     if n_columns < n_classifiers + 5:
         raise ValueError(
             f"With {n_classifiers} classifiers, SIT inventory should have "
-            f"at least {n_classifiers + 5} columns.")
+            f"at least {n_classifiers + 5} columns."
+        )
     if n_columns == n_classifiers + 8:
-        inventory.append({
-            "name": "spatial_reference", "index": n_classifiers + 7,
-            "type": int})
+        inventory.append(
+            {
+                "name": "spatial_reference",
+                "index": n_classifiers + 7,
+                "type": int,
+            }
+        )
     if n_columns > n_classifiers + 8:
         raise ValueError(
             f"With {n_classifiers} classifiers, SIT inventory should have "
-            f"at most {n_classifiers + 8} columns.")
+            f"at most {n_classifiers + 8} columns."
+        )
 
     return classifier_set + inventory
 
@@ -305,19 +363,18 @@ def get_disturbance_eligibility_columns(index):
         {"name": "MaxSWStemSnagC", "index": index + 12, "type": float},
         {"name": "MinHWStemSnagC", "index": index + 13, "type": float},
         {"name": "MaxHWStemSnagC", "index": index + 14, "type": float},
-        {"name": "MinTotalStemSnagMerchC", "index": index + 15,
-         "type": float},
-        {"name": "MaxTotalStemSnagMerchC", "index": index + 16,
-         "type": float},
+        {"name": "MinTotalStemSnagMerchC", "index": index + 15, "type": float},
+        {"name": "MaxTotalStemSnagMerchC", "index": index + 16, "type": float},
         {"name": "MinSWMerchStemSnagC", "index": index + 17, "type": float},
         {"name": "MaxSWMerchStemSnagC", "index": index + 18, "type": float},
         {"name": "MinHWMerchStemSnagC", "index": index + 19, "type": float},
-        {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": float}
+        {"name": "MaxHWMerchStemSnagC", "index": index + 20, "type": float},
     ]
 
 
-def get_disturbance_event_format(classifier_names, n_columns,
-                                 include_eligibility_columns=True):
+def get_disturbance_event_format(
+    classifier_names, n_columns, include_eligibility_columns=True
+):
     """Gets a list of column description dictionaries describing the SIT
     disturbance event format
 
@@ -342,40 +399,50 @@ def get_disturbance_event_format(classifier_names, n_columns,
 
     classifier_set = [
         {"name": c, "index": i, "type": str}
-        for i, c in enumerate(classifier_names)]
+        for i, c in enumerate(classifier_names)
+    ]
 
     eligibiliy_cols = []
     if include_eligibility_columns:
         disturbance_age_eligibility = get_age_eligibility_columns(
-            n_classifiers)
+            n_classifiers
+        )
         n_age_fields = len(disturbance_age_eligibility)
         disturbance_eligibility = get_disturbance_eligibility_columns(
-            n_classifiers + n_age_fields)
+            n_classifiers + n_age_fields
+        )
         n_eligibility_fields = len(disturbance_eligibility)
         index = n_classifiers + n_age_fields + n_eligibility_fields
         eligibiliy_cols.extend(disturbance_age_eligibility)
         eligibiliy_cols.extend(disturbance_eligibility)
     else:
-        eligibiliy_cols.append({
-            "name": "disturbance_eligibility_id", "index": n_classifiers,
-            "type": int,
-        })
+        eligibiliy_cols.append(
+            {
+                "name": "disturbance_eligibility_id",
+                "index": n_classifiers,
+                "type": int,
+            }
+        )
         index = n_classifiers + 1
     event_target = [
-        {"name": "efficiency", "index": index, "type": float,
-         "min_value": 0, "max_value": 1},
+        {
+            "name": "efficiency",
+            "index": index,
+            "type": float,
+            "min_value": 0,
+            "max_value": 1,
+        },
         {"name": "sort_type", "index": index + 1},
         {"name": "target_type", "index": index + 2},
-        {"name": "target", "index": index + 3, "type": float,
-         "min_value": 0},
+        {"name": "target", "index": index + 3, "type": float, "min_value": 0},
         {"name": "disturbance_type", "index": index + 4, "type": str},
-        {"name": "time_step", "index": index + 5, "type": int,
-         "min_value": 1},
+        {"name": "time_step", "index": index + 5, "type": int, "min_value": 1},
     ]
     if n_columns < index + 6:
         raise ValueError(
             "specified number of columns invalid.  Expected at least "
-            "{}".format(index + 6))
+            "{}".format(index + 6)
+        )
     if n_columns == index + 7:
         event_target.append(
             {"name": "spatial_reference", "index": index + 6, "type": int}
@@ -383,7 +450,8 @@ def get_disturbance_event_format(classifier_names, n_columns,
     if n_columns > index + 7:
         raise ValueError(
             "specified number of columns invalid.  Expected at most "
-            "{}".format(index + 7))
+            "{}".format(index + 7)
+        )
     return classifier_set + eligibiliy_cols + event_target
 
 
@@ -391,5 +459,5 @@ def get_disturbance_eligibility_format():
     return [
         {"name": "disturbance_eligibility_id", "index": 0, "type": int},
         {"name": "pool_filter_expression", "index": 1, "type": str},
-        {"name": "state_filter_expression", "index": 2, "type": str}
+        {"name": "state_filter_expression", "index": 2, "type": str},
     ]

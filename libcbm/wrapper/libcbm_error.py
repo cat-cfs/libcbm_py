@@ -10,8 +10,10 @@ class LibCBM_Error(ctypes.Structure):
     Stores string error message when they occur in library functions.
     """
 
-    _fields_ = [("Error", ctypes.c_int),
-                ("Message", ctypes.ARRAY(ctypes.c_byte, 1000))]
+    _fields_ = [
+        ("Error", ctypes.c_int),
+        ("Message", ctypes.ARRAY(ctypes.c_byte, 1000)),
+    ]
 
     def __init__(self):
         setattr(self, "Error", 0)

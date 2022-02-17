@@ -25,5 +25,5 @@ def get_query(query_filename):
         str: the contents of the file
     """
     query_path = os.path.join(get_script_dir(), query_filename)
-    with open(query_path, 'r') as query_file:
+    with open(query_path, "r") as query_file:
         return query_file.read()

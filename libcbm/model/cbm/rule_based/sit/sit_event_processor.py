@@ -10,7 +10,7 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
-class SITEventProcessor():
+class SITEventProcessor:
     """SITEventProcessor processes standard import tool format events.
 
     Args:
@@ -22,6 +22,7 @@ class SITEventProcessor():
             whose single argument is an integer that specifies the number of
             random numbers in the returned sequence.
     """
+
     def __init__(self, cbm, classifier_filter_builder, random_generator):
 
         self.cbm = cbm
@@ -29,29 +30,32 @@ class SITEventProcessor():
         self.random_generator = random_generator
 
     def _get_compute_disturbance_production(self, cbm, eligible):
-
         def compute_disturbance_production(cbm_vars, disturbance_type_id):
 
             return cbm.compute_disturbance_production(
                 cbm_vars=cbm_vars,
                 disturbance_type=disturbance_type_id,
-                eligible=eligible)
+                eligible=eligible,
+            )
 
         return compute_disturbance_production
 
-    def _process_event(self, eligible, sit_event, cbm_vars,
-                       sit_eligibility=None):
+    def _process_event(
+        self, eligible, sit_event, cbm_vars, sit_eligibility=None
+    ):
 
-        compute_disturbance_production = \
+        compute_disturbance_production = (
             self._get_compute_disturbance_production(
-                cbm=self.cbm,
-                eligible=eligible)
+                cbm=self.cbm, eligible=eligible
+            )
+        )
 
         target_factory = sit_stand_target.create_sit_event_target_factory(
             rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
-            random_generator=self.random_generator)
+            random_generator=self.random_generator,
+        )
 
         if sit_eligibility is None:
             event_filters = self._create_sit_event_filters(sit_event, cbm_vars)
@@ -59,49 +63,58 @@ class SITEventProcessor():
             event_filters = [
                 rule_filter.create_filter(
                     expression=sit_eligibility.pool_filter_expression,
-                    data=cbm_vars.pools),
+                    data=cbm_vars.pools,
+                ),
                 rule_filter.create_filter(
                     expression=sit_eligibility.state_filter_expression,
-                    data=cbm_vars.state),
+                    data=cbm_vars.state,
+                ),
                 self.classifier_filter_builder.create_classifiers_filter(
                     sit_stand_filter.get_classifier_set(
-                        sit_event, cbm_vars.classifiers.columns.tolist()),
-                    cbm_vars.classifiers)]
+                        sit_event, cbm_vars.classifiers.columns.tolist()
+                    ),
+                    cbm_vars.classifiers,
+                ),
+            ]
 
         process_event_result = event_processor.process_event(
             event_filters=event_filters,
             undisturbed=eligible,
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
-            cbm_vars=cbm_vars)
+            cbm_vars=cbm_vars,
+        )
 
         return process_event_result
 
     def _create_sit_event_filters(self, sit_event, cbm_vars):
-        pool_filter_expression = \
-            sit_stand_filter.create_pool_filter_expression(
-                sit_event)
-        state_filter_expression = \
-            sit_stand_filter.create_state_filter_expression(
-                sit_event, False)
-        dist_type_filter_expression = \
-            sit_stand_filter.create_last_disturbance_type_filter(
-                sit_event)
+        pool_filter_expression = (
+            sit_stand_filter.create_pool_filter_expression(sit_event)
+        )
+        state_filter_expression = (
+            sit_stand_filter.create_state_filter_expression(sit_event, False)
+        )
+        dist_type_filter_expression = (
+            sit_stand_filter.create_last_disturbance_type_filter(sit_event)
+        )
 
         return [
             rule_filter.create_filter(
-                expression=pool_filter_expression,
-                data=cbm_vars.pools),
+                expression=pool_filter_expression, data=cbm_vars.pools
+            ),
             rule_filter.create_filter(
-                expression=state_filter_expression,
-                data=cbm_vars.state),
+                expression=state_filter_expression, data=cbm_vars.state
+            ),
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
-                    sit_event, cbm_vars.classifiers.columns.tolist()),
-                cbm_vars.classifiers),
+                    sit_event, cbm_vars.classifiers.columns.tolist()
+                ),
+                cbm_vars.classifiers,
+            ),
             rule_filter.create_filter(
-                expression=dist_type_filter_expression,
-                data=cbm_vars.state)]
+                expression=dist_type_filter_expression, data=cbm_vars.state
+            ),
+        ]
 
     def _event_iterator(self, sit_events):
 
@@ -109,14 +122,15 @@ class SITEventProcessor():
         # (ascending) In libcbm, sort order needs to be explicitly defined in
         # cbm_defaults (or other place)
         sorted_events = sit_events.sort_values(
-            by="disturbance_type_id",
-            kind="mergesort")
+            by="disturbance_type_id", kind="mergesort"
+        )
         # mergesort is a stable sort, and the default "quicksort" is not
         for event_index, sorted_event in sorted_events.iterrows():
             yield event_index, dict(sorted_event)
 
-    def process_events(self, time_step, sit_events, cbm_vars,
-                       sit_eligibilities=None):
+    def process_events(
+        self, time_step, sit_events, cbm_vars, sit_eligibilities=None
+    ):
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
         timestep.
@@ -143,8 +157,7 @@ class SITEventProcessor():
 
         """
 
-        time_step_events = sit_events[
-            sit_events.time_step == time_step].copy()
+        time_step_events = sit_events[sit_events.time_step == time_step].copy()
 
         stats_rows = []
         eligibilty_expressions = None
@@ -158,9 +171,11 @@ class SITEventProcessor():
             expression = None
             if eligibilty_expressions:
                 expression = eligibilty_expressions[
-                    int(sit_event["disturbance_eligibility_id"])]
+                    int(sit_event["disturbance_eligibility_id"])
+                ]
             process_event_result = self._process_event(
-                eligible, sit_event, cbm_vars, expression)
+                eligible, sit_event, cbm_vars, expression
+            )
             stats = process_event_result.rule_target_result.statistics
             stats["sit_event_index"] = event_index
             stats_rows.append(stats)

@@ -9,13 +9,14 @@ from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm import data_helpers
 
 
-class LibCBMWrapper():
+class LibCBMWrapper:
     """Exposes low level ctypes wrapper to regular python, for the core
     libcbm functions.
 
         Args (:py:class:`libcbm.wrapper.libcbm_handle.LibCBMHandle`): handle
             for the underlying dll/so compiled library
     """
+
     def __init__(self, handle):
         self.handle = handle
 
@@ -127,11 +128,18 @@ class LibCBMWrapper():
         """
         matrices_p = libcbm_wrapper_functions.get_matrix_list_pointer(matrices)
         self.handle.call(
-            "LibCBM_SetOp", op_id, matrices_p, len(matrices), matrix_index,
-            matrix_index.shape[0], init)
+            "LibCBM_SetOp",
+            op_id,
+            matrices_p,
+            len(matrices),
+            matrix_index,
+            matrix_index.shape[0],
+            init,
+        )
 
-    def set_op_repeating(self, op_id, coordinates, values, matrix_index,
-                         init=0):
+    def set_op_repeating(
+        self, op_id, coordinates, values, matrix_index, init=0
+    ):
         """Assigns the specified values associated with repeating coordinates
         to an allocated block of matrices.
 
@@ -150,8 +158,14 @@ class LibCBMWrapper():
                 error.
         """
         self.handle.call(
-            "LibCBM_SetOp2", op_id, LibCBM_Matrix_Int(coordinates),
-            LibCBM_Matrix(values), matrix_index, matrix_index.shape[0], init)
+            "LibCBM_SetOp2",
+            op_id,
+            LibCBM_Matrix_Int(coordinates),
+            LibCBM_Matrix(values),
+            matrix_index,
+            matrix_index.shape[0],
+            init,
+        )
 
     def compute_pools(self, ops, pools, enabled=None):
         """Computes flows between pool values for all stands.
@@ -187,11 +201,16 @@ class LibCBMWrapper():
         nd_pools = data_helpers.get_ndarray(pools)
         pool_mat = LibCBM_Matrix(nd_pools)
         ops_p = ctypes.cast(
-            (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
+            (ctypes.c_size_t * n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t)
+        )
 
         self.handle.call(
-            "LibCBM_ComputePools", ops_p, n_ops, pool_mat,
-            data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int))
+            "LibCBM_ComputePools",
+            ops_p,
+            n_ops,
+            pool_mat,
+            data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int),
+        )
 
     def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
         """Computes and tracks flows between pool values for all stands.
@@ -238,13 +257,22 @@ class LibCBMWrapper():
         flux_mat = LibCBM_Matrix(nd_flux)
 
         ops_p = ctypes.cast(
-            (ctypes.c_size_t*n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t))
+            (ctypes.c_size_t * n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t)
+        )
         op_process_p = ctypes.cast(
-            (ctypes.c_size_t*n_ops)(*op_processes),
-            ctypes.POINTER(ctypes.c_size_t))
+            (ctypes.c_size_t * n_ops)(*op_processes),
+            ctypes.POINTER(ctypes.c_size_t),
+        )
         enabled = data_helpers.get_nullable_ndarray(
-            enabled, dtype=ctypes.c_int)
+            enabled, dtype=ctypes.c_int
+        )
 
         self.handle.call(
-            "LibCBM_ComputeFlux", ops_p, op_process_p, n_ops, pools_mat,
-            flux_mat, enabled)
+            "LibCBM_ComputeFlux",
+            ops_p,
+            op_process_p,
+            n_ops,
+            pools_mat,
+            flux_mat,
+            enabled,
+        )

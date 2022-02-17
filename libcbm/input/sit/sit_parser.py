@@ -43,11 +43,12 @@ def unpack_column(table, column_description, table_name):
     col_name = column_description["name"]
     if "type" in column_description:
         try:
-            data.loc[data.notna()] = data.astype(column_description['type'])
+            data.loc[data.notna()] = data.astype(column_description["type"])
         except ValueError:
             raise ValueError(
                 f"{table_name} table, column: '{col_name}' contains values "
-                f"that cannot be converted to: '{column_description['type']}'")
+                f"that cannot be converted to: '{column_description['type']}'"
+            )
     if "min_value" in column_description:
         if "type" not in column_description:
             raise ValueError("type required with min_value")
@@ -55,7 +56,8 @@ def unpack_column(table, column_description, table_name):
         if len(data[data < min_value]):
             raise ValueError(
                 f"{table_name} table, column: '{col_name}' contains values "
-                f"less than the minimum allowed value: {min_value}")
+                f"less than the minimum allowed value: {min_value}"
+            )
     if "max_value" in column_description:
         if "type" not in column_description:
             raise ValueError("type required with max_value")
@@ -63,7 +65,8 @@ def unpack_column(table, column_description, table_name):
         if len(data[data > max_value]):
             raise ValueError(
                 f"{table_name} table, column: '{col_name}' contains values "
-                f"greater than the maximum allowed value: {max_value}")
+                f"greater than the maximum allowed value: {max_value}"
+            )
     return data
 
 
@@ -113,7 +116,8 @@ def unpack_table(table, column_descriptions, table_name):
         raise ValueError(f"duplicate column names detected: {duplicates}")
     data = {
         x["name"]: unpack_column(table, x, table_name)
-        for x in column_descriptions}
+        for x in column_descriptions
+    }
     return pd.DataFrame(columns=cols, data=data)
 
 
@@ -147,6 +151,7 @@ def get_parse_bool_func(table_name, colname):
     Returns:
         func: a boolean-like value to bool parse function
     """
+
     def parse_bool(x):
         """Converts the specified value to a boolean according to SIT
         specification, or raises an error.
@@ -177,7 +182,8 @@ def get_parse_bool_func(table_name, colname):
             else:
                 raise ValueError(
                     f"{table_name}: cannot parse value: '{x}' in "
-                    f"column: '{colname}' as a boolean")
+                    f"column: '{colname}' as a boolean"
+                )
 
     return parse_bool
 
@@ -214,56 +220,76 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
             for age class criteria.
     """
 
-    rows.using_age_class = \
-        rows.using_age_class.map(parse_bool_func)
-    non_using_age_class_rows = rows.loc[
-        ~rows.using_age_class]
-    using_age_class_rows = rows.loc[
-        rows.using_age_class].copy()
+    rows.using_age_class = rows.using_age_class.map(parse_bool_func)
+    non_using_age_class_rows = rows.loc[~rows.using_age_class]
+    using_age_class_rows = rows.loc[rows.using_age_class].copy()
 
     for age_class_criteria_col in [
-          "min_softwood_age", "min_hardwood_age",
-          "max_softwood_age", "max_hardwood_age"]:
+        "min_softwood_age",
+        "min_hardwood_age",
+        "max_softwood_age",
+        "max_hardwood_age",
+    ]:
         valid_age_classes = np.concatenate(
-            [age_classes.name.unique(), np.array(["-1"])])
-        age_class_ids = using_age_class_rows[
-            age_class_criteria_col].astype(str).unique()
-        undefined_age_classes = np.setdiff1d(
-            age_class_ids,
-            valid_age_classes)
+            [age_classes.name.unique(), np.array(["-1"])]
+        )
+        age_class_ids = (
+            using_age_class_rows[age_class_criteria_col].astype(str).unique()
+        )
+        undefined_age_classes = np.setdiff1d(age_class_ids, valid_age_classes)
         if len(undefined_age_classes) > 0:
             raise ValueError(
                 f"In column {age_class_criteria_col}, the following age class "
                 f"identifiers: {undefined_age_classes} are not defined in SIT "
-                "age classes.")
+                "age classes."
+            )
 
     age_class_start_year_map = {
-        x.name: int(x.start_year) for x in age_classes.itertuples()}
+        x.name: int(x.start_year) for x in age_classes.itertuples()
+    }
     age_class_end_year_map = {
-        x.name: int(x.end_year) for x in age_classes.itertuples()}
-    using_age_class_rows.min_softwood_age = using_age_class_rows \
-        .min_softwood_age.astype(str).map(age_class_start_year_map)
-    using_age_class_rows.min_hardwood_age = using_age_class_rows \
-        .min_hardwood_age.astype(str).map(age_class_start_year_map)
-    using_age_class_rows.max_softwood_age = using_age_class_rows \
-        .max_softwood_age.astype(str).map(age_class_end_year_map)
-    using_age_class_rows.max_hardwood_age = using_age_class_rows \
-        .max_hardwood_age.astype(str).map(age_class_end_year_map)
+        x.name: int(x.end_year) for x in age_classes.itertuples()
+    }
+    using_age_class_rows.min_softwood_age = (
+        using_age_class_rows.min_softwood_age.astype(str).map(
+            age_class_start_year_map
+        )
+    )
+    using_age_class_rows.min_hardwood_age = (
+        using_age_class_rows.min_hardwood_age.astype(str).map(
+            age_class_start_year_map
+        )
+    )
+    using_age_class_rows.max_softwood_age = (
+        using_age_class_rows.max_softwood_age.astype(str).map(
+            age_class_end_year_map
+        )
+    )
+    using_age_class_rows.max_hardwood_age = (
+        using_age_class_rows.max_hardwood_age.astype(str).map(
+            age_class_end_year_map
+        )
+    )
 
     # if the above mapping fails, it results in Nan values in the failed rows,
     # this replaces those with -1
-    using_age_class_rows.min_softwood_age = \
+    using_age_class_rows.min_softwood_age = (
         using_age_class_rows.min_softwood_age.fillna(-1)
-    using_age_class_rows.min_hardwood_age = \
+    )
+    using_age_class_rows.min_hardwood_age = (
         using_age_class_rows.min_hardwood_age.fillna(-1)
-    using_age_class_rows.max_softwood_age = \
+    )
+    using_age_class_rows.max_softwood_age = (
         using_age_class_rows.max_softwood_age.fillna(-1)
-    using_age_class_rows.max_hardwood_age = \
+    )
+    using_age_class_rows.max_hardwood_age = (
         using_age_class_rows.max_hardwood_age.fillna(-1)
+    )
 
     # return the final substituted rows
-    result = non_using_age_class_rows.append(using_age_class_rows) \
-        .reset_index(drop=True)
+    result = non_using_age_class_rows.append(using_age_class_rows).reset_index(
+        drop=True
+    )
 
     # convert to float then to int in case the columns are stored as
     # strings in float format (which fails on astype(int))
@@ -274,19 +300,21 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
 
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
-    has_null_min_age_criteria = (
-        (result.min_softwood_age < 0) | (result.min_hardwood_age < 0)
+    has_null_min_age_criteria = (result.min_softwood_age < 0) | (
+        result.min_hardwood_age < 0
     )
-    has_null_max_age_criteria = (
-        (result.max_softwood_age < 0) | (result.max_hardwood_age < 0)
+    has_null_max_age_criteria = (result.max_softwood_age < 0) | (
+        result.max_hardwood_age < 0
     )
     differing_age_criteria = result.loc[
         (
             (result.min_softwood_age != result.min_hardwood_age)
-            & ~has_null_min_age_criteria) |
-        (
+            & ~has_null_min_age_criteria
+        )
+        | (
             (result.max_softwood_age != result.max_hardwood_age)
-            & ~has_null_max_age_criteria)
+            & ~has_null_max_age_criteria
+        )
     ]
     if len(differing_age_criteria) > 0:
         raise ValueError(
@@ -294,6 +322,7 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
             "min_hardwood_age, and values of column max_softwood_age must "
             "equal values of column max_hardwood_age since CBM defines only "
             "a stand age and does not track hardwood and softwood age "
-            "seperately.")
+            "seperately."
+        )
 
     return result

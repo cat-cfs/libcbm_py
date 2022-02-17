@@ -10,7 +10,8 @@ from libcbm import resources
 def load_dll(config):
 
     dll = LibCBMWrapper(
-        LibCBMHandle(resources.get_libcbm_bin_path(), json.dumps(config)))
+        LibCBMHandle(resources.get_libcbm_bin_path(), json.dumps(config))
+    )
     return dll
 
 
@@ -23,9 +24,7 @@ def create_pools(names):
     Returns:
         list: a configuration for the libcbm dll/so
     """
-    return [
-        {'name': x, 'id': i+1, 'index': i}
-        for i, x in enumerate(names)]
+    return [{"name": x, "id": i + 1, "index": i} for i, x in enumerate(names)]
 
 
 def create_pools_by_name(pools):
@@ -82,10 +81,7 @@ def compute_pools(pools, ops, op_indices):
     """
     pools = pools.copy()
     pooldef = create_pools([str(x) for x in range(pools.shape[1])])
-    dll = load_dll({
-        "pools": pooldef,
-        "flux_indicators": []
-    })
+    dll = load_dll({"pools": pooldef, "flux_indicators": []})
     op_ids = []
     for i, op in enumerate(ops):
         op_id = dll.allocate_op(pools.shape[0])
@@ -94,8 +90,10 @@ def compute_pools(pools, ops, op_indices):
         # In LibCBM matrices are stored in a sparse format, so 0 values can be
         # omitted from the parameter.
         dll.set_op(
-            op_id, [to_coordinate(x) for x in op],
-            np.ascontiguousarray(op_indices[:, i]))
+            op_id,
+            [to_coordinate(x) for x in op],
+            np.ascontiguousarray(op_indices[:, i]),
+        )
 
     dll.compute_pools(op_ids, pools)
 
@@ -103,27 +101,27 @@ def compute_pools(pools, ops, op_indices):
 
 
 def create_flux_indicator(pools_by_name, process_id, sources, sinks):
-    """helper method to create configuration for dll
-    """
+    """helper method to create configuration for dll"""
 
     return {
-        'id': None,
-        'index': None,
-        'process_id': process_id,
-        'source_pools': [pools_by_name[x]["id"] for x in sources],
-        'sink_pools': [pools_by_name[x]["id"] for x in sinks]}
+        "id": None,
+        "index": None,
+        "process_id": process_id,
+        "source_pools": [pools_by_name[x]["id"] for x in sources],
+        "sink_pools": [pools_by_name[x]["id"] for x in sinks],
+    }
 
 
 def append_flux_indicator(collection, flux_indicator):
-    """helper method to create configuration for dll
-    """
+    """helper method to create configuration for dll"""
     flux_indicator["index"] = len(collection)
-    flux_indicator["id"] = len(collection)+1
+    flux_indicator["id"] = len(collection) + 1
     collection.append(flux_indicator)
 
 
-def compute_flux(pools, poolnames, mats, op_indices, op_processes,
-                 flux_indicators):
+def compute_flux(
+    pools, poolnames, mats, op_indices, op_processes, flux_indicators
+):
     """Runs the libcbm compute_flux method for testing purposes
 
     Args:
@@ -144,26 +142,27 @@ def compute_flux(pools, poolnames, mats, op_indices, op_processes,
     """
     pools = pools.copy()
     flux = np.zeros((pools.shape[0], len(flux_indicators)))
-    pooldef = create_pools(
-        [poolnames[x] for x in range(pools.shape[1])])
+    pooldef = create_pools([poolnames[x] for x in range(pools.shape[1])])
     pools_by_name = create_pools_by_name(pooldef)
     fi_collection = []
     for flux_indicator in flux_indicators:
         flux_indicator_config = create_flux_indicator(
-            pools_by_name, flux_indicator["process_id"],
-            flux_indicator["sources"], flux_indicator["sinks"])
+            pools_by_name,
+            flux_indicator["process_id"],
+            flux_indicator["sources"],
+            flux_indicator["sinks"],
+        )
         append_flux_indicator(fi_collection, flux_indicator_config)
-    dll = load_dll({
-        "pools": pooldef,
-        "flux_indicators": fi_collection
-    })
+    dll = load_dll({"pools": pooldef, "flux_indicators": fi_collection})
     op_ids = []
     for i, matrix in enumerate(mats):
         op_id = dll.allocate_op(pools.shape[0])
         op_ids.append(op_id)
         dll.set_op(
-            op_id, [to_coordinate(x) for x in matrix],
-            np.ascontiguousarray(op_indices[:, i]))
+            op_id,
+            [to_coordinate(x) for x in matrix],
+            np.ascontiguousarray(op_indices[:, i]),
+        )
 
     dll.compute_flux(op_ids, op_processes, pools, flux)
     return pools, flux

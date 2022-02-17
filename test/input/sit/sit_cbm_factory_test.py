@@ -11,21 +11,23 @@ from libcbm import resources
 
 
 class SITCBMFactoryTest(unittest.TestCase):
-
     def test_integration_with_tutorial2(self):
-        """tests full CBM integration with rule based disturbances
-        """
+        """tests full CBM integration with rule based disturbances"""
         config_path = os.path.join(
             resources.get_test_resources_dir(),
-            "cbm3_tutorial2", "sit_config.json")
+            "cbm3_tutorial2",
+            "sit_config.json",
+        )
         sit = sit_cbm_factory.load_sit(config_path)
-        classifiers, inventory = \
-            sit_cbm_factory.initialize_inventory(sit)
+        classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            results, reporting_func = \
-                cbm_simulator.create_in_memory_reporting_func()
-            rule_based_processor = \
+            (
+                results,
+                reporting_func,
+            ) = cbm_simulator.create_in_memory_reporting_func()
+            rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+            )
 
             cbm_simulator.simulate(
                 cbm,
@@ -33,12 +35,15 @@ class SITCBMFactoryTest(unittest.TestCase):
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=rule_based_processor.pre_dynamics_func,
-                reporting_func=reporting_func)
+                reporting_func=reporting_func,
+            )
             self.assertTrue(
-                results.pools[results.pools.timestep == 0].shape[0] ==
-                inventory.shape[0])
+                results.pools[results.pools.timestep == 0].shape[0]
+                == inventory.shape[0]
+            )
             self.assertTrue(
-                len(rule_based_processor.sit_event_stats_by_timestep) > 0)
+                len(rule_based_processor.sit_event_stats_by_timestep) > 0
+            )
 
     def test_integration_with_tutorial2_eligbilities(self):
         """tests full CBM integration with rule based disturbances and
@@ -46,15 +51,19 @@ class SITCBMFactoryTest(unittest.TestCase):
         """
         config_path = os.path.join(
             resources.get_test_resources_dir(),
-            "cbm3_tutorial2_eligibilities", "sit_config.json")
+            "cbm3_tutorial2_eligibilities",
+            "sit_config.json",
+        )
         sit = sit_cbm_factory.load_sit(config_path)
-        classifiers, inventory = \
-            sit_cbm_factory.initialize_inventory(sit)
+        classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            results, reporting_func = \
-                cbm_simulator.create_in_memory_reporting_func()
-            rule_based_processor = \
+            (
+                results,
+                reporting_func,
+            ) = cbm_simulator.create_in_memory_reporting_func()
+            rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+            )
 
             cbm_simulator.simulate(
                 cbm,
@@ -62,12 +71,15 @@ class SITCBMFactoryTest(unittest.TestCase):
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=rule_based_processor.pre_dynamics_func,
-                reporting_func=reporting_func)
+                reporting_func=reporting_func,
+            )
             self.assertTrue(
-                results.pools[results.pools.timestep == 0].shape[0] ==
-                inventory.shape[0])
+                results.pools[results.pools.timestep == 0].shape[0]
+                == inventory.shape[0]
+            )
             self.assertTrue(
-                len(rule_based_processor.sit_event_stats_by_timestep) > 0)
+                len(rule_based_processor.sit_event_stats_by_timestep) > 0
+            )
 
     @patch("libcbm.input.sit.sit_cbm_factory.resources")
     @patch("libcbm.input.sit.sit_cbm_factory.SITCBMDefaults")
@@ -75,16 +87,14 @@ class SITCBMFactoryTest(unittest.TestCase):
     def test_sit_maps(self, SITMapping, SITCBMDefaults, resources):
 
         sit_mapping = Mock()
-        sit_mapping.get_default_disturbance_type_id.side_effect = \
+        sit_mapping.get_default_disturbance_type_id.side_effect = (
             lambda x: x.map({"a": "default_a", "b": "default_b"})
+        )
         SITMapping.side_effect = lambda *args, **kwargs: sit_mapping
 
         classifiers = pd.DataFrame(
-            columns=["id", "name"],
-            data=[
-                [1, "c1"],
-                [2, "c2"],
-                [3, "c3"]])
+            columns=["id", "name"], data=[[1, "c1"], [2, "c2"], [3, "c3"]]
+        )
         classifier_values = pd.DataFrame(
             columns=["classifier_id", "name"],
             data=[
@@ -96,7 +106,9 @@ class SITCBMFactoryTest(unittest.TestCase):
                 [3, "c3v1"],
                 [3, "c3v2"],
                 [3, "c3v3"],
-                [3, "c3v4"]])
+                [3, "c3v4"],
+            ],
+        )
         sit = SimpleNamespace(
             config={"mapping_config": None},
             sit_data=SimpleNamespace(
@@ -104,46 +116,48 @@ class SITCBMFactoryTest(unittest.TestCase):
                 classifier_values=classifier_values,
                 disturbance_types=pd.DataFrame(
                     columns=["sit_disturbance_type_id", "id", "name"],
-                    data=[
-                        [1, "DISTID1", "a"],
-                        [2, "DISTID2", "b"]])
-            )
+                    data=[[1, "DISTID1", "a"], [2, "DISTID2", "b"]],
+                ),
+            ),
         )
 
         sit_cbm_factory.initialize_sit_objects(sit)
         self.assertTrue(len(sit.classifier_names) == len(classifiers.index))
         self.assertTrue(len(sit.classifier_ids) == len(classifiers.index))
         self.assertTrue(
-            len(sit.classifier_value_ids) == len(classifiers.index))
+            len(sit.classifier_value_ids) == len(classifiers.index)
+        )
         self.assertTrue(
-            len(sit.classifier_value_names) == len(classifier_values.index))
+            len(sit.classifier_value_names) == len(classifier_values.index)
+        )
         self.assertTrue(
-            set(classifiers.name) == set(sit.classifier_value_ids.keys()))
+            set(classifiers.name) == set(sit.classifier_value_ids.keys())
+        )
         self.assertTrue(
-            set(classifiers.name) == set(sit.classifier_names.values()))
+            set(classifiers.name) == set(sit.classifier_names.values())
+        )
 
         for _, classifier_row in classifiers.iterrows():
             classifier_name = classifier_row["name"]
             classifier_id = classifier_row["id"]
             expected_classifier_names = classifier_values[
-                classifier_values.classifier_id == classifier_id].name
+                classifier_values.classifier_id == classifier_id
+            ].name
 
             self.assertTrue(
-                set(sit.classifier_value_ids[classifier_name].keys()) ==
-                set(expected_classifier_names))
+                set(sit.classifier_value_ids[classifier_name].keys())
+                == set(expected_classifier_names)
+            )
 
         self.assertTrue(
-            set(classifier_values.name) ==
-            set(sit.classifier_value_names.values()))
+            set(classifier_values.name)
+            == set(sit.classifier_value_names.values())
+        )
 
         self.assertTrue(
             sit.default_disturbance_id_map == {1: "default_a", 2: "default_b"}
         )
 
-        self.assertTrue(
-            sit.disturbance_id_map == {1: "DISTID1", 2: "DISTID2"}
-        )
+        self.assertTrue(sit.disturbance_id_map == {1: "DISTID1", 2: "DISTID2"})
 
-        self.assertTrue(
-            sit.disturbance_name_map == {1: "a", 2: "b"}
-        )
+        self.assertTrue(sit.disturbance_name_map == {1: "a", 2: "b"})

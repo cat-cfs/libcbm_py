@@ -69,7 +69,8 @@ def load_table(config, config_dir):
             return pd.read_excel(path, **load_params)
         else:
             raise NotImplementedError(
-                f"The specified table type {load_type} is not supported.")
+                f"The specified table type {load_type} is not supported."
+            )
     finally:
         os.chdir(cwd)
 
@@ -81,24 +82,46 @@ def read(config, config_dir):
     sit_age_classes = load_table(config["age_classes"], config_dir)
     sit_inventory = load_table(config["inventory"], config_dir)
     sit_yield = load_table(config["yield"], config_dir)
-    sit_events = load_table(config["events"], config_dir) \
-        if "events" in config and config["events"] else None
-    sit_eligibilities = load_table(config["eligibilities"], config_dir) \
-        if "eligibilities" in config and config["eligibilities"] else None
-    sit_transitions = load_table(config["transitions"], config_dir) \
-        if "transitions" in config and config["transitions"] else None
+    sit_events = (
+        load_table(config["events"], config_dir)
+        if "events" in config and config["events"]
+        else None
+    )
+    sit_eligibilities = (
+        load_table(config["eligibilities"], config_dir)
+        if "eligibilities" in config and config["eligibilities"]
+        else None
+    )
+    sit_transitions = (
+        load_table(config["transitions"], config_dir)
+        if "transitions" in config and config["transitions"]
+        else None
+    )
     # Validate data #
     sit_data = parse(
-        sit_classifiers, sit_disturbance_types, sit_age_classes,
-        sit_inventory, sit_yield, sit_events, sit_transitions,
-        sit_eligibilities)
+        sit_classifiers,
+        sit_disturbance_types,
+        sit_age_classes,
+        sit_inventory,
+        sit_yield,
+        sit_events,
+        sit_transitions,
+        sit_eligibilities,
+    )
     # Return #
     return sit_data
 
 
-def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
-          sit_inventory, sit_yield, sit_events=None, sit_transitions=None,
-          sit_eligibilities=None):
+def parse(
+    sit_classifiers,
+    sit_disturbance_types,
+    sit_age_classes,
+    sit_inventory,
+    sit_yield,
+    sit_events=None,
+    sit_transitions=None,
+    sit_eligibilities=None,
+):
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
     containing the validated result.
@@ -145,32 +168,48 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         object: an object containing parsed and validated SIT dataset
     """
     s = SimpleNamespace()
-    classifiers, classifier_values, classifier_aggregates = \
-        sit_classifier_parser.parse(sit_classifiers)
+    (
+        classifiers,
+        classifier_values,
+        classifier_aggregates,
+    ) = sit_classifier_parser.parse(sit_classifiers)
     s.classifiers = classifiers
     s.classifier_values = classifier_values
     s.classifier_aggregates = classifier_aggregates
     s.disturbance_types = sit_disturbance_type_parser.parse(
-        sit_disturbance_types)
+        sit_disturbance_types
+    )
     s.age_classes = sit_age_class_parser.parse(sit_age_classes)
     s.inventory = sit_inventory_parser.parse(
-        sit_inventory, classifiers, classifier_values,
-        s.disturbance_types, s.age_classes)
+        sit_inventory,
+        classifiers,
+        classifier_values,
+        s.disturbance_types,
+        s.age_classes,
+    )
     s.yield_table = sit_yield_parser.parse(
-        sit_yield, s.classifiers, s.classifier_values, s.age_classes)
+        sit_yield, s.classifiers, s.classifier_values, s.age_classes
+    )
 
     if sit_events is not None:
         separate_eligibilities = False
         if sit_eligibilities is not None:
             separate_eligibilities = True
         s.disturbance_events = sit_disturbance_event_parser.parse(
-            sit_events, s.classifiers, s.classifier_values,
-            s.classifier_aggregates, s.disturbance_types,
-            s.age_classes, separate_eligibilities)
+            sit_events,
+            s.classifiers,
+            s.classifier_values,
+            s.classifier_aggregates,
+            s.disturbance_types,
+            s.age_classes,
+            separate_eligibilities,
+        )
         if sit_eligibilities is not None:
-            s.disturbance_eligibilities = \
+            s.disturbance_eligibilities = (
                 sit_disturbance_event_parser.parse_eligibilities(
-                    s.disturbance_events, sit_eligibilities)
+                    s.disturbance_events, sit_eligibilities
+                )
+            )
         else:
             s.disturbance_eligibilities = None
     else:
@@ -178,8 +217,13 @@ def parse(sit_classifiers, sit_disturbance_types, sit_age_classes,
         s.disturbance_eligibilities = None
     if sit_transitions is not None:
         s.transition_rules = sit_transition_rule_parser.parse(
-            sit_transitions, s.classifiers, s.classifier_values,
-            s.classifier_aggregates, s.disturbance_types, s.age_classes)
+            sit_transitions,
+            s.classifiers,
+            s.classifier_values,
+            s.classifier_aggregates,
+            s.disturbance_types,
+            s.age_classes,
+        )
     else:
         s.transition_rules = None
     return s

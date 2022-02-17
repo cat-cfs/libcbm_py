@@ -21,12 +21,12 @@ def state_variable_filter_func(tr_group_key, state_variables):
     Returns:
         object: a filter object
     """
-    state_filter_expression = \
-        sit_stand_filter.create_state_filter_expression(
-            tr_group_key, True)
+    state_filter_expression = sit_stand_filter.create_state_filter_expression(
+        tr_group_key, True
+    )
     return rule_filter.create_filter(
-        expression=state_filter_expression,
-        data={"age": state_variables.age})
+        expression=state_filter_expression, data={"age": state_variables.age}
+    )
 
 
 def sit_transition_rule_iterator(sit_transitions, classifier_names):
@@ -45,8 +45,11 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
     """
     if len(sit_transitions.index) == 0:
         return
-    group_cols = classifier_names + \
-        ["min_age", "max_age", "disturbance_type_id"]
+    group_cols = classifier_names + [
+        "min_age",
+        "max_age",
+        "disturbance_type_id",
+    ]
 
     # group transition rules by their filter criteria
     # (classifier set, age range, disturbance type)
@@ -57,12 +60,12 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
         if group.percent.sum() > 100 + group_error_max:
             raise ValueError(
                 "Greater than 100 percent sum for percent field in "
-                f"grouped transition rules with: {group_key_dict}")
+                f"grouped transition rules with: {group_key_dict}"
+            )
         yield group_key_dict, group
 
 
 class SITTransitionRuleProcessor:
-
     def __init__(self, transition_rule_processor):
         self.transition_rule_processor = transition_rule_processor
 
@@ -87,10 +90,14 @@ class SITTransitionRuleProcessor:
         n_stands = classifiers.shape[0]
         classifier_names = classifiers.columns.tolist()
         transition_iterator = sit_transition_rule_iterator(
-            sit_transitions, classifier_names)
+            sit_transitions, classifier_names
+        )
         transition_mask = np.zeros(n_stands, dtype=bool)
         for tr_group_key, tr_group in transition_iterator:
-            transition_mask, cbm_vars = \
-                self.transition_rule_processor.apply_transition_rule(
-                    tr_group_key, tr_group, transition_mask, cbm_vars)
+            (
+                transition_mask,
+                cbm_vars,
+            ) = self.transition_rule_processor.apply_transition_rule(
+                tr_group_key, tr_group, transition_mask, cbm_vars
+            )
         return cbm_vars

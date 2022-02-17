@@ -21,6 +21,7 @@ class ProcessEventResult:
             :py:class:`libcbm.model.cbm.rule_based.rule_target.RuleTargetResult`
             indicating targeted stands for this event
     """
+
     def __init__(self, cbm_vars, filter_result, rule_target_result):
 
         self.cbm_vars = cbm_vars
@@ -28,8 +29,9 @@ class ProcessEventResult:
         self.rule_target_result = rule_target_result
 
 
-def process_event(event_filters, undisturbed, target_func,
-                  disturbance_type_id, cbm_vars):
+def process_event(
+    event_filters, undisturbed, target_func, disturbance_type_id, cbm_vars
+):
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -61,11 +63,11 @@ def process_event(event_filters, undisturbed, target_func,
     # eligibility
     filter_result = np.logical_and(undisturbed, filter_result)
 
-    rule_target_result = target_func(
-        cbm_vars, filter_result)
+    rule_target_result = target_func(cbm_vars, filter_result)
 
     cbm_vars = apply_rule_based_event(
-        rule_target_result.target, disturbance_type_id, cbm_vars)
+        rule_target_result.target, disturbance_type_id, cbm_vars
+    )
 
     return ProcessEventResult(cbm_vars, filter_result, rule_target_result)
 
@@ -98,45 +100,49 @@ def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
 
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
-    cbm_vars.parameters.disturbance_type.iloc[target_index] \
-        = disturbance_type_id
+    cbm_vars.parameters.disturbance_type.iloc[
+        target_index
+    ] = disturbance_type_id
 
     if len(split_inventory.index) > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
         updated_inv_idx = cbm_vars.inventory.index[split_index]
-        cbm_vars.inventory.loc[updated_inv_idx, "area"] = \
-            cbm_vars.inventory.loc[updated_inv_idx, "area"] * \
-            target_area_proportions[splits].to_numpy()
+        cbm_vars.inventory.loc[updated_inv_idx, "area"] = (
+            cbm_vars.inventory.loc[updated_inv_idx, "area"]
+            * target_area_proportions[splits].to_numpy()
+        )
 
         # set the split inventory as the remaining undisturbed area
-        split_inventory.area = \
-            split_inventory.area * \
-            (1.0 - target_area_proportions[splits].array)
+        split_inventory.area = split_inventory.area * (
+            1.0 - target_area_proportions[splits].array
+        )
 
         # create the updated inventory by appending the split records
         cbm_vars.inventory = cbm_vars.inventory.append(
-            split_inventory).reset_index(drop=True)
+            split_inventory
+        ).reset_index(drop=True)
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
         # adding a copy of the split values.
         cbm_vars.classifiers = cbm_vars.classifiers.append(
             cbm_vars.classifiers.iloc[split_index].copy()
-            ).reset_index(drop=True)
+        ).reset_index(drop=True)
         cbm_vars.state = cbm_vars.state.append(
             cbm_vars.state.iloc[split_index].copy()
-            ).reset_index(drop=True)
+        ).reset_index(drop=True)
         cbm_vars.pools = cbm_vars.pools.append(
             cbm_vars.pools.iloc[split_index].copy()
-            ).reset_index(drop=True)
+        ).reset_index(drop=True)
         cbm_vars.flux = cbm_vars.flux.append(
             cbm_vars.flux.iloc[split_index].copy()
-            ).reset_index(drop=True)
+        ).reset_index(drop=True)
 
         new_params = cbm_vars.parameters.iloc[split_index].copy()
         new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)
         cbm_vars.parameters = cbm_vars.parameters.append(
-            new_params).reset_index(drop=True)
+            new_params
+        ).reset_index(drop=True)
 
     return cbm_vars

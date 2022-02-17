@@ -26,12 +26,18 @@ def _dataframe_to_json(df):
     """
     return {
         "column_map": {x: i for i, x in enumerate(df.columns)},
-        "data": df.values.tolist()}
+        "data": df.values.tolist(),
+    }
 
 
 @contextmanager
-def create(dll_path, dll_config_factory, cbm_parameters_factory,
-           merch_volume_to_biomass_factory, classifiers_factory):
+def create(
+    dll_path,
+    dll_config_factory,
+    cbm_parameters_factory,
+    merch_volume_to_biomass_factory,
+    classifiers_factory,
+):
     """Create and initialize an instance of the CBM model
 
     Args:
@@ -100,7 +106,8 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         classifiers_config = classifiers_factory()
         parameters = {
             k: _dataframe_to_json(v)
-            for k, v in cbm_parameters_factory().items()}
+            for k, v in cbm_parameters_factory().items()
+        }
         cbm_config = {
             "cbm_defaults": parameters,
             "merch_volume_to_biomass": merch_volume_to_biomass_config,
@@ -111,7 +118,10 @@ def create(dll_path, dll_config_factory, cbm_parameters_factory,
         cbm_config_string = json.dumps(cbm_config)
         cbm_wrapper = CBMWrapper(libcbm_handle, cbm_config_string)
         yield CBM(
-            libcbm_wrapper, cbm_wrapper,
+            libcbm_wrapper,
+            cbm_wrapper,
             pool_codes=[p["name"] for p in dll_config["pools"]],
             flux_indicator_codes=[
-                f["name"] for f in dll_config["flux_indicators"]])
+                f["name"] for f in dll_config["flux_indicators"]
+            ],
+        )

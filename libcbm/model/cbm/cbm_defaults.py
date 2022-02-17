@@ -28,8 +28,7 @@ def load_cbm_parameters(sqlite_path):
     result = {}
 
     queries = {
-        k: cbm_defaults_queries.get_query(
-            "{}.sql".format(k))
+        k: cbm_defaults_queries.get_query("{}.sql".format(k))
         for k in [
             "decay_parameters",
             "slow_mixing_rate",
@@ -44,20 +43,22 @@ def load_cbm_parameters(sqlite_path):
             "spatial_units",
             "random_return_interval",
             "spinup_parameter",
-            "afforestation_pre_type"
-            ]}
+            "afforestation_pre_type",
+        ]
+    }
 
     if not os.path.exists(sqlite_path):
         # sqlite3.connect does not raise an error on no path
         raise ValueError(
-            "specified path does not exist '{0}'".format(sqlite_path))
+            "specified path does not exist '{0}'".format(sqlite_path)
+        )
     with sqlite3.connect(sqlite_path) as conn:
 
         for table, query in queries.items():
             if table in result:
                 raise AssertionError(
-                    "duplicate table name detected {}"
-                    .format(table))
+                    "duplicate table name detected {}".format(table)
+                )
             result[table] = pd.read_sql(query, conn)
 
     return result
@@ -121,14 +122,17 @@ def load_cbm_flux_indicators(sqlite_path):
     """
     result = []
     flux_indicator_source_sql = cbm_defaults_queries.get_query(
-        "flux_indicator_source.sql")
+        "flux_indicator_source.sql"
+    )
     flux_indicator_sink_sql = cbm_defaults_queries.get_query(
-        "flux_indicator_sink.sql")
+        "flux_indicator_sink.sql"
+    )
     with sqlite3.connect(sqlite_path) as conn:
         cursor = conn.cursor()
         index = 0
         flux_indicator_sql = cbm_defaults_queries.get_query(
-            "flux_indicator.sql")
+            "flux_indicator.sql"
+        )
         flux_indicator_rows = list(cursor.execute(flux_indicator_sql))
         for row in flux_indicator_rows:
             flux_indicator = {
@@ -137,13 +141,15 @@ def load_cbm_flux_indicators(sqlite_path):
                 "index": index,
                 "process_id": row[2],
                 "source_pools": [],
-                "sink_pools": []
+                "sink_pools": [],
             }
             for source_pool_row in cursor.execute(
-                    flux_indicator_source_sql, (row[0],)):
+                flux_indicator_source_sql, (row[0],)
+            ):
                 flux_indicator["source_pools"].append(int(source_pool_row[0]))
             for sink_pool_row in cursor.execute(
-                    flux_indicator_sink_sql, (row[0],)):
+                flux_indicator_sink_sql, (row[0],)
+            ):
                 flux_indicator["sink_pools"].append(int(sink_pool_row[0]))
             result.append(flux_indicator)
             index += 1
@@ -163,8 +169,10 @@ def get_cbm_parameters_factory(db_path):
 
         Compatible with: :py:func:`libcbm.model.cbm.cbm_factory.create`
     """
+
     def factory():
         return load_cbm_parameters(db_path)
+
     return factory
 
 
@@ -180,9 +188,11 @@ def get_libcbm_configuration_factory(db_path):
 
         Compatible with: :py:func:`libcbm.model.cbm.cbm_factory.create`
     """
+
     def factory():
         return {
             "pools": load_cbm_pools(db_path),
-            "flux_indicators": load_cbm_flux_indicators(db_path)
+            "flux_indicators": load_cbm_flux_indicators(db_path),
         }
+
     return factory

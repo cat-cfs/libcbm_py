@@ -81,13 +81,15 @@ class CBMWrapper(LibCBM_ctypes):
                     }
                 }
     """
+
     def __init__(self, handle, config):
         self.handle = handle
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle.call("LibCBM_Initialize_CBM", p_config)
 
-    def advance_stand_state(self, classifiers, inventory, state_variables,
-                            parameters):
+    def advance_stand_state(
+        self, classifiers, inventory, state_variables, parameters
+    ):
         """Advances CBM stand variables through a timestep based on the
         current simulation state.
 
@@ -114,14 +116,25 @@ class CBMWrapper(LibCBM_ctypes):
 
         n = i.age.shape[0]
         classifiersMat = LibCBM_Matrix_Int(
-            data_helpers.get_ndarray(classifiers))
+            data_helpers.get_ndarray(classifiers)
+        )
 
         self.handle.call(
-            "LibCBM_AdvanceStandState", n, classifiersMat,
-            i.spatial_unit, p.disturbance_type, p.reset_age,
-            v.last_disturbance_type, v.time_since_last_disturbance,
-            v.time_since_land_class_change, v.growth_enabled, v.enabled,
-            v.land_class, v.regeneration_delay, v.age)
+            "LibCBM_AdvanceStandState",
+            n,
+            classifiersMat,
+            i.spatial_unit,
+            p.disturbance_type,
+            p.reset_age,
+            v.last_disturbance_type,
+            v.time_since_last_disturbance,
+            v.time_since_land_class_change,
+            v.growth_enabled,
+            v.enabled,
+            v.land_class,
+            v.regeneration_delay,
+            v.age,
+        )
 
     def end_step(self, state_variables):
         """Applies end-of-timestep changes to the CBM state
@@ -137,9 +150,15 @@ class CBMWrapper(LibCBM_ctypes):
         v = data_helpers.unpack_ndarrays(state_variables)
         n = v.age.shape[0]
         self.handle.call(
-            "LibCBM_EndStep", n, v.enabled, v.growth_enabled, v.age,
-            v.regeneration_delay, v.time_since_last_disturbance,
-            v.time_since_land_class_change)
+            "LibCBM_EndStep",
+            n,
+            v.enabled,
+            v.growth_enabled,
+            v.age,
+            v.regeneration_delay,
+            v.time_since_last_disturbance,
+            v.time_since_land_class_change,
+        )
 
     def initialize_land_state(self, inventory, pools, state_variables):
         """Initializes CBM state to values appropriate for after running
@@ -168,11 +187,22 @@ class CBMWrapper(LibCBM_ctypes):
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
 
         self.handle.call(
-            "LibCBM_InitializeLandState", n, i.last_pass_disturbance_type,
-            i.delay, i.age, i.spatial_unit, i.afforestation_pre_type_id,
-            poolMat, v.last_disturbance_type, v.time_since_last_disturbance,
-            v.time_since_land_class_change, v.growth_enabled, v.enabled,
-            v.land_class, v.age)
+            "LibCBM_InitializeLandState",
+            n,
+            i.last_pass_disturbance_type,
+            i.delay,
+            i.age,
+            i.spatial_unit,
+            i.afforestation_pre_type_id,
+            poolMat,
+            v.last_disturbance_type,
+            v.time_since_last_disturbance,
+            v.time_since_land_class_change,
+            v.growth_enabled,
+            v.enabled,
+            v.land_class,
+            v.age,
+        )
 
     def advance_spinup_state(self, inventory, variables, parameters):
         """Advances spinup state variables through one spinup step.
@@ -204,24 +234,45 @@ class CBMWrapper(LibCBM_ctypes):
         # set by the user, ignore the spatial unit, which is used to set
         # default value for these 3 variables.
         return_interval = data_helpers.get_nullable_ndarray(
-            p.return_interval, dtype=ctypes.c_int)
+            p.return_interval, dtype=ctypes.c_int
+        )
         min_rotations = data_helpers.get_nullable_ndarray(
-            p.min_rotations, dtype=ctypes.c_int)
+            p.min_rotations, dtype=ctypes.c_int
+        )
         max_rotations = data_helpers.get_nullable_ndarray(
-            p.max_rotations, dtype=ctypes.c_int)
+            p.max_rotations, dtype=ctypes.c_int
+        )
         spatial_unit = None
-        if return_interval is None or min_rotations is None \
-           or max_rotations is None:
+        if (
+            return_interval is None
+            or min_rotations is None
+            or max_rotations is None
+        ):
             spatial_unit = data_helpers.get_nullable_ndarray(
-                i.spatial_unit, dtype=ctypes.c_int)
+                i.spatial_unit, dtype=ctypes.c_int
+            )
 
         n_finished = self.handle.call(
-            "LibCBM_AdvanceSpinupState", n, spatial_unit, return_interval,
-            min_rotations, max_rotations, i.age, i.delay, v.slow_pools,
-            i.historical_disturbance_type, i.last_pass_disturbance_type,
-            i.afforestation_pre_type_id, v.spinup_state, v.disturbance_type,
-            v.rotation, v.step, v.last_rotation_slow_C, v.growth_enabled,
-            v.enabled)
+            "LibCBM_AdvanceSpinupState",
+            n,
+            spatial_unit,
+            return_interval,
+            min_rotations,
+            max_rotations,
+            i.age,
+            i.delay,
+            v.slow_pools,
+            i.historical_disturbance_type,
+            i.last_pass_disturbance_type,
+            i.afforestation_pre_type_id,
+            v.spinup_state,
+            v.disturbance_type,
+            v.rotation,
+            v.step,
+            v.last_rotation_slow_C,
+            v.growth_enabled,
+            v.enabled,
+        )
 
         return n_finished
 
@@ -245,12 +296,25 @@ class CBMWrapper(LibCBM_ctypes):
         n = v.age.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
         self.handle.call(
-            "LibCBM_EndSpinupStep", n, v.spinup_state, v.disturbance_type,
-            poolMat, v.age, v.slow_pools, v.growth_enabled)
+            "LibCBM_EndSpinupStep",
+            n,
+            v.spinup_state,
+            v.disturbance_type,
+            poolMat,
+            v.age,
+            v.slow_pools,
+            v.growth_enabled,
+        )
 
-    def get_merch_volume_growth_ops(self, growth_op, overmature_decline_op,
-                                    classifiers, inventory, pools,
-                                    state_variables):
+    def get_merch_volume_growth_ops(
+        self,
+        growth_op,
+        overmature_decline_op,
+        classifiers,
+        inventory,
+        pools,
+        state_variables,
+    ):
         """Computes CBM merchantable growth as a bulk matrix operation.
 
         Args:
@@ -284,25 +348,40 @@ class CBMWrapper(LibCBM_ctypes):
         opIds = (ctypes.c_size_t * (2))(*[growth_op, overmature_decline_op])
         i = data_helpers.unpack_ndarrays(inventory)
         classifiers_mat = LibCBM_Matrix_Int(
-            data_helpers.get_ndarray(classifiers))
+            data_helpers.get_ndarray(classifiers)
+        )
         v = data_helpers.unpack_ndarrays(state_variables)
 
         last_disturbance_type = data_helpers.get_nullable_ndarray(
-            v.last_disturbance_type, dtype=ctypes.c_int)
+            v.last_disturbance_type, dtype=ctypes.c_int
+        )
         time_since_last_disturbance = data_helpers.get_nullable_ndarray(
-            v.time_since_last_disturbance, dtype=ctypes.c_int)
+            v.time_since_last_disturbance, dtype=ctypes.c_int
+        )
         growth_multiplier = data_helpers.get_nullable_ndarray(
-            v.growth_multiplier, dtype=ctypes.c_double)
+            v.growth_multiplier, dtype=ctypes.c_double
+        )
         growth_enabled = data_helpers.get_nullable_ndarray(
-            v.growth_enabled, dtype=ctypes.c_int)
+            v.growth_enabled, dtype=ctypes.c_int
+        )
 
         self.handle.call(
-            "LibCBM_GetMerchVolumeGrowthOps", opIds, n, classifiers_mat,
-            poolMat, v.age, i.spatial_unit, last_disturbance_type,
-            time_since_last_disturbance, growth_multiplier, growth_enabled)
+            "LibCBM_GetMerchVolumeGrowthOps",
+            opIds,
+            n,
+            classifiers_mat,
+            poolMat,
+            v.age,
+            i.spatial_unit,
+            last_disturbance_type,
+            time_since_last_disturbance,
+            growth_multiplier,
+            growth_enabled,
+        )
 
-    def get_turnover_ops(self, biomass_turnover_op, snag_turnover_op,
-                         inventory):
+    def get_turnover_ops(
+        self, biomass_turnover_op, snag_turnover_op, inventory
+    ):
         """Computes biomass turnovers and dead organic matter turnovers as
         bulk matrix operations.
 
@@ -323,14 +402,20 @@ class CBMWrapper(LibCBM_ctypes):
         i = data_helpers.unpack_ndarrays(inventory)
         n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (2))(
-            *[biomass_turnover_op, snag_turnover_op])
+            *[biomass_turnover_op, snag_turnover_op]
+        )
 
-        self.handle.call(
-            "LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
+        self.handle.call("LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
 
-    def get_decay_ops(self, dom_decay_op, slow_decay_op, slow_mixing_op,
-                      inventory, parameters,
-                      historical_mean_annual_temp=False):
+    def get_decay_ops(
+        self,
+        dom_decay_op,
+        slow_decay_op,
+        slow_mixing_op,
+        inventory,
+        parameters,
+        historical_mean_annual_temp=False,
+    ):
         """Prepares dead organic matter decay bulk matrix operations.
 
         Args:
@@ -361,14 +446,17 @@ class CBMWrapper(LibCBM_ctypes):
         p = data_helpers.unpack_ndarrays(parameters)
         n = i.spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (3))(
-            *[dom_decay_op, slow_decay_op, slow_mixing_op])
+            *[dom_decay_op, slow_decay_op, slow_mixing_op]
+        )
         spatial_unit = data_helpers.get_nullable_ndarray(
-            i.spatial_unit, dtype=ctypes.c_int)
+            i.spatial_unit, dtype=ctypes.c_int
+        )
 
-        mean_annual_temp = \
-            data_helpers.get_nullable_ndarray(
-                p.mean_annual_temp) \
-            if "mean_annual_temp" in p.__dict__ else None
+        mean_annual_temp = (
+            data_helpers.get_nullable_ndarray(p.mean_annual_temp)
+            if "mean_annual_temp" in p.__dict__
+            else None
+        )
 
         if mean_annual_temp is not None:
             # If the mean annual temperature is specified, then omit the
@@ -378,11 +466,15 @@ class CBMWrapper(LibCBM_ctypes):
             spatial_unit = None
 
         self.handle.call(
-            "LibCBM_GetDecayOps", opIds, n, spatial_unit,
-            historical_mean_annual_temp, mean_annual_temp)
+            "LibCBM_GetDecayOps",
+            opIds,
+            n,
+            spatial_unit,
+            historical_mean_annual_temp,
+            mean_annual_temp,
+        )
 
-    def get_disturbance_ops(self, disturbance_op, inventory,
-                            parameters):
+    def get_disturbance_ops(self, disturbance_op, inventory, parameters):
         """Sets up CBM disturbance matrices as a bulk matrix operations.
 
         Args:
@@ -404,10 +496,15 @@ class CBMWrapper(LibCBM_ctypes):
         """
         spatial_unit = data_helpers.unpack_ndarrays(inventory).spatial_unit
         disturbance_type = data_helpers.unpack_ndarrays(
-            parameters).disturbance_type
+            parameters
+        ).disturbance_type
         n = spatial_unit.shape[0]
         opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
 
         self.handle.call(
-            "LibCBM_GetDisturbanceOps", opIds, n, spatial_unit,
-            disturbance_type)
+            "LibCBM_GetDisturbanceOps",
+            opIds,
+            n,
+            spatial_unit,
+            disturbance_type,
+        )

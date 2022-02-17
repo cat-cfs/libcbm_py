@@ -23,8 +23,8 @@ def initialize_CBM_ctypes(dll):
     dll.LibCBM_Initialize_CBM.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
         ctypes.c_void_p,  # handle
-        ctypes.c_char_p  # config json string
-        )
+        ctypes.c_char_p,  # config json string
+    )
 
     dll.LibCBM_AdvanceStandState.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
@@ -73,8 +73,8 @@ def initialize_CBM_ctypes(dll):
         # time_since_last_disturbance
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # time_since_land_class_change
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
-        )
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+    )
 
     dll.LibCBM_InitializeLandState.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
@@ -105,7 +105,7 @@ def initialize_CBM_ctypes(dll):
         # land_class (length n stands, return value)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # age (length n stands, return value)
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
     )
 
     dll.LibCBM_AdvanceSpinupState.argtypes = (
@@ -145,7 +145,7 @@ def initialize_CBM_ctypes(dll):
         # growth_enabled (length n stands, return value)
         ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
         # enabled (length n stands, return value)
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
     )
 
     dll.LibCBM_EndSpinupStep.argtypes = (
@@ -163,8 +163,8 @@ def initialize_CBM_ctypes(dll):
         # sum of slow pools (length n stands, return value)
         ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"),
         # growth enabled (length n stands, return value)
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")
-        )
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+    )
 
     dll.LibCBM_GetMerchVolumeGrowthOps.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
@@ -184,8 +184,8 @@ def initialize_CBM_ctypes(dll):
         # (nullable) growth multiplier (length n stands)
         ctypes.POINTER(ctypes.c_double),
         # (nullable) growth enabled (length n stands)
-        ctypes.POINTER(ctypes.c_int)
-        )
+        ctypes.POINTER(ctypes.c_int),
+    )
 
     dll.LibCBM_GetTurnoverOps.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
@@ -193,7 +193,8 @@ def initialize_CBM_ctypes(dll):
         ctypes.ARRAY(ctypes.c_size_t, 2),  # op_ids
         ctypes.c_size_t,  # n stands
         # spatial unit id (length n)
-        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"))
+        ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"),
+    )
 
     dll.LibCBM_GetDecayOps.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure
@@ -205,8 +206,8 @@ def initialize_CBM_ctypes(dll):
         # use historical mean annual temperature (scalar)
         ctypes.c_bool,
         # mean annual temp (nullable, length n_stands)
-        ctypes.POINTER(ctypes.c_double)
-        )
+        ctypes.POINTER(ctypes.c_double),
+    )
 
     dll.LibCBM_GetDisturbanceOps.argtypes = (
         ctypes.POINTER(LibCBM_Error),  # error structure

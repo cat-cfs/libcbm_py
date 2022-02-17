@@ -38,11 +38,16 @@ def get_classifiers(classifiers, classifier_values):
     classifiers_config = []
     for _, row in classifiers.iterrows():
         values = classifier_values[
-            classifier_values.classifier_id == row.id].name
-        classifiers_config.append(cbm_config.classifier(
-            name=row["name"],
-            values=[cbm_config.classifier_value(value=x) for x in list(values)]
-        ))
+            classifier_values.classifier_id == row.id
+        ].name
+        classifiers_config.append(
+            cbm_config.classifier(
+                name=row["name"],
+                values=[
+                    cbm_config.classifier_value(value=x) for x in list(values)
+                ],
+            )
+        )
 
     config = cbm_config.classifier_config(classifiers_config)
     return config
@@ -64,13 +69,16 @@ def _create_disturbance_type_maps(sit):
     """
     sit.default_disturbance_id_map = {
         row.sit_disturbance_type_id: row.default_disturbance_type_id
-        for _, row in sit.sit_data.disturbance_types.iterrows()}
+        for _, row in sit.sit_data.disturbance_types.iterrows()
+    }
     sit.disturbance_id_map = {
         row.sit_disturbance_type_id: row.id
-        for _, row in sit.sit_data.disturbance_types.iterrows()}
+        for _, row in sit.sit_data.disturbance_types.iterrows()
+    }
     sit.disturbance_name_map = {
         row.sit_disturbance_type_id: row["name"]
-        for _, row in sit.sit_data.disturbance_types.iterrows()}
+        for _, row in sit.sit_data.disturbance_types.iterrows()
+    }
 
 
 def _create_classifier_value_maps(sit):
@@ -129,7 +137,8 @@ def _create_classifier_value_maps(sit):
         sit (object): sit instance as returned by :py:func:`load_sit`
     """
     classifiers_config = get_classifiers(
-        sit.sit_data.classifiers, sit.sit_data.classifier_values)
+        sit.sit_data.classifiers, sit.sit_data.classifier_values
+    )
     idx = cbm_config.get_classifier_indexes(classifiers_config)
     sit.classifier_names = idx["classifier_names"]
     sit.classifier_ids = idx["classifier_ids"]
@@ -137,8 +146,9 @@ def _create_classifier_value_maps(sit):
     sit.classifier_value_names = idx["classifier_value_names"]
 
 
-def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
-                      sit_mapping):
+def get_merch_volumes(
+    yield_table, classifiers, classifier_values, age_classes, sit_mapping
+):
     """Create merchantable volume input for initializing the CBM class
     based on CBM Standard import tool formatted data.
 
@@ -157,32 +167,38 @@ def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
             :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
     """
 
-    unique_classifier_sets = yield_table.groupby(
-        list(classifiers.name)).size().reset_index()
+    unique_classifier_sets = (
+        yield_table.groupby(list(classifiers.name)).size().reset_index()
+    )
     # removes the extra field created by the above method
     unique_classifier_sets = unique_classifier_sets.drop(columns=[0])
     ages = list(age_classes.end_year)
     output = []
     yield_table.leading_species = sit_mapping.get_species(
-        yield_table.leading_species, classifiers, classifier_values)
+        yield_table.leading_species, classifiers, classifier_values
+    )
     for _, row in unique_classifier_sets.iterrows():
         match = yield_table.merge(
             pd.DataFrame([row]),
             left_on=list(classifiers.name),
-            right_on=list(classifiers.name))
+            right_on=list(classifiers.name),
+        )
         merch_vols = []
         for _, match_row in match.iterrows():
-            vols = match_row.iloc[len(classifiers)+1:]
-            merch_vols.append({
-                "species_id": match_row["leading_species"],
-                "age_volume_pairs": [
-                    (ages[i], vols[i]) for i in range(len(vols))]
-            })
+            vols = match_row.iloc[len(classifiers) + 1 :]
+            merch_vols.append(
+                {
+                    "species_id": match_row["leading_species"],
+                    "age_volume_pairs": [
+                        (ages[i], vols[i]) for i in range(len(vols))
+                    ],
+                }
+            )
         output.append(
             cbm_config.merch_volume_curve(
-                classifier_set=list(row),
-                merch_volumes=merch_vols
-            ))
+                classifier_set=list(row), merch_volumes=merch_vols
+            )
+        )
     return output
 
 
@@ -199,47 +215,58 @@ def initialize_inventory(sit):
     sit_mapping = sit.sit_mapping
 
     classifier_config = get_classifiers(
-        sit_data.classifiers, sit_data.classifier_values)
+        sit_data.classifiers, sit_data.classifier_values
+    )
     classifier_ids = [
-        (x["id"], x["name"]) for x in classifier_config["classifiers"]]
+        (x["id"], x["name"]) for x in classifier_config["classifiers"]
+    ]
     classifier_value_id_lookups = {}
 
     for identifier, name in classifier_ids:
         classifier_value_id_lookups[name] = {
             x["value"]: x["id"]
             for x in classifier_config["classifier_values"]
-            if x["classifier_id"] == identifier}
+            if x["classifier_id"] == identifier
+        }
 
-    classifiers_data = np.column_stack([
-        sit_data.inventory[name].map(classifier_value_id_lookups[name])
-        for name in list(sit_data.classifiers.name)
-    ])
+    classifiers_data = np.column_stack(
+        [
+            sit_data.inventory[name].map(classifier_value_id_lookups[name])
+            for name in list(sit_data.classifiers.name)
+        ]
+    )
 
     classifiers_data = np.ascontiguousarray(classifiers_data)
     classifiers_result = pd.DataFrame(
-        data=classifiers_data,
-        columns=list(sit_data.classifiers.name))
+        data=classifiers_data, columns=list(sit_data.classifiers.name)
+    )
 
     inventory_result = pd.DataFrame(
         data={
             "age": sit_data.inventory.age,
             "spatial_unit": sit_mapping.get_spatial_unit(
-                sit_data.inventory, sit_data.classifiers,
-                sit_data.classifier_values),
+                sit_data.inventory,
+                sit_data.classifiers,
+                sit_data.classifier_values,
+            ),
             "afforestation_pre_type_id": sit_mapping.get_nonforest_cover_ids(
-                sit_data.inventory, sit_data.classifiers,
-                sit_data.classifier_values),
+                sit_data.inventory,
+                sit_data.classifiers,
+                sit_data.classifier_values,
+            ),
             "area": sit_data.inventory.area,
             "delay": sit_data.inventory.delay,
             "land_class": sit_mapping.get_land_class_id(
-                sit_data.inventory.land_class),
-            "historical_disturbance_type":
-                sit_mapping.get_sit_disturbance_type_id(
-                    sit_data.inventory.historical_disturbance_type),
-            "last_pass_disturbance_type":
-                sit_mapping.get_sit_disturbance_type_id(
-                    sit_data.inventory.last_pass_disturbance_type),
-        })
+                sit_data.inventory.land_class
+            ),
+            "historical_disturbance_type": sit_mapping.get_sit_disturbance_type_id(
+                sit_data.inventory.historical_disturbance_type
+            ),
+            "last_pass_disturbance_type": sit_mapping.get_sit_disturbance_type_id(
+                sit_data.inventory.last_pass_disturbance_type
+            ),
+        }
+    )
     return classifiers_result, inventory_result
 
 
@@ -260,9 +287,11 @@ def _initialize_events(disturbance_events, sit_mapping):
     if disturbance_events is None:
         return None
     disturbance_events = disturbance_events.copy()
-    disturbance_events["disturbance_type_id"] = \
-        sit_mapping.get_sit_disturbance_type_id(
-            disturbance_events.disturbance_type)
+    disturbance_events[
+        "disturbance_type_id"
+    ] = sit_mapping.get_sit_disturbance_type_id(
+        disturbance_events.disturbance_type
+    )
     return disturbance_events
 
 
@@ -280,9 +309,11 @@ def _initialize_transition_rules(transition_rules, sit_mapping):
     if transition_rules is None:
         return None
     transition_rules = transition_rules.copy()
-    transition_rules["disturbance_type_id"] = \
-        sit_mapping.get_sit_disturbance_type_id(
-            transition_rules.disturbance_type)
+    transition_rules[
+        "disturbance_type_id"
+    ] = sit_mapping.get_sit_disturbance_type_id(
+        transition_rules.disturbance_type
+    )
     return transition_rules
 
 
@@ -303,12 +334,13 @@ def read_sit_config(config_path):
                 otherwise it is None.
     """
     sit = SimpleNamespace()
-    with open(config_path, 'r', encoding="utf-8") as config_file:
+    with open(config_path, "r", encoding="utf-8") as config_file:
         sit.config = json.load(config_file)
         config_path = config_path
         if "import_config" in sit.config:
             sit.sit_data = sit_reader.read(
-                sit.config["import_config"], os.path.dirname(config_path))
+                sit.config["import_config"], os.path.dirname(config_path)
+            )
         else:
             sit.sit_data = None
         return sit
@@ -328,12 +360,14 @@ def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
     if not db_path:
         db_path = resources.get_cbm_defaults_path()
     sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
-    sit.sit_mapping = SITMapping(
-        sit.config["mapping_config"], sit_defaults)
+    sit.sit_mapping = SITMapping(sit.config["mapping_config"], sit_defaults)
     sit.sit_data.disturbance_types.insert(
-        0, "default_disturbance_type_id",
+        0,
+        "default_disturbance_type_id",
         sit.sit_mapping.get_default_disturbance_type_id(
-            sit.sit_data.disturbance_types.name))
+            sit.sit_data.disturbance_types.name
+        ),
+    )
     sit.db_path = db_path
     sit.defaults = sit_defaults
     _create_classifier_value_maps(sit)
@@ -384,23 +418,31 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
         dll_path=dll_path,
         dll_config_factory=sit.defaults.get_configuration_factory(),
         cbm_parameters_factory=parameters_factory,
-        merch_volume_to_biomass_factory=lambda:
-            cbm_config.merch_volume_to_biomass_config(
-                db_path=sit.db_path,
-                merch_volume_curves=get_merch_volumes(
-                    sit.sit_data.yield_table, sit.sit_data.classifiers,
-                    sit.sit_data.classifier_values, sit.sit_data.age_classes,
-                    sit.sit_mapping)),
+        merch_volume_to_biomass_factory=lambda: cbm_config.merch_volume_to_biomass_config(
+            db_path=sit.db_path,
+            merch_volume_curves=get_merch_volumes(
+                sit.sit_data.yield_table,
+                sit.sit_data.classifiers,
+                sit.sit_data.classifier_values,
+                sit.sit_data.age_classes,
+                sit.sit_mapping,
+            ),
+        ),
         classifiers_factory=lambda: get_classifiers(
-            sit.sit_data.classifiers, sit.sit_data.classifier_values)
+            sit.sit_data.classifiers, sit.sit_data.classifier_values
+        ),
     ) as cbm:
         yield cbm
 
 
 def create_sit_rule_based_processor(
-    sit, cbm, random_func=np.random.rand, reset_parameters=True,
-    sit_events=None, sit_disturbance_eligibilities=None,
-    sit_transition_rules=None
+    sit,
+    cbm,
+    random_func=np.random.rand,
+    reset_parameters=True,
+    sit_events=None,
+    sit_disturbance_eligibilities=None,
+    sit_transition_rules=None,
 ):
     """initializes a class for processing SIT rule based disturbances.
 
@@ -450,42 +492,54 @@ def create_sit_rule_based_processor(
     if sit_events is not None:
 
         disturbance_events = sit_disturbance_event_parser.parse(
-            sit_events, sit.sit_data.classifiers,
-            sit.sit_data.classifier_values, sit.sit_data.classifier_aggregates,
-            sit.sit_data.disturbance_types, sit.sit_data.age_classes,
-            separate_eligibilities=separate_eligibilities)
+            sit_events,
+            sit.sit_data.classifiers,
+            sit.sit_data.classifier_values,
+            sit.sit_data.classifier_aggregates,
+            sit.sit_data.disturbance_types,
+            sit.sit_data.age_classes,
+            separate_eligibilities=separate_eligibilities,
+        )
 
         if sit_disturbance_eligibilities is not None:
-            disturbance_eligibilities = \
+            disturbance_eligibilities = (
                 sit_disturbance_event_parser.parse_eligibilities(
-                    sit_events, sit_disturbance_eligibilities)
+                    sit_events, sit_disturbance_eligibilities
+                )
+            )
     else:
         disturbance_events = sit.sit_data.disturbance_events
         disturbance_eligibilities = sit.sit_data.disturbance_eligibilities
         if separate_eligibilities:
             raise ValueError(
                 "cannot specify sit_disturbance_eligibilities with no "
-                "specified sit_events")
+                "specified sit_events"
+            )
 
     if sit_transition_rules is not None:
         if len(sit_transition_rules.index) == 0:
             transition_rules = None
         else:
             transition_rules = sit_transition_rule_parser.parse(
-                sit_transition_rules, sit.sit_data.classifiers,
+                sit_transition_rules,
+                sit.sit_data.classifiers,
                 sit.sit_data.classifier_values,
                 sit.sit_data.classifier_aggregates,
-                sit.sit_data.disturbance_types, sit.sit_data.age_classes)
+                sit.sit_data.disturbance_types,
+                sit.sit_data.age_classes,
+            )
     else:
         transition_rules = sit.sit_data.transition_rules
 
     classifiers_config = get_classifiers(
-        sit.sit_data.classifiers, sit.sit_data.classifier_values)
+        sit.sit_data.classifiers, sit.sit_data.classifier_values
+    )
 
     tr_constants = SimpleNamespace(
         group_err_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
         classifier_value_postfix=sit_format.get_tr_classifier_set_postfix(),
-        wildcard=sit_classifier_parser.get_wildcard_keyword())
+        wildcard=sit_classifier_parser.get_wildcard_keyword(),
+    )
 
     return sit_rule_based_processor.sit_rule_based_processor_factory(
         cbm=cbm,
@@ -494,7 +548,9 @@ def create_sit_rule_based_processor(
         classifier_aggregates=sit.sit_data.classifier_aggregates,
         sit_events=_initialize_events(disturbance_events, sit.sit_mapping),
         sit_transitions=_initialize_transition_rules(
-            transition_rules, sit.sit_mapping),
+            transition_rules, sit.sit_mapping
+        ),
         tr_constants=tr_constants,
         sit_disturbance_eligibilities=disturbance_eligibilities,
-        reset_parameters=reset_parameters)
+        reset_parameters=reset_parameters,
+    )

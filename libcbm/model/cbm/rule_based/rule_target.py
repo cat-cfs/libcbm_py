@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 
-class RuleTargetResult():
+class RuleTargetResult:
     """
     Standard return value for the functions in this module.
 
@@ -24,6 +24,7 @@ class RuleTargetResult():
             the disturbance target
 
     """
+
     def __init__(self, target, statistics):
         self.target = target
         self.statistics = statistics
@@ -53,16 +54,21 @@ def spatially_indexed_target(identifier, inventory):
     if len(match_index) < 1:
         raise ValueError(
             "no matching value in inventory spatial_reference column for "
-            f"identifier {identifier}")
+            f"identifier {identifier}"
+        )
     if len(match_index) > 1:
         raise ValueError(
             "multiple matching values in inventory spatial_reference column "
-            f"for identifier {identifier}")
-    result = pd.DataFrame({
-        "target_var": [match.area],
-        "sort_var": None,
-        "disturbed_index": [match_index[0]],
-        "area_proportions":  [1.0]})
+            f"for identifier {identifier}"
+        )
+    result = pd.DataFrame(
+        {
+            "target_var": [match.area],
+            "sort_var": None,
+            "disturbed_index": [match_index[0]],
+            "area_proportions": [1.0],
+        }
+    )
     return RuleTargetResult(target=result, statistics=None)
 
 
@@ -97,9 +103,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
     remaining_target = target
     result = pd.DataFrame()
 
-    disturbed = pd.DataFrame({
-        "target_var": target_var,
-        "sort_var": sort_var})
+    disturbed = pd.DataFrame({"target_var": target_var, "sort_var": sort_var})
     disturbed = disturbed[eligible]
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
@@ -108,34 +112,46 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         return RuleTargetResult(
             target=pd.DataFrame(
                 columns=[
-                    "target_var", "sort_var", "disturbed_index",
-                    "area_proportions"]),
+                    "target_var",
+                    "sort_var",
+                    "disturbed_index",
+                    "area_proportions",
+                ]
+            ),
             statistics={
                 "total_eligible_value": disturbed["target_var"].sum(),
                 "total_achieved": 0,
                 "shortfall": target,
                 "num_records_disturbed": 0,
                 "num_splits": 0,
-                "num_eligible": eligible.sum()
-            })
+                "num_eligible": eligible.sum(),
+            },
+        )
 
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
     disturbed = disturbed.reset_index()
 
-    fully_disturbed_records = disturbed[
-        disturbed.target_var_sums <= target]
+    fully_disturbed_records = disturbed[disturbed.target_var_sums <= target]
 
     if fully_disturbed_records.shape[0] > 0:
-        remaining_target = \
+        remaining_target = (
             target - fully_disturbed_records["target_var_sums"].max()
+        )
 
-    result = result.append(pd.DataFrame({
-        "target_var": fully_disturbed_records["target_var"],
-        "sort_var": fully_disturbed_records["sort_var"],
-        "disturbed_index": fully_disturbed_records["index"],
-        "area_proportions":  np.ones(len(fully_disturbed_records["index"]))}))
+    result = result.append(
+        pd.DataFrame(
+            {
+                "target_var": fully_disturbed_records["target_var"],
+                "sort_var": fully_disturbed_records["sort_var"],
+                "disturbed_index": fully_disturbed_records["index"],
+                "area_proportions": np.ones(
+                    len(fully_disturbed_records["index"])
+                ),
+            }
+        )
+    )
 
     partial_disturb = disturbed[disturbed.target_var_sums > target]
 
@@ -149,12 +165,15 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         remaining_target = 0
 
         result = result.append(
-            pd.DataFrame({
-                "target_var": split_record["target_var"],
-                "sort_var": split_record["sort_var"],
-                "disturbed_index": int(split_record["index"]),
-                "area_proportions": [proportion]
-            }))
+            pd.DataFrame(
+                {
+                    "target_var": split_record["target_var"],
+                    "sort_var": split_record["sort_var"],
+                    "disturbed_index": int(split_record["index"]),
+                    "area_proportions": [proportion],
+                }
+            )
+        )
 
     result = result.reset_index(drop=True)
 
@@ -164,7 +183,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         "shortfall": remaining_target,
         "num_records_disturbed": result.shape[0],
         "num_splits": num_splits,
-        "num_eligible": eligible.sum()
+        "num_eligible": eligible.sum(),
     }
     return RuleTargetResult(target=result, statistics=stats)
 
@@ -193,30 +212,37 @@ def proportion_area_target(area_target_value, inventory, eligible):
         return RuleTargetResult(
             target=pd.DataFrame(
                 columns=[
-                    "target_var", "sort_var", "disturbed_index",
-                    "area_proportions"]),
+                    "target_var",
+                    "sort_var",
+                    "disturbed_index",
+                    "area_proportions",
+                ]
+            ),
             statistics={
                 "total_eligible_value": total_eligible_area,
                 "total_achieved": 0.0,
                 "shortfall": area_target_value,
                 "num_records_disturbed": 0,
                 "num_splits": 0,
-                "num_eligible": len(eligible_inventory.index)})
+                "num_eligible": len(eligible_inventory.index),
+            },
+        )
     area_proportion = area_target_value / total_eligible_area
     total_achieved = area_target_value
     if area_proportion >= 1:
         # shortfall
         area_proportion = 1.0
         total_achieved = total_eligible_area
-    target = pd.DataFrame({
-        "target_var": eligible_inventory.area * area_proportion,
-        "sort_var": None,
-        "disturbed_index": eligible_inventory.index,
-        "area_proportions": area_proportion
-        })
+    target = pd.DataFrame(
+        {
+            "target_var": eligible_inventory.area * area_proportion,
+            "sort_var": None,
+            "disturbed_index": eligible_inventory.index,
+            "area_proportions": area_proportion,
+        }
+    )
 
-    num_splits = \
-        len(eligible_inventory.index) if area_proportion < 1.0 else 0
+    num_splits = len(eligible_inventory.index) if area_proportion < 1.0 else 0
     return RuleTargetResult(
         target=target,
         statistics={
@@ -225,8 +251,9 @@ def proportion_area_target(area_target_value, inventory, eligible):
             "shortfall": area_target_value - total_achieved,
             "num_records_disturbed": len(eligible_inventory.index),
             "num_splits": num_splits,
-            "num_eligible": len(eligible_inventory.index)
-        })
+            "num_eligible": len(eligible_inventory.index),
+        },
+    )
 
 
 def sorted_area_target(area_target_value, sort_value, inventory, eligible):
@@ -252,16 +279,19 @@ def sorted_area_target(area_target_value, sort_value, inventory, eligible):
     """
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
-            "sort_value dimension must equal number of rows in inventory")
+            "sort_value dimension must equal number of rows in inventory"
+        )
     return sorted_disturbance_target(
         target_var=inventory.area,
         sort_var=sort_value,
         target=area_target_value,
-        eligible=eligible)
+        eligible=eligible,
+    )
 
 
-def proportion_merch_target(carbon_target, disturbance_production, inventory,
-                            efficiency, eligible):
+def proportion_merch_target(
+    carbon_target, disturbance_production, inventory, efficiency, eligible
+):
     """create a sequence of areas/proportions for disturbance a propotion
     of all eligible stands such that the proportion * disturbance_production
     for each stand equals the carbon target exactly.
@@ -295,35 +325,45 @@ def proportion_merch_target(carbon_target, disturbance_production, inventory,
         return RuleTargetResult(
             target=pd.DataFrame(
                 columns=[
-                    "target_var", "sort_var", "disturbed_index",
-                    "area_proportions"]),
+                    "target_var",
+                    "sort_var",
+                    "disturbed_index",
+                    "area_proportions",
+                ]
+            ),
             statistics={
                 "total_eligible_value": total_production,
                 "total_achieved": 0.0,
                 "shortfall": carbon_target,
                 "num_records_disturbed": 0,
                 "num_splits": 0,
-                "num_eligible": n_eligible})
+                "num_eligible": n_eligible,
+            },
+        )
     proportion = carbon_target / total_production
     if proportion > 1:
         proportion = 1.0
 
-    target = pd.DataFrame({
-        "target_var": production * proportion,
-        "sort_var": None,
-        "disturbed_index": eligible_inventory.index,
-        "area_proportions": proportion * efficiency
-        })
+    target = pd.DataFrame(
+        {
+            "target_var": production * proportion,
+            "sort_var": None,
+            "disturbed_index": eligible_inventory.index,
+            "area_proportions": proportion * efficiency,
+        }
+    )
     total_achieved = target.target_var.sum()
     return RuleTargetResult(
-        target, statistics={
+        target,
+        statistics={
             "total_eligible_value": total_production,
             "total_achieved": total_achieved,
             "shortfall": carbon_target - total_achieved,
             "num_records_disturbed": n_eligible,
             "num_splits": n_eligible if proportion < 1.0 else 0,
-            "num_eligible": n_eligible
-        })
+            "num_eligible": n_eligible,
+        },
+    )
 
 
 def proportion_sort_proportion_target(proportion_target, inventory, eligible):
@@ -345,30 +385,41 @@ def proportion_sort_proportion_target(proportion_target, inventory, eligible):
     """
     if proportion_target < 0 or proportion_target > 1.0:
         raise ValueError(
-            "proportion target may not be less than zero or greater than 1.")
+            "proportion target may not be less than zero or greater than 1."
+        )
     eligible_inventory = inventory.loc[eligible]
 
     n_disturbed = len(eligible_inventory.index)
 
-    target = pd.DataFrame({
-        "target_var": proportion_target,
-        "sort_var": None,
-        "disturbed_index": eligible_inventory.index,
-        "area_proportions": proportion_target
-        })
+    target = pd.DataFrame(
+        {
+            "target_var": proportion_target,
+            "sort_var": None,
+            "disturbed_index": eligible_inventory.index,
+            "area_proportions": proportion_target,
+        }
+    )
     return RuleTargetResult(
-        target, statistics={
+        target,
+        statistics={
             "total_eligible_value": None,
             "total_achieved": None,
             "shortfall": None,
             "num_records_disturbed": n_disturbed,
             "num_splits": n_disturbed if proportion_target < 1.0 else 0,
-            "num_eligible": n_disturbed
-        })
+            "num_eligible": n_disturbed,
+        },
+    )
 
 
-def sorted_merch_target(carbon_target, disturbance_production, inventory,
-                        sort_value, efficiency, eligible):
+def sorted_merch_target(
+    carbon_target,
+    disturbance_production,
+    inventory,
+    sort_value,
+    efficiency,
+    eligible,
+):
     """create a sorted sequence of areas/proportions for meeting a merch C
     target exactly.
 
@@ -397,17 +448,21 @@ def sorted_merch_target(carbon_target, disturbance_production, inventory,
     """
     if inventory.shape[0] != sort_value.shape[0]:
         raise ValueError(
-            "sort_value dimension must equal number of rows in inventory")
+            "sort_value dimension must equal number of rows in inventory"
+        )
     if inventory.shape[0] != disturbance_production.shape[0]:
         raise ValueError(
             "number of disturbance_production rows must equal number of rows "
-            "in inventory")
+            "in inventory"
+        )
     production_c = disturbance_production.Total * inventory.area * efficiency
     result = sorted_disturbance_target(
         target_var=production_c,
         sort_var=sort_value,
         target=carbon_target,
-        eligible=eligible)
-    result.target.area_proportions = \
+        eligible=eligible,
+    )
+    result.target.area_proportions = (
         result.target.area_proportions * efficiency
+    )
     return result

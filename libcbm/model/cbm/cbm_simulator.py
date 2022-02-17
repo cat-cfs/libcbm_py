@@ -8,8 +8,9 @@ from libcbm import data_helpers
 from libcbm.model.cbm import cbm_variables
 
 
-def create_in_memory_reporting_func(density=False, classifier_map=None,
-                                    disturbance_type_map=None):
+def create_in_memory_reporting_func(
+    density=False, classifier_map=None, disturbance_type_map=None
+):
     """Create storage and a function for complete simulation results.  The
     function return value can be passed to :py:func:`simulate` to track
     simulation results.
@@ -55,19 +56,23 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
     results.area = None
 
     def append_simulation_result(timestep, cbm_vars):
-        timestep_pools = cbm_vars.pools if density else \
-            cbm_vars.pools.multiply(cbm_vars.inventory.area, axis=0)
+        timestep_pools = (
+            cbm_vars.pools
+            if density
+            else cbm_vars.pools.multiply(cbm_vars.inventory.area, axis=0)
+        )
         results.pools = data_helpers.append_simulation_result(
-            results.pools, timestep_pools, timestep)
-        if (
-            cbm_vars.flux is not None and
-            len(cbm_vars.flux.index) > 0
-        ):
-            timestep_flux = cbm_vars.flux \
-                if density else cbm_vars.flux.multiply(
-                    cbm_vars.inventory.area, axis=0)
+            results.pools, timestep_pools, timestep
+        )
+        if cbm_vars.flux is not None and len(cbm_vars.flux.index) > 0:
+            timestep_flux = (
+                cbm_vars.flux
+                if density
+                else cbm_vars.flux.multiply(cbm_vars.inventory.area, axis=0)
+            )
             results.flux = data_helpers.append_simulation_result(
-                results.flux, timestep_flux, timestep)
+                results.flux, timestep_flux, timestep
+            )
 
         def disturbance_type_map_func(dist_id):
             if dist_id <= 0:
@@ -78,36 +83,52 @@ def create_in_memory_reporting_func(density=False, classifier_map=None,
         state = cbm_vars.state.copy()
         params = cbm_vars.parameters.copy()
         if disturbance_type_map:
-            state.last_disturbance_type = \
+            state.last_disturbance_type = (
                 cbm_vars.state.last_disturbance_type.apply(
-                    disturbance_type_map_func)
+                    disturbance_type_map_func
+                )
+            )
 
-            params.disturbance_type = \
+            params.disturbance_type = (
                 cbm_vars.parameters.disturbance_type.apply(
-                    disturbance_type_map_func)
+                    disturbance_type_map_func
+                )
+            )
 
         results.state = data_helpers.append_simulation_result(
-            results.state, state, timestep)
+            results.state, state, timestep
+        )
 
         if classifier_map is None:
             results.classifiers = data_helpers.append_simulation_result(
-                results.classifiers, cbm_vars.classifiers, timestep)
+                results.classifiers, cbm_vars.classifiers, timestep
+            )
         else:
             results.classifiers = data_helpers.append_simulation_result(
                 results.classifiers,
-                cbm_vars.classifiers.applymap(
-                    classifier_map.__getitem__),
-                timestep)
+                cbm_vars.classifiers.applymap(classifier_map.__getitem__),
+                timestep,
+            )
         results.area = data_helpers.append_simulation_result(
-            results.area, cbm_vars.inventory.loc[:, ["area"]], timestep)
+            results.area, cbm_vars.inventory.loc[:, ["area"]], timestep
+        )
         results.parameters = data_helpers.append_simulation_result(
-            results.parameters, params, timestep)
+            results.parameters, params, timestep
+        )
+
     return results, append_simulation_result
 
 
-def simulate(cbm, n_steps, classifiers, inventory, reporting_func,
-             pre_dynamics_func=None, spinup_params=None,
-             spinup_reporting_func=None):
+def simulate(
+    cbm,
+    n_steps,
+    classifiers,
+    inventory,
+    reporting_func,
+    pre_dynamics_func=None,
+    spinup_params=None,
+    spinup_reporting_func=None,
+):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
     pre_dynamics_func is called prior to each CBM dynamics step.
@@ -144,11 +165,12 @@ def simulate(cbm, n_steps, classifiers, inventory, reporting_func,
     """
 
     cbm_vars = cbm_variables.initialize_simulation_variables(
-        classifiers, inventory, cbm.pool_codes, cbm.flux_indicator_codes)
+        classifiers, inventory, cbm.pool_codes, cbm.flux_indicator_codes
+    )
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
-        cbm_vars, spinup_params,
-        include_flux=spinup_reporting_func is not None)
+        cbm_vars, spinup_params, include_flux=spinup_reporting_func is not None
+    )
 
     cbm.spinup(spinup_vars, reporting_func=spinup_reporting_func)
     cbm_vars = cbm.init(cbm_vars)

@@ -21,10 +21,7 @@ def classifier_value(value, description=""):
                     "description": "c1_v1"
                 }
     """
-    return {
-        "value": value,
-        "description": description
-    }
+    return {"value": value, "description": description}
 
 
 def classifier(name, values):
@@ -56,10 +53,7 @@ def classifier(name, values):
                     ]
                 }
     """
-    return {
-        "classifier": {"name": name},
-        "classifier_values": values
-    }
+    return {"classifier": {"name": name}, "classifier_values": values}
 
 
 def classifier_config(classifiers):
@@ -150,7 +144,7 @@ def classifier_config(classifiers):
                 }
     """
     result = {
-        "classifiers":       [],
+        "classifiers": [],
         "classifier_values": [],
     }
     for i, c in enumerate(classifiers):
@@ -190,13 +184,16 @@ def get_classifier_indexes(classifier_config):
         classifier_names={},
         classifier_ids={},
         classifier_value_ids={},
-        classifier_value_names={})
+        classifier_value_names={},
+    )
 
     for classifier_data in classifier_config["classifiers"]:
-        indexes["classifier_names"][classifier_data["id"]] = \
-            classifier_data["name"]
-        indexes["classifier_ids"][classifier_data["name"]] = \
-            classifier_data["id"]
+        indexes["classifier_names"][classifier_data["id"]] = classifier_data[
+            "name"
+        ]
+        indexes["classifier_ids"][classifier_data["name"]] = classifier_data[
+            "id"
+        ]
 
     for classifier_value_data in classifier_config["classifier_values"]:
         classifier_id = classifier_value_data["classifier_id"]
@@ -205,21 +202,24 @@ def get_classifier_indexes(classifier_config):
         classifier_value_name = classifier_value_data["value"]
 
         if classifier_name in indexes["classifier_value_ids"]:
-            indexes["classifier_value_ids"][
-                classifier_name][classifier_value_name] = classifier_value_id
+            indexes["classifier_value_ids"][classifier_name][
+                classifier_value_name
+            ] = classifier_value_id
         else:
             indexes["classifier_value_ids"][classifier_name] = {
                 classifier_value_name: classifier_value_id
             }
 
         if classifier_value_id not in indexes["classifier_value_names"]:
-            indexes["classifier_value_names"][classifier_value_id] = \
-                classifier_value_name
+            indexes["classifier_value_names"][
+                classifier_value_id
+            ] = classifier_value_name
         else:
             raise ValueError(
                 f"classifier_value_id {classifier_value_id} associated with "
                 f"more than one classifier value: {classifier_value_name}, "
-                f"{indexes['classifier_value_names'][classifier_value_id]}")
+                f"{indexes['classifier_value_names'][classifier_value_id]}"
+            )
 
     return indexes
 
@@ -278,14 +278,18 @@ def merch_volume_curve(classifier_set, merch_volumes):
     """
     result = {
         "classifier_set": {
-            "type": "name", "values": [x for x in classifier_set]},
+            "type": "name",
+            "values": [x for x in classifier_set],
+        },
     }
     components = []
     for m in merch_volumes:
-        components.append({
-            "species_id": m["species_id"],
-            "age_volume_pairs": m["age_volume_pairs"]
-        })
+        components.append(
+            {
+                "species_id": m["species_id"],
+                "age_volume_pairs": m["age_volume_pairs"],
+            }
+        )
     result["components"] = components
     return result
 

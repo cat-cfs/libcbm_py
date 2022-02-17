@@ -8,8 +8,13 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def parse(inventory_table, classifiers, classifier_values,
-          disturbance_types, age_classes):
+def parse(
+    inventory_table,
+    classifiers,
+    classifier_values,
+    disturbance_types,
+    age_classes,
+):
     """Parses and validates SIT formatted inventory data.  The inventory_table
     parameter is the primary data, and the other args act as validation
     metadata.
@@ -132,22 +137,25 @@ def parse(inventory_table, classifiers, classifier_values,
         pandas.DataFrame: validated inventory
     """
     inventory_format = sit_format.get_inventory_format(
-            classifiers.name,
-            len(inventory_table.columns))
+        classifiers.name, len(inventory_table.columns)
+    )
 
     inventory = sit_parser.unpack_table(
-        inventory_table, inventory_format, "inventory")
+        inventory_table, inventory_format, "inventory"
+    )
 
     # validate the classifier values in the inventory table
     for row in classifiers.itertuples():
         a = inventory[row.name].unique()
-        b = classifier_values[
-            classifier_values["classifier_id"] == row.id]["name"].unique()
+        b = classifier_values[classifier_values["classifier_id"] == row.id][
+            "name"
+        ].unique()
         diff = np.setdiff1d(a, b)
         if len(diff) > 0:
             raise ValueError(
                 "Undefined classifier values detected: "
-                f"classifier: '{row.name}', values: {diff}")
+                f"classifier: '{row.name}', values: {diff}"
+            )
 
     # if the historical/last pass disturbances are specified substitute them
     # according to the specified disturbance type parameters
@@ -155,11 +163,13 @@ def parse(inventory_table, classifiers, classifier_values,
         # first of all, validate
         undefined_historic = np.setdiff1d(
             inventory.historical_disturbance_type.unique(),
-            disturbance_types.id.unique())
+            disturbance_types.id.unique(),
+        )
 
         undefined_lastpass = np.setdiff1d(
             inventory.last_pass_disturbance_type.unique(),
-            disturbance_types.id.unique())
+            disturbance_types.id.unique(),
+        )
         if len(undefined_historic) > 0:
             raise ValueError(
                 "Undefined disturbance type ids (as defined in sit "
@@ -172,18 +182,22 @@ def parse(inventory_table, classifiers, classifier_values,
             )
 
     inventory.using_age_class = inventory.using_age_class.map(
-        sit_parser.get_parse_bool_func("inventory", "using_age_class"))
+        sit_parser.get_parse_bool_func("inventory", "using_age_class")
+    )
 
     # for rows where using_age_class is false, a type of integer and min value
     # of 0 is enforced
-    age_column_format = [
-        x for x in inventory_format if x["name"] == "age"][0].copy()
+    age_column_format = [x for x in inventory_format if x["name"] == "age"][
+        0
+    ].copy()
     age_column_format["type"] = int
     age_column_format["min_value"] = 0
 
     sit_parser.unpack_column(
         inventory.loc[~inventory.using_age_class],
-        age_column_format, "inventory")
+        age_column_format,
+        "inventory",
+    )
 
     if inventory.using_age_class.any():
         inventory = expand_age_class_inventory(inventory, age_classes)
@@ -192,10 +206,14 @@ def parse(inventory_table, classifiers, classifier_values,
     inventory = inventory.reset_index(drop=True)
 
     if "spatial_reference" in inventory:
-        if inventory.spatial_reference[
-                inventory.spatial_reference > 0].duplicated().any():
+        if (
+            inventory.spatial_reference[inventory.spatial_reference > 0]
+            .duplicated()
+            .any()
+        ):
             raise ValueError(
-                "duplicate value detected in spatial_reference column")
+                "duplicate value detected in spatial_reference column"
+            )
     return inventory
 
 
@@ -222,9 +240,9 @@ def expand_age_class_inventory(inventory, age_classes):
     expanded_age_classes = pd.DataFrame()
 
     undefined_age_class_name = np.setdiff1d(
-        inventory.loc[
-            inventory.using_age_class].age.astype(str).unique(),
-        age_classes.name.unique())
+        inventory.loc[inventory.using_age_class].age.astype(str).unique(),
+        age_classes.name.unique(),
+    )
     if len(undefined_age_class_name) > 0:
         raise ValueError(
             "Undefined age class ids (as defined in sit "
@@ -232,14 +250,21 @@ def expand_age_class_inventory(inventory, age_classes):
         )
     for row in age_classes.itertuples():
 
-        age_range = range(row.start_year, row.start_year + row.class_size) \
-            if row.class_size > 0 else [0]
+        age_range = (
+            range(row.start_year, row.start_year + row.class_size)
+            if row.class_size > 0
+            else [0]
+        )
 
         expanded_age_classes = expanded_age_classes.append(
-            pd.DataFrame({
-                "name": row.name,
-                "age": age_range,
-                "class_size": row.class_size}))
+            pd.DataFrame(
+                {
+                    "name": row.name,
+                    "age": age_range,
+                    "class_size": row.class_size,
+                }
+            )
+        )
 
     non_using_age_class_rows = inventory.loc[~inventory.using_age_class]
     using_age_class_rows = inventory.loc[inventory.using_age_class].copy()
@@ -248,20 +273,25 @@ def expand_age_class_inventory(inventory, age_classes):
         if (using_age_class_rows.spatial_reference >= 0).any():
             raise ValueError(
                 "using_age_class=true and spatial reference may not be "
-                "used together")
+                "used together"
+            )
     using_age_class_rows.age = using_age_class_rows.age.astype(str)
 
     age_class_merge = using_age_class_rows.merge(
-        expanded_age_classes, left_on="age", right_on="name")
+        expanded_age_classes, left_on="age", right_on="name"
+    )
 
-    age_class_merge.age_x = (age_class_merge.age_y)
-    age_class_merge.loc[age_class_merge.class_size > 0, "area"] \
-        /= age_class_merge.class_size[age_class_merge.class_size > 0]
+    age_class_merge.age_x = age_class_merge.age_y
+    age_class_merge.loc[
+        age_class_merge.class_size > 0, "area"
+    ] /= age_class_merge.class_size[age_class_merge.class_size > 0]
 
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
-        columns=["age_y", "class_size", "name"])
-    result = non_using_age_class_rows.append(age_class_merge) \
-        .reset_index(drop=True)
+        columns=["age_y", "class_size", "name"]
+    )
+    result = non_using_age_class_rows.append(age_class_merge).reset_index(
+        drop=True
+    )
 
     return result

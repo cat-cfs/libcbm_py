@@ -6,10 +6,17 @@
 def get_pool_variable_filter_mappings():
     # TEMPORARY: see issue #15 (https://github.com/cat-cfs/libcbm_py/issues/15)
     biomass = [
-        'SoftwoodMerch', 'SoftwoodFoliage', 'SoftwoodOther',
-        'SoftwoodCoarseRoots', 'SoftwoodFineRoots', 'HardwoodMerch',
-        'HardwoodFoliage', 'HardwoodOther', 'HardwoodCoarseRoots',
-        'HardwoodFineRoots']
+        "SoftwoodMerch",
+        "SoftwoodFoliage",
+        "SoftwoodOther",
+        "SoftwoodCoarseRoots",
+        "SoftwoodFineRoots",
+        "HardwoodMerch",
+        "HardwoodFoliage",
+        "HardwoodOther",
+        "HardwoodCoarseRoots",
+        "HardwoodFineRoots",
+    ]
     return [
         ("MinTotBiomassC", biomass, ">="),
         ("MaxTotBiomassC", biomass, "<="),
@@ -23,16 +30,31 @@ def get_pool_variable_filter_mappings():
         ("MaxSWStemSnagC", ["SoftwoodStemSnag"], "<="),
         ("MinHWStemSnagC", ["HardwoodStemSnag"], ">="),
         ("MaxHWStemSnagC", ["HardwoodStemSnag"], "<="),
-        ("MinTotalStemSnagMerchC",
-         ["SoftwoodMerch", "HardwoodMerch",
-          "SoftwoodStemSnag", "HardwoodStemSnag"], ">="),
-        ("MaxTotalStemSnagMerchC",
-         ["SoftwoodMerch", "HardwoodMerch",
-          "SoftwoodStemSnag", "HardwoodStemSnag"], "<="),
+        (
+            "MinTotalStemSnagMerchC",
+            [
+                "SoftwoodMerch",
+                "HardwoodMerch",
+                "SoftwoodStemSnag",
+                "HardwoodStemSnag",
+            ],
+            ">=",
+        ),
+        (
+            "MaxTotalStemSnagMerchC",
+            [
+                "SoftwoodMerch",
+                "HardwoodMerch",
+                "SoftwoodStemSnag",
+                "HardwoodStemSnag",
+            ],
+            "<=",
+        ),
         ("MinSWMerchStemSnagC", ["SoftwoodMerch", "SoftwoodStemSnag"], ">="),
         ("MaxSWMerchStemSnagC", ["SoftwoodMerch", "SoftwoodStemSnag"], "<="),
         ("MinHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], ">="),
-        ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<=")]
+        ("MaxHWMerchStemSnagC", ["HardwoodMerch", "HardwoodStemSnag"], "<="),
+    ]
 
 
 def create_pool_filter_expression(sit_data):
@@ -63,8 +85,9 @@ def create_pool_filter_expression(sit_data):
             "({pool_expression} {operator} {value})".format(
                 pool_expression="({})".format(" + ".join(pool_values)),
                 operator=operator,
-                value=sit_data[sit_column]
-            ))
+                value=sit_data[sit_column],
+            )
+        )
 
     expression = " & ".join(expression_tokens)
     return expression
@@ -82,9 +105,7 @@ def get_state_variable_age_filter_mappings():
              - state variable column name
              - operator string
     """
-    return [
-        ("min_age", "age", ">="),
-        ("max_age", "age", "<=")]
+    return [("min_age", "age", ">="), ("max_age", "age", "<=")]
 
 
 def get_state_variable_filter_mappings():
@@ -101,7 +122,8 @@ def get_state_variable_filter_mappings():
     """
     return get_state_variable_age_filter_mappings() + [
         ("MinYearsSinceDist", "time_since_last_disturbance", ">="),
-        ("MaxYearsSinceDist", "time_since_last_disturbance", "<=")]
+        ("MaxYearsSinceDist", "time_since_last_disturbance", "<="),
+    ]
 
 
 def create_state_filter_expression(sit_data, age_only):
@@ -142,8 +164,9 @@ def create_state_filter_expression(sit_data, age_only):
             "({state_variable} {operator} {value})".format(
                 state_variable=state_variable_column,
                 operator=operator,
-                value=sit_data[sit_column]
-            ))
+                value=sit_data[sit_column],
+            )
+        )
 
     expression = " & ".join(expression_tokens)
     return expression
@@ -156,7 +179,8 @@ def create_last_disturbance_type_filter(sit_data):
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",
-        value=int(sit_data["LastDistTypeID"]))
+        value=int(sit_data["LastDistTypeID"]),
+    )
     return expression
 
 
@@ -172,6 +196,5 @@ def get_classifier_set(sit_data_row, classifiers):
         list: a list of strings with classifier values in the specified row
             also known as a "classifier set"
     """
-    classifier_set = [
-        sit_data_row[x] for x in classifiers]
+    classifier_set = [sit_data_row[x] for x in classifiers]
     return classifier_set

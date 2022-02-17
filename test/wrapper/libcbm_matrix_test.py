@@ -5,10 +5,21 @@ from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 
 
 class LibCBM_Matrix_Test(unittest.TestCase):
-
     def test_1_by_1_matrix(self):
-        for arr in [np.array(1.0), np.array([1.0]), np.array([[[1.0]]]),
-                    np.ones(shape=((1, 1, 1,)))]:
+        for arr in [
+            np.array(1.0),
+            np.array([1.0]),
+            np.array([[[1.0]]]),
+            np.ones(
+                shape=(
+                    (
+                        1,
+                        1,
+                        1,
+                    )
+                )
+            ),
+        ]:
             mat = LibCBM_Matrix(arr)
             self.assertTrue(mat.rows == 1)
             self.assertTrue(mat.cols == 1)

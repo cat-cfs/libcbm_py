@@ -36,10 +36,12 @@ def parse(yield_table, classifiers, classifier_values, age_classes):
             and substituted species
     """
     yield_format = sit_format.get_yield_format(
-        classifiers.name, len(yield_table.columns))
+        classifiers.name, len(yield_table.columns)
+    )
 
     unpacked_table = sit_parser.unpack_table(
-        yield_table, yield_format, "yield")
+        yield_table, yield_format, "yield"
+    )
 
     # check that the number of volumes is equal to the number of age classes
     expected_column_count = len(age_classes) + len(classifiers) + 1
@@ -47,22 +49,26 @@ def parse(yield_table, classifiers, classifier_values, age_classes):
         raise ValueError(
             f"expected {expected_column_count} columns. This is defined as "
             f"{len(classifiers) + 1} classifiers plus {len(age_classes)} "
-            "age classes")
+            "age classes"
+        )
 
     # check that the correct number of classifiers are present and check that
     # each value in yield table classifier sets is defined in classifier values
     for row in classifiers.itertuples():
         yield_classifiers = unpacked_table[row.name].unique()
         defined_classifier_values = classifier_values[
-            classifier_values["classifier_id"] == row.id]["name"].unique()
+            classifier_values["classifier_id"] == row.id
+        ]["name"].unique()
         wildcard = np.array([sit_classifier_parser.get_wildcard_keyword()])
         valid_classifiers = np.concatenate(
-            [defined_classifier_values, wildcard])
+            [defined_classifier_values, wildcard]
+        )
 
         diff = np.setdiff1d(yield_classifiers, valid_classifiers)
         if len(diff) > 0:
             raise ValueError(
                 "Undefined classifier values detected: "
-                f"classifier: '{row.name}', values: {diff}")
+                f"classifier: '{row.name}', values: {diff}"
+            )
 
     return unpacked_table

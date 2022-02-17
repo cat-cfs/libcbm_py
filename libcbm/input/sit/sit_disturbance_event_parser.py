@@ -10,8 +10,7 @@ from libcbm.input.sit import sit_format
 
 
 def get_sort_types():
-    """Gets the CBM standard import tool sorting id/name pairs as a dictionary
-    """
+    """Gets the CBM standard import tool sorting id/name pairs as a dictionary"""
     return {
         1: "PROPORTION_OF_EVERY_RECORD",
         2: "MERCHCSORT_TOTAL",
@@ -23,17 +22,15 @@ def get_sort_types():
         9: "HWSTEMSNAG",
         10: "MERCHCSORT_SW",
         11: "MERCHCSORT_HW",
-        12: "SORT_BY_HW_AGE"}
+        12: "SORT_BY_HW_AGE",
+    }
 
 
 def get_target_types():
     """Gets the CBM standard import tool target type id/name pairs as a
     dictionary
     """
-    return {
-        "A": "Area",
-        "P": "Proportion",
-        "M": "Merchantable"}
+    return {"A": "Area", "P": "Proportion", "M": "Merchantable"}
 
 
 def parse_eligibilities(disturbance_events, disturbance_eligibilities):
@@ -104,38 +101,50 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
     Returns:
         pandas.DataFrame: the validated event eligibilities table
     """
-    disturbance_eligibility_format = \
+    disturbance_eligibility_format = (
         sit_format.get_disturbance_eligibility_format()
+    )
 
     eligibilities = sit_parser.unpack_table(
-        disturbance_eligibilities, disturbance_eligibility_format,
-        "disturbance eligibilities")
+        disturbance_eligibilities,
+        disturbance_eligibility_format,
+        "disturbance eligibilities",
+    )
 
     # confirm that each row in the disturbance events with an
     # eligibility id >= 0 has a corresponding record in the eligibilities
     # table
-    missing_ids = (
-        set(disturbance_events["disturbance_eligibility_id"]) -
-        set(eligibilities["disturbance_eligibility_id"]))
+    missing_ids = set(disturbance_events["disturbance_eligibility_id"]) - set(
+        eligibilities["disturbance_eligibility_id"]
+    )
     if missing_ids:
         raise ValueError(
             "disturbance_eligibility_id values found in sit_events "
-            f"but not in sit_disturbance_eligibilities {missing_ids}")
+            f"but not in sit_disturbance_eligibilities {missing_ids}"
+        )
     if pd.isnull(eligibilities.disturbance_eligibility_id).any():
         raise ValueError(
             "null values detected in eligibilities disturbance_eligibility_id "
-            "column")
+            "column"
+        )
     if eligibilities.disturbance_eligibility_id.duplicated().any():
         raise ValueError(
             "duplicated disturbance_eligibility_id values detected in "
-            "eligibilities")
+            "eligibilities"
+        )
     eligibilities = eligibilities.fillna("")
     return eligibilities
 
 
-def parse(disturbance_events, classifiers, classifier_values,
-          classifier_aggregates, disturbance_types, age_classes=None,
-          separate_eligibilities=False):
+def parse(
+    disturbance_events,
+    classifiers,
+    classifier_values,
+    classifier_aggregates,
+    disturbance_types,
+    age_classes=None,
+    separate_eligibilities=False,
+):
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
     eligibilites are separate from sit_events and joined by foreign key.
@@ -179,11 +188,14 @@ def parse(disturbance_events, classifiers, classifier_values,
     """
 
     disturbance_event_format = sit_format.get_disturbance_event_format(
-          classifiers.name, len(disturbance_events.columns),
-          include_eligibility_columns=not separate_eligibilities)
+        classifiers.name,
+        len(disturbance_events.columns),
+        include_eligibility_columns=not separate_eligibilities,
+    )
 
     events = sit_parser.unpack_table(
-        disturbance_events, disturbance_event_format, "disturbance events")
+        disturbance_events, disturbance_event_format, "disturbance events"
+    )
 
     # check that the correct number of classifiers are present, and check
     # that each value in disturbance events classifier sets is defined in
@@ -192,56 +204,70 @@ def parse(disturbance_events, classifiers, classifier_values,
         event_classifiers = events[row.name].unique()
 
         defined_classifiers = classifier_values[
-            classifier_values["classifier_id"] == row.id]["name"].unique()
+            classifier_values["classifier_id"] == row.id
+        ]["name"].unique()
 
         aggregates = np.array(
-            [x["name"] for x in
-             classifier_aggregates if x["classifier_id"] == row.id])
+            [
+                x["name"]
+                for x in classifier_aggregates
+                if x["classifier_id"] == row.id
+            ]
+        )
         wildcard = np.array([sit_classifier_parser.get_wildcard_keyword()])
         valid_classifiers = np.concatenate(
-            [defined_classifiers, aggregates, wildcard])
+            [defined_classifiers, aggregates, wildcard]
+        )
 
-        diff_classifiers = np.setdiff1d(
-            event_classifiers, valid_classifiers)
+        diff_classifiers = np.setdiff1d(event_classifiers, valid_classifiers)
         if len(diff_classifiers) > 0:
             raise ValueError(
                 "Undefined classifier values detected: "
-                f"classifier: '{row.name}', values: {diff_classifiers}")
+                f"classifier: '{row.name}', values: {diff_classifiers}"
+            )
 
     if not separate_eligibilities:
         # if age classes are used substitute the age critera based on the age
         # class id, and raise an error if the id is not defined, and drop
         # using_age_class from output
         parse_bool_func = sit_parser.get_parse_bool_func(
-            "events", "using_age_class")
+            "events", "using_age_class"
+        )
         events = sit_parser.substitute_using_age_class_rows(
-            events, parse_bool_func, age_classes)
+            events, parse_bool_func, age_classes
+        )
         events = events.rename(
             columns={
                 "min_softwood_age": "min_age",
-                "max_softwood_age": "max_age"})
+                "max_softwood_age": "max_age",
+            }
+        )
 
         events = events.drop(
-            columns=["using_age_class", "min_hardwood_age",
-                     "max_hardwood_age"])
+            columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"]
+        )
 
     # validate sort type
     valid_sort_types = get_sort_types().keys()
     int_sort_type = events.sort_type.astype(int)
-    sort_type_diff = set(int_sort_type.unique()) \
-        .difference(set(valid_sort_types))
+    sort_type_diff = set(int_sort_type.unique()).difference(
+        set(valid_sort_types)
+    )
     if len(sort_type_diff) > 0:
         raise ValueError(
-            f"specified sort types are not valid: {sort_type_diff}")
+            f"specified sort types are not valid: {sort_type_diff}"
+        )
     events.sort_type = int_sort_type.map(get_sort_types())
 
     # validate target type
     valid_target_types = get_target_types().keys()
-    target_type_diff = set(events.target_type.unique()) \
-        .difference(set(valid_target_types))
+    target_type_diff = set(events.target_type.unique()).difference(
+        set(valid_target_types)
+    )
     if len(target_type_diff) > 0:
         raise ValueError(
-            f"specified target types are not valid: {target_type_diff}")
+            f"specified target types are not valid: {target_type_diff}"
+        )
     events.target_type = events.target_type.map(get_target_types())
 
     # validate disturbance type according to specified disturbance types

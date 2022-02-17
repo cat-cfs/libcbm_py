@@ -7,8 +7,7 @@ from pandas.api.types import is_numeric_dtype
 import numpy as np
 
 
-class SITMapping():
-
+class SITMapping:
     def __init__(self, config, sit_cbm_defaults):
         self.config = config
         self.sit_cbm_defaults = sit_cbm_defaults
@@ -42,11 +41,15 @@ class SITMapping():
                 the series matches the length of the species parameter.
         """
         merged_classifiers = classifiers.merge(
-            classifier_values, left_on="id", right_on="classifier_id",
-            suffixes=["_classifier", "_classifier_value"])
+            classifier_values,
+            left_on="id",
+            right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"],
+        )
         afforestation_pre_types = {
             x["afforestation_pre_type_name"]
-            for x in self.sit_cbm_defaults.get_afforestation_pre_types()}
+            for x in self.sit_cbm_defaults.get_afforestation_pre_types()
+        }
 
         species_map = {}
         for species_mapping in self.config["species"]["species_mapping"]:
@@ -55,7 +58,8 @@ class SITMapping():
             if user_species in species_map:
                 raise ValueError(
                     f"Specified user species {user_species} mapped multiple "
-                    "times.")
+                    "times."
+                )
             if default_species in afforestation_pre_types:
                 # since the species classifier can be mapped to nonforest
                 # cover types, but we are not interested in these for the
@@ -65,20 +69,24 @@ class SITMapping():
                 continue
             try:
                 species_id = self.sit_cbm_defaults.get_species_id(
-                    default_species)
+                    default_species
+                )
             except KeyError:
                 raise KeyError(
                     f"mapped default species {default_species} not present in "
-                    "default values")
+                    "default values"
+                )
             species_map[user_species] = species_id
 
         species_classifier = self.config["species"]["species_classifier"]
-        species_value_filter = \
+        species_value_filter = (
             merged_classifiers["name_classifier"] == species_classifier
+        )
         if not species_value_filter.any():
             raise ValueError(
                 f"specified mapped species {species_classifier} not found in "
-                "defined sit classifiers")
+                "defined sit classifiers"
+            )
         species_values = merged_classifiers.loc[species_value_filter]
 
         def get_default_species(species_classifier_value):
@@ -88,19 +96,27 @@ class SITMapping():
                 raise KeyError(
                     f"specified value '{species_classifier_value}' not found "
                     "as key in map of species classifier description to cbm "
-                    "default species value.")
+                    "default species value."
+                )
 
         default_species_map = {
             row["classifier_value"]: row["default_species"]
-            for _, row in pd.DataFrame({
-                "classifier_value": species_values["name_classifier_value"],
-                "default_species": species_values["description"].map(
-                    get_default_species)}).iterrows()
+            for _, row in pd.DataFrame(
+                {
+                    "classifier_value": species_values[
+                        "name_classifier_value"
+                    ],
+                    "default_species": species_values["description"].map(
+                        get_default_species
+                    ),
+                }
+            ).iterrows()
         }
         # check for values that are defined in the species series but not
         # defined in the default_species_map
         undefined_species = np.setdiff1d(
-            species.unique(), list(default_species_map.keys()))
+            species.unique(), list(default_species_map.keys())
+        )
         if len(undefined_species) > 0:
             raise ValueError(
                 "Undefined species classifiers (as defined in sit "
@@ -114,101 +130,138 @@ class SITMapping():
                 return sit_map[value]
             except KeyError:
                 raise KeyError(error_fmt.format(value))
+
         return get_mapped_value
 
-    def _get_spatial_unit_joined_admin_eco(self, inventory, classifiers,
-                                           classifier_values):
+    def _get_spatial_unit_joined_admin_eco(
+        self, inventory, classifiers, classifier_values
+    ):
         merged_classifiers = classifiers.merge(
-            classifier_values, left_on="id", right_on="classifier_id",
-            suffixes=["_classifier", "_classifier_value"])
+            classifier_values,
+            left_on="id",
+            right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"],
+        )
         spu_map = {
             x["user_spatial_unit"]: (
                 x["default_spatial_unit"]["admin_boundary"],
-                x["default_spatial_unit"]["eco_boundary"])
-            for x in self.config["spatial_units"]["spu_mapping"]}
+                x["default_spatial_unit"]["eco_boundary"],
+            )
+            for x in self.config["spatial_units"]["spu_mapping"]
+        }
         spu_classifier = self.config["spatial_units"]["spu_classifier"]
         spu_values = merged_classifiers.loc[
-            merged_classifiers["name_classifier"] == spu_classifier]
+            merged_classifiers["name_classifier"] == spu_classifier
+        ]
         default_spu_map = {
             row["classifier_value"]: row["default_spatial_unit"]
-            for _, row in pd.DataFrame({
-                "classifier_value": spu_values["name_classifier_value"],
-                "default_spatial_unit": spu_values["description"].map(
-                    self._get_mapping_error_handling_function(
-                        spu_map,
-                        error_fmt="specified classifier value description "
-                                  "'{}' not found in spatial unit map"))}
+            for _, row in pd.DataFrame(
+                {
+                    "classifier_value": spu_values["name_classifier_value"],
+                    "default_spatial_unit": spu_values["description"].map(
+                        self._get_mapping_error_handling_function(
+                            spu_map,
+                            error_fmt="specified classifier value description "
+                            "'{}' not found in spatial unit map",
+                        )
+                    ),
+                }
             ).iterrows()
         }
         output = []
         for admin, eco in inventory[spu_classifier].map(default_spu_map):
             try:
                 output.append(
-                    self.sit_cbm_defaults.get_spatial_unit_id(admin, eco))
+                    self.sit_cbm_defaults.get_spatial_unit_id(admin, eco)
+                )
             except KeyError:
                 raise KeyError(
                     "The specified administrative/ecological boundary "
-                    f"combination does not exist: '{admin}', '{eco}'")
+                    f"combination does not exist: '{admin}', '{eco}'"
+                )
         return pd.Series(output)
 
-    def _get_spatial_unit_separate_admin_eco(self, inventory, classifiers,
-                                             classifier_values):
+    def _get_spatial_unit_separate_admin_eco(
+        self, inventory, classifiers, classifier_values
+    ):
         merged_classifiers = classifiers.merge(
-            classifier_values, left_on="id", right_on="classifier_id",
-            suffixes=["_classifier", "_classifier_value"])
+            classifier_values,
+            left_on="id",
+            right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"],
+        )
         admin_map = {
             x["user_admin_boundary"]: x["default_admin_boundary"]
-            for x in self.config["spatial_units"]["admin_mapping"]}
+            for x in self.config["spatial_units"]["admin_mapping"]
+        }
         eco_map = {
             x["user_eco_boundary"]: x["default_eco_boundary"]
-            for x in self.config["spatial_units"]["eco_mapping"]}
+            for x in self.config["spatial_units"]["eco_mapping"]
+        }
 
         admin_classifier = self.config["spatial_units"]["admin_classifier"]
         admin_values = merged_classifiers.loc[
-            merged_classifiers["name_classifier"] == admin_classifier]
+            merged_classifiers["name_classifier"] == admin_classifier
+        ]
 
         default_admin_map = {
             row["classifier_value"]: row["default_admin_boundary"]
-            for _, row in pd.DataFrame({
-                "classifier_value": admin_values["name_classifier_value"],
-                "default_admin_boundary": admin_values["description"].map(
-                    self._get_mapping_error_handling_function(
-                        admin_map,
-                        error_fmt="specified classifier value description "
-                                  "'{}' not found in admin boundary map"))
-                }).iterrows()
+            for _, row in pd.DataFrame(
+                {
+                    "classifier_value": admin_values["name_classifier_value"],
+                    "default_admin_boundary": admin_values["description"].map(
+                        self._get_mapping_error_handling_function(
+                            admin_map,
+                            error_fmt="specified classifier value description "
+                            "'{}' not found in admin boundary map",
+                        )
+                    ),
+                }
+            ).iterrows()
         }
         eco_classifier = self.config["spatial_units"]["eco_classifier"]
         eco_values = merged_classifiers.loc[
-            merged_classifiers["name_classifier"] == eco_classifier]
+            merged_classifiers["name_classifier"] == eco_classifier
+        ]
         default_eco_map = {
             row["classifier_value"]: row["default_eco_boundary"]
-            for _, row in pd.DataFrame({
-                "classifier_value": eco_values["name_classifier_value"],
-                "default_eco_boundary": eco_values["description"].map(
-                    self._get_mapping_error_handling_function(
-                        eco_map,
-                        error_fmt="specified classifier value description "
-                                  "'{}' not found in ecological boundary map")
-                )}).iterrows()
+            for _, row in pd.DataFrame(
+                {
+                    "classifier_value": eco_values["name_classifier_value"],
+                    "default_eco_boundary": eco_values["description"].map(
+                        self._get_mapping_error_handling_function(
+                            eco_map,
+                            error_fmt="specified classifier value description "
+                            "'{}' not found in ecological boundary map",
+                        )
+                    ),
+                }
+            ).iterrows()
         }
 
         def spu_map_func(row):
             try:
                 return self.sit_cbm_defaults.get_spatial_unit_id(
-                    row.default_admin_boundary, row.default_eco_boundary)
+                    row.default_admin_boundary, row.default_eco_boundary
+                )
             except KeyError:
                 raise KeyError(
                     "The specified administrative/ecological boundary "
                     "combination does not exist: "
                     f"'{row.default_admin_boundary}', "
-                    f"'{row.default_eco_boundary}'")
+                    f"'{row.default_eco_boundary}'"
+                )
 
-        return pd.DataFrame({
-            "default_admin_boundary": inventory[admin_classifier].map(
-                default_admin_map),
-            "default_eco_boundary": inventory[eco_classifier].map(
-                default_eco_map)}).apply(spu_map_func, axis=1)
+        return pd.DataFrame(
+            {
+                "default_admin_boundary": inventory[admin_classifier].map(
+                    default_admin_map
+                ),
+                "default_eco_boundary": inventory[eco_classifier].map(
+                    default_eco_map
+                ),
+            }
+        ).apply(spu_map_func, axis=1)
 
     def get_spatial_unit(self, inventory, classifiers, classifier_values):
         """Get a pandas.Series containing spatial unit ids based on SIT
@@ -244,44 +297,57 @@ class SITMapping():
                 except KeyError:
                     raise KeyError(
                         "specified spatial unit id not found in defaults: "
-                        f"{default_spuid}")
+                        f"{default_spuid}"
+                    )
             else:
                 default_spuid = self.sit_cbm_defaults.get_spatial_unit_id(
                     self.config["spatial_units"]["admin_boundary"],
-                    self.config["spatial_units"]["eco_boundary"]
+                    self.config["spatial_units"]["eco_boundary"],
                 )
 
             data = np.ones(inventory.shape[0], dtype=np.int32)
             return pd.Series(data * default_spuid)
         elif mapping_mode == "SeparateAdminEcoClassifiers":
             return self._get_spatial_unit_separate_admin_eco(
-                inventory, classifiers, classifier_values)
+                inventory, classifiers, classifier_values
+            )
         elif mapping_mode == "JoinedAdminEcoClassifier":
             return self._get_spatial_unit_joined_admin_eco(
-                inventory, classifiers, classifier_values)
+                inventory, classifiers, classifier_values
+            )
         else:
             raise ValueError(
-                f"specified mapping_mode is not valid {mapping_mode}")
+                f"specified mapping_mode is not valid {mapping_mode}"
+            )
 
-    def get_nonforest_cover_ids(self, inventory, classifiers,
-                                classifier_values):
+    def get_nonforest_cover_ids(
+        self, inventory, classifiers, classifier_values
+    ):
         non_forest_map = {}
 
         default_non_forest = {
             x["afforestation_pre_type_name"]: x["afforestation_pre_type_id"]
-            for x in self.sit_cbm_defaults.get_afforestation_pre_types()}
+            for x in self.sit_cbm_defaults.get_afforestation_pre_types()
+        }
 
-        non_forest_in_species = len(
-            set(default_non_forest.keys())
-            .intersection([
-                x["default_species"]
-                for x in self.config["species"]["species_mapping"]])) > 0
+        non_forest_in_species = (
+            len(
+                set(default_non_forest.keys()).intersection(
+                    [
+                        x["default_species"]
+                        for x in self.config["species"]["species_mapping"]
+                    ]
+                )
+            )
+            > 0
+        )
 
         non_forest_classifier = None
         species_classifier = self.config["species"]["species_classifier"]
         if non_forest_in_species:
             default_species = {
-                x["species_name"] for x in self.sit_cbm_defaults.get_species()}
+                x["species_name"] for x in self.sit_cbm_defaults.get_species()
+            }
             non_forest_classifier = species_classifier
             for item in self.config["species"]["species_mapping"]:
                 user_value = item["user_species"]
@@ -294,78 +360,97 @@ class SITMapping():
                     except KeyError:
                         raise KeyError(
                             "specified default_nonforest_type is not a "
-                            f"defined default value {default_value}")
+                            f"defined default value {default_value}"
+                        )
                     non_forest_map[user_value] = default_id
 
-        if "nonforest" in self.config \
-                and not self.config["nonforest"] is None \
-                and len(self.config["nonforest"]) > 0:
+        if (
+            "nonforest" in self.config
+            and not self.config["nonforest"] is None
+            and len(self.config["nonforest"]) > 0
+        ):
 
-            non_forest_classifier = \
-                self.config["nonforest"]["nonforest_classifier"]
+            non_forest_classifier = self.config["nonforest"][
+                "nonforest_classifier"
+            ]
             if non_forest_classifier == species_classifier:
                 raise ValueError(
                     "single classifier may not be used as both non-forest "
-                    "classifier and species classifier")
+                    "classifier and species classifier"
+                )
 
             if non_forest_in_species:
                 raise ValueError(
                     "Nonforest values mapped in species classifier and "
-                    "non-forest classifier")
+                    "non-forest classifier"
+                )
             for item in self.config["nonforest"]["nonforest_mapping"]:
                 user_value = item["user_nonforest_type"]
                 default_value = item["default_nonforest_type"]
                 if user_value in non_forest_map:
                     raise KeyError(
-                        "specified user_nonforest_type defined multiple times")
+                        "specified user_nonforest_type defined multiple times"
+                    )
                 if default_value is not None:
                     try:
                         default_id = default_non_forest[default_value]
                     except KeyError:
                         raise KeyError(
                             "specified default_nonforest_type is not a "
-                            f"defined default value {default_value}")
+                            f"defined default value {default_value}"
+                        )
                     non_forest_map[user_value] = default_id
                 else:
                     non_forest_map[user_value] = -1
 
         if non_forest_classifier is None:
-            return pd.Series(np.ones(inventory.shape[0])*-1)
+            return pd.Series(np.ones(inventory.shape[0]) * -1)
 
         merged_classifiers = classifiers.merge(
-            classifier_values, left_on="id", right_on="classifier_id",
-            suffixes=["_classifier", "_classifier_value"])
+            classifier_values,
+            left_on="id",
+            right_on="classifier_id",
+            suffixes=["_classifier", "_classifier_value"],
+        )
 
         non_forest_classifier_values = merged_classifiers.loc[
-            merged_classifiers["name_classifier"] == non_forest_classifier]
+            merged_classifiers["name_classifier"] == non_forest_classifier
+        ]
 
         missing_map_entries = np.setdiff1d(
             non_forest_classifier_values["description"].unique(),
-            list(non_forest_map.keys()))
+            list(non_forest_map.keys()),
+        )
 
         if len(missing_map_entries) > 0:
             raise ValueError(
                 "the following non forest classifier descriptions were not "
-                f"mapped to a default type: {missing_map_entries}")
+                f"mapped to a default type: {missing_map_entries}"
+            )
 
         default_nonforest_type_map = {
             row["classifier_value"]: row["default_species"]
-            for _, row in pd.DataFrame({
-                "classifier_value":
-                    non_forest_classifier_values["name_classifier_value"],
-                "default_species":
-                    non_forest_classifier_values["description"].map(
-                        non_forest_map)}).iterrows()
+            for _, row in pd.DataFrame(
+                {
+                    "classifier_value": non_forest_classifier_values[
+                        "name_classifier_value"
+                    ],
+                    "default_species": non_forest_classifier_values[
+                        "description"
+                    ].map(non_forest_map),
+                }
+            ).iterrows()
         }
 
         undefined_values = np.setdiff1d(
             inventory[non_forest_classifier].unique(),
-            list(default_nonforest_type_map.keys())
+            list(default_nonforest_type_map.keys()),
         )
         if len(undefined_values) > 0:
             raise ValueError(
                 "Undefined non forest classifier values found in inventory "
-                f"{undefined_values}")
+                f"{undefined_values}"
+            )
         return inventory[non_forest_classifier].map(default_nonforest_type_map)
 
     def get_sit_disturbance_type_id(self, disturbance_type):
@@ -384,7 +469,8 @@ class SITMapping():
             pandas.Series: a series of disturbance type ids
         """
         return disturbance_type.map(
-            self.sit_cbm_defaults.get_sit_disturbance_type_id)
+            self.sit_cbm_defaults.get_sit_disturbance_type_id
+        )
 
     def get_default_disturbance_type_id(self, disturbance_type):
         """Returns a series of default disturbance type ids based on the
@@ -409,17 +495,21 @@ class SITMapping():
             if user_dist_type in disturbance_type_map:
                 raise KeyError(
                     f"specified user_dist_type {user_dist_type} appears more "
-                    "than one time")
+                    "than one time"
+                )
             else:
                 dist_type_id = None
                 try:
-                    dist_type_id = \
+                    dist_type_id = (
                         self.sit_cbm_defaults.get_disturbance_type_id(
-                            default_dist_type)
+                            default_dist_type
+                        )
+                    )
                 except KeyError:
                     raise KeyError(
                         "specified mapped default disturbance type not found:"
-                        f" {default_dist_type}")
+                        f" {default_dist_type}"
+                    )
                 disturbance_type_map[user_dist_type] = dist_type_id
 
         def map_func(dist_type):
@@ -428,7 +518,8 @@ class SITMapping():
             else:
                 raise KeyError(
                     f"Specified disturbance type value {dist_type} not "
-                    "mapped.")
+                    "mapped."
+                )
 
         return disturbance_type.map(map_func)
 
@@ -455,15 +546,21 @@ class SITMapping():
             land_class = land_class.astype(int)
         land_classes_by_code = {
             x["code"]: x["land_class_id"]
-            for x in self.sit_cbm_defaults.get_land_classes()}
-        land_classes_by_code.update({
-            str(x["land_class_id"]): x["land_class_id"]
-            for x in self.sit_cbm_defaults.get_land_classes()})
+            for x in self.sit_cbm_defaults.get_land_classes()
+        }
+        land_classes_by_code.update(
+            {
+                str(x["land_class_id"]): x["land_class_id"]
+                for x in self.sit_cbm_defaults.get_land_classes()
+            }
+        )
 
         undefined_land_classes = np.setdiff1d(
-            land_class.astype(str).unique(), list(land_classes_by_code.keys()))
+            land_class.astype(str).unique(), list(land_classes_by_code.keys())
+        )
         if len(undefined_land_classes) > 0:
             raise ValueError(
                 "the specified landclass values are undefined: "
-                f"{undefined_land_classes}")
+                f"{undefined_land_classes}"
+            )
         return land_class.astype(str).map(land_classes_by_code)

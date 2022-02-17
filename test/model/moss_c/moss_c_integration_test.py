@@ -10,14 +10,14 @@ from libcbm import resources
 
 
 class MossCIntegrationTest(unittest.TestCase):
-
     def test_integration(self):
         test_data_dir = os.path.join(
-            resources.get_test_resources_dir(),
-            "moss_c_test_case")
+            resources.get_test_resources_dir(), "moss_c_test_case"
+        )
 
         expected_output = pd.read_csv(
-            os.path.join(test_data_dir, "expected_output.csv"))
+            os.path.join(test_data_dir, "expected_output.csv")
+        )
         ctx = model_context.create_from_csv(test_data_dir)
         pool_results = pd.DataFrame()
         flux_results = pd.DataFrame()
@@ -36,12 +36,13 @@ class MossCIntegrationTest(unittest.TestCase):
 
         for p in ECOSYSTEM_POOLS:
             self.assertTrue(
-                np.allclose(pool_results[p.name], expected_output[p.name]))
+                np.allclose(pool_results[p.name], expected_output[p.name])
+            )
 
     def test_integration_spinup(self):
         test_data_dir = os.path.join(
-            resources.get_test_resources_dir(),
-            "moss_c_test_case")
+            resources.get_test_resources_dir(), "moss_c_test_case"
+        )
 
         ctx = model_context.create_from_csv(test_data_dir)
         spinup_debug = model.spinup(ctx, enable_debugging=True)

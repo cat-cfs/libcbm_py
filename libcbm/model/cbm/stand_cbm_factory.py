@@ -24,10 +24,8 @@ def _safe_map(series, map):
     out_series = series.map(map)
     null_values = pd.isnull(out_series)
     if null_values.any():
-        missing_entries = list(
-            series[null_values].unique())
-        raise ValueError(
-            f"undefined values detected {missing_entries[:10]}")
+        missing_entries = list(series[null_values].unique())
+        raise ValueError(f"undefined values detected {missing_entries[:10]}")
     return out_series
 
 
@@ -38,8 +36,15 @@ class StandCBMFactory:
     The resulting CBM instance can easily be used for stand level simulations
     with explicit relationships between stands and disturbances.
     """
-    def __init__(self, classifiers, merch_volumes, db_path=None,
-                 locale="en-CA", dll_path=None):
+
+    def __init__(
+        self,
+        classifiers,
+        merch_volumes,
+        db_path=None,
+        locale="en-CA",
+        dll_path=None,
+    ):
         """Initialize an instance of CBMStandFactory using classifiers and
         merch volumes.
 
@@ -99,7 +104,8 @@ class StandCBMFactory:
         self.merch_vol_factory = self.merch_volumes_factory()
         self._classifier_config = self._get_classifier_config()
         self._classifier_idx = cbm_config.get_classifier_indexes(
-            self._classifier_config)
+            self._classifier_config
+        )
 
     def merch_volumes_factory(self):
         merch_volume_list = []
@@ -110,7 +116,8 @@ class StandCBMFactory:
                     merch_volumes=[
                         {
                             "species_id": self.defaults_ref.get_species_id(
-                                m["species"]),
+                                m["species"]
+                            ),
                             "age_volume_pairs": [
                                 list(age_vol)
                                 for age_vol in m["age_volume_pairs"]
@@ -127,26 +134,33 @@ class StandCBMFactory:
     def get_disturbance_type_map(self):
         return {
             r["disturbance_type_id"]: r["disturbance_type_name"]
-            for r in self.defaults_ref.disturbance_type_ref}
+            for r in self.defaults_ref.disturbance_type_ref
+        }
 
     def get_classifier_map(self):
-        return self._classifier_idx[
-            "classifier_value_names"].copy()
+        return self._classifier_idx["classifier_value_names"].copy()
 
-    def _get_classifier_value_ids(self, classifier_name,
-                                  classifier_value_name_series):
+    def _get_classifier_value_ids(
+        self, classifier_name, classifier_value_name_series
+    ):
         classifier_value_name_map = self._classifier_idx[
-            "classifier_value_ids"][classifier_name]
+            "classifier_value_ids"
+        ][classifier_name]
         return _safe_map(
-            classifier_value_name_series, classifier_value_name_map)
+            classifier_value_name_series, classifier_value_name_map
+        )
 
     def _get_classifier_config(self):
         classifiers_list = []
         for classifier_name, values in self._classifiers.items():
             classifiers_list.append(
-                cbm_config.classifier(classifier_name, values=[
-                    cbm_config.classifier_value(value) for value in values
-                ]))
+                cbm_config.classifier(
+                    classifier_name,
+                    values=[
+                        cbm_config.classifier_value(value) for value in values
+                    ],
+                )
+            )
 
         return cbm_config.classifier_config(classifiers_list)
 
@@ -189,13 +203,19 @@ class StandCBMFactory:
             data={
                 k: self._get_classifier_value_ids(k, inventory_df[k])
                 for k in self._classifiers.keys()
-            }
+            },
         )
         inventory = pd.DataFrame(
             columns=[
-                "age", "area", "spatial_unit", "afforestation_pre_type_id",
-                "land_class", "historical_disturbance_type",
-                "last_pass_disturbance_type", "delay"],
+                "age",
+                "area",
+                "spatial_unit",
+                "afforestation_pre_type_id",
+                "land_class",
+                "historical_disturbance_type",
+                "last_pass_disturbance_type",
+                "delay",
+            ],
             data={
                 "age": inventory_df.age,
                 "area": inventory_df.area,
@@ -203,31 +223,40 @@ class StandCBMFactory:
                     inventory_df.index,
                     lambda x: self.defaults_ref.get_spatial_unit_id(
                         str(inventory_df.admin_boundary.iloc[x]),
-                        str(inventory_df.eco_boundary.iloc[x]))
+                        str(inventory_df.eco_boundary.iloc[x]),
+                    ),
                 ),
                 "afforestation_pre_type_id": _safe_map(
                     inventory_df.afforestation_pre_type,
                     lambda x: (
-                        -1 if pd.isnull(x) else
-                        self.defaults_ref.get_afforestation_pre_type_id(x))
+                        -1
+                        if pd.isnull(x)
+                        else self.defaults_ref.get_afforestation_pre_type_id(x)
                     ),
+                ),
                 "land_class": _safe_map(
                     inventory_df.land_class,
-                    self.defaults_ref.get_land_class_id),
+                    self.defaults_ref.get_land_class_id,
+                ),
                 "historical_disturbance_type": _safe_map(
                     inventory_df.historic_disturbance_type,
                     lambda x: (
-                        -1 if pd.isnull(x) else
-                        self.defaults_ref.get_disturbance_type_id(x))
+                        -1
+                        if pd.isnull(x)
+                        else self.defaults_ref.get_disturbance_type_id(x)
                     ),
+                ),
                 "last_pass_disturbance_type": _safe_map(
                     inventory_df.last_pass_disturbance_type,
                     lambda x: (
-                        -1 if pd.isnull(x) else
-                        self.defaults_ref.get_disturbance_type_id(x))
+                        -1
+                        if pd.isnull(x)
+                        else self.defaults_ref.get_disturbance_type_id(x)
                     ),
-                "delay": inventory_df.delay
-            })
+                ),
+                "delay": inventory_df.delay,
+            },
+        )
         return classifiers, inventory
 
     def initialize_cbm(self):
@@ -240,4 +269,5 @@ class StandCBMFactory:
                 self._db_path
             ),
             merch_volume_to_biomass_factory=self.merch_volumes_factory,
-            classifiers_factory=self.classifiers_factory)
+            classifiers_factory=self.classifiers_factory,
+        )

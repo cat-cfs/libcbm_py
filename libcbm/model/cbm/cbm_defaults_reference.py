@@ -16,6 +16,7 @@ class CBMDefaultsReference:
         locale_code (str, optional): locale code as defined in the locale
             table of the cbm_defaults database. Defaults to "en-CA".
     """
+
     def __init__(self, sqlite_path, locale_code="en-CA"):
 
         # queries for species name/species id associations
@@ -23,24 +24,28 @@ class CBMDefaultsReference:
 
         # queries for disturbance type name/disturbance type id associations
         self.disturbance_reference_query = queries.get_query(
-            "disturbance_type_ref.sql")
+            "disturbance_type_ref.sql"
+        )
 
         # queries for spatial unit id, admin boundary name, eco boundary name
         # associations
         self.spatial_unit_reference_query = queries.get_query(
-            "spatial_units_name_ref.sql")
+            "spatial_units_name_ref.sql"
+        )
 
         # queries information on disturbance types which have an effect on
         # UNFCCC land class
         self.land_class_disturbance_query = queries.get_query(
-            "land_class_disturbance_ref.sql")
+            "land_class_disturbance_ref.sql"
+        )
 
         # queries for land class name,id,code,descriptions
         self.land_class_query = queries.get_query("land_class_ref.sql")
 
         # queries for afforestation pre-type/name associations
         self.afforestation_pre_type_query = queries.get_query(
-            "afforestation_pre_type_ref.sql")
+            "afforestation_pre_type_ref.sql"
+        )
 
         # queries for names of flux indicators id/name associations
         self.flux_indicator_query = queries.get_query("flux_indicator_ref.sql")
@@ -52,45 +57,56 @@ class CBMDefaultsReference:
 
         locale_param = (locale_code,)
         self.species_ref = self.load_data(
-            sqlite_path, self.species_reference_query, locale_param)
+            sqlite_path, self.species_reference_query, locale_param
+        )
         self.species_by_name = {x["species_name"]: x for x in self.species_ref}
 
         self.disturbance_type_ref = self.load_data(
-            sqlite_path, self.disturbance_reference_query, locale_param)
+            sqlite_path, self.disturbance_reference_query, locale_param
+        )
         self.disturbance_type_by_name = {
-            x["disturbance_type_name"]: x for x in self.disturbance_type_ref}
+            x["disturbance_type_name"]: x for x in self.disturbance_type_ref
+        }
 
         self.spatial_unit_ref = self.load_data(
-            sqlite_path, self.spatial_unit_reference_query, locale_param)
+            sqlite_path, self.spatial_unit_reference_query, locale_param
+        )
         self.spatial_unit_by_admin_eco_names = {
             (x["admin_boundary_name"], x["eco_boundary_name"]): x
-            for x in self.spatial_unit_ref}
+            for x in self.spatial_unit_ref
+        }
         self.spatial_unit_by_id = {
-            x["spatial_unit_id"]: x for x in self.spatial_unit_ref}
+            x["spatial_unit_id"]: x for x in self.spatial_unit_ref
+        }
 
         self.afforestation_pre_type_ref = self.load_data(
-            sqlite_path, self.afforestation_pre_type_query, locale_param)
+            sqlite_path, self.afforestation_pre_type_query, locale_param
+        )
         self.afforestation_pre_type_by_name = {
             x["afforestation_pre_type_name"]: x
-            for x in self.afforestation_pre_type_ref}
+            for x in self.afforestation_pre_type_ref
+        }
 
         self.land_class_ref = self.load_data(
-            sqlite_path, self.land_class_query, locale_param)
-        self.land_class_by_code = {
-            x["code"]: x for x in self.land_class_ref}
+            sqlite_path, self.land_class_query, locale_param
+        )
+        self.land_class_by_code = {x["code"]: x for x in self.land_class_ref}
 
         self.pools_ref = self.load_data(sqlite_path, self.pools_query)
         self.bio_pools_ref = self.load_data(sqlite_path, self.bio_pools_query)
         self.dom_pools_ref = self.load_data(sqlite_path, self.dom_pools_query)
 
         self.flux_indicator_ref = self.load_data(
-            sqlite_path, self.flux_indicator_query)
+            sqlite_path, self.flux_indicator_query
+        )
 
         self.land_class_disturbance_ref = self.load_data(
-            sqlite_path, self.land_class_disturbance_query, locale_param)
+            sqlite_path, self.land_class_disturbance_query, locale_param
+        )
         self.land_classes_by_dist_type = {
             x["disturbance_type_name"]: x
-            for x in self.land_class_disturbance_ref}
+            for x in self.land_class_disturbance_ref
+        }
 
     def load_data(self, sqlite_path, query, query_params=None):
         """loads the specified query into a list of dictionary formatted query
@@ -177,7 +193,8 @@ class CBMDefaultsReference:
             int: the spatial unit id
         """
         return self.spatial_unit_by_admin_eco_names[
-            (admin_boundary_name, eco_boundary_name)]["spatial_unit_id"]
+            (admin_boundary_name, eco_boundary_name)
+        ]["spatial_unit_id"]
 
     def get_spatial_unit(self, spatial_unit_id):
         """Get a tuple of admin boundary name, eco boundary name for the
@@ -217,7 +234,8 @@ class CBMDefaultsReference:
             int: the associated afforestation_pre_type_id
         """
         return self.afforestation_pre_type_by_name[
-            afforestation_pre_type_name]["afforestation_pre_type_id"]
+            afforestation_pre_type_name
+        ]["afforestation_pre_type_id"]
 
     def get_afforestation_pre_types(self):
         """Get name and id information for the afforestation pre-types
@@ -300,7 +318,7 @@ class CBMDefaultsReference:
         return {
             "land_class_id": match["land_class_id"],
             "land_class_code": match["land_class_code"],
-            "land_class_description": match["land_class_description"]
+            "land_class_description": match["land_class_description"],
         }
 
     def get_pools(self):

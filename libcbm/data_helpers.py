@@ -91,12 +91,14 @@ def get_nullable_ndarray(a, dtype=ctypes.c_double):
             if result.dtype != np.dtype("float64"):
                 raise ValueError(
                     f"specified array is of type {result.dtype} "
-                    f"and cannot be converted to {dtype}.")
+                    f"and cannot be converted to {dtype}."
+                )
         elif dtype == ctypes.c_int32:
             if result.dtype != np.dtype("int32"):
                 raise ValueError(
                     f"specified array is of type {result.dtype} "
-                    f"and cannot be converted to {dtype}.")
+                    f"and cannot be converted to {dtype}."
+                )
         else:
             raise ValueError(f"unsupported type {dtype}")
         p_result = result.ctypes.data_as(ctypes.POINTER(dtype))
@@ -148,7 +150,9 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
     """
     ts = timestep_data.copy()
     ts.insert(loc=0, column="timestep", value=timestep)
-    ts.insert(loc=0, column="identifier", value=list(range(1, ts.shape[0]+1)))
+    ts.insert(
+        loc=0, column="identifier", value=list(range(1, ts.shape[0] + 1))
+    )
     if simulation_result is None or simulation_result.shape[0] == 0:
         simulation_result = ts
     else:

@@ -3,7 +3,6 @@ from libcbm.input.sit import sit_format
 
 
 class SITFormatTest(unittest.TestCase):
-
     def test_get_classifier_format_value_error(self):
         with self.assertRaises(ValueError):
             sit_format.get_classifier_format(2)
@@ -31,21 +30,25 @@ class SITFormatTest(unittest.TestCase):
         mock_classifier_names = ["a", "b", "c"]
         with self.assertRaises(ValueError):
             sit_format.get_inventory_format(
-                mock_classifier_names, len(mock_classifier_names)+6)
+                mock_classifier_names, len(mock_classifier_names) + 6
+            )
         with self.assertRaises(ValueError):
             sit_format.get_inventory_format(mock_classifier_names, 4)
         with self.assertRaises(ValueError):
             sit_format.get_inventory_format(
-                mock_classifier_names, len(mock_classifier_names)+9)
+                mock_classifier_names, len(mock_classifier_names) + 9
+            )
 
     def test_get_disturbance_event_format_value_error(self):
         mock_classifier_names = ["a", "b", "c"]
         with self.assertRaises(ValueError):
             sit_format.get_disturbance_event_format(
-                mock_classifier_names, 3+5+21+5)
+                mock_classifier_names, 3 + 5 + 21 + 5
+            )
         with self.assertRaises(ValueError):
             sit_format.get_disturbance_event_format(
-                mock_classifier_names, 3+5+21+8)
+                mock_classifier_names, 3 + 5 + 21 + 8
+            )
 
     def test_basic_formats(self):
         """Checks that all returned formats have sequential indexes and the
@@ -59,17 +62,26 @@ class SITFormatTest(unittest.TestCase):
             sit_format.get_age_class_format(),
             sit_format.get_yield_format(mock_classifier_names, 5),
             sit_format.get_transition_rules_format(
-                mock_classifier_names, 2 * n_classifiers +
-                len(sit_format.get_age_eligibility_columns(n_classifiers)) +
-                4),
+                mock_classifier_names,
+                2 * n_classifiers
+                + len(sit_format.get_age_eligibility_columns(n_classifiers))
+                + 4,
+            ),
             sit_format.get_inventory_format(
-                mock_classifier_names, n_classifiers + 7),
+                mock_classifier_names, n_classifiers + 7
+            ),
             sit_format.get_disturbance_event_format(
-                mock_classifier_names, n_classifiers +
-                len(sit_format.get_disturbance_eligibility_columns(
-                    n_classifiers)) +
-                len(sit_format.get_age_eligibility_columns(n_classifiers)) + 7)
-            ]
+                mock_classifier_names,
+                n_classifiers
+                + len(
+                    sit_format.get_disturbance_eligibility_columns(
+                        n_classifiers
+                    )
+                )
+                + len(sit_format.get_age_eligibility_columns(n_classifiers))
+                + 7,
+            ),
+        ]
         required_keys = {"name", "index"}
         all_keys = required_keys.union({"min_value", "max_value", "type"})
         for case in cases:

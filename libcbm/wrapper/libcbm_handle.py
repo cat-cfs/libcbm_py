@@ -75,7 +75,8 @@ class LibCBMHandle(LibCBM_ctypes):
         self.err = LibCBM_Error()
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.pointer = self._dll.LibCBM_Initialize(
-            ctypes.byref(self.err), p_config)
+            ctypes.byref(self.err), p_config
+        )
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 

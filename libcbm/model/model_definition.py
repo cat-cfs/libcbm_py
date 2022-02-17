@@ -13,8 +13,9 @@ def create_model(pools: list[dict], flux_indicators: list[dict]):
 
     libcbm_config = {
         "pools": [
-            {'name': p, 'id': p_idx, 'index': p_idx}
-            for p, p_idx in pools.items()],
+            {"name": p, "id": p_idx, "index": p_idx}
+            for p, p_idx in pools.items()
+        ],
         "flux_indicators": [
             {
                 "id": f_idx + 1,
@@ -22,31 +23,29 @@ def create_model(pools: list[dict], flux_indicators: list[dict]):
                 "process_id": f["process_id"],
                 "source_pools": [int(x) for x in f["source_pools"]],
                 "sink_pools": [int(x) for x in f["sink_pools"]],
-            } for f_idx, f in enumerate(flux_indicators)]
-        }
+            }
+            for f_idx, f in enumerate(flux_indicators)
+        ],
+    }
 
     with LibCBMHandle(
-            resources.get_libcbm_bin_path(),
-            json.dumps(libcbm_config)
+        resources.get_libcbm_bin_path(), json.dumps(libcbm_config)
     ) as handle:
-        yield ModelHandle(
-            LibCBMWrapper(handle), pools, flux_indicators
-        )
+        yield ModelHandle(LibCBMWrapper(handle), pools, flux_indicators)
 
 
-class ModelVars():
+class ModelVars:
     def __init__(self, size, n_pools, n_flux):
         self.pools = np.zeros(shape=(int(size), n_pools))
         self.flux = np.zeros(shape=(int(size), n_flux))
 
 
-class ModelHandle():
-
+class ModelHandle:
     def __init__(
         self,
         wrapper: LibCBMWrapper,
         pools: list[dict],
-        flux_indicators: list[dict]
+        flux_indicators: list[dict],
     ):
         self.wrapper = wrapper
         self.pools = pools
@@ -59,13 +58,13 @@ class ModelHandle():
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
-            value)
+            value,
+        )
 
     def _matrix_list(self, value: list):
         return libcbm_operation.Operation(
-            self.wrapper,
-            libcbm_operation.OperationFormat.MatrixList,
-            value)
+            self.wrapper, libcbm_operation.OperationFormat.MatrixList, value
+        )
 
     def create_operation(self, matrices: list, fmt: str):
         if fmt == "repeating_coordinates":
@@ -93,7 +92,7 @@ class ModelHandle():
         model_vars: ModelVars,
         operations: list[libcbm_operation.Operation],
         op_processes: list[int],
-        enabled: np.ndarray
+        enabled: np.ndarray,
     ):
         model_vars.pools = np.ascontiguousarray(model_vars.pools)
         model_vars.flux = np.ascontiguousarray(model_vars.flux)
@@ -103,14 +102,14 @@ class ModelHandle():
             operations=operations,
             op_processes=[int(o) for o in op_processes],
             flux=model_vars.flux,
-            enabled=enabled.astype(int) if enabled is not None else None)
+            enabled=enabled.astype(int) if enabled is not None else None,
+        )
 
     def create_output_processor(self, type="in_memory"):
         return ModelOutputProcessor(self)
 
 
-class ModelOutputProcessor():
-
+class ModelOutputProcessor:
     def __init__(self, model_handle: ModelHandle):
         self.model_handle = model_handle
         self.pools = pd.DataFrame()
@@ -119,17 +118,16 @@ class ModelOutputProcessor():
     def append_results(self, t: int, model_vars: ModelVars):
         pools_t = pd.DataFrame(
             columns=self.model_handle.pools.keys(),
-            data=model_vars.pools.copy())
+            data=model_vars.pools.copy(),
+        )
         pools_t.insert(0, "timestep", t)
         pools_t.reset_index(inplace=True)
         self.pools = self.pools.append(pools_t)
         self.pools.reset_index(inplace=True, drop=True)
 
         flux_t = pd.DataFrame(
-            columns=[
-                x["name"] for x in
-                self.model_handle.flux_indicators],
-            data=model_vars.flux.copy()
+            columns=[x["name"] for x in self.model_handle.flux_indicators],
+            data=model_vars.flux.copy(),
         )
         flux_t.insert(0, "timestep", t)
         flux_t.reset_index(inplace=True)

@@ -12,7 +12,6 @@ class OperationFormat(Enum):
 
 
 class Operation:
-
     def __init__(self, dll, format, data):
         self.format = format
         self.__dll = dll
@@ -35,9 +34,11 @@ class Operation:
 
     def __init_matrix_list(self, data):
         self.__matrix_list = data
-        self.__matrix_list_p = \
+        self.__matrix_list_p = (
             libcbm_wrapper_functions.get_matrix_list_pointer(
-                self.__matrix_list)
+                self.__matrix_list
+            )
+        )
         self.__matrix_list_len = len(self.__matrix_list)
 
     def __init_repeating(self, data):
@@ -48,8 +49,11 @@ class Operation:
                 break
         coordinates = np.array([[x[0], x[1]] for x in data], dtype=np.int32)
         values = np.column_stack(
-            [data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
-             for x in data])
+            [
+                data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
+                for x in data
+            ]
+        )
 
         self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
         self.__repeating_matrix_values = LibCBM_Matrix(values)
@@ -73,19 +77,30 @@ class Operation:
         if self.format == OperationFormat.MatrixList:
             self.__allocate_op(matrix_index.shape[0])
             self.__dll.handle.call(
-                "LibCBM_SetOp", self.__op_id, self.__matrix_list_p,
-                self.__matrix_list_len, matrix_index,
-                matrix_index.shape[0], 1)
+                "LibCBM_SetOp",
+                self.__op_id,
+                self.__matrix_list_p,
+                self.__matrix_list_len,
+                matrix_index,
+                matrix_index.shape[0],
+                1,
+            )
         elif self.format == OperationFormat.RepeatingCoordinates:
             self.__allocate_op(matrix_index.shape[0])
             self.__dll.handle.call(
-                "LibCBM_SetOp2", self.__op_id, self.__repeating_matrix_coords,
-                self.__repeating_matrix_values, matrix_index,
-                matrix_index.shape[0], 1)
+                "LibCBM_SetOp2",
+                self.__op_id,
+                self.__repeating_matrix_coords,
+                self.__repeating_matrix_values,
+                matrix_index,
+                matrix_index.shape[0],
+                1,
+            )
 
 
-def compute(dll, pools, operations, op_processes=None,
-            flux=None, enabled=None):
+def compute(
+    dll, pools, operations, op_processes=None, flux=None, enabled=None
+):
     """Compute pool flows and optionally track the fluxes
 
     see the methods in :py:class:`libcbm.wrapper.libcbm_wrapper.LibCBMWrapper`
