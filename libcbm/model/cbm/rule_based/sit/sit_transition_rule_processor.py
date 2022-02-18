@@ -3,23 +3,33 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import numpy as np
+import pandas as pd
+from typing import Iterable
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based import rule_filter
+from libcbm.model.cbm.rule_based.transition_rule_processor import (
+    TransitionRuleProcessor,
+)
+from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+from libcbm.storage.dataframe import DataFrame
+from libcbm.model.cbm.cbm_variables import CBMVariables
 
 
-def state_variable_filter_func(tr_group_key, state_variables):
+def state_variable_filter_func(
+    tr_group_key: dict, state_variables: DataFrame
+) -> RuleFilter:
     """Create a filter based on transition rule state criteria for setting
     stands eligible or ineligible for transition.
 
     Args:
         tr_group_key (dict): dictionary of values common to a transition rule
             group
-        state_variables (pandas.DataFrame): table of state values for the
+        state_variables (DataFrame): table of state values for the
             current simulation for which to create a filter.
 
     Returns:
-        object: a filter object
+        RuleFilter: a filter object
     """
     state_filter_expression = sit_stand_filter.create_state_filter_expression(
         tr_group_key, True
@@ -29,7 +39,9 @@ def state_variable_filter_func(tr_group_key, state_variables):
     )
 
 
-def sit_transition_rule_iterator(sit_transitions, classifier_names):
+def sit_transition_rule_iterator(
+    sit_transitions: pd.DataFrame, classifier_names: list[str]
+) -> Iterable[tuple[dict[str, str], pd.DataFrame]]:
     """Groups transition rules by classifiers, and eligibility criteria and
     yields the sequence of group_key, group.
 
@@ -66,10 +78,12 @@ def sit_transition_rule_iterator(sit_transitions, classifier_names):
 
 
 class SITTransitionRuleProcessor:
-    def __init__(self, transition_rule_processor):
+    def __init__(self, transition_rule_processor: TransitionRuleProcessor):
         self.transition_rule_processor = transition_rule_processor
 
-    def process_transition_rules(self, sit_transitions, cbm_vars):
+    def process_transition_rules(
+        self, sit_transitions: pd.DataFrame, cbm_vars: CBMVariables
+    ) -> CBMVariables:
         """Process the specified SIT transition rules versus the current model
         state.
 
@@ -77,10 +91,10 @@ class SITTransitionRuleProcessor:
             sit_transitions (pandas.DataFrame): sit formatted transition rules.
                 See:
                 :py:func:`libcbm.input.sit.sit_transition_rule_parser.parse`
-            cbm_vars (object): CBM model state.
+            cbm_vars (CBMVariables): CBM model state.
 
         Returns:
-            object: the input CBM model state with the transition rules
+            CBMVariables: the input CBM model state with the transition rules
             applied.
         """
         if sit_transitions is None:

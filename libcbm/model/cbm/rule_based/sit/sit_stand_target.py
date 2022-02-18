@@ -8,8 +8,8 @@ from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.model.cbm.cbm_variables import Series
-from libcbm.model.cbm.cbm_variables import DataFrame
+from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
 
 
 def _is_production_sort(sit_event_row: dict) -> bool:
@@ -93,7 +93,7 @@ def create_sit_event_target_factory(
         [CBMVariables, Union[int, Series]], Series
     ],
     random_generator: Callable[[int], Series],
-):
+) -> Callable[[CBMVariables, Series], RuleTargetResult]:
     def factory(cbm_vars: CBMVariables, eligible: Series):
         return create_sit_event_target(
             sit_event_row,
@@ -163,9 +163,7 @@ def create_sit_event_target(
                 carbon_target=target,
                 disturbance_production=production,
                 inventory=cbm_vars.inventory,
-                sort_value=_get_sort_value(
-                    sort, cbm_vars, random_generator
-                ),
+                sort_value=_get_sort_value(sort, cbm_vars, random_generator),
                 efficiency=sit_event_row["efficiency"],
                 eligible=eligible,
             )

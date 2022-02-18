@@ -6,7 +6,7 @@ import pandas as pd
 from typing import Callable
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.model.cbm.cbm_variables import Series
+from libcbm.storage.dataframe import Series
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
     TransitionRuleProcessor,
 )

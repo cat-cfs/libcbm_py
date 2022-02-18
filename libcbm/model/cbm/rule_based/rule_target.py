@@ -2,9 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
-import pandas as pd
 import numpy as np
+from libcbm.model.cbm import cbm_variables
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
 
 
 class RuleTargetResult:
@@ -12,7 +13,7 @@ class RuleTargetResult:
     Standard return value for the functions in this module.
 
     Args:
-        target (pandas.DataFrame): dataframe containing:
+        target (DataFrame): dataframe containing:
 
             - target_var: the disturbed amount for each disturbed record
                 (in target units)
@@ -25,19 +26,21 @@ class RuleTargetResult:
 
     """
 
-    def __init__(self, target, statistics):
+    def __init__(self, target: DataFrame, statistics: dict):
         self.target = target
         self.statistics = statistics
 
 
-def spatially_indexed_target(identifier, inventory):
+def spatially_indexed_target(
+    identifier: int, inventory: DataFrame
+) -> RuleTargetResult:
     """return a target for a single inventory record identified by the
     specified identifier
 
     Args:
         identifier (int): the integer identifier matching a single row in
             inventory.spatial_reference
-        inventory (pandas.DataFrame): inventory records
+        inventory (DataFrame): inventory records
 
     Raises:
         ValueError: the specified identifier was not present in the specified
@@ -61,7 +64,7 @@ def spatially_indexed_target(identifier, inventory):
             "multiple matching values in inventory spatial_reference column "
             f"for identifier {identifier}"
         )
-    result = pd.DataFrame(
+    result = DataFrame(
         {
             "target_var": [match.area],
             "sort_var": None,
@@ -72,19 +75,21 @@ def spatially_indexed_target(identifier, inventory):
     return RuleTargetResult(target=result, statistics=None)
 
 
-def sorted_disturbance_target(target_var, sort_var, target, eligible):
+def sorted_disturbance_target(
+    target_var: Series, sort_var: Series, target: float, eligible: Series
+) -> RuleTargetResult:
     """Given a target variable, a sort variable, and a cumulative
     target, produce a table of index, area proportions that will
     satisfy exactly a rule based disturbance target.
 
     Args:
-        target_var (pd.Series): a series of values fed into an
+        target_var (Series): a series of values fed into an
             accumulator to satisfy the cumulative target.
-        sort_var (pd.Series): a variable whose descending sort order
+        sort_var (Series): a variable whose descending sort order
             defines the order in which target_var values are fed into
             the accumulator.
         target (float): the cumulative target.
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Raises:
@@ -101,16 +106,16 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
     if (target_var < 0).any():
         raise ValueError("less than zero values detected in target_var")
     remaining_target = target
-    result = pd.DataFrame()
+    result = DataFrame()
 
-    disturbed = pd.DataFrame({"target_var": target_var, "sort_var": sort_var})
+    disturbed = DataFrame({"target_var": target_var, "sort_var": sort_var})
     disturbed = disturbed[eligible]
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
     disturbed = disturbed.loc[disturbed.target_var > 0]
     if disturbed.shape[0] == 0:
         return RuleTargetResult(
-            target=pd.DataFrame(
+            target=DataFrame(
                 columns=[
                     "target_var",
                     "sort_var",
@@ -139,18 +144,20 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         remaining_target = (
             target - fully_disturbed_records["target_var_sums"].max()
         )
-
-    result = result.append(
-        pd.DataFrame(
-            {
-                "target_var": fully_disturbed_records["target_var"],
-                "sort_var": fully_disturbed_records["sort_var"],
-                "disturbed_index": fully_disturbed_records["index"],
-                "area_proportions": np.ones(
-                    len(fully_disturbed_records["index"])
-                ),
-            }
-        )
+    result = cbm_variables.concat(
+        [
+            result,
+            DataFrame(
+                {
+                    "target_var": fully_disturbed_records["target_var"],
+                    "sort_var": fully_disturbed_records["sort_var"],
+                    "disturbed_index": fully_disturbed_records["index"],
+                    "area_proportions": np.ones(
+                        len(fully_disturbed_records["index"])
+                    ),
+                }
+            ),
+        ]
     )
 
     partial_disturb = disturbed[disturbed.target_var_sums > target]
@@ -164,15 +171,18 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
-        result = result.append(
-            pd.DataFrame(
-                {
-                    "target_var": split_record["target_var"],
-                    "sort_var": split_record["sort_var"],
-                    "disturbed_index": int(split_record["index"]),
-                    "area_proportions": [proportion],
-                }
-            )
+        result = cbm_variables.concat(
+            [
+                result,
+                DataFrame(
+                    {
+                        "target_var": split_record["target_var"],
+                        "sort_var": split_record["sort_var"],
+                        "disturbed_index": int(split_record["index"]),
+                        "area_proportions": [proportion],
+                    }
+                ),
+            ]
         )
 
     result = result.reset_index(drop=True)
@@ -188,16 +198,18 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
     return RuleTargetResult(target=result, statistics=stats)
 
 
-def proportion_area_target(area_target_value, inventory, eligible):
+def proportion_area_target(
+    area_target_value: float, inventory: DataFrame, eligible: Series
+) -> RuleTargetResult:
     """create a disturbance target which disturbs that proportion of all
     eligible records that such that the sum of all eligible record
     areas multiplied by the proportion equals the area target exactly.
 
     Args:
         area_target_value (float): the target area to disturb
-        inventory (pd.DataFrame): the inventory being targeted for
+        inventory (DataFrame): the inventory being targeted for
             disturbance.
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Returns:
@@ -210,7 +222,7 @@ def proportion_area_target(area_target_value, inventory, eligible):
     total_eligible_area = eligible_inventory.area.sum()
     if total_eligible_area <= 0:
         return RuleTargetResult(
-            target=pd.DataFrame(
+            target=DataFrame(
                 columns=[
                     "target_var",
                     "sort_var",
@@ -233,7 +245,7 @@ def proportion_area_target(area_target_value, inventory, eligible):
         # shortfall
         area_proportion = 1.0
         total_achieved = total_eligible_area
-    target = pd.DataFrame(
+    target = DataFrame(
         {
             "target_var": eligible_inventory.area * area_proportion,
             "sort_var": None,
@@ -257,19 +269,22 @@ def proportion_area_target(area_target_value, inventory, eligible):
 
 
 def sorted_area_target(
-    area_target_value, sort_value: np.ndarray, inventory, eligible
-):
+    area_target_value: float,
+    sort_value: Series,
+    inventory: DataFrame,
+    eligible: Series,
+) -> RuleTargetResult:
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
 
     Args:
         area_target_value (float): the target area to disturb
-        sort_value (pd.Series): a sequence of values whose decending sort
+        sort_value (Series): a sequence of values whose decending sort
             defines the order to accumulate areas.  Length must equal the
             number of rows in the specified inventory
-        inventory (pd.DataFrame): the inventory being targeted for
+        inventory (DataFrame): the inventory being targeted for
             disturbance.
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Returns:
@@ -292,8 +307,12 @@ def sorted_area_target(
 
 
 def proportion_merch_target(
-    carbon_target, disturbance_production, inventory, efficiency, eligible
-):
+    carbon_target: float,
+    disturbance_production: DataFrame,
+    inventory: DataFrame,
+    efficiency: float,
+    eligible: Series,
+) -> RuleTargetResult:
     """create a sequence of areas/proportions for disturbance a propotion
     of all eligible stands such that the proportion * disturbance_production
     for each stand equals the carbon target exactly.
@@ -301,15 +320,15 @@ def proportion_merch_target(
     Args:
         carbon_target (float): a disturbance target in CBM mass units
             (tonnes C)
-        disturbance_production (pandas.DataFrame): a table of Carbon density
+        disturbance_production (DataFrame): a table of Carbon density
             (tonnes C/ha) generated by a disturbance events on the specified
             inventory. Used in accumulating value towards the carbon_target
             parameter.
-        inventory (pd.DataFrame): the inventory being targeted for
+        inventory (DataFrame): the inventory being targeted for
             disturbance.
         efficiency (float): A proportion value <= 1 multiplier
             disturbance production for each stand
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Returns:
@@ -325,7 +344,7 @@ def proportion_merch_target(
     n_eligible = len(eligible_inventory.index)
     if total_production <= 0.0:
         return RuleTargetResult(
-            target=pd.DataFrame(
+            target=DataFrame(
                 columns=[
                     "target_var",
                     "sort_var",
@@ -346,7 +365,7 @@ def proportion_merch_target(
     if proportion > 1:
         proportion = 1.0
 
-    target = pd.DataFrame(
+    target = DataFrame(
         {
             "target_var": production * proportion,
             "sort_var": None,
@@ -368,16 +387,18 @@ def proportion_merch_target(
     )
 
 
-def proportion_sort_proportion_target(proportion_target, inventory, eligible):
+def proportion_sort_proportion_target(
+    proportion_target: float, inventory: DataFrame, eligible: Series
+) -> RuleTargetResult:
     """Create a rule target specifying to the given proportion of all of the
     eligible stands.
 
     Args:
         proportion_target (float): a proportion of each eligible inventory
             record's area to disturb
-        inventory (pd.DataFrame): the inventory being targeted for
+        inventory (DataFrame): the inventory being targeted for
             disturbance.
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Returns:
@@ -393,7 +414,7 @@ def proportion_sort_proportion_target(proportion_target, inventory, eligible):
 
     n_disturbed = len(eligible_inventory.index)
 
-    target = pd.DataFrame(
+    target = DataFrame(
         {
             "target_var": proportion_target,
             "sort_var": None,
@@ -415,31 +436,31 @@ def proportion_sort_proportion_target(proportion_target, inventory, eligible):
 
 
 def sorted_merch_target(
-    carbon_target,
-    disturbance_production,
-    inventory,
-    sort_value,
-    efficiency,
-    eligible,
-):
+    carbon_target: float,
+    disturbance_production: DataFrame,
+    inventory: DataFrame,
+    sort_value: Series,
+    efficiency: float,
+    eligible: Series,
+) -> RuleTargetResult:
     """create a sorted sequence of areas/proportions for meeting a merch C
     target exactly.
 
     Args:
         carbon_target (float): a disturbance target in CBM mass units
             (tonnes C)
-        disturbance_production (pandas.DataFrame): a table of Carbon density
+        disturbance_production (DataFrame): a table of Carbon density
             (tonnes C/ha) generated by a disturbance events on the specified
             inventory. Used in accumulating value towards the carbon_target
             parameter.
-        inventory (pd.DataFrame): the inventory being targeted for
+        inventory (DataFrame): the inventory being targeted for
             disturbance.
-        sort_value (pd.Series): a sequence of values whose decending sort
+        sort_value (Series): a sequence of values whose decending sort
             defines the order to accumulate carbon mass.  Length must equal
             the number of rows in the specified inventory
         efficiency (float): reduce the disturbance production and split all
             records
-        eligible (pandas.Series): boolean array indicating
+        eligible (Series): boolean array indicating
             whether or not each index is eligible for this disturbance target
 
     Returns:
