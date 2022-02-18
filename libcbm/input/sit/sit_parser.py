@@ -4,14 +4,17 @@
 
 import pandas as pd
 import numpy as np
+from typing import Iterable, Callable, Any
 
 
-def unpack_column(table, column_description, table_name):
+def unpack_column(
+    table: pd.DataFrame, column_description: dict, table_name: str
+) -> pd.DataFrame:
     """Validates a column in a pandas DataFrame
 
     Args:
-        table ([type]): A table containing the column at the index specified
-            by column_description
+        table (pandas.DataFrame): A table containing the column at the index
+            specified by column_description
         column_description (dict): A dictionary with the following supported
             keys:
 
@@ -70,7 +73,7 @@ def unpack_column(table, column_description, table_name):
     return data
 
 
-def _list_duplicates(seq):
+def _list_duplicates(seq: Iterable) -> list:
     """
     get the list of duplicate values in the specified sequence
     https://stackoverflow.com/questions/9835762/how-do-i-find-the-duplicates-in-a-list-and-create-another-list-with-them
@@ -89,7 +92,9 @@ def _list_duplicates(seq):
     return list(seen_twice)
 
 
-def unpack_table(table, column_descriptions, table_name):
+def unpack_table(
+    table: pd.DataFrame, column_descriptions: list[dict], table_name: str
+) -> pd.DataFrame:
     """Validates and assigns column names to a column-ordered table using
     the specified list of column descriptions. Any existing column labels
     on the specified table are ignored.
@@ -121,7 +126,7 @@ def unpack_table(table, column_descriptions, table_name):
     return pd.DataFrame(columns=cols, data=data)
 
 
-def _try_get_int(s):
+def _try_get_int(s) -> int:
     """
     Checks if the specified value is an integer, and returns a result
 
@@ -139,7 +144,9 @@ def _try_get_int(s):
         return None, False
 
 
-def get_parse_bool_func(table_name, colname):
+def get_parse_bool_func(
+    table_name: str, colname: str
+) -> Callable[[Any], bool]:
     """gets a boolean-like value to boolean parse function according to the
     SIT specification.  The parameters are used to create a friendly error
     message when a parse failure occurs.
@@ -152,7 +159,7 @@ def get_parse_bool_func(table_name, colname):
         func: a boolean-like value to bool parse function
     """
 
-    def parse_bool(x):
+    def parse_bool(x: Any) -> bool:
         """Converts the specified value to a boolean according to SIT
         specification, or raises an error.
 
@@ -188,7 +195,11 @@ def get_parse_bool_func(table_name, colname):
     return parse_bool
 
 
-def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
+def substitute_using_age_class_rows(
+    rows: pd.DataFrame,
+    parse_bool_func: Callable[[Any], bool],
+    age_classes: pd.DataFrame,
+) -> pd.DataFrame:
     """Substitute age class criteria values that appear in SIT transition
     rules or disturbance events data into age values.
 

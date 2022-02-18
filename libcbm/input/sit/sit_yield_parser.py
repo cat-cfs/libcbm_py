@@ -1,14 +1,19 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
+import pandas as pd
 import numpy as np
 from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_classifier_parser
 
 
-def parse(yield_table, classifiers, classifier_values, age_classes):
+def parse(
+    yield_table: pd.DataFrame,
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    age_classes: pd.DataFrame,
+) -> pd.DataFrame:
     """Parses and validates the CBM SIT growth and yield format.
 
     Args:

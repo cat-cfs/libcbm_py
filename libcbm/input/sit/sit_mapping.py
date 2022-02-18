@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import numpy as np
 from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
+from typing import Callable
 
 
 class SITMapping:
@@ -132,7 +133,7 @@ class SITMapping:
 
     def _get_mapping_error_handling_function(
         self, sit_map: dict, error_fmt: str
-    ):
+    ) -> Callable:
         def get_mapped_value(value):
             try:
                 return sit_map[value]

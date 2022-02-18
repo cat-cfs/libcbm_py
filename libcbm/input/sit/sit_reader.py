@@ -46,7 +46,7 @@ class SITData:
         self.transition_rules = transition_rules
 
 
-def load_table(config, config_dir):
+def load_table(config: dict, config_dir: str) -> pd.DataFrame:
     """Load a table based on the specified configuration.  The config_dir
     is used to compute absolute paths for file based tables.
 
@@ -102,7 +102,7 @@ def load_table(config, config_dir):
         os.chdir(cwd)
 
 
-def read(config, config_dir):
+def read(config: dict, config_dir: str) -> SITData:
     # Call pandas.read_csv on all input files #
     sit_classifiers = load_table(config["classifiers"], config_dir)
     sit_disturbance_types = load_table(config["disturbance_types"], config_dir)
@@ -140,15 +140,15 @@ def read(config, config_dir):
 
 
 def parse(
-    sit_classifiers,
-    sit_disturbance_types,
-    sit_age_classes,
-    sit_inventory,
-    sit_yield,
-    sit_events=None,
-    sit_transitions=None,
-    sit_eligibilities=None,
-):
+    sit_classifiers: pd.DataFrame,
+    sit_disturbance_types: pd.DataFrame,
+    sit_age_classes: pd.DataFrame,
+    sit_inventory: pd.DataFrame,
+    sit_yield: pd.DataFrame,
+    sit_events: pd.DataFrame = None,
+    sit_transitions: pd.DataFrame = None,
+    sit_eligibilities: pd.DataFrame = None,
+) -> pd.DataFrame:
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
     containing the validated result.

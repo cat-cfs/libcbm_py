@@ -252,7 +252,7 @@ def create_sit_rule_based_processor(
     sit_events: pd.DataFrame = None,
     sit_disturbance_eligibilities: pd.DataFrame = None,
     sit_transition_rules: pd.DataFrame = None,
-):
+) -> sit_rule_based_processor.SITRuleBasedProcessor:
     """initializes a class for processing SIT rule based disturbances.
 
     Args:

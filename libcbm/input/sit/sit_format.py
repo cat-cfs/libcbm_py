@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-def get_tr_classifier_set_postfix():
+def get_tr_classifier_set_postfix() -> str:
     """since transition rules contain 2 classifier sets (2 sets of columns)
     duplicate names are a problem if the classifier names are used for both.
     This function returns a postfix to append onto the second set of
@@ -12,7 +12,7 @@ def get_tr_classifier_set_postfix():
     return "_tr"
 
 
-def get_classifier_format(n_columns):
+def get_classifier_format(n_columns: int) -> list[dict]:
     """Gets a list of dictionaries describing the CBM SIT classifier columns
 
     Args:
@@ -50,7 +50,7 @@ def get_classifier_format(n_columns):
     return classifier_format
 
 
-def get_disturbance_type_format(n_columns):
+def get_disturbance_type_format(n_columns: int) -> list[dict]:
     """Gets a list of dictionaries describing the CBM SIT disturbance type
     columns
 
@@ -85,7 +85,7 @@ def get_disturbance_type_format(n_columns):
     return disturbance_type_format
 
 
-def get_age_class_format():
+def get_age_class_format() -> list[dict]:
     """Gets a list of dictionaries describing the CBM SIT age class columns
 
     Returns:
@@ -98,7 +98,9 @@ def get_age_class_format():
     ]
 
 
-def get_yield_format(classifier_names, n_columns):
+def get_yield_format(
+    classifier_names: list[str], n_columns: int
+) -> list[dict]:
     """Gets a list of dictionaries describing the CBM SIT age class columns
 
     Args:
@@ -140,7 +142,7 @@ def get_yield_format(classifier_names, n_columns):
     return classifier_values + leading_species_col + volumes
 
 
-def get_age_eligibility_columns(base_index):
+def get_age_eligibility_columns(base_index: int) -> list[dict]:
     """gets the columns for age eligibility which appear in SIT events and
     SIT transition.  The index of the columns is offset using the specified
     base.
@@ -161,14 +163,16 @@ def get_age_eligibility_columns(base_index):
     ]
 
 
-def get_transition_rules_format(classifier_names, n_columns):
+def get_transition_rules_format(
+    classifier_names: list[str], n_columns: int
+) -> list[dict]:
     """Generate a list of dictionaries describing each column in the SIT
     format transition rules.  The format is dynamic and changes based on the
     number of classifiers and whether or not a spatial identifier is
     specified.
 
     Args:
-        classifier_names (int): a list of the names of classifiers
+        classifier_names (list): a list of the names of classifiers
         n_columns (int): the number of columns in transition rules data.
             This is used to detect whether or not a spatial identifier is
             included in the data.
@@ -250,12 +254,14 @@ def get_transition_rules_format(classifier_names, n_columns):
         )
 
 
-def get_inventory_format(classifier_names, n_columns):
+def get_inventory_format(
+    classifier_names: list[str], n_columns: int
+) -> list[dict]:
     """Gets a description of the SIT inventory columns as a list of
     dictionaries
 
     Args:
-        classifier_names (int): a list of the names of classifiers
+        classifier_names (list): a list of the names of classifiers
         n_columns (int): the number of columns in inventory data.  This
             is required because the format has a varying number of optional
             columns.
@@ -335,7 +341,7 @@ def get_inventory_format(classifier_names, n_columns):
     return classifier_set + inventory
 
 
-def get_disturbance_eligibility_columns(index):
+def get_disturbance_eligibility_columns(index: int) -> list[dict]:
     """gets the columns for disturbance eligibility which appear in SIT
     events.  The index of the columns is offset using the specified
     base.
@@ -373,13 +379,15 @@ def get_disturbance_eligibility_columns(index):
 
 
 def get_disturbance_event_format(
-    classifier_names, n_columns, include_eligibility_columns=True
-):
+    classifier_names: list[str],
+    n_columns: int,
+    include_eligibility_columns: bool = True,
+) -> list[dict]:
     """Gets a list of column description dictionaries describing the SIT
     disturbance event format
 
     Args:
-        classifier_names: a list of the names of classifiers
+        classifier_names (list): a list of the names of classifiers
         n_columns (int): the number of columns in disturbance data.  This
             is required because the format has a varying number of optional
             columns.
@@ -455,7 +463,7 @@ def get_disturbance_event_format(
     return classifier_set + eligibiliy_cols + event_target
 
 
-def get_disturbance_eligibility_format():
+def get_disturbance_eligibility_format() -> list[dict]:
     return [
         {"name": "disturbance_eligibility_id", "index": 0, "type": int},
         {"name": "pool_filter_expression", "index": 1, "type": str},

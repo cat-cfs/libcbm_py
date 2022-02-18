@@ -7,7 +7,7 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def get_classifier_keyword():
+def get_classifier_keyword() -> str:
     """gets the _CLASSIFIER keyword using the SIT_Classifiers format.
 
     Returns:
@@ -16,12 +16,14 @@ def get_classifier_keyword():
     return "_CLASSIFIER"
 
 
-def get_wildcard_keyword():
+def get_wildcard_keyword() -> str:
     """Gets the classifier value wildcard keyword of the SIT format"""
     return "?"
 
 
-def parse(classifiers_table):
+def parse(
+    classifiers_table: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """parse SIT_Classifiers formatted data.
 
     Args:

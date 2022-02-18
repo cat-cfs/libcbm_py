@@ -1,7 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
+import pandas as pd
 import numpy as np
 from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
@@ -11,13 +11,13 @@ GROUPED_PERCENT_ERR_MAX = 0.00001
 
 
 def parse(
-    transition_rules,
-    classifiers,
-    classifier_values,
-    classifier_aggregates,
-    disturbance_types,
-    age_classes,
-):
+    transition_rules: pd.DataFrame,
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    classifier_aggregates: pd.DataFrame,
+    disturbance_types: pd.DataFrame,
+    age_classes: pd.DataFrame,
+) -> pd.DataFrame:
     """Parses and validates the CBM SIT transition rule format.
 
     Args:

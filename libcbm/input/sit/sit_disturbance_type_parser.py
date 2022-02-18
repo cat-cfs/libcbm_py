@@ -2,11 +2,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import numpy as np
+import pandas as pd
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def parse(disturbance_types_table):
+def parse(disturbance_types_table: pd.DataFrame) -> pd.DataFrame:
     """Parse and validate a SIT formatted disturbance type table
 
     Args:

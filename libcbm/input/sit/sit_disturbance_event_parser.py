@@ -9,7 +9,7 @@ from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
 
 
-def get_sort_types():
+def get_sort_types() -> dict[int, str]:
     """
     Gets the CBM standard import tool sorting id/name pairs as a dictionary
     """
@@ -28,14 +28,16 @@ def get_sort_types():
     }
 
 
-def get_target_types():
+def get_target_types() -> dict[str, str]:
     """Gets the CBM standard import tool target type id/name pairs as a
     dictionary
     """
     return {"A": "Area", "P": "Proportion", "M": "Merchantable"}
 
 
-def parse_eligibilities(disturbance_events, disturbance_eligibilities):
+def parse_eligibilities(
+    disturbance_events: pd.DataFrame, disturbance_eligibilities: pd.DataFrame
+) -> pd.DataFrame:
     """Parse and validate disturbance eligibilities which are a libcbm-specific
     alternative to the eligibility columns in the cbm-cfs3 sit_disturbance
     events input.
@@ -139,14 +141,14 @@ def parse_eligibilities(disturbance_events, disturbance_eligibilities):
 
 
 def parse(
-    disturbance_events,
-    classifiers,
-    classifier_values,
-    classifier_aggregates,
-    disturbance_types,
-    age_classes=None,
-    separate_eligibilities=False,
-):
+    disturbance_events: pd.DataFrame,
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    classifier_aggregates: pd.DataFrame,
+    disturbance_types: pd.DataFrame,
+    age_classes: pd.DataFrame = None,
+    separate_eligibilities: pd.DataFrame = False,
+) -> pd.DataFrame:
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
     eligibilites are separate from sit_events and joined by foreign key.

@@ -9,12 +9,12 @@ from libcbm.input.sit import sit_parser
 
 
 def parse(
-    inventory_table,
-    classifiers,
-    classifier_values,
-    disturbance_types,
-    age_classes,
-):
+    inventory_table: pd.DataFrame,
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    disturbance_types: pd.DataFrame,
+    age_classes: pd.DataFrame,
+) -> pd.DataFrame:
     """Parses and validates SIT formatted inventory data.  The inventory_table
     parameter is the primary data, and the other args act as validation
     metadata.
@@ -217,7 +217,9 @@ def parse(
     return inventory
 
 
-def expand_age_class_inventory(inventory, age_classes):
+def expand_age_class_inventory(
+    inventory: pd.DataFrame, age_classes: pd.DataFrame
+) -> pd.DataFrame:
     """Support for the SIT age class inventory feature.  For rows with
     inventory.using_age_class = True, the inventory.age column represents an
     identifier defined in the passed age_classes table.  The inventory record
