@@ -19,6 +19,34 @@ from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_transition_rule_parser
 
 
+class SITData:
+    def __init__(
+        self,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+        classifier_aggregates: pd.DataFrame,
+        disturbance_types: pd.DataFrame,
+        age_classes: pd.DataFrame,
+        inventory: pd.DataFrame,
+        yield_table: pd.DataFrame,
+        disturbance_events: pd.DataFrame,
+        transition_rules: pd.DataFrame,
+        separate_eligibilities: bool = True,
+        disturbance_eligibilities: pd.DataFrame = None,
+    ):
+        self.classifiers = classifiers
+        self.classifier_values = classifier_values
+        self.classifier_aggregates = classifier_aggregates
+        self.disturbance_types = disturbance_types
+        self.age_classes = age_classes
+        self.inventory = inventory
+        self.yield_table = yield_table
+        self.disturbance_events = disturbance_events
+        self.separate_eligibilities = separate_eligibilities
+        self.disturbance_eligibilities = disturbance_eligibilities
+        self.transition_rules = transition_rules
+
+
 def load_table(config, config_dir):
     """Load a table based on the specified configuration.  The config_dir
     is used to compute absolute paths for file based tables.
@@ -167,63 +195,73 @@ def parse(
     Returns:
         object: an object containing parsed and validated SIT dataset
     """
-    s = SimpleNamespace()
+
     (
         classifiers,
         classifier_values,
         classifier_aggregates,
     ) = sit_classifier_parser.parse(sit_classifiers)
-    s.classifiers = classifiers
-    s.classifier_values = classifier_values
-    s.classifier_aggregates = classifier_aggregates
-    s.disturbance_types = sit_disturbance_type_parser.parse(
+
+    disturbance_types = sit_disturbance_type_parser.parse(
         sit_disturbance_types
     )
-    s.age_classes = sit_age_class_parser.parse(sit_age_classes)
-    s.inventory = sit_inventory_parser.parse(
+    age_classes = sit_age_class_parser.parse(sit_age_classes)
+    inventory = sit_inventory_parser.parse(
         sit_inventory,
         classifiers,
         classifier_values,
-        s.disturbance_types,
-        s.age_classes,
+        disturbance_types,
+        age_classes,
     )
-    s.yield_table = sit_yield_parser.parse(
-        sit_yield, s.classifiers, s.classifier_values, s.age_classes
+    yield_table = sit_yield_parser.parse(
+        sit_yield, classifiers, classifier_values, age_classes
     )
 
     if sit_events is not None:
         separate_eligibilities = False
         if sit_eligibilities is not None:
             separate_eligibilities = True
-        s.disturbance_events = sit_disturbance_event_parser.parse(
+        disturbance_events = sit_disturbance_event_parser.parse(
             sit_events,
-            s.classifiers,
-            s.classifier_values,
-            s.classifier_aggregates,
-            s.disturbance_types,
-            s.age_classes,
+            classifiers,
+            classifier_values,
+            classifier_aggregates,
+            disturbance_types,
+            age_classes,
             separate_eligibilities,
         )
         if sit_eligibilities is not None:
-            s.disturbance_eligibilities = (
+            disturbance_eligibilities = (
                 sit_disturbance_event_parser.parse_eligibilities(
-                    s.disturbance_events, sit_eligibilities
+                    disturbance_events, sit_eligibilities
                 )
             )
         else:
-            s.disturbance_eligibilities = None
+            disturbance_eligibilities = None
     else:
-        s.disturbance_events = None
-        s.disturbance_eligibilities = None
+        disturbance_events = None
+        disturbance_eligibilities = None
     if sit_transitions is not None:
-        s.transition_rules = sit_transition_rule_parser.parse(
+        transition_rules = sit_transition_rule_parser.parse(
             sit_transitions,
-            s.classifiers,
-            s.classifier_values,
-            s.classifier_aggregates,
-            s.disturbance_types,
-            s.age_classes,
+            classifiers,
+            classifier_values,
+            classifier_aggregates,
+            disturbance_types,
+            age_classes,
         )
     else:
-        s.transition_rules = None
-    return s
+        transition_rules = None
+    return SITData(
+        classifiers,
+        classifier_values,
+        classifier_aggregates,
+        disturbance_types,
+        age_classes,
+        inventory,
+        yield_table,
+        disturbance_events,
+        transition_rules,
+        separate_eligibilities,
+        disturbance_eligibilities,
+    )
