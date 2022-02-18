@@ -4,12 +4,19 @@
 
 import numpy as np
 import pandas as pd
+from typing import Callable
+from libcbm.model.cbm.cbm_model import CBM
+from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
     TransitionRuleProcessor,
 )
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
+
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
-from libcbm.model.cbm.rule_based.sit import sit_event_processor
+from sit_transition_rule_processor import SITTransitionRuleProcessor
+from libcbm.model.cbm.rule_based.sit.sit_event_processor import (
+    SITEventProcessor,
+)
 
 
 class TransitionRuleConstants:
@@ -44,15 +51,15 @@ class TransitionRuleConstants:
 
 
 def sit_rule_based_processor_factory(
-    cbm,
-    random_func,
-    classifiers_config,
-    classifier_aggregates,
-    sit_events,
-    sit_transitions,
-    tr_constants,
-    sit_disturbance_eligibilities,
-    reset_parameters,
+    cbm: CBM,
+    random_func: Callable[[int], np.ndarray],
+    classifiers_config: dict[str, list],
+    classifier_aggregates: pd.DataFrame,
+    sit_events: pd.DataFrame,
+    sit_transitions: pd.DataFrame,
+    tr_constants: TransitionRuleConstants,
+    sit_disturbance_eligibilities: pd.DataFrame,
+    reset_parameters: bool,
 ):
 
     classifier_filter = ClassifierFilter(
@@ -64,7 +71,7 @@ def sit_rule_based_processor_factory(
         sit_transition_rule_processor.state_variable_filter_func
     )
 
-    tr_processor = sit_transition_rule_processor.SITTransitionRuleProcessor(
+    tr_processor = SITTransitionRuleProcessor(
         TransitionRuleProcessor(
             classifier_filter_builder=classifier_filter,
             state_variable_filter_func=state_filter_func,
@@ -75,7 +82,7 @@ def sit_rule_based_processor_factory(
         )
     )
 
-    event_processor = sit_event_processor.SITEventProcessor(
+    event_processor = SITEventProcessor(
         cbm=cbm,
         classifier_filter_builder=classifier_filter,
         random_generator=random_func,
@@ -94,12 +101,12 @@ def sit_rule_based_processor_factory(
 class SITRuleBasedProcessor:
     def __init__(
         self,
-        event_processor,
-        transition_rule_processor,
-        sit_events,
-        sit_transitions,
-        sit_disturbance_eligibilities,
-        reset_parameters,
+        event_processor: SITEventProcessor,
+        transition_rule_processor: SITTransitionRuleProcessor,
+        sit_events: pd.DataFrame,
+        sit_transitions: pd.DataFrame,
+        sit_disturbance_eligibilities: pd.DataFrame,
+        reset_parameters: bool,
     ):
 
         self.event_processor = event_processor
@@ -110,13 +117,15 @@ class SITRuleBasedProcessor:
         self.sit_transitions = sit_transitions
         self._reset_parameters = reset_parameters
 
-    def tr_func(self, cbm_vars):
+    def tr_func(self, cbm_vars: CBMVariables) -> CBMVariables:
         cbm_vars = self.transition_rule_processor.process_transition_rules(
             self.sit_transitions, cbm_vars
         )
         return cbm_vars
 
-    def dist_func(self, time_step, cbm_vars):
+    def dist_func(
+        self, time_step: int, cbm_vars: CBMVariables
+    ) -> CBMVariables:
         cbm_vars, stats_df = self.event_processor.process_events(
             time_step=time_step,
             sit_events=self.sit_events,
@@ -126,7 +135,9 @@ class SITRuleBasedProcessor:
         self.sit_event_stats_by_timestep[time_step] = stats_df
         return cbm_vars
 
-    def pre_dynamics_func(self, time_step, cbm_vars):
+    def pre_dynamics_func(
+        self, time_step: int, cbm_vars: CBMVariables
+    ) -> CBMVariables:
         if self._reset_parameters:
             cbm_vars.parameters.disturbance_type.loc[:] = 0
             cbm_vars.parameters.reset_age.loc[:] = -1
