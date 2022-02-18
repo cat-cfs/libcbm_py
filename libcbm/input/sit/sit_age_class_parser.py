@@ -7,7 +7,7 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
-def generate_sit_age_classes(age_interval, max_age):
+def generate_sit_age_classes(age_interval: int, max_age: int) -> pd.DataFrame:
     """generate a valid SIT_ageclass input table.  This is a helper method
     to create input for :py:func:`parse_age_classes`
 
@@ -41,7 +41,7 @@ def generate_sit_age_classes(age_interval, max_age):
     return pd.DataFrame(data)
 
 
-def parse(age_class_table):
+def parse(age_class_table: pd.DataFrame) -> pd.DataFrame:
     """Parse the sit age class table format into a table of age classes with
     fields:
 
