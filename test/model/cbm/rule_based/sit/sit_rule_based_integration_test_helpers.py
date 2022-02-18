@@ -152,7 +152,8 @@ def initialize_events(sit_input, event_data):
 
 def initialize_inventory(sit_input, inventory_data):
     return df_from_template_row(
-        template_row=sit_input.sit_data.inventory.iloc[0], row_dicts=inventory_data
+        template_row=sit_input.sit_data.inventory.iloc[0],
+        row_dicts=inventory_data,
     )
 
 

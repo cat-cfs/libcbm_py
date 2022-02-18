@@ -34,9 +34,12 @@ class SITTransitionRuleIntegrationTest(unittest.TestCase):
         # change the post-dist1 species to 1/2 oak, 1/2 pine
 
         sit_input.sit_data.inventory = helpers.initialize_inventory(
-            sit_input, [{"admin": "a1", "eco": "e2", "species": "sp", "area": 5}]
+            sit_input,
+            [{"admin": "a1", "eco": "e2", "species": "sp", "area": 5}],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # in order for the transition to occur, the disturbance type needs to

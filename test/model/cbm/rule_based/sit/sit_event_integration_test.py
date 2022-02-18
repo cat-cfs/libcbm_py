@@ -38,7 +38,9 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -104,7 +106,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -179,7 +183,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e3", "species": "sp", "area": 5},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -249,7 +255,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since the sort is by age, the first record will be fully disturbed
@@ -311,7 +319,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * 10 ha total = 10 tonnes C
@@ -371,7 +381,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 2},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event,
@@ -434,7 +446,9 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         cbm_vars.pools.SoftwoodMerch = 1.0
@@ -519,7 +533,9 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         cbm_vars.pools.HardwoodMerch = 1.0
