@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-
+from libcbm.input.sit import sit_cbm_factory
 import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers as helpers  # noqa 501
 
 
@@ -9,9 +9,9 @@ class SITEventIntegrationTest(unittest.TestCase):
         """Test a rule based event with area target, and age sort where no
         splitting occurs
         """
-        sit = helpers.load_sit_data()
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input = helpers.load_sit_input()
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -28,8 +28,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # records 0, 2, and 3 match, and 1 does not.  The target is 10, so
         # 2 of the 3 eligible records will be disturbed
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
                 {"admin": "a2", "eco": "e2", "species": "sp", "area": 5},
@@ -38,6 +38,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -75,9 +76,9 @@ class SITEventIntegrationTest(unittest.TestCase):
         splitting occurs
         """
 
-        sit = helpers.load_sit_data()
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input = helpers.load_sit_input()
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a2",
@@ -94,8 +95,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # record at index 1 is the only eligible record meaning the above event
         # will be unrealized with a shortfall of 5
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
                 {"admin": "a2", "eco": "e2", "species": "sp", "area": 5},
@@ -103,7 +104,7 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -139,9 +140,9 @@ class SITEventIntegrationTest(unittest.TestCase):
     def test_rule_based_area_target_age_sort_multiple_event(self):
         """Check interactions between two age sort/area target events"""
 
-        sit = helpers.load_sit_data()
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input = helpers.load_sit_input()
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -168,8 +169,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         # the second of the above events will match all records, and it will
         # occur first since fire happens before clearcut
 
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
@@ -178,7 +179,7 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e3", "species": "sp", "area": 5},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since age sort is set, the oldest values of the eligible records
@@ -223,9 +224,9 @@ class SITEventIntegrationTest(unittest.TestCase):
         splitting occurs
         """
 
-        sit = helpers.load_sit_data()
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input = helpers.load_sit_input()
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -241,14 +242,14 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         # since the target is 6, one of the 2 inventory records below needs to
         # be split
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # since the sort is by age, the first record will be fully disturbed
@@ -285,10 +286,10 @@ class SITEventIntegrationTest(unittest.TestCase):
 
     def test_rule_based_merch_target_age_sort(self):
 
-        sit = helpers.load_sit_data()
+        sit_input = helpers.load_sit_input()
 
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -303,14 +304,14 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 5},
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * 10 ha total = 10 tonnes C
@@ -320,7 +321,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         with helpers.get_rule_based_processor(
             sit,
             random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults),
+            parameters_factory=helpers.get_parameters_factory(sit),
         ) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=1, cbm_vars=cbm_vars
@@ -344,10 +345,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
 
     def test_rule_based_merch_target_age_sort_unrealized(self):
-        sit = helpers.load_sit_data()
+        sit_input = helpers.load_sit_input()
 
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -362,15 +363,15 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 3},
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 4},
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 2},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event,
@@ -381,7 +382,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         with helpers.get_rule_based_processor(
             sit,
             random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults),
+            parameters_factory=helpers.get_parameters_factory(sit),
         ) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=1, cbm_vars=cbm_vars
@@ -405,10 +406,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_eligible"] == 3)
 
     def test_rule_based_merch_target_age_sort_split(self):
-        sit = helpers.load_sit_data()
+        sit_input = helpers.load_sit_input()
 
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -423,8 +424,8 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 # the remaining target after 7 - 5 = 2, so 2/5ths of the area
                 # of this stand will be disturbed
@@ -433,7 +434,7 @@ class SITEventIntegrationTest(unittest.TestCase):
                 {"admin": "a1", "eco": "e2", "species": "sp", "area": 5},
             ],
         )
-
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         cbm_vars.pools.SoftwoodMerch = 1.0
@@ -442,7 +443,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         with helpers.get_rule_based_processor(
             sit,
             random_func=None,
-            parameters_factory=helpers.get_parameters_factory(sit.defaults),
+            parameters_factory=helpers.get_parameters_factory(sit),
         ) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=4, cbm_vars=cbm_vars
@@ -472,10 +473,10 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_eligible"] == 2)
 
     def test_rule_based_multiple_target_types(self):
-        sit = helpers.load_sit_data()
+        sit_input = helpers.load_sit_input()
 
-        sit.sit_data.disturbance_events = helpers.initialize_events(
-            sit,
+        sit_input.sit_data.disturbance_events = helpers.initialize_events(
+            sit_input,
             [
                 {
                     "admin": "a1",
@@ -511,13 +512,14 @@ class SITEventIntegrationTest(unittest.TestCase):
             ],
         )
 
-        sit.sit_data.inventory = helpers.initialize_inventory(
-            sit,
+        sit_input.sit_data.inventory = helpers.initialize_inventory(
+            sit_input,
             [
                 {"admin": "a1", "eco": "e1", "species": "sp", "area": 1000},
             ],
         )
 
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         cbm_vars.pools.HardwoodMerch = 1.0
@@ -526,7 +528,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         with helpers.get_rule_based_processor(
             sit,
             random_func=np.ones,  # don't really do a random sort
-            parameters_factory=helpers.get_parameters_factory(sit.defaults),
+            parameters_factory=helpers.get_parameters_factory(sit),
         ) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=100, cbm_vars=cbm_vars

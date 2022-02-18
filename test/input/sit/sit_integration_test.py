@@ -1,5 +1,4 @@
 import unittest
-from types import SimpleNamespace
 import pandas as pd
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit import sit_reader
@@ -10,8 +9,7 @@ from libcbm.model.cbm import cbm_simulator
 class SITIntegrationTest(unittest.TestCase):
     def test_integration(self):
 
-        sit = SimpleNamespace()
-        sit.config = {
+        config = {
             "mapping_config": {
                 "nonforest": None,
                 "species": {
@@ -30,7 +28,7 @@ class SITIntegrationTest(unittest.TestCase):
             }
         }
 
-        sit.sit_data = sit_reader.parse(
+        sit_data = sit_reader.parse(
             sit_classifiers=pd.DataFrame(
                 data=[(1, "_CLASSIFIER", "classifier1"), (1, "a", "a")]
             ),
@@ -47,7 +45,7 @@ class SITIntegrationTest(unittest.TestCase):
             sit_events=None,
             sit_transitions=None,
         )
-        sit = sit_cbm_factory.initialize_sit_objects(sit)
+        sit = sit_cbm_factory.initialize_sit(sit_data, config)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
             (

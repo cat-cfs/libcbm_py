@@ -19,7 +19,7 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import (
 )
 
 
-def get_parameters_factory(sit_cbm_defaults):
+def get_parameters_factory(sit):
     """overrides selected default parameters for testing purposes.
 
     For example since rule based disturbances use the matrix flows into the
@@ -28,7 +28,8 @@ def get_parameters_factory(sit_cbm_defaults):
     Returns:
         func: a function to be passed to initialize CBM default parameters
     """
-    parameters = sit_cbm_defaults.get_parameters_factory()()
+
+    parameters = sit.get_parameters_factory()()
     disturbance_matrix_value = parameters["disturbance_matrix_values"]
 
     # since for the purposes of rule based disturbances we are
@@ -103,14 +104,14 @@ def get_test_data_dir():
     )
 
 
-def load_sit_data():
-    sit = SimpleNamespace()
+def load_sit_input():
+    sit_input = SimpleNamespace()
     sit_config = load_config()
-    sit.sit_data = sit_reader.read(
+    sit_input.sit_data = sit_reader.read(
         sit_config["import_config"], get_test_data_dir()
     )
-    sit.config = sit_config
-    return sit
+    sit_input.config = sit_config
+    return sit_input
 
 
 def load_config():
@@ -140,24 +141,22 @@ def initialize_transitions(sit, transition_data):
     )
 
 
-def initialize_events(sit, event_data):
+def initialize_events(sit_input, event_data):
     # the first row is a template row, and the specified dict will replace the
     # values
     return df_from_template_row(
-        template_row=sit.sit_data.disturbance_events.iloc[0],
+        template_row=sit_input.sit_data.disturbance_events.iloc[0],
         row_dicts=event_data,
     )
 
 
-def initialize_inventory(sit, inventory_data):
+def initialize_inventory(sit_input, inventory_data):
     return df_from_template_row(
-        template_row=sit.sit_data.inventory.iloc[0], row_dicts=inventory_data
+        template_row=sit_input.sit_data.inventory.iloc[0], row_dicts=inventory_data
     )
 
 
 def setup_cbm_vars(sit):
-
-    sit = sit_cbm_factory.initialize_sit_objects(sit)
 
     classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 
