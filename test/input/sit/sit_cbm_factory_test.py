@@ -109,7 +109,7 @@ class SITCBMFactoryTest(unittest.TestCase):
                 [3, "c3v4"],
             ],
         )
-        sit = SimpleNamespace(
+        sit_input = SimpleNamespace(
             config={"mapping_config": None},
             sit_data=SimpleNamespace(
                 classifiers=classifiers,
@@ -121,7 +121,7 @@ class SITCBMFactoryTest(unittest.TestCase):
             ),
         )
 
-        sit_cbm_factory.load_sit(sit)
+        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
         self.assertTrue(len(sit.classifier_names) == len(classifiers.index))
         self.assertTrue(len(sit.classifier_ids) == len(classifiers.index))
         self.assertTrue(
