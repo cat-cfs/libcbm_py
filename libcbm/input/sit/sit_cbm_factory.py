@@ -4,11 +4,11 @@
 
 import os
 import json
-from types import SimpleNamespace
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_factory
+from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_config
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_disturbance_event_parser
@@ -16,12 +16,14 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_classifier_parser
-from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
+from libcbm.input.sit.sit import SIT
 from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 
 
-def get_classifiers(classifiers, classifier_values):
+def get_classifiers(
+    classifiers: pd.DataFrame, classifier_values: pd.DataFrame
+) -> dict[str, list]:
     """Create classifier input for initializing the CBM class based on CBM
     Standard import tool formatted data.
 
@@ -53,102 +55,13 @@ def get_classifiers(classifiers, classifier_values):
     return config
 
 
-def _create_disturbance_type_maps(sit):
-    """Create maps from the internally defined sequential sit disturbance type
-    id to all of:
-
-
-        * default_disturbance_id_map - maps to the default disturbance type id
-        * disturbance_id_map - maps to the sit disturbance type input "id"
-            field (col 0)
-        * disturbance_name_map - maps to the sit disturbance type input "name"
-            field (col 1)
-
-    Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
-    """
-    sit.default_disturbance_id_map = {
-        row.sit_disturbance_type_id: row.default_disturbance_type_id
-        for _, row in sit.sit_data.disturbance_types.iterrows()
-    }
-    sit.disturbance_id_map = {
-        row.sit_disturbance_type_id: row.id
-        for _, row in sit.sit_data.disturbance_types.iterrows()
-    }
-    sit.disturbance_name_map = {
-        row.sit_disturbance_type_id: row["name"]
-        for _, row in sit.sit_data.disturbance_types.iterrows()
-    }
-
-
-def _create_classifier_value_maps(sit):
-    """Creates dictionaries for fetching internally defined identifiers
-    and attaches them to the specified sit object instance. Values can
-    then be fetched from the sit instance like the following examples::
-
-        classifier_id = sit.classifier_ids["my_classifier_name"]
-        classifier_name = sit.classifier_names[1]
-        classifier_value_id = \
-            sit.classifier_value_ids["classifier1"]["classifier1_value1"]
-
-    The following fields will be assigned to the specified sit instance:
-
-        * classifier_names - dictionary of id (int, key) to
-            name (str, value) for each classifier
-        * classifier_ids - dictionary of name (str, value)
-            to id (int, key) for each classifier
-        * classifier_value_ids - nested dictionary, with one entry per
-            classifier name. Each nested dictionary contains classifier value
-            name (str, key) to classifier value id (int, value)
-
-            Example::
-
-                {
-                    "classifier_name_1": {
-                        "classifier_1_value_name_1": 1,
-                        "classifier_1_value_name_2": 2
-                    },
-                    "classifier_name_2": {
-                        "classifier_2_value_name_1": 3,
-                        "classifier_2_value_name_2": 4
-                    },
-                    ...
-                }
-
-        * classifier_value_names - nested dictionary, with one entry per
-            classifier id. Each nested dictionary contains classifier value
-            name (str, key) to classifier value id (int, value)
-
-            Example::
-
-                {
-                    1: {
-                        1: "classifier_1_value_name_1",
-                        2: "classifier_1_value_name_2"
-                    },
-                    2: {
-                        3: "classifier_2_value_name_1"
-                        4: "classifier_2_value_name_2"
-                    },
-                    ...
-                }
-
-    Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
-    """
-    classifiers_config = get_classifiers(
-        sit.sit_data.classifiers, sit.sit_data.classifier_values
-    )
-    idx = cbm_config.get_classifier_indexes(classifiers_config)
-    sit.classifier_names = idx["classifier_names"]
-    sit.classifier_ids = idx["classifier_ids"]
-    sit.classifier_value_ids = idx["classifier_value_ids"]
-    sit.classifier_value_names = idx["classifier_value_names"]
-
-
 def get_merch_volumes(
-    yield_table, classifiers, classifier_values, age_classes, sit_mapping
-):
+    yield_table: pd.DataFrame,
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    age_classes: pd.DataFrame,
+    sit_mapping: SITMapping,
+) -> list:
     """Create merchantable volume input for initializing the CBM class
     based on CBM Standard import tool formatted data.
 
@@ -163,8 +76,8 @@ def get_merch_volumes(
             SITMapping used to validate species classifier and fetch species id
 
     Returns:
-        dict: configuration dictionary for CBM. See:
-            :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
+        list: configuration for CBM. See:
+            :py:mod:`libcbm.model.cbm.cbm_config`
     """
 
     unique_classifier_sets = (
@@ -203,7 +116,7 @@ def get_merch_volumes(
     return output
 
 
-def initialize_inventory(sit):
+def initialize_inventory(sit: SIT) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Converts SIT inventory data input for CBM
 
     Args:
@@ -275,7 +188,9 @@ def initialize_inventory(sit):
     return classifiers_result, inventory_result
 
 
-def _initialize_events(disturbance_events, sit_mapping):
+def _initialize_events(
+    disturbance_events: pd.DataFrame, sit_mapping: SITMapping
+):
     """Returns a copy of the parsed sit events with the disturbance type id
     resulting from the SIT configuration.
 
@@ -322,7 +237,7 @@ def _initialize_transition_rules(transition_rules, sit_mapping):
     return transition_rules
 
 
-def read_sit_config(config_path):
+def _read_sit_config(config_path: str) -> SIT:
     """Load SIT data and configuration from the json formatted configuration
     file at specified config_path.
 
@@ -330,15 +245,9 @@ def read_sit_config(config_path):
         config_path (str): path to SIT configuration
 
     Returns:
-        types.SimpleNamespace: an object with the following properties:
-
-            - config: the dictionary representation of the json configuration
-                at the specified config_path
-            - sit_data: if the "import_config" key is present in the
-                configuration, this is a loaded and parsed sit dataset, and
-                otherwise it is None.
+        SIT: an instance of the standard import tool class
     """
-    sit = SimpleNamespace()
+    sit = SIT()
     with open(config_path, "r", encoding="utf-8") as config_file:
         sit.config = json.load(config_file)
         config_path = config_path
@@ -349,35 +258,6 @@ def read_sit_config(config_path):
         else:
             sit.sit_data = None
         return sit
-
-
-def initialize_sit_objects(sit, db_path=None, locale_code="en-CA"):
-    """Load and attach objects required for the SIT to the specified namespace
-
-    Args:
-        sit (types.SimpleNamespace): object with parsed SIT data, such as the
-            return value of :py:func:`read_sit_config`.
-        db_path (str, optional): path to a cbm_defaults database. If None, the
-            default database is used. Defaults to None.
-        locale_code (str, optional): a locale code used to fetch the
-            corresponding translated version of default parameter strings
-    """
-    if not db_path:
-        db_path = resources.get_cbm_defaults_path()
-    sit_defaults = SITCBMDefaults(sit, db_path, locale_code=locale_code)
-    sit.sit_mapping = SITMapping(sit.config["mapping_config"], sit_defaults)
-    sit.sit_data.disturbance_types.insert(
-        0,
-        "default_disturbance_type_id",
-        sit.sit_mapping.get_default_disturbance_type_id(
-            sit.sit_data.disturbance_types.name
-        ),
-    )
-    sit.db_path = db_path
-    sit.defaults = sit_defaults
-    _create_classifier_value_maps(sit)
-    _create_disturbance_type_maps(sit)
-    return sit
 
 
 def load_sit(config_path, db_path=None):
@@ -392,7 +272,7 @@ def load_sit(config_path, db_path=None):
         types.SimpleNamespace: object with parsed SIT data and objects.
     """
 
-    sit = read_sit_config(config_path)
+    sit = _read_sit_config(config_path)
     sit = initialize_sit_objects(sit, db_path)
 
     return sit
@@ -443,8 +323,8 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 
 
 def create_sit_rule_based_processor(
-    sit,
-    cbm,
+    sit: SIT,
+    cbm: CBM,
     random_func=np.random.rand,
     reset_parameters=True,
     sit_events=None,
@@ -454,8 +334,8 @@ def create_sit_rule_based_processor(
     """initializes a class for processing SIT rule based disturbances.
 
     Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
-        cbm (object): initialized instance of the CBM model
+        sit (SIT): sit instance as returned by :py:func:`load_sit`
+        cbm (CBM): initialized instance of the CBM model
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
             Defaults to np.random.rand.
@@ -542,7 +422,7 @@ def create_sit_rule_based_processor(
         sit.sit_data.classifiers, sit.sit_data.classifier_values
     )
 
-    tr_constants = SimpleNamespace(
+    tr_constants = sit_rule_based_processor.TransitionRuleConstants(
         group_err_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
         classifier_value_postfix=sit_format.get_tr_classifier_set_postfix(),
         wildcard=sit_classifier_parser.get_wildcard_keyword(),
