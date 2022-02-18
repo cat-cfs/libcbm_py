@@ -11,8 +11,8 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.model.cbm.cbm_variables import Series
-from libcbm.model.cbm.cbm_variables import DataFrame
+from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
 
 
 class SITEventProcessor:
