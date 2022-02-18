@@ -7,14 +7,7 @@ import pandas as pd
 import numpy as np
 from types import SimpleNamespace
 from libcbm import data_helpers
-
-
-class DataFrame:
-    pass
-
-
-class Series:
-    pass
+from libcbm.storage.dataframe import DataFrame
 
 
 class CBMVariables:
