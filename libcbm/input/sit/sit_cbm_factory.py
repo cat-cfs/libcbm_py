@@ -4,6 +4,7 @@
 
 import os
 import json
+from typing import Callable
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
@@ -14,106 +15,15 @@ from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_format
 from libcbm.input.sit.sit_mapping import SITMapping
+from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit.sit import SIT
+from libcbm.input.sit.sit_reader import SITData
 from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
-
-
-def get_classifiers(
-    classifiers: pd.DataFrame, classifier_values: pd.DataFrame
-) -> dict[str, list]:
-    """Create classifier input for initializing the CBM class based on CBM
-    Standard import tool formatted data.
-
-    Args:
-        classifiers (pandas.DataFrame): the parsed SIT classifiers output
-            of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
-        classifier_values (pandas.DataFrame): the parsed SIT classifier values
-            output of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
-
-    Returns:
-        dict: configuration dictionary for CBM. See:
-            :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
-    """
-    classifiers_config = []
-    for _, row in classifiers.iterrows():
-        values = classifier_values[
-            classifier_values.classifier_id == row.id
-        ].name
-        classifiers_config.append(
-            cbm_config.classifier(
-                name=row["name"],
-                values=[
-                    cbm_config.classifier_value(value=x) for x in list(values)
-                ],
-            )
-        )
-
-    config = cbm_config.classifier_config(classifiers_config)
-    return config
-
-
-def get_merch_volumes(
-    yield_table: pd.DataFrame,
-    classifiers: pd.DataFrame,
-    classifier_values: pd.DataFrame,
-    age_classes: pd.DataFrame,
-    sit_mapping: SITMapping,
-) -> list:
-    """Create merchantable volume input for initializing the CBM class
-    based on CBM Standard import tool formatted data.
-
-    Args:
-        yield_table (pandas.DataFrame): the parsed SIT yield output
-            of :py:func:`libcbm.input.sit.sit_yield_parser.parse`
-        classifiers (pandas.DataFrame): the parsed SIT classifiers output
-            of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
-        age_classes (pandas.DataFrame): the parsed SIT age classes
-            output of :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
-        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): instance of
-            SITMapping used to validate species classifier and fetch species id
-
-    Returns:
-        list: configuration for CBM. See:
-            :py:mod:`libcbm.model.cbm.cbm_config`
-    """
-
-    unique_classifier_sets = (
-        yield_table.groupby(list(classifiers.name)).size().reset_index()
-    )
-    # removes the extra field created by the above method
-    unique_classifier_sets = unique_classifier_sets.drop(columns=[0])
-    ages = list(age_classes.end_year)
-    output = []
-    yield_table.leading_species = sit_mapping.get_species(
-        yield_table.leading_species, classifiers, classifier_values
-    )
-    for _, row in unique_classifier_sets.iterrows():
-        match = yield_table.merge(
-            pd.DataFrame([row]),
-            left_on=list(classifiers.name),
-            right_on=list(classifiers.name),
-        )
-        merch_vols = []
-        for _, match_row in match.iterrows():
-            start_range = len(classifiers) + 1
-            vols = match_row.iloc[start_range:]
-            merch_vols.append(
-                {
-                    "species_id": match_row["leading_species"],
-                    "age_volume_pairs": [
-                        (ages[i], vols[i]) for i in range(len(vols))
-                    ],
-                }
-            )
-        output.append(
-            cbm_config.merch_volume_curve(
-                classifier_set=list(row), merch_volumes=merch_vols
-            )
-        )
-    return output
+from libcbm.input.sit import sit_cbm_config
+from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 
 
 def initialize_inventory(sit: SIT) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -128,7 +38,7 @@ def initialize_inventory(sit: SIT) -> tuple[pd.DataFrame, pd.DataFrame]:
     sit_data = sit.sit_data
     sit_mapping = sit.sit_mapping
 
-    classifier_config = get_classifiers(
+    classifier_config = sit_cbm_config.get_classifiers(
         sit_data.classifiers, sit_data.classifier_values
     )
     classifier_ids = [
@@ -190,7 +100,7 @@ def initialize_inventory(sit: SIT) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def _initialize_events(
     disturbance_events: pd.DataFrame, sit_mapping: SITMapping
-):
+) -> pd.DataFrame:
     """Returns a copy of the parsed sit events with the disturbance type id
     resulting from the SIT configuration.
 
@@ -215,12 +125,15 @@ def _initialize_events(
     return disturbance_events
 
 
-def _initialize_transition_rules(transition_rules, sit_mapping):
+def _initialize_transition_rules(
+    transition_rules: pd.DataFrame, sit_mapping: SITMapping
+) -> pd.DataFrame:
     """Returns a copy of the parsed sit transition rules with the disturbance
     type id resulting from the SIT configuration.
 
     Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
+        transition_rules (pd.DataFrame): transition rules data
+        sit_mapping (SITMapping): instance of SITMapping
 
     Returns:
         pandas.DataFrame: the transition rules with an added
@@ -237,54 +150,63 @@ def _initialize_transition_rules(transition_rules, sit_mapping):
     return transition_rules
 
 
-def _read_sit_config(config_path: str) -> SIT:
-    """Load SIT data and configuration from the json formatted configuration
-    file at specified config_path.
+def initialize_sit(
+    sit_data: SITData,
+    config: dict,
+    db_path: str = None,
+    db_locale_code: str = "en-CA",
+) -> SIT:
+    if not db_path:
+        db_path = resources.get_cbm_defaults_path()
+    sit_defaults = SITCBMDefaults(
+        sit_data, db_path, locale_code=db_locale_code
+    )
 
-    Args:
-        config_path (str): path to SIT configuration
+    sit_mapping = SITMapping(config["mapping_config"], sit_defaults)
 
-    Returns:
-        SIT: an instance of the standard import tool class
-    """
-    sit = SIT()
-    with open(config_path, "r", encoding="utf-8") as config_file:
-        sit.config = json.load(config_file)
-        config_path = config_path
-        if "import_config" in sit.config:
-            sit.sit_data = sit_reader.read(
-                sit.config["import_config"], os.path.dirname(config_path)
-            )
-        else:
-            sit.sit_data = None
-        return sit
+    sit_identifier_mapping = SITIdentifierMapping(sit_data, sit_mapping)
+
+    sit = SIT(
+        config, sit_data, sit_defaults, sit_mapping, sit_identifier_mapping
+    )
+
+    return sit
 
 
-def load_sit(config_path, db_path=None):
+def load_sit(
+    config_path: str, db_path: str = None, db_locale_code: str = "en-CA"
+) -> SIT:
     """Loads data and objects required to run from the SIT format.
 
     Args:
         config_path (str): path to SIT configuration
         db_path (str, optional): path to a cbm_defaults database. If None, the
             default database is used. Defaults to None.
+        db_locale_code (str, optional): locale code for the specified db.
+            Defaults to "en-CA"
 
     Returns:
-        types.SimpleNamespace: object with parsed SIT data and objects.
+        SIT: instance of standard import tool object
     """
 
-    sit = _read_sit_config(config_path)
-    sit = initialize_sit_objects(sit, db_path)
+    with open(config_path, "r", encoding="utf-8") as config_file:
+        config = json.load(config_file)
 
-    return sit
+    sit_data = sit_reader.read(
+        config["import_config"], os.path.dirname(config_path)
+    )
+    return initialize_sit(sit_data, config, db_path, db_locale_code)
 
 
 @contextmanager
-def initialize_cbm(sit, dll_path=None, parameters_factory=None):
+def initialize_cbm(
+    sit: SIT, dll_path=None, parameters_factory: Callable[[], dict] = None
+) -> CBM:
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
     Args:
-        sit (object): sit instance as returned by :py:func:`load_sit`
+        sit (SIT): instance of SIT object
         dll_path (str, optional): path to the libcbm compiled library, if not
             specified a default value is used.
         parameters_factory (func, optional): a parameterless function that
@@ -298,15 +220,15 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
     if not dll_path:
         dll_path = resources.get_libcbm_bin_path()
     if parameters_factory is None:
-        parameters_factory = sit.defaults.get_parameters_factory()
+        parameters_factory = sit.get_parameters_factory()
     with cbm_factory.create(
         dll_path=dll_path,
         dll_config_factory=sit.defaults.get_configuration_factory(),
         cbm_parameters_factory=parameters_factory,
         merch_volume_to_biomass_factory=(
             lambda: cbm_config.merch_volume_to_biomass_config(
-                db_path=sit.db_path,
-                merch_volume_curves=get_merch_volumes(
+                db_path=sit.defaults.db_path,
+                merch_volume_curves=sit_cbm_config.get_merch_volumes(
                     sit.sit_data.yield_table,
                     sit.sit_data.classifiers,
                     sit.sit_data.classifier_values,
@@ -315,7 +237,7 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
                 ),
             )
         ),
-        classifiers_factory=lambda: get_classifiers(
+        classifiers_factory=lambda: sit_cbm_config.get_classifiers(
             sit.sit_data.classifiers, sit.sit_data.classifier_values
         ),
     ) as cbm:
@@ -326,15 +248,15 @@ def create_sit_rule_based_processor(
     sit: SIT,
     cbm: CBM,
     random_func=np.random.rand,
-    reset_parameters=True,
-    sit_events=None,
-    sit_disturbance_eligibilities=None,
-    sit_transition_rules=None,
+    reset_parameters: bool = True,
+    sit_events: pd.DataFrame = None,
+    sit_disturbance_eligibilities: pd.DataFrame = None,
+    sit_transition_rules: pd.DataFrame = None,
 ):
     """initializes a class for processing SIT rule based disturbances.
 
     Args:
-        sit (SIT): sit instance as returned by :py:func:`load_sit`
+        sit (SIT): sit instance
         cbm (CBM): initialized instance of the CBM model
         random_func (func, optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
@@ -418,12 +340,12 @@ def create_sit_rule_based_processor(
     else:
         transition_rules = sit.sit_data.transition_rules
 
-    classifiers_config = get_classifiers(
+    classifiers_config = sit_cbm_config.get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values
     )
 
     tr_constants = sit_rule_based_processor.TransitionRuleConstants(
-        group_err_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
+        group_error_max=sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX,
         classifier_value_postfix=sit_format.get_tr_classifier_set_postfix(),
         wildcard=sit_classifier_parser.get_wildcard_keyword(),
     )
