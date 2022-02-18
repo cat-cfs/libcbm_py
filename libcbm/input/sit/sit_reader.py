@@ -4,7 +4,6 @@
 
 # Built-in modules #
 import os
-from types import SimpleNamespace
 
 # Third party modules #
 import pandas as pd
@@ -238,9 +237,11 @@ def parse(
             )
         else:
             disturbance_eligibilities = None
+            separate_eligibilities = False
     else:
         disturbance_events = None
         disturbance_eligibilities = None
+        separate_eligibilities = False
     if sit_transitions is not None:
         transition_rules = sit_transition_rule_parser.parse(
             sit_transitions,
