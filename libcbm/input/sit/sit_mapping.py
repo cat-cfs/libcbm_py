@@ -5,14 +5,20 @@
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import numpy as np
+from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 
 
 class SITMapping:
-    def __init__(self, config, sit_cbm_defaults):
+    def __init__(self, config: dict, sit_cbm_defaults: SITCBMDefaults):
         self.config = config
         self.sit_cbm_defaults = sit_cbm_defaults
 
-    def get_species(self, species, classifiers, classifier_values):
+    def get_species(
+        self,
+        species: pd.Series,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+    ) -> pd.Series:
         """Get a series of CBM species ids based on the specified species
         classifier values series and the SIT import tool classifier
         configuration and mapping.
@@ -124,7 +130,9 @@ class SITMapping:
             )
         return species.map(default_species_map)
 
-    def _get_mapping_error_handling_function(self, sit_map, error_fmt):
+    def _get_mapping_error_handling_function(
+        self, sit_map: dict, error_fmt: str
+    ):
         def get_mapped_value(value):
             try:
                 return sit_map[value]
@@ -134,8 +142,11 @@ class SITMapping:
         return get_mapped_value
 
     def _get_spatial_unit_joined_admin_eco(
-        self, inventory, classifiers, classifier_values
-    ):
+        self,
+        inventory: pd.DataFrame,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+    ) -> pd.Series:
         merged_classifiers = classifiers.merge(
             classifier_values,
             left_on="id",
@@ -182,8 +193,11 @@ class SITMapping:
         return pd.Series(output)
 
     def _get_spatial_unit_separate_admin_eco(
-        self, inventory, classifiers, classifier_values
-    ):
+        self,
+        inventory: pd.DataFrame,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+    ) -> pd.Series:
         merged_classifiers = classifiers.merge(
             classifier_values,
             left_on="id",
@@ -239,7 +253,7 @@ class SITMapping:
             ).iterrows()
         }
 
-        def spu_map_func(row):
+        def spu_map_func(row: pd.Series) -> int:
             try:
                 return self.sit_cbm_defaults.get_spatial_unit_id(
                     row.default_admin_boundary, row.default_eco_boundary
@@ -263,7 +277,12 @@ class SITMapping:
             }
         ).apply(spu_map_func, axis=1)
 
-    def get_spatial_unit(self, inventory, classifiers, classifier_values):
+    def get_spatial_unit(
+        self,
+        inventory: pd.DataFrame,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+    ) -> pd.Series:
         """Get a pandas.Series containing spatial unit ids based on SIT
         Inventory, SIT classifiers and the mapping configuration.
 
@@ -321,8 +340,11 @@ class SITMapping:
             )
 
     def get_nonforest_cover_ids(
-        self, inventory, classifiers, classifier_values
-    ):
+        self,
+        inventory: pd.DataFrame,
+        classifiers: pd.DataFrame,
+        classifier_values: pd.DataFrame,
+    ) -> pd.Series:
         non_forest_map = {}
 
         default_non_forest = {
@@ -453,7 +475,9 @@ class SITMapping:
             )
         return inventory[non_forest_classifier].map(default_nonforest_type_map)
 
-    def get_sit_disturbance_type_id(self, disturbance_type):
+    def get_sit_disturbance_type_id(
+        self, disturbance_type: pd.Series
+    ) -> pd.Series:
         """Gets disturbance type ids based on the specified series of
         disturbance types, and the SIT mapping.  Used to encode any of:
 
@@ -472,7 +496,9 @@ class SITMapping:
             self.sit_cbm_defaults.get_sit_disturbance_type_id
         )
 
-    def get_default_disturbance_type_id(self, disturbance_type):
+    def get_default_disturbance_type_id(
+        self, disturbance_type: pd.Series
+    ) -> pd.Series:
         """Returns a series of default disturbance type ids based on the
         specified series of SIT disturbance type names and SIT mapping
 
@@ -523,7 +549,7 @@ class SITMapping:
 
         return disturbance_type.map(map_func)
 
-    def get_land_class_id(self, land_class):
+    def get_land_class_id(self, land_class: pd.Series) -> pd.Series:
         """Produces a validated series of land class ids.
 
         Args:
