@@ -9,6 +9,11 @@ from types import SimpleNamespace
 from libcbm import data_helpers
 
 
+class CBMVariables:
+    def __init__(self):
+        pass
+
+
 def initialize_pools(n_stands, pool_codes):
     """Create a dataframe for storing CBM pools
 
