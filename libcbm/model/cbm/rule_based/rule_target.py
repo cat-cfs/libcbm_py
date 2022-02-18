@@ -256,7 +256,9 @@ def proportion_area_target(area_target_value, inventory, eligible):
     )
 
 
-def sorted_area_target(area_target_value, sort_value, inventory, eligible):
+def sorted_area_target(
+    area_target_value, sort_value: np.ndarray, inventory, eligible
+):
     """create a sorted sequence of areas/proportions for meeting an area
     target exactly.
 

@@ -134,13 +134,7 @@ def create_state_filter_expression(sit_data: dict, age_only: bool) -> str:
             SIT_Events.
 
     Returns:
-        tuple:
-            1. expression (str): a boolean expression compatible with numexpr
-            2. columns (list): the list of column names that are referenced in
-                the expression
-
-            These values are intended for use with the
-            :py:func:`libcbm.model.rule_based.rule_filter module`
+        str: filter expression
     """
 
     expression_tokens = []

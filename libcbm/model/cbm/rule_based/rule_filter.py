@@ -3,9 +3,27 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-from types import SimpleNamespace
 import numexpr
 import numpy as np
+from typing import Union
+from libcbm.model.cbm.cbm_variables import Series
+from libcbm.model.cbm.cbm_variables import DataFrame
+
+
+class RuleFilter:
+    def __init__(
+        self, expression: str, local_dict: Union[DataFrame, dict[str, Series]]
+    ):
+        self._expression = expression
+        self._local_dict = local_dict
+
+    @property
+    def expression(self) -> str:
+        return self._expression
+
+    @property
+    def local_dict(self) -> Union[DataFrame, dict[str, Series]]:
+        return self.local_dict
 
 
 def create_filter(expression, data):
@@ -27,13 +45,11 @@ def create_filter(expression, data):
                 variables to filter.
 
     """
-    result = SimpleNamespace()
-    result.expression = expression
-    result.local_dict = data
-    return result
+
+    return RuleFilter(expression, data)
 
 
-def evaluate_filters(*filter_objs):
+def evaluate_filters(*filter_objs: RuleFilter) -> Series:
     """evaluates the specified sequence of filter object
 
     Args:

@@ -2,11 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import numpy as np
 import pandas as pd
 from typing import Callable
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.model.cbm.cbm_variables import Series
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
     TransitionRuleProcessor,
 )
@@ -54,7 +54,7 @@ class TransitionRuleConstants:
 
 def sit_rule_based_processor_factory(
     cbm: CBM,
-    random_func: Callable[[int], np.ndarray],
+    random_func: Callable[[int], Series],
     classifiers_config: dict[str, list],
     classifier_aggregates: pd.DataFrame,
     sit_events: pd.DataFrame,
@@ -145,10 +145,4 @@ class SITRuleBasedProcessor:
             cbm_vars.parameters.reset_age.loc[:] = -1
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
-        cbm_vars.classifiers = pd.DataFrame(
-            columns=cbm_vars.classifiers.columns,
-            data=np.ascontiguousarray(
-                cbm_vars.classifiers.to_numpy(dtype="int32")
-            ),
-        )
         return cbm_vars

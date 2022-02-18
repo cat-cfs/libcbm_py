@@ -2,17 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import pandas as pd
-import numpy as np
 from typing import Callable
 from typing import Union
 from libcbm.model.cbm.rule_based import event_processor
 from libcbm.model.cbm.rule_based import rule_filter
-from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.model.cbm.cbm_variables import Series
+from libcbm.model.cbm.cbm_variables import DataFrame
 
 
 class SITEventProcessor:
@@ -32,7 +32,7 @@ class SITEventProcessor:
         self,
         cbm: CBM,
         classifier_filter_builder: ClassifierFilter,
-        random_generator: Callable[[int], np.ndarray],
+        random_generator: Callable[[int], Series],
     ):
 
         self.cbm = cbm
@@ -40,10 +40,10 @@ class SITEventProcessor:
         self.random_generator = random_generator
 
     def _get_compute_disturbance_production(
-        self, cbm: CBM, eligible: np.ndarray
-    ) -> Callable[[CBMVariables, Union[int, np.ndarray]], pd.DataFrame]:
+        self, cbm: CBM, eligible: Series
+    ) -> Callable[[CBMVariables, Union[int, Series]], Series]:
         def compute_disturbance_production(
-            cbm_vars: CBMVariables, disturbance_type_id: Union[int, np.ndarray]
+            cbm_vars: CBMVariables, disturbance_type_id: Union[int, Series]
         ):
 
             return cbm.compute_disturbance_production(
@@ -56,7 +56,7 @@ class SITEventProcessor:
 
     def _process_event(
         self,
-        eligible: np.ndarray,
+        eligible: Series,
         sit_event: dict,
         cbm_vars: CBMVariables,
         sit_eligibility=None,
@@ -69,7 +69,6 @@ class SITEventProcessor:
         )
 
         target_factory = sit_stand_target.create_sit_event_target_factory(
-            rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
             random_generator=self.random_generator,
@@ -151,7 +150,7 @@ class SITEventProcessor:
     def process_events(
         self,
         time_step: int,
-        sit_events: pd.DataFrame,
+        sit_events: DataFrame,
         cbm_vars: CBMVariables,
         sit_eligibilities: pd.DataFrame = None,
     ):
