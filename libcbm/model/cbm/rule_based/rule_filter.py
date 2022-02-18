@@ -6,8 +6,8 @@
 import numexpr
 import numpy as np
 from typing import Union
-from libcbm.model.cbm.cbm_variables import Series
-from libcbm.model.cbm.cbm_variables import DataFrame
+from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
 
 
 class RuleFilter:
@@ -19,51 +19,46 @@ class RuleFilter:
 
     @property
     def expression(self) -> str:
+        """
+        a boolean expression to filter the values
+        in local_dict. The variables are defined as the keys in
+        local_dict.
+        """
         return self._expression
 
     @property
     def local_dict(self) -> Union[DataFrame, dict[str, Series]]:
+        """
+        a dictionary or table containing named variables to filter.
+        """
         return self.local_dict
 
 
-def create_filter(expression, data):
+def create_filter(expression: str, data: Union[DataFrame, dict[str, Series]]):
     """Creates a filter object for filtering a pandas dataframe using an
     expression.
 
     Args:
         expression (str): a boolean expression in terms of the values in
             column_variable_map
-        data (pandas.DataFrame, dict or object): the data to for which to
+        data: the data to for which to
             create a filter
 
     Returns:
-        object: object with properties:
-            - expression (str): a boolean expression to filter the values
-                in local_dict. The variables are defined as the keys in
-                local_dict.
-            - local_dict (dict): a dictionary containing named numpy
-                variables to filter.
-
+        RuleFilter: rule_filter object
     """
 
     return RuleFilter(expression, data)
 
 
 def evaluate_filters(*filter_objs: RuleFilter) -> Series:
-    """evaluates the specified sequence of filter object
+    """evaluates the specified sequence of filter objects
 
     Args:
-        filter_obj (list): list of objects with properties:
-
-            - expression (str): a boolean expression to filter the values
-                in local_dict. The variables are defined as the keys in
-                local_dict.
-            - local_dict (dict): a dictionary containing named numpy
-                variables to filter.
+        filter_objs (list): list of RuleFilter objects:
 
     Returns:
-        np.ndarray: filter result
-
+        Series: filter result (boolean array)
     """
     output = True
     for filter_obj in filter_objs:
