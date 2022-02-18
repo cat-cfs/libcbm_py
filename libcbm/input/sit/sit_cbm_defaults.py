@@ -5,18 +5,20 @@
 import pandas as pd
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.model.cbm import cbm_defaults
-from libcbm.input.sit.sit_cbm_factory import SIT
+from libcbm.input.sit.sit_reader import SITData
 from typing import Callable
 
 
 class SITCBMDefaults(CBMDefaultsReference):
-    def __init__(self, sit: SIT, db_path: str, locale_code: str = "en-CA"):
+    def __init__(
+        self, sit_data: SITData, db_path: str, locale_code: str = "en-CA"
+    ):
         super().__init__(db_path, locale_code)
-        self.sit = sit
         self.db_path = db_path
+
         self.sit_disturbance_type_id_lookup = {
             x["id"]: x["sit_disturbance_type_id"]
-            for _, x in sit.sit_data.disturbance_types.iterrows()
+            for _, x in sit_data.disturbance_types.iterrows()
         }
         self.default_disturbance_id_lookup = {
             x["disturbance_type_name"]: x["disturbance_type_id"]
@@ -35,7 +37,7 @@ class SITCBMDefaults(CBMDefaultsReference):
     def get_configuration_factory(self) -> Callable[[], dict]:
         return cbm_defaults.get_libcbm_configuration_factory(self.db_path)
 
-    def __replace_dist_type(self, disturbance_type_map, parameters):
+    def _replace_dist_type(self, disturbance_type_map, parameters):
         """Replaces default disturbance types with SIT defined types in CBM
         config.
 
@@ -58,15 +60,25 @@ class SITCBMDefaults(CBMDefaultsReference):
             output = output.reset_index(drop=True)
             parameters[parameter_name] = output
 
-    def get_parameters_factory(self) -> Callable[[], dict]:
-        param_func = cbm_defaults.get_cbm_parameters_factory(self.db_path)
-        default_parameters = param_func()
+    def _get_disturbance_type_map(
+        self, sit_disturbance_types: pd.DataFrame
+    ) -> dict[int, int]:
         disturbance_type_map = {
             x["sit_disturbance_type_id"]: x["default_disturbance_type_id"]
-            for _, x in self.sit.sit_data.disturbance_types.iterrows()
+            for _, x in sit_disturbance_types.iterrows()
         }
         disturbance_type_map.update({0: 0})  # add the null disturbance type
-        self.__replace_dist_type(disturbance_type_map, default_parameters)
+        return disturbance_type_map
+
+    def get_parameters_factory(
+        self, sit_disturbance_types: pd.DataFrame
+    ) -> Callable[[], dict]:
+        param_func = cbm_defaults.get_cbm_parameters_factory(self.db_path)
+        default_parameters = param_func()
+        disturbance_type_map = self._get_disturbance_type_map(
+            sit_disturbance_types
+        )
+        self._replace_dist_type(disturbance_type_map, default_parameters)
 
         def factory():
             return default_parameters
