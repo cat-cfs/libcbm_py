@@ -4,7 +4,12 @@
 
 
 import numpy as np
+from typing import Callable
 from libcbm.model.cbm.rule_based import rule_filter
+from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
+from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.storage.dataframe import Series
 
 
 class ProcessEventResult:
@@ -14,7 +19,7 @@ class ProcessEventResult:
     Args:
         cbm_vars (object): an object containing dataframes that store cbm
             simulation state and variables
-        filter_result (np.ndarray): numpy boolean array indicating for each
+        filter_result (Series): boolean array indicating for each
             stand index in cbm_vars the index was eligible for the event when
             true, and ineligible when false
         rule_target_result (RuleTargetResult): instance of
@@ -22,7 +27,12 @@ class ProcessEventResult:
             indicating targeted stands for this event
     """
 
-    def __init__(self, cbm_vars, filter_result, rule_target_result):
+    def __init__(
+        self,
+        cbm_vars: CBMVariables,
+        filter_result: Series,
+        rule_target_result: RuleTargetResult,
+    ):
 
         self.cbm_vars = cbm_vars
         self.filter_result = filter_result
@@ -30,8 +40,12 @@ class ProcessEventResult:
 
 
 def process_event(
-    event_filters, undisturbed, target_func, disturbance_type_id, cbm_vars
-):
+    event_filters: list[RuleFilter],
+    undisturbed: Series,
+    target_func: Callable[[CBMVariables, Series], RuleTargetResult],
+    disturbance_type_id: int,
+    cbm_vars: CBMVariables,
+) -> ProcessEventResult:
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
     splits may occur to meet a disturbance target exactly.
@@ -39,17 +53,13 @@ def process_event(
     Args:
         event_filters (list): a list of filter objects containing information
             to deem stands eligible or ineligible for events
-            See :py:mod:`libcbm.model.cbm.rule_based.rule_filter`
-        undisturbed (pandas.Series): a boolean value series indicating each
+        undisturbed (Series): a boolean value series indicating each
             specified index is eligible (True) or ineligible (False) for
             disturbance.
         target_func (func): a function for creating a disturbance target.
-            See: :py:mod:`libcbm.model.cbm.rule_based.rule_target`.
-            The function return value is:
-            :py:class:`libcbm.model.cbm.rule_based.rule_target.RuleTargetResult`
         disturbance_type_id (int): the id for the disturbance event being
             processed.
-        cbm_vars (object): an object containing dataframes that store cbm
+        cbm_vars (CBMVariables): an object containing dataframes that store cbm
             simulation state and variables
 
     Returns:
@@ -72,22 +82,22 @@ def process_event(
     return ProcessEventResult(cbm_vars, filter_result, rule_target_result)
 
 
-def apply_rule_based_event(target, disturbance_type_id, cbm_vars):
+def apply_rule_based_event(
+    target: RuleTargetResult, disturbance_type_id: int, cbm_vars: CBMVariables
+) -> CBMVariables:
     """Apply the specified target to the CBM simulation variables,
     splitting them if necessary.
 
     Args:
-        target (pandas.DataFrame): dataframe describing the index of
-            records to disturbance and area split proportions.  See return
-            value of methods in
-            :py:mod:`libcbm.model.cbm.rule_based.rule_target`
+        target (RuleTargetResult): object describing the index of
+            records to disturbance and area split proportions.
         disturbance_type_id (int): the id for the disturbance event being
             applied.
-        cbm_vars (object): an object containing dataframes that store cbm
+        cbm_vars (CBMVariables): an object containing dataframes that store cbm
             simulation state and variables
 
     Returns:
-        object: updated and expanded cbm_vars
+        CBMVariables: updated and expanded cbm_vars
 
     """
     target_index = target["disturbed_index"]
