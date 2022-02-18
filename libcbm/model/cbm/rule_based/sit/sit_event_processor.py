@@ -2,12 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import pandas as pd
-
+import numpy as np
+from typing import Callable
+from typing import Union
 from libcbm.model.cbm.rule_based import event_processor
 from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based import rule_target
+from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
+from libcbm.model.cbm.cbm_model import CBM
+from libcbm.model.cbm.cbm_variables import CBMVariables
 
 
 class SITEventProcessor:
@@ -23,14 +28,23 @@ class SITEventProcessor:
             random numbers in the returned sequence.
     """
 
-    def __init__(self, cbm, classifier_filter_builder, random_generator):
+    def __init__(
+        self,
+        cbm: CBM,
+        classifier_filter_builder: ClassifierFilter,
+        random_generator: Callable[[int], np.ndarray],
+    ):
 
         self.cbm = cbm
         self.classifier_filter_builder = classifier_filter_builder
         self.random_generator = random_generator
 
-    def _get_compute_disturbance_production(self, cbm, eligible):
-        def compute_disturbance_production(cbm_vars, disturbance_type_id):
+    def _get_compute_disturbance_production(
+        self, cbm: CBM, eligible: np.ndarray
+    ) -> Callable[[CBMVariables, Union[int, np.ndarray]], pd.DataFrame]:
+        def compute_disturbance_production(
+            cbm_vars: CBMVariables, disturbance_type_id: Union[int, np.ndarray]
+        ):
 
             return cbm.compute_disturbance_production(
                 cbm_vars=cbm_vars,
@@ -41,7 +55,11 @@ class SITEventProcessor:
         return compute_disturbance_production
 
     def _process_event(
-        self, eligible, sit_event, cbm_vars, sit_eligibility=None
+        self,
+        eligible: np.ndarray,
+        sit_event: dict,
+        cbm_vars: CBMVariables,
+        sit_eligibility=None,
     ):
 
         compute_disturbance_production = (
@@ -87,7 +105,9 @@ class SITEventProcessor:
 
         return process_event_result
 
-    def _create_sit_event_filters(self, sit_event, cbm_vars):
+    def _create_sit_event_filters(
+        self, sit_event: dict, cbm_vars: CBMVariables
+    ):
         pool_filter_expression = (
             sit_stand_filter.create_pool_filter_expression(sit_event)
         )
@@ -116,7 +136,7 @@ class SITEventProcessor:
             ),
         ]
 
-    def _event_iterator(self, sit_events):
+    def _event_iterator(self, sit_events: dict):
 
         # TODO: In CBM-CFS3 events are sorted by default disturbance type id
         # (ascending) In libcbm, sort order needs to be explicitly defined in
@@ -129,7 +149,11 @@ class SITEventProcessor:
             yield event_index, dict(sorted_event)
 
     def process_events(
-        self, time_step, sit_events, cbm_vars, sit_eligibilities=None
+        self,
+        time_step: int,
+        sit_events: pd.DataFrame,
+        cbm_vars: CBMVariables,
+        sit_eligibilities: pd.DataFrame = None,
     ):
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
