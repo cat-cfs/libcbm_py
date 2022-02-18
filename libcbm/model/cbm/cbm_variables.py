@@ -9,8 +9,20 @@ from types import SimpleNamespace
 from libcbm import data_helpers
 
 
+class DataFrame:
+    pass
+
+
+class Series:
+    pass
+
+
 class CBMVariables:
     def __init__(self):
+        pass
+
+    @property
+    def pools(self) -> DataFrame:
         pass
 
 
