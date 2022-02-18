@@ -37,8 +37,10 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
 
             mock_tr_group_key = {}
             mock_state_variables = SimpleNamespace(age="mock_age")
-            result = sit_transition_rule_processor.state_variable_filter_func(
-                mock_tr_group_key, mock_state_variables
+            result = (
+                sit_transition_rule_processor.create_state_variable_filter(
+                    mock_tr_group_key, mock_state_variables
+                )
             )
             self.assertTrue(result == "mock_filter_result")
             create_state_filter_expression.assert_called_once_with(
