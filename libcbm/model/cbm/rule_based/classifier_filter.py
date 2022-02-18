@@ -3,8 +3,9 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-from types import SimpleNamespace
 from libcbm.input.sit import sit_classifier_parser
+from libcbm.storage.dataframe import DataFrame
+from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 
 
 class ClassifierFilter:
@@ -12,7 +13,9 @@ class ClassifierFilter:
     eligible or ineligible for disturbance or transition.
     """
 
-    def __init__(self, classifiers_config, classifier_aggregates):
+    def __init__(
+        self, classifiers_config: dict, classifier_aggregates: list[dict]
+    ):
         self.wildcard_keyword = sit_classifier_parser.get_wildcard_keyword()
         self.classifiers_config = classifiers_config
         self.n_classifiers = len(self.classifiers_config["classifiers"])
@@ -29,7 +32,7 @@ class ClassifierFilter:
             for x in self.classifiers_config["classifiers"]
         }
 
-    def _get_classifier_aggregate_index(self, classifier_id):
+    def _get_classifier_aggregate_index(self, classifier_id: int) -> dict:
         result = {}
         for aggregate in self.classifier_aggregates:
             if aggregate["classifier_id"] != classifier_id:
@@ -41,14 +44,16 @@ class ClassifierFilter:
             ]
         return result
 
-    def _get_classifier_value_index(self, classifier_id):
+    def _get_classifier_value_index(self, classifier_id: int) -> dict:
         return {
             x["value"]: x["id"]
             for x in self.classifiers_config["classifier_values"]
             if x["classifier_id"] == classifier_id
         }
 
-    def create_classifiers_filter(self, classifier_set, classifier_values):
+    def create_classifiers_filter(
+        self, classifier_set: list[str], classifier_values: DataFrame
+    ) -> RuleFilter:
         """Creates a filter based on the specified classifier set to select a
         subset of the values in classifier_values
 
@@ -59,7 +64,7 @@ class ClassifierFilter:
                 - a classifier aggregate
                 - or a wildcard "?"
 
-            classifier_values (pandas.DataFrame): dataframe of classifier
+            classifier_values (DataFrame): dataframe of classifier
                 value ids by stand (row), by classifier (columns).  Column
                 labels are the classifier names.
 
@@ -69,13 +74,7 @@ class ClassifierFilter:
                 set is not defined
 
         Returns:
-            object: an object with properties:
-
-                - expression (str): a boolean expression to filter the values
-                    in local_dict. The variables are defined as the keys in
-                    local_dict.
-                - local_dict (dict): a dictionary containing named numpy
-                    variables to filter.
+            RuleFilter: rule filter object
 
         """
 
@@ -91,7 +90,7 @@ class ClassifierFilter:
 
         expression_tokens = []
 
-        def get_classifier_variable(num):
+        def get_classifier_variable(num: int) -> str:
             return f"c_{num}"
 
         for i_classifier, classifier in enumerate(
@@ -128,16 +127,18 @@ class ClassifierFilter:
                     f"undefined classifier set value {classifier_set_value}"
                 )
 
-        result = SimpleNamespace()
-        result.expression = ""
-        result.local_dict = {}
+        result = RuleFilter(expression="", local_dict={})
         if not expression_tokens:
             # this can happen if the classifier set is all wildcards
             return result
 
-        result.expression = " & ".join(expression_tokens)
-        result.local_dict = {
-            get_classifier_variable(i): classifier_values[x["name"]].to_numpy()
-            for i, x in enumerate(self.classifiers_config["classifiers"])
-        }
+        result = RuleFilter(
+            expression=" & ".join(expression_tokens),
+            local_dict={
+                get_classifier_variable(i): classifier_values[
+                    x["name"]
+                ].to_numpy()
+                for i, x in enumerate(self.classifiers_config["classifiers"])
+            },
+        )
         return result
