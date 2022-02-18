@@ -12,6 +12,37 @@ from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit import sit_event_processor
 
 
+class TransitionRuleConstants:
+    def __init__(
+        self,
+        group_error_max: float,
+        wildcard: str,
+        classifier_value_postfix: str,
+    ):
+        self._group_error_max = group_error_max
+        self._wildcard = wildcard
+        self._classifier_value_postfix = classifier_value_postfix
+
+    @property
+    def wildcard(self) -> str:
+        """Gets the wildcard symbol ("?" in cbm3)"""
+        return self._wildcard
+
+    @property
+    def group_error_max(self) -> float:
+        """Gets the maximum deviation from 1.0 when taking the sum of
+        transition rule proportions in a transition rule group.
+        """
+        return self._group_error_max
+
+    @property
+    def classifier_value_postfix(self) -> str:
+        """
+        Gets the postfix added to the transition-to classifier columns
+        """
+        return self._classifier_value_postfix
+
+
 def sit_rule_based_processor_factory(
     cbm,
     random_func,
@@ -38,7 +69,7 @@ def sit_rule_based_processor_factory(
             classifier_filter_builder=classifier_filter,
             state_variable_filter_func=state_filter_func,
             classifiers_config=classifiers_config,
-            grouped_percent_err_max=tr_constants.group_err_max,
+            grouped_percent_err_max=tr_constants.group_error_max,
             wildcard=tr_constants.wildcard,
             transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
         )
