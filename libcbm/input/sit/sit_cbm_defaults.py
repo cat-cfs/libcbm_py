@@ -5,10 +5,12 @@
 import pandas as pd
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm.model.cbm import cbm_defaults
+from libcbm.input.sit.sit_cbm_factory import SIT
+from typing import Callable
 
 
 class SITCBMDefaults(CBMDefaultsReference):
-    def __init__(self, sit, db_path, locale_code="en-CA"):
+    def __init__(self, sit: SIT, db_path: str, locale_code: str = "en-CA"):
         super().__init__(db_path, locale_code)
         self.sit = sit
         self.db_path = db_path
@@ -21,7 +23,7 @@ class SITCBMDefaults(CBMDefaultsReference):
             for x in self.get_disturbance_types()
         }
 
-    def get_sit_disturbance_type_id(self, sit_dist_type_name):
+    def get_sit_disturbance_type_id(self, sit_dist_type_name: str) -> int:
         if sit_dist_type_name in self.sit_disturbance_type_id_lookup:
             return self.sit_disturbance_type_id_lookup[sit_dist_type_name]
         else:
@@ -30,7 +32,7 @@ class SITCBMDefaults(CBMDefaultsReference):
                 "not mapped."
             )
 
-    def get_configuration_factory(self):
+    def get_configuration_factory(self) -> Callable[[], dict]:
         return cbm_defaults.get_libcbm_configuration_factory(self.db_path)
 
     def __replace_dist_type(self, disturbance_type_map, parameters):
@@ -56,7 +58,7 @@ class SITCBMDefaults(CBMDefaultsReference):
             output = output.reset_index(drop=True)
             parameters[parameter_name] = output
 
-    def get_parameters_factory(self):
+    def get_parameters_factory(self) -> Callable[[], dict]:
         param_func = cbm_defaults.get_cbm_parameters_factory(self.db_path)
         default_parameters = param_func()
         disturbance_type_map = {
