@@ -121,7 +121,9 @@ class SITCBMFactoryTest(unittest.TestCase):
             ),
         )
 
-        sit = sit_cbm_factory.initialize_sit(sit_input.sit_data, sit_input.config)
+        sit = sit_cbm_factory.initialize_sit(
+            sit_input.sit_data, sit_input.config
+        )
         self.assertTrue(len(sit.classifier_names) == len(classifiers.index))
         self.assertTrue(len(sit.classifier_ids) == len(classifiers.index))
         self.assertTrue(
