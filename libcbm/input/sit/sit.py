@@ -60,19 +60,19 @@ class SIT:
         return self._sit_identifier_mapping.disturbance_name_map.copy()
 
     @property
-    def get_classifier_names(self) -> dict[int, str]:
+    def classifier_names(self) -> dict[int, str]:
         """dictionary of classifier id to classifier  name"""
         return self._sit_identifier_mapping.classifier_names.copy()
 
     @property
-    def get_classifier_ids(self) -> dict[str, int]:
+    def classifier_ids(self) -> dict[str, int]:
         """
         dictionary of classifier name to classifier id
         """
         return self._sit_identifier_mapping.classifier_ids.copy()
 
     @property
-    def get_classifier_value_ids(self) -> dict[str, dict[str, int]]:
+    def classifier_value_ids(self) -> dict[str, dict[str, int]]:
         """
         nested dictionary of classifier name (outer key) to classifier value
         name (inner key) to classifier value id.
@@ -80,7 +80,7 @@ class SIT:
         return self._sit_identifier_mapping.classifier_value_ids.copy()
 
     @property
-    def get_classifier_value_names(self) -> dict[int, str]:
+    def classifier_value_names(self) -> dict[int, str]:
         """
         dictionary of classifier_value_id to classifier_value_name
         """
