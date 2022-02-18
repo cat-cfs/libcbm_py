@@ -70,7 +70,7 @@ def sit_rule_based_processor_factory(
     )
 
     state_filter_func = (
-        sit_transition_rule_processor.state_variable_filter_func
+        sit_transition_rule_processor.create_state_variable_filter
     )
 
     tr_processor = SITTransitionRuleProcessor(

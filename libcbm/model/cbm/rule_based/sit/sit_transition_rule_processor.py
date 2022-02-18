@@ -16,7 +16,7 @@ from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.cbm_variables import CBMVariables
 
 
-def state_variable_filter_func(
+def create_state_variable_filter(
     tr_group_key: dict, state_variables: DataFrame
 ) -> RuleFilter:
     """Create a filter based on transition rule state criteria for setting
