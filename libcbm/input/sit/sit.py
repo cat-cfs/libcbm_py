@@ -1,130 +1,100 @@
-from libcbm.input.sit import sit_cbm_factory
-from libcbm.model.cbm import cbm_config
-from libcbm import resources
+from copy import deepcopy
+from typing import Callable
+from libcbm.input.sit.sit_reader import SITData
 from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 from libcbm.input.sit.sit_mapping import SITMapping
+from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 
 
 class SIT:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        config: dict,
+        sit_data: SITData,
+        sit_defaults: SITCBMDefaults,
+        sit_mapping: SITMapping,
+        sit_identifier_mapping: SITIdentifierMapping,
+    ):
+        self._config = config
+        # make copy due so that this class can safely modify the
+        # underlying data without side effects
+        self._sit_data = deepcopy(sit_data)
+        self._mapping = sit_mapping
+        self._defaults = sit_defaults
+        self._sit_identifier_mapping = sit_identifier_mapping
 
-    def _create_disturbance_type_maps(self):
-        """Create maps from the internally defined sequential sit disturbance
-        type id to all of:
+    @property
+    def defaults(self) -> SITCBMDefaults:
+        return self._defaults
 
+    @property
+    def sit_data(self) -> SITData:
+        return self._sit_data
 
-            * default_disturbance_id_map - maps to the default disturbance
-              type id
-            * disturbance_id_map - maps to the sit disturbance type input "id"
-              field (col 0)
-            * disturbance_name_map - maps to the sit disturbance type input
-              "name" field (col 1)
+    @property
+    def sit_mapping(self) -> SITMapping:
+        return self._mapping
 
-        Args:
-            sit (object): sit instance as returned by :py:func:`load_sit`
+    @property
+    def default_disturbance_id_map(self) -> dict[int, int]:
         """
-        self._default_disturbance_id_map = {
-            row.sit_disturbance_type_id: row.default_disturbance_type_id
-            for _, row in self._sit_data.disturbance_types.iterrows()
-        }
-        self._disturbance_id_map = {
-            row.sit_disturbance_type_id: row.id
-            for _, row in self._sit_data.disturbance_types.iterrows()
-        }
-        self._disturbance_name_map = {
-            row.sit_disturbance_type_id: row["name"]
-            for _, row in self._sit_data.disturbance_types.iterrows()
-        }
-
-    def _create_classifier_value_maps(self):
-        """Creates dictionaries for fetching internally defined identifiers
-        and attaches them to the specified sit object instance. Values can
-        then be fetched from the sit instance like the following examples::
-
-            classifier_id = sit.classifier_ids["my_classifier_name"]
-            classifier_name = sit.classifier_names[1]
-            classifier_value_id = \
-                sit.classifier_value_ids["classifier1"]["classifier1_value1"]
-
-        The following fields will be assigned to the specified sit instance:
-
-            * classifier_names - dictionary of id (int, key) to
-                name (str, value) for each classifier
-            * classifier_ids - dictionary of name (str, value)
-                to id (int, key) for each classifier
-            * classifier_value_ids - nested dictionary, with one entry per
-                classifier name. Each nested dictionary contains classifier
-                value name (str, key) to classifier value id (int, value)
-
-                Example::
-
-                    {
-                        "classifier_name_1": {
-                            "classifier_1_value_name_1": 1,
-                            "classifier_1_value_name_2": 2
-                        },
-                        "classifier_name_2": {
-                            "classifier_2_value_name_1": 3,
-                            "classifier_2_value_name_2": 4
-                        },
-                        ...
-                    }
-
-            * classifier_value_names - nested dictionary, with one entry per
-                classifier id. Each nested dictionary contains classifier value
-                name (str, key) to classifier value id (int, value)
-
-                Example::
-
-                    {
-                        1: {
-                            1: "classifier_1_value_name_1",
-                            2: "classifier_1_value_name_2"
-                        },
-                        2: {
-                            3: "classifier_2_value_name_1"
-                            4: "classifier_2_value_name_2"
-                        },
-                        ...
-                    }
-
-        Args:
-            sit (object): sit instance as returned by :py:func:`load_sit`
+        Get map of sit disturbance type id to the default disturbance
+        type id defined in cbm defaults database
         """
-        classifiers_config = sit_cbm_factory.get_classifiers(
-            self._sit_data.classifiers, self._sit_data.classifier_values
-        )
-        idx = cbm_config.get_classifier_indexes(classifiers_config)
-        self._classifier_names = idx["classifier_names"]
-        self._classifier_ids = idx["classifier_ids"]
-        self._classifier_value_ids = idx["classifier_value_ids"]
-        self._classifier_value_names = idx["classifier_value_names"]
+        return self._sit_identifier_mapping.default_disturbance_id_map.copy()
 
-    def _initialize_sit_objects(self, db_path=None, locale_code="en-CA"):
-        """Load and attach objects required for the SIT
-
-        Args:
-            sit (SIT): an instance of the standard import tool class
-            db_path (str, optional): path to a cbm_defaults database. If None, the
-                default database is used. Defaults to None.
-            locale_code (str, optional): a locale code used to fetch the
-                corresponding translated version of default parameter strings
+    @property
+    def disturbance_id_map(self) -> dict[int, str]:
         """
-        if not db_path:
-            db_path = resources.get_cbm_defaults_path()
-        sit_defaults = SITCBMDefaults(self, db_path, locale_code=locale_code)
-        self._sit_mapping = SITMapping(
-            self._config["mapping_config"], sit_defaults
-        )
-        self._sit_data.disturbance_types.insert(
+        Get a map of the sit_disturbances 1 based sequential row id to the
+        sit name/id (sit_disturbances col 0)
+        """
+        return self._sit_identifier_mapping.disturbance_id_map.copy()
+
+    @property
+    def disturbance_name_map(self) -> dict[int, str]:
+        """
+        Get a map of the sit_disturbances 1 based sequential row id to the sit
+        description (sit_disturbances col 1)
+        """
+        return self._sit_identifier_mapping.disturbance_name_map.copy()
+
+    @property
+    def get_classifier_names(self) -> dict[int, str]:
+        """dictionary of classifier id to classifier  name"""
+        return self._sit_identifier_mapping.classifier_names.copy()
+
+    @property
+    def get_classifier_ids(self) -> dict[str, int]:
+        """
+        dictionary of classifier name to classifier id
+        """
+        return self._sit_identifier_mapping.classifier_ids.copy()
+
+    @property
+    def get_classifier_value_ids(self) -> dict[str, dict[str, int]]:
+        """
+        nested dictionary of classifier name (outer key) to classifier value
+        name (inner key) to classifier value id.
+        """
+        return self._sit_identifier_mapping.classifier_value_ids.copy()
+
+    @property
+    def get_classifier_value_names(self) -> dict[int, str]:
+        """
+        dictionary of classifier_value_id to classifier_value_name
+        """
+        return self._sit_identifier_mapping.classifier_value_names.copy()
+
+    def get_parameters_factory(self) -> Callable[[], dict]:
+
+        sit_disturbance_types = self._sit_data.disturbance_types.copy()
+        sit_disturbance_types.insert(
             0,
             "default_disturbance_type_id",
-            self._sit_mapping.get_default_disturbance_type_id(
-                self._sit_data.disturbance_types.name
+            self._mapping.get_default_disturbance_type_id(
+                sit_disturbance_types.name
             ),
         )
-        self._db_path = db_path
-        self._defaults = sit_defaults
-        self._create_classifier_value_maps()
-        self._create_disturbance_type_maps()
+
+        return self._defaults.get_parameters_factory(sit_disturbance_types)
