@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-def get_pool_variable_filter_mappings():
+def get_pool_variable_filter_mappings() -> list[tuple[str, list[str], str]]:
     # TEMPORARY: see issue #15 (https://github.com/cat-cfs/libcbm_py/issues/15)
     biomass = [
         "SoftwoodMerch",
@@ -57,7 +57,7 @@ def get_pool_variable_filter_mappings():
     ]
 
 
-def create_pool_filter_expression(sit_data):
+def create_pool_filter_expression(sit_data: dict) -> str:
     """Create a filter against simulation pool values based on a single
     row of SIT disturbance events
 
@@ -65,13 +65,7 @@ def create_pool_filter_expression(sit_data):
         sit_data (dict): a row dictionary from an SIT events
 
     Returns:
-        tuple:
-            1. expression (str): a boolean expression compatible with numexpr
-            2. columns (list): the list of column names that are referenced in
-                the expression
-
-            These values are intended for use with the
-            :py:func:`libcbm.model.rule_based.rule_filter module`
+        str: filter expression
     """
     expression_tokens = []
 
@@ -93,7 +87,7 @@ def create_pool_filter_expression(sit_data):
     return expression
 
 
-def get_state_variable_age_filter_mappings():
+def get_state_variable_age_filter_mappings() -> tuple[str, str, str]:
     """get mappings between SIT events or transitions age criteria columns,
     and state variable columns, along with a boolean operator to compare age
     values.
@@ -108,7 +102,7 @@ def get_state_variable_age_filter_mappings():
     return [("min_age", "age", ">="), ("max_age", "age", "<=")]
 
 
-def get_state_variable_filter_mappings():
+def get_state_variable_filter_mappings() -> tuple[str, str, str]:
     """get mappings between SIT events criteria columns, and state variable
     columns, along with a boolean operator to compare values.
 
@@ -126,7 +120,7 @@ def get_state_variable_filter_mappings():
     ]
 
 
-def create_state_filter_expression(sit_data, age_only):
+def create_state_filter_expression(sit_data: dict, age_only: bool) -> str:
     """Create a filter against simulation state variables based on a single
     row of SIT disturbance event, or transition rule data.
 
@@ -172,7 +166,7 @@ def create_state_filter_expression(sit_data, age_only):
     return expression
 
 
-def create_last_disturbance_type_filter(sit_data):
+def create_last_disturbance_type_filter(sit_data: dict) -> str:
 
     if int(sit_data["LastDistTypeID"]) == -1:
         return ""
@@ -184,7 +178,9 @@ def create_last_disturbance_type_filter(sit_data):
     return expression
 
 
-def get_classifier_set(sit_data_row, classifiers):
+def get_classifier_set(
+    sit_data_row: dict, classifiers: list[str]
+) -> list[str]:
     """Get a classifier set from a row of SIT data
         disturbance events, transition rules, yield or inventory
 
