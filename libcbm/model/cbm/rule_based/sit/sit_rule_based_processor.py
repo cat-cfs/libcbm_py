@@ -13,7 +13,9 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import (
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
-from sit_transition_rule_processor import SITTransitionRuleProcessor
+from libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor import (
+    SITTransitionRuleProcessor,
+)
 from libcbm.model.cbm.rule_based.sit.sit_event_processor import (
     SITEventProcessor,
 )
