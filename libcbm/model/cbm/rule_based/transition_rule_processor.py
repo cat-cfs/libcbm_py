@@ -3,18 +3,26 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-import numpy as np
-import pandas as pd
+from typing import Callable
+from typing import Iterable
+from libcbm.storage import functions
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
+from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.rule_based import rule_filter
+from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 
-def create_split_proportions(tr_group_key, tr_group, group_error_max):
+def create_split_proportions(
+    tr_group_key: dict, tr_group: DataFrame, group_error_max: float
+) -> list[float]:
     """Create proportions
 
     Args:
         tr_group_key (dict): the composite key common to the transition
             rule group members
-        tr_group (pandas.DataFrame): The table of transition rule group
+        tr_group (DataFrame): The table of transition rule group
             members
         group_error_max (float): used as a threshold to test if the group's
             total percentage exceeds 100 percent.
@@ -44,19 +52,19 @@ def create_split_proportions(tr_group_key, tr_group, group_error_max):
         )
     else:
         remainder = 100 - percent_sum
-        appended_percent = tr_group.percent.append(pd.Series([remainder]))
+        appended_percent = tr_group.percent.append(Series([remainder]))
         return list(appended_percent / appended_percent.sum())
 
 
 class TransitionRuleProcessor(object):
     def __init__(
         self,
-        classifier_filter_builder,
-        state_variable_filter_func,
-        classifiers_config,
-        grouped_percent_err_max,
-        wildcard,
-        transition_classifier_postfix,
+        classifier_filter_builder: ClassifierFilter,
+        state_variable_filter_func: Callable[[dict, DataFrame], RuleFilter],
+        classifiers_config: dict[str, list],
+        grouped_percent_err_max: float,
+        wildcard: str,
+        transition_classifier_postfix: str,
     ):
         self.wildcard = wildcard
         self.transition_classifier_postfix = transition_classifier_postfix
@@ -72,14 +80,16 @@ class TransitionRuleProcessor(object):
             for x in self.classifiers_config["classifiers"]
         }
 
-    def _get_classifier_value_index(self, classifier_id):
+    def _get_classifier_value_index(self, classifier_id: int) -> dict:
         return {
             x["value"]: x["id"]
             for x in self.classifiers_config["classifier_values"]
             if x["classifier_id"] == classifier_id
         }
 
-    def _filter_stands(self, tr_group_key, cbm_vars):
+    def _filter_stands(
+        self, tr_group_key: dict, cbm_vars: CBMVariables
+    ) -> Series:
 
         dist_type_target = tr_group_key["disturbance_type_id"]
         classifier_set = [
@@ -101,7 +111,9 @@ class TransitionRuleProcessor(object):
         filter_result = rule_filter.evaluate_filters(*tr_filters)
         return filter_result
 
-    def _get_transition_classifier_set(self, transition_rule):
+    def _get_transition_classifier_set(
+        self, transition_rule: dict
+    ) -> Iterable[tuple(str, int)]:
         for classifier_name in self.classifier_names:
             transition_classifier_value = transition_rule[
                 classifier_name + self.transition_classifier_postfix
@@ -114,8 +126,12 @@ class TransitionRuleProcessor(object):
             yield classifier_name, transition_id
 
     def apply_transition_rule(
-        self, tr_group_key, tr_group, transition_mask, cbm_vars
-    ):
+        self,
+        tr_group_key: dict,
+        tr_group: DataFrame,
+        transition_mask: Series,
+        cbm_vars: CBMVariables,
+    ) -> tuple[Series, CBMVariables]:
         """Apply the specified transition rule group to the simulation
         variables, updating classifier values, and returning the transition
         rule variables reset age, and regeneration delay.  For each member of
@@ -126,12 +142,12 @@ class TransitionRuleProcessor(object):
         Args:
             tr_group_key (dict): the common key for the grouped transition
                 rules.
-            tr_group (pandas.DataFrame): the grouped transition rules, where
+            tr_group (DataFrame): the grouped transition rules, where
                 each row is a member.
-            transition_mask (numpy.ndarray): a boolean mask indicating when
+            transition_mask (Series): a boolean mask indicating when
                 true that the correspoding index has already been transitioned.
                 This is used to detect transition rule criteria collisions.
-            cbm_vars (object): CBM simulation variables and state
+            cbm_vars (CBMVariables): CBM simulation variables and state
 
         Raises:
             ValueError: a transition rule criteria resulted in the selection of
@@ -150,9 +166,13 @@ class TransitionRuleProcessor(object):
         filtered = self._filter_stands(tr_group_key, cbm_vars)
 
         # sets the transitioned array with the transition filter result
-        eligible = np.logical_and(np.logical_not(transition_mask), filtered)
+        eligible = functions.logical_and(
+            functions.logical_not(transition_mask), filtered
+        )
 
-        transition_mask_output = np.logical_or(transition_mask, eligible)
+        transition_mask_output = functions.logical_or(
+            transition_mask, eligible
+        )
 
         if not eligible.any():
             return transition_mask_output, cbm_vars
@@ -162,12 +182,12 @@ class TransitionRuleProcessor(object):
         )
 
         # storage for split records
-        classifier_split = pd.DataFrame()
-        inventory_split = pd.DataFrame()
-        pool_split = pd.DataFrame()
-        state_split = pd.DataFrame()
-        params_split = pd.DataFrame()
-        flux_split = pd.DataFrame()
+        classifier_split = DataFrame()
+        inventory_split = DataFrame()
+        pool_split = DataFrame()
+        state_split = DataFrame()
+        params_split = DataFrame()
+        flux_split = DataFrame()
 
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
@@ -185,8 +205,13 @@ class TransitionRuleProcessor(object):
             state = cbm_vars.state[eligible].copy()
             inventory = cbm_vars.inventory[eligible].copy()
             classifiers = cbm_vars.classifiers[eligible].copy()
-            transition_mask_output = np.concatenate(
-                [transition_mask_output, np.ones(pools.shape[0], dtype=bool)]
+            transition_mask_output = functions.concat_series(
+                [
+                    transition_mask_output,
+                    functions.make_boolean_series(
+                        init=True, size=pools.shape[0]
+                    ),
+                ]
             )
 
             # set the area for the split portion according to the current
