@@ -1,13 +1,11 @@
 class DataFrame:
-    pass
+    def __init__(self):
+        raise NotImplementedError()
 
     def __getitem__(self):
         pass
 
 
 class Series:
-    pass
-
-
-def concat(dfs: list[DataFrame]):
-    pass
+    def __init__(self):
+        raise NotImplementedError()
