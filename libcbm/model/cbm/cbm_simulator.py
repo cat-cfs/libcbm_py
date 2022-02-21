@@ -3,9 +3,12 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-from types import SimpleNamespace
+from typing import Callable
 from libcbm import data_helpers
+from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm import cbm_variables
+from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.model.cbm.cbm_model import CBM
 
 
 def create_in_memory_reporting_func(
@@ -120,14 +123,14 @@ def create_in_memory_reporting_func(
 
 
 def simulate(
-    cbm,
-    n_steps,
-    classifiers,
-    inventory,
-    reporting_func,
-    pre_dynamics_func=None,
-    spinup_params=None,
-    spinup_reporting_func=None,
+    cbm: CBM,
+    n_steps: int,
+    classifiers: DataFrame,
+    inventory: DataFrame,
+    reporting_func: Callable[[int, CBMVariables]],
+    pre_dynamics_func: Callable[[int, CBMVariables], CBMVariables] = None,
+    spinup_params: DataFrame = None,
+    spinup_reporting_func: Callable[[int, CBMVariables]] = None,
 ):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
@@ -136,22 +139,16 @@ def simulate(
     Args:
         cbm (libcbm.model.cbm.cbm_model.CBM): Instance of the CBM model
         n_steps (int): The number of CBM timesteps to run
-        classifiers (pandas.DataFrame): CBM classifiers for each of the rows
+        classifiers (DataFrame): CBM classifiers for each of the rows
             in the inventory
-        inventory (pandas.DataFrame): CBM inventory which defines the initial
+        inventory (DataFrame): CBM inventory which defines the initial
             state of the simulation
         reporting_func (function): a function which accepts the simulation
             timestep and all CBM variables for reporting results by timestep.
-            An example compatible function factory is
-            :py:func:`create_in_memory_reporting_func` which stores the
-            results in memory.
         pre_dynamics_func (function, optional): A function which accepts the
             simulation timestep and all CBM variables, and which is called
-            prior to computing C dynamics  The layout of the CBM variables is
-            the same as the return value of:
-            :py:func:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-            The function returns all CBM variables which will then be passed
-            into the current CBM timestep.
+            prior to computing C dynamics. The function returns all CBM
+            variables which will then be passed into the current CBM timestep.
         spinup_params (object): collection of spinup specific parameters. See
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
             for object format
