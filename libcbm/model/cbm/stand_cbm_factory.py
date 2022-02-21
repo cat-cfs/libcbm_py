@@ -169,7 +169,9 @@ class StandCBMFactory:
     def classifiers_factory(self):
         return self._classifier_config
 
-    def prepare_inventory(self, inventory_df: DataFrame) -> tuple[DataFrame, DataFrame]:
+    def prepare_inventory(
+        self, inventory_df: DataFrame
+    ) -> tuple[DataFrame, DataFrame]:
         """Prepare inventory, classifiers pd.DataFrames compatible with
         :py:func:`libcbm.model.cbm.cbm_simulator.simulate` using the provided
         inventory dataframe.
