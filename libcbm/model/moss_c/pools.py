@@ -6,16 +6,16 @@ class Pool(IntEnum):
     Enumeration of Moss C pools values
     """
 
-    Input = (0,)
-    FeatherMossLive = (1,)
-    SphagnumMossLive = (2,)
-    FeatherMossFast = (3,)
-    SphagnumMossFast = (4,)
-    FeatherMossSlow = (5,)
-    SphagnumMossSlow = (6,)
-    CO2 = (7,)
+    Input = 0
+    FeatherMossLive = 1
+    SphagnumMossLive = 2
+    FeatherMossFast = 3
+    SphagnumMossFast = 4
+    FeatherMossSlow = 5
+    SphagnumMossSlow = 6
+    CO2 = 7
     CH4 = 8
-    CO = (9,)
+    CO = 9
     Products = 10
 
 
