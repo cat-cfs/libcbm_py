@@ -70,7 +70,7 @@ class LibCBMHandle(LibCBM_ctypes):
                    pools
     """
 
-    def __init__(self, dll_path, config):
+    def __init__(self, dll_path: str, config: str):
         super().__init__(dll_path)
         self.err = LibCBM_Error()
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
@@ -80,7 +80,7 @@ class LibCBMHandle(LibCBM_ctypes):
         if self.err.Error != 0:
             raise RuntimeError(self.err.getErrorMessage())
 
-    def __enter__(self):
+    def __enter__(self) -> "LibCBMHandle":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -89,7 +89,7 @@ class LibCBMHandle(LibCBM_ctypes):
             self.call("LibCBM_Free")
             self.pointer = 0
 
-    def call(self, func_name, *args):
+    def call(self, func_name: str, *args):
         """Call a libcbm C/C++ function.  The specified args are passed
         as the arguments to the named function.
 

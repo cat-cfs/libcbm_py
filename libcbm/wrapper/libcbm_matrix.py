@@ -13,13 +13,17 @@ class LibCBM_Matrix_Base(ctypes.Structure):
 
     Args:
         matrix (numpy.ndarray): a 2 dimensional numpy array, or single value
+        matrix_np_type (numpy.dtype): the numpy dtype
+        matrix_c_type (type): the ctypes type
 
     Raises:
         ValueError: matrix must have either 2 dimensions or be a scalar
         ValueError: matrix must be of the correct type
     """
 
-    def __init__(self, matrix, matrix_np_type, matrix_c_type):
+    def __init__(
+        self, matrix: np.ndarray, matrix_np_type: np.dtype, matrix_c_type: type
+    ):
         if matrix.size == 1:
             self.rows = 1
             self.cols = 1
@@ -59,7 +63,7 @@ class LibCBM_Matrix(LibCBM_Matrix_Base):
         ("values", ctypes.POINTER(_matrix_c_type)),
     ]
 
-    def __init__(self, matrix):
+    def __init__(self, matrix: np.ndarray):
         #  hang onto a reference of the matrix to prevent the pointers
         #  becoming invalid
         self.matrix = matrix
@@ -88,7 +92,7 @@ class LibCBM_Matrix_Int(LibCBM_Matrix_Base):
         ("values", ctypes.POINTER(_matrix_c_type)),
     ]
 
-    def __init__(self, matrix):
+    def __init__(self, matrix: np.ndarray):
         #  hang onto a reference of the matrix to prevent the pointers
         #  becoming invalid
         self.matrix = matrix

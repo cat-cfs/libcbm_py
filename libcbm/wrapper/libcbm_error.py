@@ -19,14 +19,14 @@ class LibCBM_Error(ctypes.Structure):
         setattr(self, "Error", 0)
         setattr(self, "Message", ctypes.ARRAY(ctypes.c_byte, 1000)())
 
-    def getError(self):
+    def getError(self) -> int:
         """Gets the error code from an error returned by a library function.
         If no error occurred this is zero.
         """
         code = getattr(self, "Error")
         return code
 
-    def getErrorMessage(self):
+    def getErrorMessage(self) -> str:
         """Gets the error message from an error returned by a library
         function.  If no error occurred this is an empty string.
         """

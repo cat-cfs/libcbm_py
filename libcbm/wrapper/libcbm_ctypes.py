@@ -20,7 +20,7 @@ class LibCBM_ctypes:
             or compiled LibCBM .so file for Linux
     """
 
-    def __init__(self, dll_path):
+    def __init__(self, dll_path: str):
         self.handle = False
 
         cwd = os.getcwd()
