@@ -4,6 +4,9 @@
 
 
 import json
+import pandas as pd
+from typing import Callable
+from typing import ContextManager
 from contextlib import contextmanager
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
@@ -11,7 +14,7 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 
 
-def _dataframe_to_json(df):
+def _dataframe_to_json(df: pd.DataFrame):
     """Convert a dataframe into a dictionary table format used by the CBM core
 
     Args:
@@ -26,18 +29,18 @@ def _dataframe_to_json(df):
     """
     return {
         "column_map": {x: i for i, x in enumerate(df.columns)},
-        "data": df.values.tolist(),
+        "data": df.to_numpy().tolist(),
     }
 
 
 @contextmanager
 def create(
-    dll_path,
-    dll_config_factory,
-    cbm_parameters_factory,
-    merch_volume_to_biomass_factory,
-    classifiers_factory,
-):
+    dll_path: str,
+    dll_config_factory: Callable[[], dict],
+    cbm_parameters_factory: Callable[[], dict],
+    merch_volume_to_biomass_factory: Callable[[], dict],
+    classifiers_factory: Callable[[], dict],
+) -> ContextManager[CBM]:
     """Create and initialize an instance of the CBM model
 
     Args:
