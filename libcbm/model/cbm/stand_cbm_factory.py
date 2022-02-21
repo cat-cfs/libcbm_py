@@ -1,19 +1,21 @@
-import pandas as pd
+from typing import ContextManager
+from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
+from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
 
 
-def _safe_map(series, map):
+def _safe_map(series: Series, map: dict):
     """Helper method to ensure an error is thrown if any value in a
     mapped series is null
 
     Args:
-        series (pandas.Series): the series to map
-        map (function, collections.abc.Mapping subclass or Series): the
-            `Series.map` map parameter
+        series (Series): the series to map
+        map (dict): the map values
 
     Raises:
         ValueError: at least one value in the mapped series was null
@@ -39,11 +41,11 @@ class StandCBMFactory:
 
     def __init__(
         self,
-        classifiers,
-        merch_volumes,
-        db_path=None,
-        locale="en-CA",
-        dll_path=None,
+        classifiers: dict[str, list],
+        merch_volumes: list[dict],
+        db_path: str = None,
+        locale: str = "en-CA",
+        dll_path: str = None,
     ):
         """Initialize an instance of CBMStandFactory using classifiers and
         merch volumes.
@@ -107,7 +109,7 @@ class StandCBMFactory:
             self._classifier_config
         )
 
-    def merch_volumes_factory(self):
+    def merch_volumes_factory(self) -> dict:
         merch_volume_list = []
         for c in self._merch_volumes:
             merch_volume_list.append(
@@ -131,13 +133,13 @@ class StandCBMFactory:
             db_path=self._db_path, merch_volume_curves=merch_volume_list
         )
 
-    def get_disturbance_type_map(self):
+    def get_disturbance_type_map(self) -> dict:
         return {
             r["disturbance_type_id"]: r["disturbance_type_name"]
             for r in self.defaults_ref.disturbance_type_ref
         }
 
-    def get_classifier_map(self):
+    def get_classifier_map(self) -> dict:
         return self._classifier_idx["classifier_value_names"].copy()
 
     def _get_classifier_value_ids(
@@ -167,13 +169,13 @@ class StandCBMFactory:
     def classifiers_factory(self):
         return self._classifier_config
 
-    def prepare_inventory(self, inventory_df):
+    def prepare_inventory(self, inventory_df: DataFrame) -> tuple[DataFrame, DataFrame]:
         """Prepare inventory, classifiers pd.DataFrames compatible with
         :py:func:`libcbm.model.cbm.cbm_simulator.simulate` using the provided
         inventory dataframe.
 
         Args:
-            inventory_df (pd.DataFrame): dataframe with the following columns::
+            inventory_df (DataFrame): dataframe with the following columns::
 
                 * c1 .. cN: one column for each classifier, each containing
                   classifier values
@@ -194,8 +196,8 @@ class StandCBMFactory:
 
         Returns:
             Tuple:
-                0: classifiers pd.DataFrame
-                1: inventory pd.DataFrame
+                0: classifiers DataFrame
+                1: inventory DataFrame
         """
 
         classifiers = pd.DataFrame(
@@ -259,7 +261,7 @@ class StandCBMFactory:
         )
         return classifiers, inventory
 
-    def initialize_cbm(self):
+    def initialize_cbm(self) -> ContextManager[CBM]:
         return cbm_factory.create(
             dll_path=self._dll_path,
             dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(

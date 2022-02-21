@@ -3,11 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-import pandas as pd
-import numpy as np
-from types import SimpleNamespace
+from typing import Union
 from libcbm import data_helpers
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
 
 
 class CBMVariables:
@@ -18,8 +17,28 @@ class CBMVariables:
     def pools(self) -> DataFrame:
         pass
 
+    @property
+    def flux(self) -> DataFrame:
+        pass
 
-def initialize_pools(n_stands, pool_codes):
+    @property
+    def classifiers(self) -> DataFrame:
+        pass
+
+    @property
+    def state(self) -> DataFrame:
+        pass
+
+    @property
+    def inventory(self) -> DataFrame:
+        pass
+
+    @property
+    def parameters(self) -> DataFrame:
+        pass
+
+
+def initialize_pools(n_stands: int, pool_codes: list[str]) -> DataFrame:
     """Create a dataframe for storing CBM pools
 
     The dataframe here has 1 row for each stand and is row-aligned with
@@ -34,7 +53,7 @@ def initialize_pools(n_stands, pool_codes):
     Returns:
         pandas.DataFrame: A dataframe for storing CBM pools
     """
-    pools = pd.DataFrame(
+    pools = DataFrame(
         data=np.zeros((n_stands, len(pool_codes))), columns=pool_codes
     )
 
@@ -46,7 +65,9 @@ def initialize_pools(n_stands, pool_codes):
     return pools
 
 
-def initialize_flux(n_stands, flux_indicator_codes):
+def initialize_flux(
+    n_stands: int, flux_indicator_codes: list[str]
+) -> DataFrame:
     """Create a dataframe for storing CBM flux indicator values
 
     The dataframe here has 1 row for each stand and is row-aligned with
@@ -61,19 +82,19 @@ def initialize_flux(n_stands, flux_indicator_codes):
     Returns:
         pandas.DataFrame: A dataframe for storing CBM flux indicators
     """
-    return pd.DataFrame(
+    return DataFrame(
         data=np.zeros((n_stands, len(flux_indicator_codes))),
         columns=flux_indicator_codes,
     )
 
 
 def initialize_spinup_parameters(
-    n_stands,
-    return_interval=None,
-    min_rotations=None,
-    max_rotations=None,
-    mean_annual_temp=None,
-):
+    n_stands: int,
+    return_interval: Union[int, Series] = None,
+    min_rotations: Union[int, Series] = None,
+    max_rotations: Union[int, Series] = None,
+    mean_annual_temp: Union[float, Series] = None,
+) -> DataFrame:
     """Create spinup parameters as a collection of variable vectors
 
     The variables here are all of length N stands and are row-aligned with
@@ -102,14 +123,10 @@ def initialize_spinup_parameters(
             temperature used in the spinup procedure. Defaults to None.
 
     Returns:
-        object: Returns an object with properties to access each of the
-            spinup parameters
+        DataFrame: table of spinup paramaeters
     """
 
-    # favouring SimpleNamespace over pd.DataFrame here because these are
-    # potentially null variables, and DataFrame does not support null columns
-
-    parameters = SimpleNamespace()
+    parameters = DataFrame()
     parameters.return_interval = data_helpers.promote_scalar(
         return_interval, n_stands, dtype=np.int32
     )
@@ -125,7 +142,7 @@ def initialize_spinup_parameters(
     return parameters
 
 
-def initialize_spinup_state_variables(n_stands):
+def initialize_spinup_state_variables(n_stands: int) -> DataFrame:
     """Creates a collection of vectors used as working/state variables for
     the spinup routine.
 
@@ -133,13 +150,13 @@ def initialize_spinup_state_variables(n_stands):
         n_stands (int): The number of stands
 
     Returns:
-        object: an object with properties to access working variables
+        DataFrame: table of working variables
             needed by the spinup routine.
     """
     # favouring SimpleNamespace over pd.DataFrame here because these are
     # null variables, and DataFrame does not support null columns
 
-    variables = SimpleNamespace()
+    variables = DataFrame()
     variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
     variables.slow_pools = np.zeros(n_stands, dtype=np.float64)
     variables.disturbance_type = np.zeros(n_stands, dtype=np.int32)
@@ -159,8 +176,11 @@ def initialize_spinup_state_variables(n_stands):
 
 
 def initialize_cbm_parameters(
-    n_stands, disturbance_type=0, reset_age=-1, mean_annual_temp=None
-):
+    n_stands: int,
+    disturbance_type: int = 0,
+    reset_age: int = -1,
+    mean_annual_temp: float = None,
+) -> DataFrame:
     """Create CBM parameters as a collection of variable vectors
 
     The variables here are all of length N stands and are row-aligned with
@@ -195,7 +215,7 @@ def initialize_cbm_parameters(
             each stand. Defaults to None.
 
     Returns:
-        pandas.DataFrame: dataframe with CBM timestep parameters as columns
+        DataFrame: dataframe with CBM timestep parameters as columns
             and 1 row per stand.
     """
 
@@ -211,12 +231,12 @@ def initialize_cbm_parameters(
         data["mean_annual_temp"] = data_helpers.promote_scalar(
             mean_annual_temp, n_stands, dtype=np.float64
         )
-    parameters = pd.DataFrame(data=data)
+    parameters = DataFrame(data=data)
     return parameters
 
 
-def initialize_cbm_state_variables(n_stands):
-    """Creates a pandas dataframe containing state variables used by CBM
+def initialize_cbm_state_variables(n_stands: int) -> DataFrame:
+    """Creates a dataframe containing state variables used by CBM
     functions at simulation runtime, with default initial values.
 
     The dataframe here has 1 row for each stand and is row-aligned with
@@ -226,9 +246,9 @@ def initialize_cbm_state_variables(n_stands):
         n_stands (int): the number of rows in the resulting dataframe.
 
     Returns:
-        pandas.DataFrame: a dataframe containing the CBM state variables.
+        DataFrame: a dataframe containing the CBM state variables.
     """
-    state_variables = pd.DataFrame(
+    state_variables = DataFrame(
         {
             "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
             "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
@@ -246,7 +266,7 @@ def initialize_cbm_state_variables(n_stands):
     return state_variables
 
 
-def initialize_inventory(inventory):
+def initialize_inventory(inventory: DataFrame) -> DataFrame:
     """Check fields and types of inventory input for
     :class:`libcbm.model.cbm.cbm_model.CBM` functions
 
@@ -280,9 +300,9 @@ def initialize_inventory(inventory):
               after a last pass deforestation event occurs.
 
     Returns:
-        pandas.DataFrame: dataframe containing the inventory data.
+        DataFrame: dataframe containing the inventory data.
     """
-    return pd.DataFrame(
+    return DataFrame(
         {
             "age": inventory.age.to_numpy(dtype=np.int32),
             "area": inventory.area.to_numpy(dtype=np.float64),
@@ -302,9 +322,9 @@ def initialize_inventory(inventory):
     )
 
 
-def initialize_classifiers(classifiers):
+def initialize_classifiers(classifiers: DataFrame) -> DataFrame:
     """converts classifiers table to required type"""
-    return pd.DataFrame(
+    return DataFrame(
         data=classifiers.to_numpy(dtype=np.int32), columns=list(classifiers)
     )
 
@@ -314,10 +334,10 @@ def _make_contiguous(df):
     (row major ordering)
 
     Args:
-        df (pandas.DataFrame): a pandas dataframe
+        df (DataFrame): a dataframe
 
     Returns:
-        pandas.DataFrame: a C contiguous copy of the input data frame.
+        DataFrame: a C contiguous copy of the input data frame.
     """
 
     if not df.values.flags["C_CONTIGUOUS"]:
@@ -327,12 +347,12 @@ def _make_contiguous(df):
     return df
 
 
-def prepare(cbm_vars):
+def prepare(cbm_vars: CBMVariables) -> CBMVariables:
     """prepares, validates the specified cbm_vars object for use with low
     level functions
 
     Args:
-        cbm_vars (object): the cbm variables to validate and prepare
+        cbm_vars (CBMVariables): the cbm variables to validate and prepare
     """
 
     for field in ["pools", "flux", "classifiers"]:
@@ -345,14 +365,16 @@ def prepare(cbm_vars):
 
 
 def initialize_spinup_variables(
-    cbm_vars, spinup_params=None, include_flux=False
-):
+    cbm_vars: CBMVariables,
+    spinup_params: DataFrame = None,
+    include_flux: bool = False,
+) -> CBMVariables:
 
     n_stands = cbm_vars.inventory.shape[0]
     if spinup_params is None:
         spinup_params = initialize_spinup_parameters(n_stands)
 
-    spinup_vars = SimpleNamespace()
+    spinup_vars = CBMVariables()
     spinup_vars.pools = cbm_vars.pools
     spinup_vars.flux = cbm_vars.flux if include_flux else None
     spinup_vars.parameters = spinup_params
@@ -363,15 +385,18 @@ def initialize_spinup_variables(
 
 
 def initialize_simulation_variables(
-    classifiers, inventory, pool_codes, flux_indicator_codes
-):
+    classifiers: DataFrame,
+    inventory: DataFrame,
+    pool_codes: list[str],
+    flux_indicator_codes: list[str],
+) -> CBMVariables:
     """Packages and initializes the cbm variables (cbm_vars) as an object with
     named properties
 
     Args:
-        classifiers (pandas.DataFrame): DataFrame of integer classifier value
+        classifiers (DataFrame): DataFrame of integer classifier value
             ids.  Rows are stands and cols are classifiers
-        inventory (pandas.DataFrame): The inventory to simulate. Each row
+        inventory (DataFrame): The inventory to simulate. Each row
             represents a stand. See :py:func:`initialize_inventory` for a
             description of the required columns.
         pool_codes (list): the list of string pool names which act as column
@@ -384,7 +409,7 @@ def initialize_simulation_variables(
         object: Returns the cbm_vars object for simulating CBM.
     """
     n_stands = inventory.shape[0]
-    cbm_vars = SimpleNamespace()
+    cbm_vars = CBMVariables()
     cbm_vars.pools = initialize_pools(n_stands, pool_codes)
     cbm_vars.flux = initialize_flux(n_stands, flux_indicator_codes)
     cbm_vars.parameters = initialize_cbm_parameters(n_stands)
