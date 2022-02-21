@@ -3,12 +3,13 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import os
+from typing import Callable
 import sqlite3
 import pandas as pd
 from libcbm.resources import cbm_defaults_queries
 
 
-def load_cbm_parameters(sqlite_path):
+def load_cbm_parameters(sqlite_path: str) -> dict[str, pd.DataFrame]:
     """Loads cbm default parameters into configuration dictionary format.
     Used for initializing CBM functionality in LibCBM via the InitializeCBM
     function.
@@ -64,7 +65,7 @@ def load_cbm_parameters(sqlite_path):
     return result
 
 
-def load_cbm_pools(sqlite_path):
+def load_cbm_pools(sqlite_path: str) -> list[dict]:
     """Loads cbm pool information from a cbm_defaults database into the
     format expected by the libcbm compiled library.
 
@@ -94,7 +95,7 @@ def load_cbm_pools(sqlite_path):
         return result
 
 
-def load_cbm_flux_indicators(sqlite_path):
+def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
     """Loads cbm flux indicator information from a cbm_defaults database
     into the format expected by the libcbm compiled library.
 
@@ -156,7 +157,9 @@ def load_cbm_flux_indicators(sqlite_path):
         return result
 
 
-def get_cbm_parameters_factory(db_path):
+def get_cbm_parameters_factory(
+    db_path: str,
+) -> Callable[[], dict[str, pd.DataFrame]]:
     """Get a function that formats CBM parameters for
     :py:class:`libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper`
     drawn from the specified database.
@@ -176,7 +179,9 @@ def get_cbm_parameters_factory(db_path):
     return factory
 
 
-def get_libcbm_configuration_factory(db_path):
+def get_libcbm_configuration_factory(
+    db_path: str,
+) -> Callable[[], dict[str, list[dict]]]:
     """Get a parameterless function that creates configuration for
     :py:class:`libcbm.wrapper.libcbm_wrapper.LibCBMWrapper`
 
