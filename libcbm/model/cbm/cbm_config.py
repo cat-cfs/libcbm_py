@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-def classifier_value(value, description=""):
+def classifier_value(value: str, description: str = "") -> dict[str, str]:
     """Composes a classifier value structure used for configuring libcbm.
 
     Args:
@@ -24,7 +24,7 @@ def classifier_value(value, description=""):
     return {"value": value, "description": description}
 
 
-def classifier(name, values):
+def classifier(name: str, values: dict) -> dict:
     """Composes a classifier structure used for configuring libcbm.
 
     Args:
@@ -56,7 +56,7 @@ def classifier(name, values):
     return {"classifier": {"name": name}, "classifier_values": values}
 
 
-def classifier_config(classifiers):
+def classifier_config(classifiers: list) -> dict:
     """Compose the classifier value scheme used for configuring libcbm.
     This method will generate classifier ids and classifier value ids
     based on the order of classifiers and classifier values.
@@ -159,7 +159,7 @@ def classifier_config(classifiers):
     return result
 
 
-def get_classifier_indexes(classifier_config):
+def get_classifier_indexes(classifier_config: dict) -> dict:
     """Build an object with indexes for the specified classifier_config.
 
     Args:
@@ -223,7 +223,9 @@ def get_classifier_indexes(classifier_config):
     return indexes
 
 
-def merch_volume_curve(classifier_set, merch_volumes):
+def merch_volume_curve(
+    classifier_set: list[str], merch_volumes: list[dict]
+) -> dict:
     """Formats merchantable volume growth curve data for libcbm CBM model
     consumption.
 
@@ -293,7 +295,9 @@ def merch_volume_curve(classifier_set, merch_volumes):
     return result
 
 
-def merch_volume_to_biomass_config(db_path, merch_volume_curves):
+def merch_volume_to_biomass_config(
+    db_path: str, merch_volume_curves: list
+) -> dict:
     """Formats merchantable volume growth curve data for libcbm CBM model
     consumption.
 
