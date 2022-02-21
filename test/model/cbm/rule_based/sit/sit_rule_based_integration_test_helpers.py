@@ -72,7 +72,8 @@ def get_parameters_factory(sit):
     matrix_values = [1.0] * len(matrix_sources)
     new_matrix = pd.DataFrame()
     for dmid in dmids:
-        new_matrix = new_matrix.append(
+        new_matrix = pd.concat([
+            new_matrix,
             pd.DataFrame(
                 data={
                     "disturbance_matrix_id": dmid,
@@ -81,13 +82,9 @@ def get_parameters_factory(sit):
                     "proportion": matrix_values,
                 },
                 columns=[
-                    "disturbance_matrix_id",
-                    "source_pool_id",
-                    "sink_pool_id",
-                    "proportion",
-                ],
-            )
-        )
+                    "disturbance_matrix_id", "source_pool_id", "sink_pool_id",
+                    "proportion"])
+        ])
     new_matrix = new_matrix.reset_index(drop=True)
 
     parameters["disturbance_matrix_values"] = new_matrix
@@ -124,14 +121,14 @@ def load_config():
 
 
 def df_from_template_row(template_row, row_dicts):
-    result = pd.DataFrame()
+    template_row_dict = dict(template_row)
+    rows = []
     for data in row_dicts:
-        new_row = template_row.copy()
+        new_row = template_row_dict.copy()
         for key, value in data.items():
-            new_row.loc[key] = value
-
-        result = result.append(new_row)
-    return result.reset_index(drop=True)
+            new_row[key] = value
+        rows.append(new_row)
+    return pd.DataFrame(rows)
 
 
 def initialize_transitions(sit, transition_data):

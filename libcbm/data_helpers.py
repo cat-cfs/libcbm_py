@@ -156,6 +156,6 @@ def append_simulation_result(simulation_result, timestep_data, timestep):
     if simulation_result is None or simulation_result.shape[0] == 0:
         simulation_result = ts
     else:
-        simulation_result = simulation_result.append(ts)
+        simulation_result = pd.concat([simulation_result, ts])
     simulation_result.reset_index(drop=True)
     return simulation_result

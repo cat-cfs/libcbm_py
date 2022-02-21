@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
+import pandas as pd
 import numpy as np
 from typing import Callable
 from libcbm.model.cbm.rule_based import rule_filter
@@ -129,30 +129,40 @@ def apply_rule_based_event(
         )
 
         # create the updated inventory by appending the split records
-        cbm_vars.inventory = cbm_vars.inventory.append(
-            split_inventory
-        ).reset_index(drop=True)
+        cbm_vars.inventory = pd.concat(
+            [
+                cbm_vars.inventory,
+                split_inventory
+            ]).reset_index(drop=True)
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
         # adding a copy of the split values.
-        cbm_vars.classifiers = cbm_vars.classifiers.append(
-            cbm_vars.classifiers.iloc[split_index].copy()
-        ).reset_index(drop=True)
-        cbm_vars.state = cbm_vars.state.append(
-            cbm_vars.state.iloc[split_index].copy()
-        ).reset_index(drop=True)
-        cbm_vars.pools = cbm_vars.pools.append(
-            cbm_vars.pools.iloc[split_index].copy()
-        ).reset_index(drop=True)
-        cbm_vars.flux = cbm_vars.flux.append(
-            cbm_vars.flux.iloc[split_index].copy()
-        ).reset_index(drop=True)
+        cbm_vars.classifiers = pd.concat(
+            [
+                cbm_vars.classifiers,
+                cbm_vars.classifiers.iloc[split_index].copy()
+            ]).reset_index(drop=True)
+        cbm_vars.state = pd.concat(
+            [
+                cbm_vars.state,
+                cbm_vars.state.iloc[split_index].copy()
+            ]).reset_index(drop=True)
+        cbm_vars.pools = pd.concat(
+            [
+                cbm_vars.pools,
+                cbm_vars.pools.iloc[split_index].copy()
+            ]).reset_index(drop=True)
+        cbm_vars.flux = pd.concat(
+            [
+                cbm_vars.flux,
+                cbm_vars.flux.iloc[split_index].copy()
+            ]).reset_index(drop=True)
 
         new_params = cbm_vars.parameters.iloc[split_index].copy()
         new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)
-        cbm_vars.parameters = cbm_vars.parameters.append(
-            new_params
+        cbm_vars.parameters = pd.concat(
+            [cbm_vars.parameters, new_params]
         ).reset_index(drop=True)
 
     return cbm_vars

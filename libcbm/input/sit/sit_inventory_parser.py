@@ -258,14 +258,17 @@ def expand_age_class_inventory(
             else [0]
         )
 
-        expanded_age_classes = expanded_age_classes.append(
-            pd.DataFrame(
-                {
-                    "name": row.name,
-                    "age": age_range,
-                    "class_size": row.class_size,
-                }
-            )
+        expanded_age_classes = pd.concat(
+            [
+                expanded_age_classes,
+                pd.DataFrame(
+                    {
+                        "name": row.name,
+                        "age": age_range,
+                        "class_size": row.class_size
+                    }
+                )
+            ]
         )
 
     non_using_age_class_rows = inventory.loc[~inventory.using_age_class]
@@ -290,10 +293,11 @@ def expand_age_class_inventory(
 
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
-        columns=["age_y", "class_size", "name"]
-    )
-    result = non_using_age_class_rows.append(age_class_merge).reset_index(
-        drop=True
-    )
+        columns=["age_y", "class_size", "name"])
+    result = pd.concat(
+        [
+            non_using_age_class_rows,
+            age_class_merge
+        ]).reset_index(drop=True)
 
     return result

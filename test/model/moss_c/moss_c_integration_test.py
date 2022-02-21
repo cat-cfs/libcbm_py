@@ -28,11 +28,11 @@ class MossCIntegrationTest(unittest.TestCase):
 
             pools = ctx.get_pools_df()
             pools.insert(0, "t", i)
-            pool_results = pool_results.append(pools)
+            pool_results = pd.concat([pool_results, pools])
 
             flux = ctx.flux.copy()
             flux.insert(0, "t", i)
-            flux_results = flux_results.append(flux)
+            flux_results = pd.concat([flux_results, flux])
 
         for p in ECOSYSTEM_POOLS:
             self.assertTrue(

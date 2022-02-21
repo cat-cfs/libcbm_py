@@ -1,7 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
+import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_variables
 from libcbm.storage.dataframe import DataFrame
@@ -142,21 +142,19 @@ def sorted_disturbance_target(
 
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = (
-            target - fully_disturbed_records["target_var_sums"].max()
-        )
-    result = cbm_variables.concat(
+            target - fully_disturbed_records["target_var_sums"].max())
+
+    result = pd.concat(
         [
             result,
-            DataFrame(
-                {
-                    "target_var": fully_disturbed_records["target_var"],
-                    "sort_var": fully_disturbed_records["sort_var"],
-                    "disturbed_index": fully_disturbed_records["index"],
-                    "area_proportions": np.ones(
-                        len(fully_disturbed_records["index"])
-                    ),
+            pd.DataFrame({
+                "target_var": fully_disturbed_records["target_var"],
+                "sort_var": fully_disturbed_records["sort_var"],
+                "disturbed_index": fully_disturbed_records["index"],
+                "area_proportions":  np.ones(
+                    len(fully_disturbed_records["index"]))
                 }
-            ),
+            )
         ]
     )
 
@@ -171,19 +169,14 @@ def sorted_disturbance_target(
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
-        result = cbm_variables.concat(
-            [
-                result,
-                DataFrame(
-                    {
-                        "target_var": split_record["target_var"],
-                        "sort_var": split_record["sort_var"],
-                        "disturbed_index": int(split_record["index"]),
-                        "area_proportions": [proportion],
-                    }
-                ),
-            ]
-        )
+        result = pd.concat([
+            result,
+            pd.DataFrame({
+                "target_var": split_record["target_var"],
+                "sort_var": split_record["sort_var"],
+                "disturbed_index": int(split_record["index"]),
+                "area_proportions": [proportion]
+            })])
 
     result = result.reset_index(drop=True)
 
