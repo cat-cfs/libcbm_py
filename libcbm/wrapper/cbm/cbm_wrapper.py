@@ -7,6 +7,8 @@ from libcbm import data_helpers
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
+from libcbm.wrapper.libcbm_handle import LibCBMHandle
+from libcbm.storage.dataframe import DataFrame
 
 
 class CBMWrapper(LibCBM_ctypes):
@@ -16,7 +18,7 @@ class CBMWrapper(LibCBM_ctypes):
     The base class is :py:class:`libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes`
 
     Args:
-        handle (libcbm.wrapper.libcbm_handle.LibCBMHandle): handle to the low
+        handle (LibCBMHandle): handle to the low
             level function library
         config (str): A json formatted string containing CBM
             configuration.
@@ -82,33 +84,31 @@ class CBMWrapper(LibCBM_ctypes):
                 }
     """
 
-    def __init__(self, handle, config):
+    def __init__(self, handle: LibCBMHandle, config: str):
         self.handle = handle
         p_config = ctypes.c_char_p(config.encode("UTF-8"))
         self.handle.call("LibCBM_Initialize_CBM", p_config)
 
     def advance_stand_state(
-        self, classifiers, inventory, state_variables, parameters
+        self,
+        classifiers: DataFrame,
+        inventory: DataFrame,
+        state_variables: DataFrame,
+        parameters: DataFrame,
     ):
         """Advances CBM stand variables through a timestep based on the
         current simulation state.
 
         Args:
-            classifiers (pandas.DataFrame): classifier values associated with
+            classifiers (DataFrame): classifier values associated with
                 the inventory
-            inventory (object): CBM inventory data. Will not be modified by
-                this function. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
-                for a compatible definition
-            state_variables (pandas.DataFrame): simulation variables which
+            inventory (DataFrame): CBM inventory data. Will not be modified by
+                this function.
+            state_variables (DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  Altered by this
-                function call.  See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
-                for a compatible definition
-            parameters (object): Read-only parameters used in a CBM timestep.
-                See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_parameters`
-                for a compatible definition.
+                function call.
+            parameters (DataFrame): Read-only parameters used in a CBM
+                timestep.
         """
         i = data_helpers.unpack_ndarrays(inventory)
         v = data_helpers.unpack_ndarrays(state_variables)
@@ -136,16 +136,14 @@ class CBMWrapper(LibCBM_ctypes):
             v.age,
         )
 
-    def end_step(self, state_variables):
+    def end_step(self, state_variables: DataFrame):
         """Applies end-of-timestep changes to the CBM state
 
         Args:
-            state_variables (pandas.DataFrame): simulation variables which
+            state_variables (DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  This
                 function call will alter this variable with end-of-step
-                changes. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
-                for a compatible definition
+                changes.
         """
         v = data_helpers.unpack_ndarrays(state_variables)
         n = v.age.shape[0]
@@ -160,25 +158,26 @@ class CBMWrapper(LibCBM_ctypes):
             v.time_since_land_class_change,
         )
 
-    def initialize_land_state(self, inventory, pools, state_variables):
+    def initialize_land_state(
+        self,
+        inventory: DataFrame,
+        pools: DataFrame,
+        state_variables: DataFrame,
+    ):
         """Initializes CBM state to values appropriate for after running
         spinup and before starting CBM stepping
 
         Args:
-            inventory (object): CBM inventory data. Will not be modified by
-                this function. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
-                for a compatible definition.
-            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
+            inventory (DataFrame): CBM inventory data. Will not be modified by
+                this function.
+            pools (DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function for stands that have an afforestation pre-type
                 defined.
-            state_variables (pandas.DataFrame): simulation variables which
+            state_variables (DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  This
                 function call will alter this variable with CBM initial state
-                values. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
-                for a compatible definition.
+                values.
 
         """
         i = data_helpers.unpack_ndarrays(inventory)
@@ -204,21 +203,17 @@ class CBMWrapper(LibCBM_ctypes):
             v.age,
         )
 
-    def advance_spinup_state(self, inventory, variables, parameters):
+    def advance_spinup_state(
+        self, inventory: DataFrame, variables: DataFrame, parameters: DataFrame
+    ) -> int:
         """Advances spinup state variables through one spinup step.
 
         Args:
-            inventory (object): CBM inventory data. Will not be modified by
-                this function. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_inventory`
-                for a compatible definition
-            variables (object): Spinup working variables.  Defines all
-                non-pool simulation state during spinup.  See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_variables`
-                for a compatible definition
-            parameters (object): spinup parameters. See:
-                :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
-                for a compatible definition
+            inventory (DataFrame): CBM inventory data. Will not be modified by
+                this function.
+            variables (DataFrame): Spinup working variables.  Defines all
+                non-pool simulation state during spinup.
+            parameters (DataFrame): spinup parameters.
 
         Returns:
             int: The number of stands finished running the spinup routine
@@ -276,16 +271,16 @@ class CBMWrapper(LibCBM_ctypes):
 
         return n_finished
 
-    def end_spinup_step(self, pools, variables):
+    def end_spinup_step(self, pools: DataFrame, variables: DataFrame):
         """Applies end-of-timestep changes to the spinup state
 
         Args:
-            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
+            pools (DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are used to
                 compute a criteria for exiting the spinup routing.  The
                 biomass pools are also zeroed for historical and last pass
                 disturbances.
-            variables (object): Spinup working variables.  Defines all
+            variables (DataFrame): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  Set to an
                 end-of-timestep state by this function. See:
                 :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
@@ -308,12 +303,12 @@ class CBMWrapper(LibCBM_ctypes):
 
     def get_merch_volume_growth_ops(
         self,
-        growth_op,
-        overmature_decline_op,
-        classifiers,
-        inventory,
-        pools,
-        state_variables,
+        growth_op: int,
+        overmature_decline_op: int,
+        classifiers: DataFrame,
+        inventory: DataFrame,
+        pools: DataFrame,
+        state_variables: DataFrame,
     ):
         """Computes CBM merchantable growth as a bulk matrix operation.
 
@@ -324,23 +319,19 @@ class CBMWrapper(LibCBM_ctypes):
             overmature_decline_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute merch volume growth operations.
-            classifiers (pandas.DataFrame): matrix of classifier ids
+            classifiers DataFrame): matrix of classifier ids
                 associated with yield tables.
-            inventory (object): Used by this function to find correct spatial
-                parameters from the set of merch volume growth parameters.
-                Will not be modified by this function. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
-                for a compatible definition.
-            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
+            inventory (DataFrame): Used by this function to find correct
+                spatial parameters from the set of merch volume growth
+                parameters. Will not be modified by this function.
+            pools (DataFrame): matrix of shape
                 n_stands by n_pools. Used by this function to compute a root
                 increment, and also to limit negative growth increments such
                 that a negative biomass pools are prevented.  This parameter
                 is not modified by this function.
-            state_variables (pandas.DataFrame): simulation variables which
+            state_variables (DataFrame): simulation variables which
                 define all non-pool state in the CBM model.  This function
-                call will not alter this parameter. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_state_variables`
-                for a compatible definition
+                call will not alter this parameter.
         """
         n = pools.shape[0]
         poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
@@ -380,7 +371,10 @@ class CBMWrapper(LibCBM_ctypes):
         )
 
     def get_turnover_ops(
-        self, biomass_turnover_op, snag_turnover_op, inventory
+        self,
+        biomass_turnover_op: int,
+        snag_turnover_op: int,
+        inventory: DataFrame,
     ):
         """Computes biomass turnovers and dead organic matter turnovers as
         bulk matrix operations.
@@ -392,12 +386,10 @@ class CBMWrapper(LibCBM_ctypes):
             snag_turnover_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`allocate_op` function. Used to
                 compute dom (specifically snags) turnover operations.
-            inventory (object): CBM inventory data. Used by this function
+            inventory (DataFrame): CBM inventory data. Used by this function
                 to find correct parameters from the set of turnover parameters
                 passed to library initialization. Will not be modified by this
-                function. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
-                for a compatible definition.
+                function.
         """
         i = data_helpers.unpack_ndarrays(inventory)
         n = i.spatial_unit.shape[0]
@@ -409,12 +401,12 @@ class CBMWrapper(LibCBM_ctypes):
 
     def get_decay_ops(
         self,
-        dom_decay_op,
-        slow_decay_op,
-        slow_mixing_op,
-        inventory,
-        parameters,
-        historical_mean_annual_temp=False,
+        dom_decay_op: int,
+        slow_decay_op: int,
+        slow_mixing_op: int,
+        inventory: DataFrame,
+        parameters: DataFrame,
+        historical_mean_annual_temp: bool = False,
     ):
         """Prepares dead organic matter decay bulk matrix operations.
 
@@ -474,25 +466,22 @@ class CBMWrapper(LibCBM_ctypes):
             mean_annual_temp,
         )
 
-    def get_disturbance_ops(self, disturbance_op, inventory, parameters):
+    def get_disturbance_ops(
+        self, disturbance_op: int, inventory: DataFrame, parameters: DataFrame
+    ):
         """Sets up CBM disturbance matrices as a bulk matrix operations.
 
         Args:
             disturbance_op (int): Handle for a block of matrices as
                 allocated by the :py:func:`AllocateOp` function. Used to
                 compute disturbance event pool flows.
-            inventory (object): CBM inventory data. Used by this function to
+            inventory (DataFrame): CBM inventory data. Used by this function to
                 find correct parameters from the set of disturbance parameters
                 passed to library initialization. Will not be modified by this
-                function. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
-                for a compatible definition
-            parameters (object): Read-only parameters used to set
+                function.
+            parameters (DataFrame): Read-only parameters used to set
                 disturbance type id to fetch the appropriate disturbance
-                matrix. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_cbm_parameters`
-                for a compatible definition.
-
+                matrix.
         """
         spatial_unit = data_helpers.unpack_ndarrays(inventory).spatial_unit
         disturbance_type = data_helpers.unpack_ndarrays(

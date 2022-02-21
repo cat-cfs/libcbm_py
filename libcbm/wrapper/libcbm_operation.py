@@ -1,9 +1,14 @@
 from enum import Enum
+from typing import Iterable
 import numpy as np
+
 from libcbm import data_helpers
 from libcbm.wrapper import libcbm_wrapper_functions
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
 
 
 class OperationFormat(Enum):
@@ -12,7 +17,7 @@ class OperationFormat(Enum):
 
 
 class Operation:
-    def __init__(self, dll, format, data):
+    def __init__(self, dll: str, format: OperationFormat, data: list):
         self.format = format
         self.__dll = dll
         self.__op_id = None
@@ -32,7 +37,7 @@ class Operation:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.dispose()
 
-    def __init_matrix_list(self, data):
+    def __init_matrix_list(self, data: list):
         self.__matrix_list = data
         self.__matrix_list_p = (
             libcbm_wrapper_functions.get_matrix_list_pointer(
@@ -41,7 +46,7 @@ class Operation:
         )
         self.__matrix_list_len = len(self.__matrix_list)
 
-    def __init_repeating(self, data):
+    def __init_repeating(self, data: list):
         value_len = 1
         for d in data:
             if isinstance(d[2], np.ndarray):
@@ -58,7 +63,7 @@ class Operation:
         self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
         self.__repeating_matrix_values = LibCBM_Matrix(values)
 
-    def __allocate_op(self, size):
+    def __allocate_op(self, size: int):
         if self.__op_id is not None:
             self.__dll.free_op(self.__op_id)
         self.__op_id = self.__dll.allocate_op(size)
@@ -68,10 +73,10 @@ class Operation:
             self.__dll.free_op(self.__op_id)
             self.__op_id = None
 
-    def get_op_id(self):
+    def get_op_id(self) -> int:
         return self.__op_id
 
-    def set_matrix_index(self, matrix_index):
+    def set_matrix_index(self, matrix_index: np.ndarray):
         if not matrix_index.dtype == np.uintp:
             matrix_index = matrix_index.astype(np.uintp)
         if self.format == OperationFormat.MatrixList:
@@ -99,7 +104,12 @@ class Operation:
 
 
 def compute(
-    dll, pools, operations, op_processes=None, flux=None, enabled=None
+    dll: LibCBMWrapper,
+    pools: DataFrame,
+    operations: list[Operation],
+    op_processes: Iterable[int] = None,
+    flux: DataFrame = None,
+    enabled: Series = None,
 ):
     """Compute pool flows and optionally track the fluxes
 
@@ -107,15 +117,15 @@ def compute(
 
     Args:
         dll (LibCBMWrapper): instance of libcbm wrapper
-        pools (pandas.DataFrame): pools dataframe (stands by pools)
+        pools (DataFrame): pools dataframe (stands by pools)
         ops (list): list of
             :py:class:`libcbm.wrapper.libcbm_operation.Operation`
         op_processes (iterable, optional): flux indicator op processes.
             Required if flux arg is specified. Defaults to None.
-        flux (pandas.DataFrame, optional): Flux indicators dataframe
+        flux (DataFrame, optional): Flux indicators dataframe
             (stands by flux-indicator). If not specified, no fluxes are
             tracked. Defaults to None.
-        enabled (numpy.ndarray, optional): Flag array of length n-stands
+        enabled (Series, optional): Flag array of length n-stands
             indicating whether or not to include corresponding rows in
             computation. If set to None, all records are included.
             Defaults to None.

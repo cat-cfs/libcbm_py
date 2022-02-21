@@ -3,24 +3,28 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import ctypes
+import numpy as np
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm import data_helpers
+from libcbm.wrapper.libcbm_handle import LibCBMHandle
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
 
 
 class LibCBMWrapper:
     """Exposes low level ctypes wrapper to regular python, for the core
     libcbm functions.
 
-        Args (:py:class:`libcbm.wrapper.libcbm_handle.LibCBMHandle`): handle
+        Args (LibCBMHandle): handle
             for the underlying dll/so compiled library
     """
 
-    def __init__(self, handle):
+    def __init__(self, handle: LibCBMHandle):
         self.handle = handle
 
-    def allocate_op(self, size):
+    def allocate_op(self, size: int) -> int:
         """Allocates storage for matrices, returning an id for the
         allocated block.
 
@@ -41,7 +45,7 @@ class LibCBMWrapper:
         op_id = self.handle.call("LibCBM_Allocate_Op", size)
         return op_id
 
-    def free_op(self, op_id):
+    def free_op(self, op_id: int):
         """Deallocates a matrix block that was allocated by the allocate_op
         method.
 
@@ -51,7 +55,13 @@ class LibCBMWrapper:
         """
         self.handle.call("LibCBM_Free_Op", op_id)
 
-    def set_op(self, op_id, matrices, matrix_index, init=0):
+    def set_op(
+        self,
+        op_id: int,
+        matrices: list[np.ndarray],
+        matrix_index: list[int],
+        init: int = 0,
+    ):
         """Assigns values to an allocated block of matrices.
 
             Example::
@@ -138,7 +148,12 @@ class LibCBMWrapper:
         )
 
     def set_op_repeating(
-        self, op_id, coordinates, values, matrix_index, init=0
+        self,
+        op_id: int,
+        coordinates: np.ndarray,
+        values: np.ndarray,
+        matrix_index: np.ndarray,
+        init: int = 0,
     ):
         """Assigns the specified values associated with repeating coordinates
         to an allocated block of matrices.
@@ -167,7 +182,9 @@ class LibCBMWrapper:
             init,
         )
 
-    def compute_pools(self, ops, pools, enabled=None):
+    def compute_pools(
+        self, ops: np.ndarray, pools: DataFrame, enabled: Series = None
+    ):
         """Computes flows between pool values for all stands.
 
         Each value in the ops parameter is an id to a matrix block, and is also
@@ -186,10 +203,10 @@ class LibCBMWrapper:
         Args:
             ops (ndarray): list of matrix block ids as allocated by the
                 :py:func:`allocate_op` function.
-            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
+            pools (DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
-            enabled (ndarray, optional): optional int vector of length
+            enabled (Series): optional int vector of length
                 n_stands. If specified, enables or disables flows for each
                 stand, based on the value at each stand index. A value of 0
                 indicates a disabled stand index, and any other value is an
@@ -212,7 +229,14 @@ class LibCBMWrapper:
             data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int),
         )
 
-    def compute_flux(self, ops, op_processes, pools, flux, enabled=None):
+    def compute_flux(
+        self,
+        ops: np.ndarray,
+        op_processes: np.ndarray,
+        pools: DataFrame,
+        flux: DataFrame,
+        enabled: Series = None,
+    ):
         """Computes and tracks flows between pool values for all stands.
 
         Performs the same operation as compute_pools, except that the fluxes
