@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from enum import IntEnum
 from types import SimpleNamespace
@@ -70,12 +71,19 @@ def initialize_dm(disturbance_matrix_data):
             if Pool[row.source] == Pool[row.sink]:
                 identity_set.remove(Pool[row.source])
 
-        dm_values = dm_values.append([
-            {"disturbance_type_id": dist_type_id,
-             "source": p.name,
-             "sink": p.name,
-             "proportion": 1.0} for p in identity_set],
-            ignore_index=True)
+        dm_values = pd.concat(
+            [
+                dm_values,
+                pd.DataFrame(
+                    data=[{
+                        "disturbance_type_id": dist_type_id,
+                        "source": p.name,
+                        "sink": p.name,
+                        "proportion": 1.0
+                    } for p in identity_set]
+                )
+            ]
+        )
         mat = np.column_stack([
             np.array([Pool[p] for p in dm_values.source], dtype=float),
             np.array([Pool[p] for p in dm_values.sink], dtype=float),

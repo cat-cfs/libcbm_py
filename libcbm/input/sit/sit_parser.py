@@ -262,8 +262,9 @@ def substitute_using_age_class_rows(rows, parse_bool_func, age_classes):
         using_age_class_rows.max_hardwood_age.fillna(-1)
 
     # return the final substituted rows
-    result = non_using_age_class_rows.append(using_age_class_rows) \
-        .reset_index(drop=True)
+    result = pd.concat(
+        [non_using_age_class_rows, using_age_class_rows]
+    ).reset_index(drop=True)
 
     # convert to float then to int in case the columns are stored as
     # strings in float format (which fails on astype(int))

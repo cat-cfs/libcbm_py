@@ -131,11 +131,19 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         remaining_target = \
             target - fully_disturbed_records["target_var_sums"].max()
 
-    result = result.append(pd.DataFrame({
-        "target_var": fully_disturbed_records["target_var"],
-        "sort_var": fully_disturbed_records["sort_var"],
-        "disturbed_index": fully_disturbed_records["index"],
-        "area_proportions":  np.ones(len(fully_disturbed_records["index"]))}))
+    result = pd.concat(
+        [
+            result,
+            pd.DataFrame({
+                "target_var": fully_disturbed_records["target_var"],
+                "sort_var": fully_disturbed_records["sort_var"],
+                "disturbed_index": fully_disturbed_records["index"],
+                "area_proportions":  np.ones(
+                    len(fully_disturbed_records["index"]))
+                }
+            )
+        ]
+    )
 
     partial_disturb = disturbed[disturbed.target_var_sums > target]
 
@@ -148,13 +156,14 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
-        result = result.append(
+        result = pd.concat([
+            result,
             pd.DataFrame({
                 "target_var": split_record["target_var"],
                 "sort_var": split_record["sort_var"],
                 "disturbed_index": int(split_record["index"]),
                 "area_proportions": [proportion]
-            }))
+            })])
 
     result = result.reset_index(drop=True)
 

@@ -43,7 +43,8 @@ def create_split_proportions(tr_group_key, tr_group, group_error_max):
             f"{tr_group_key} exceeds 100%")
     else:
         remainder = 100 - percent_sum
-        appended_percent = tr_group.percent.append(pd.Series([remainder]))
+        appended_percent = pd.concat(
+            [tr_group.percent, pd.Series([remainder])])
         return list(appended_percent / appended_percent.sum())
 
 
@@ -200,12 +201,12 @@ class TransitionRuleProcessor(object):
 
                 params.reset_age = tr_group.iloc[i_proportion].reset_age
 
-            classifier_split = classifier_split.append(classifiers)
-            inventory_split = inventory_split.append(inventory)
-            pool_split = pool_split.append(pools)
-            state_split = state_split.append(state)
-            params_split = params_split.append(params)
-            flux_split = flux_split.append(flux)
+            classifier_split = pd.concat([classifier_split, classifiers])
+            inventory_split = pd.concat([inventory_split, inventory])
+            pool_split = pd.concat([pool_split, pools])
+            state_split = pd.concat([state_split, state])
+            params_split = pd.concat([params_split, params])
+            flux_split = pd.concat([flux_split, flux])
 
         # for the first index in the tr_group use the existing matched records
         transition_classifier_ids = \
@@ -226,18 +227,24 @@ class TransitionRuleProcessor(object):
             tr_group.iloc[0].reset_age
 
         if len(proportions) > 1:
-            cbm_vars.classifiers = cbm_vars.classifiers.append(
-                classifier_split).reset_index(drop=True)
-            cbm_vars.inventory = cbm_vars.inventory.append(
-                inventory_split).reset_index(drop=True)
-            cbm_vars.pools = cbm_vars.pools.append(
-                pool_split).reset_index(drop=True)
-            cbm_vars.state = cbm_vars.state.append(
-                state_split).reset_index(drop=True)
-            cbm_vars.parameters = cbm_vars.parameters.append(
-                params_split).reset_index(drop=True)
-            cbm_vars.flux = cbm_vars.flux.append(
-                flux_split).reset_index(drop=True)
+            cbm_vars.classifiers = pd.concat(
+                [cbm_vars.classifiers, classifier_split]
+            ).reset_index(drop=True)
+            cbm_vars.inventory = pd.concat(
+                [cbm_vars.inventory, inventory_split]
+            ).reset_index(drop=True)
+            cbm_vars.pools = pd.concat(
+                [cbm_vars.pools, pool_split]
+            ).reset_index(drop=True)
+            cbm_vars.state = pd.concat(
+                [cbm_vars.state, state_split]
+            ).reset_index(drop=True)
+            cbm_vars.parameters = pd.concat(
+                [cbm_vars.parameters, params_split]
+            ).reset_index(drop=True)
+            cbm_vars.flux = pd.concat([
+                cbm_vars.flux, flux_split]
+            ).reset_index(drop=True)
 
         cbm_vars.state = cbm_vars.state.astype({'regeneration_delay': 'int32'})
         cbm_vars.parameters = cbm_vars.parameters.astype(
