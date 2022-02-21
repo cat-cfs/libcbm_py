@@ -1,41 +1,15 @@
-import numpy as np
-import pandas as pd
 import json
+from typing import ContextManager
 from contextlib import contextmanager
 from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-
-
-@contextmanager
-def create_model(pools: list[dict], flux_indicators: list[dict]):
-
-    libcbm_config = {
-        "pools": [
-            {"name": p, "id": p_idx, "index": p_idx}
-            for p, p_idx in pools.items()
-        ],
-        "flux_indicators": [
-            {
-                "id": f_idx + 1,
-                "index": f_idx,
-                "process_id": f["process_id"],
-                "source_pools": [int(x) for x in f["source_pools"]],
-                "sink_pools": [int(x) for x in f["sink_pools"]],
-            }
-            for f_idx, f in enumerate(flux_indicators)
-        ],
-    }
-
-    with LibCBMHandle(
-        resources.get_libcbm_bin_path(), json.dumps(libcbm_config)
-    ) as handle:
-        yield ModelHandle(LibCBMWrapper(handle), pools, flux_indicators)
+from libcbm.storage.dataframe import Series
 
 
 class ModelVars:
-    def __init__(self, size, n_pools, n_flux):
+    def __init__(self, size: int, n_pools: int, n_flux: int):
         self.pools = np.zeros(shape=(int(size), n_pools))
         self.flux = np.zeros(shape=(int(size), n_flux))
 
@@ -54,19 +28,21 @@ class ModelHandle:
     def allocate_model_vars(self, n: int):
         return ModelVars(n, len(self.pools), len(self.flux_indicators))
 
-    def _matrix_rc(self, value: list):
+    def _matrix_rc(self, value: list) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
             value,
         )
 
-    def _matrix_list(self, value: list):
+    def _matrix_list(self, value: list) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
             self.wrapper, libcbm_operation.OperationFormat.MatrixList, value
         )
 
-    def create_operation(self, matrices: list, fmt: str):
+    def create_operation(
+        self, matrices: list, fmt: str
+    ) -> libcbm_operation.Operation:
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
@@ -92,8 +68,8 @@ class ModelHandle:
         model_vars: ModelVars,
         operations: list[libcbm_operation.Operation],
         op_processes: list[int],
-        enabled: np.ndarray,
-    ):
+        enabled: Series,
+    ) -> None:
         model_vars.pools = np.ascontiguousarray(model_vars.pools)
         model_vars.flux = np.ascontiguousarray(model_vars.flux)
         libcbm_operation.compute(
@@ -105,7 +81,9 @@ class ModelHandle:
             enabled=enabled.astype(int) if enabled is not None else None,
         )
 
-    def create_output_processor(self, type="in_memory"):
+    def create_output_processor(
+        self, type="in_memory"
+    ) -> "ModelOutputProcessor":
         return ModelOutputProcessor(self)
 
 
@@ -133,3 +111,31 @@ class ModelOutputProcessor:
         flux_t.reset_index(inplace=True)
         self.flux = self.flux.append(flux_t)
         self.flux.reset_index(inplace=True, drop=True)
+
+
+@contextmanager
+def create_model(
+    pools: list[dict], flux_indicators: list[dict]
+) -> ContextManager[ModelHandle]:
+
+    libcbm_config = {
+        "pools": [
+            {"name": p, "id": p_idx, "index": p_idx}
+            for p, p_idx in pools.items()
+        ],
+        "flux_indicators": [
+            {
+                "id": f_idx + 1,
+                "index": f_idx,
+                "process_id": f["process_id"],
+                "source_pools": [int(x) for x in f["source_pools"]],
+                "sink_pools": [int(x) for x in f["sink_pools"]],
+            }
+            for f_idx, f in enumerate(flux_indicators)
+        ],
+    }
+
+    with LibCBMHandle(
+        resources.get_libcbm_bin_path(), json.dumps(libcbm_config)
+    ) as handle:
+        yield ModelHandle(LibCBMWrapper(handle), pools, flux_indicators)
