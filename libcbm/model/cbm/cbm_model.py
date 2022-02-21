@@ -2,14 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
-import pandas as pd
-import numpy as np
 from types import SimpleNamespace
+from typing import Callable
+from typing import Union
 from libcbm.model.cbm import cbm_variables
+from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
+from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
+from libcbm.storage.dataframe import Series
 
 
-def get_op_names():
+def get_op_names() -> list[str]:
     """Gets the names of the CBM dynamics operations
 
     Returns:
@@ -27,7 +30,7 @@ def get_op_names():
     ]
 
 
-def get_op_processes():
+def get_op_processes() -> dict[str, int]:
     """Gets a dictionary of operation name to process id, which is
     used to group flux indicators
 
@@ -50,10 +53,8 @@ class CBM:
     """The CBM model.
 
     Args:
-        compute_functions (libcbm.wrapper.libcbm_wrapper.LibCBMWrapper): an
-            instance of LibCBMWrapper.
-        model_functions (libcbm.wrapper.cbm.cbm_wrapper.CBMWrapper): an
-            instance of CBMWrapper
+        compute_functions (LibCBMWrapper): an instance of LibCBMWrapper.
+        model_functions (CBMWrapper): an instance of CBMWrapper
         pool_codes (list): list of pool code names (non localizable)
         flux_indicator_codes (list): list of flux indicator code names (non
             localizable)
@@ -61,10 +62,10 @@ class CBM:
 
     def __init__(
         self,
-        compute_functions,
-        model_functions,
-        pool_codes,
-        flux_indicator_codes,
+        compute_functions: LibCBMWrapper,
+        model_functions: CBMWrapper,
+        pool_codes: list[str],
+        flux_indicator_codes: list[str],
     ):
 
         self.compute_functions = compute_functions
@@ -77,7 +78,11 @@ class CBM:
         self.pool_codes = pool_codes
         self.flux_indicator_codes = flux_indicator_codes
 
-    def spinup(self, cbm_vars, reporting_func=None):
+    def spinup(
+        self,
+        cbm_vars: CBMVariables,
+        reporting_func: Callable[[int, CBMVariables], None] = None,
+    ) -> CBMVariables:
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
 
@@ -85,35 +90,13 @@ class CBM:
         routines for the cbm_vars object.
 
         Args:
-            cbm_vars (object): spinup vars with the following fields:
-
-                * pools: CBM pools of dimension n_stands by n_pools.
-                  Initialized with spinup carbon values by this function.
-                  Column order is important. See:
-                  :py:func:`libcbm.model.cbm.cbm_variables.initialize_pools`
-                  for a compatible definition
-                * flux: CBM flux values of dimension n_stands by
-                  n_flux_indicators. Set with the flux indicator values for
-                  pool flows that occur for each spinup timestep. See:
-                  :py:func:`libcbm.model.cbm.cbm_variables.initialize_flux`
-                  for a compatible definition.  If set to None, flux for each
-                  spinup step will not be computed. Defaults to None.
-                * parameters: spinup parameters. See:
-                  :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
-                  for a compatible definition
-                * state: spinup working variables. See:
-                  :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_variables`
-                * inventory: cbm inventory data. Not be modified by this
-                  function.
-                * classifiers: matrix of numeric classifier value ids
-                  associated with inventory. Not modified by this function.
-
+            cbm_vars (CBMVariables): spinup CBM variables with the following fields
             reporting_func (function): a function which accepts the spinup
                 iteration spinup variables for reporting results by spinup
                 iteration. The function returns None.
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         if cbm_vars.flux is not None and reporting_func is None:
             # can use reporting func without flux, but it does not make any
@@ -231,19 +214,15 @@ class CBM:
             self.compute_functions.free_op(ops[op_name])
         return cbm_vars
 
-    def init(self, cbm_vars):
+    def init(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Set the initial state of CBM variables after spinup and prior
         to starting CBM simulation stepping
 
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm vars
+            cbm_vars (CBMVariables): cbm vars
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
 
         # the following line is tricky, and needs some more thought:
@@ -270,20 +249,16 @@ class CBM:
         )
         return cbm_vars
 
-    def step_start(self, cbm_vars):
+    def step_start(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Advance stand state and initialize variables prior to disturbance
         and annual process steps.  Should be called one time at the start of
         each CBM time step.
 
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm vars
+            cbm_vars (CBMVariables): cbm vars
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         # zero the memory (simply using flux *= 0.0 caused a copy
         # with a change in contiguity in some cases!)
@@ -301,7 +276,11 @@ class CBM:
         return cbm_vars
 
     def compute_disturbance_production(
-        self, cbm_vars, disturbance_type=None, eligible=None, density=True
+        self,
+        cbm_vars: CBMVariables,
+        disturbance_type: Union[Series, int] = None,
+        eligible: Series = None,
+        density: bool = True,
     ):
         """Computes a series of disturbance production values based on the
         current pools in cbm_vars, and disturbance matrices associated with
@@ -310,11 +289,11 @@ class CBM:
         in cbm_vars.
 
         Args:
-            cbm_vars (object): object containing current simulation state
-            disturbance_type (numpy.ndarray, int, optional): The integer code
+            cbm_vars (CBMVariables): object containing current simulation state
+            disturbance_type (Series, int, optional): The integer code
                 or array specifying the disturbance type(s). If not specified,
                 the value of cbm_vars.parameters.disturbance_type is used.
-            eligible (numpy.ndarray, optional): Bit values where True
+            eligible (Series, optional): Bit values where True
                 specifies the index is eligible for the disturbance, and
                 false the opposite. In the returned result False indices
                 will be set with 0's.  Specifying None is equivant to an
@@ -325,7 +304,7 @@ class CBM:
                 Defaults to True.
 
         Returns:
-            pandas.DataFrame: dataframe describing the C production associated
+            DataFrame: dataframe describing the C production associated
                 with applying the specified disturbance type on the specified
                 pools.  All columns are expressed as area density values
                 in units tonnes C/ha.
@@ -401,7 +380,7 @@ class CBM:
         else:
             return df.multiply(cbm_vars.inventory.area, axis=0)
 
-    def step_disturbance(self, cbm_vars):
+    def step_disturbance(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Compute disturbance dynamics and compute disturbance flux on the
         current value of cbm_vars.pools.  The values stored in array
         `cbm_vars.parameters.disturbance_type` determines the disturbance
@@ -414,15 +393,11 @@ class CBM:
         indexes disturbed in prior calls to this function, within a given
         timestep, from all subsequent calls within that timestep.
 
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm_vars object
+            cbm_vars (CBMVariables): cbm_vars object
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         n_stands = cbm_vars.pools.shape[0]
         disturbance_op = self.compute_functions.allocate_op(n_stands)
@@ -444,20 +419,16 @@ class CBM:
         self.compute_functions.free_op(disturbance_op)
         return cbm_vars
 
-    def step_annual_process(self, cbm_vars):
+    def step_annual_process(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Compute CBM annual process dynamics: growth, turnover and decay.
         This updates the cbm_vars.pools value and cbm_vars.flux values with
         computed annual process dynamics
 
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm_vars object
+            cbm_vars (CBMVariables): cbm_vars object
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         n_stands = cbm_vars.pools.shape[0]
 
@@ -509,39 +480,30 @@ class CBM:
             self.compute_functions.free_op(ops[op_name])
         return cbm_vars
 
-    def step_end(self, cbm_vars):
+    def step_end(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Apply end of timestep state changes.  Updates values in
         cbm_vars.state.
 
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm_vars object
+            cbm_vars (CBMVariables): cbm_vars object
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         self.model_functions.end_step(cbm_vars.state)
         return cbm_vars
 
-    def step(self, cbm_vars):
+    def step(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Run all default cbm step methods.  It is assumed that any
         records in the specified cbm_vars that require the spinup routine
         have been passed into the :py:func:`init` and :py:func:`spinup`
         and methods in this class.
 
-
-        See:
-        :py:mod:`libcbm.model.cbm.cbm_variables.initialize_simulation_variables`
-        for definition of the cbm_vars object
-
         Args:
-            cbm_vars (object): cbm_vars object
+            cbm_vars (CBMVariables): cbm_vars object
 
         Returns:
-            object: cbm_vars
+            CBMVariables: cbm_vars
         """
         cbm_vars = self.step_start(cbm_vars)
         cbm_vars = self.step_disturbance(cbm_vars)
