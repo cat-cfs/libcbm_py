@@ -5,7 +5,7 @@
 import pandas as pd
 from typing import Callable
 from typing import Iterable
-from libcbm.storage import functions
+from libcbm.storage import dataframe_functions
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
 from libcbm.model.cbm.cbm_variables import CBMVariables
@@ -166,11 +166,11 @@ class TransitionRuleProcessor(object):
         filtered = self._filter_stands(tr_group_key, cbm_vars)
 
         # sets the transitioned array with the transition filter result
-        eligible = functions.logical_and(
-            functions.logical_not(transition_mask), filtered
+        eligible = dataframe_functions.logical_and(
+            dataframe_functions.logical_not(transition_mask), filtered
         )
 
-        transition_mask_output = functions.logical_or(
+        transition_mask_output = dataframe_functions.logical_or(
             transition_mask, eligible
         )
 
@@ -205,10 +205,10 @@ class TransitionRuleProcessor(object):
             state = cbm_vars.state[eligible].copy()
             inventory = cbm_vars.inventory[eligible].copy()
             classifiers = cbm_vars.classifiers[eligible].copy()
-            transition_mask_output = functions.concat_series(
+            transition_mask_output = dataframe_functions.concat_series(
                 [
                     transition_mask_output,
-                    functions.make_boolean_series(
+                    dataframe_functions.make_boolean_series(
                         init=True, size=pools.shape[0]
                     ),
                 ]
