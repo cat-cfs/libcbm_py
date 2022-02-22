@@ -24,3 +24,11 @@ def logical_or(series: Series) -> Series:
 
 def make_boolean_series(init: bool, size: int) -> Series:
     raise NotImplementedError()
+
+
+def is_null(series: Series) -> Series:
+    """
+    returns an Series of True where any value in the specified series
+    is null, None, or NaN, otherwise Talse
+    """
+    raise NotImplementedError()

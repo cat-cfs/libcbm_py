@@ -1,21 +1,25 @@
+from typing import Union
+from typing import Callable
 from typing import ContextManager
+import pandas as pd
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
 from libcbm.storage.dataframe import Series
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe_functions
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
 
 
-def _safe_map(series: Series, map: dict):
+def _safe_map(series: Series, map: Union[dict, Callable]):
     """Helper method to ensure an error is thrown if any value in a
     mapped series is null
 
     Args:
         series (Series): the series to map
-        map (dict): the map values
+        map (Union[dict, Callable]): the map values or map function
 
     Raises:
         ValueError: at least one value in the mapped series was null
@@ -24,7 +28,7 @@ def _safe_map(series: Series, map: dict):
         pd.Series: The mapped series (see :py:func:`pandas.Series.map`)
     """
     out_series = series.map(map)
-    null_values = pd.isnull(out_series)
+    null_values = dataframe_functions.is_null(out_series)
     if null_values.any():
         missing_entries = list(series[null_values].unique())
         raise ValueError(f"undefined values detected {missing_entries[:10]}")
@@ -202,14 +206,14 @@ class StandCBMFactory:
                 1: inventory DataFrame
         """
 
-        classifiers = pd.DataFrame(
+        classifiers = DataFrame(
             columns=self._classifiers.keys(),
             data={
                 k: self._get_classifier_value_ids(k, inventory_df[k])
                 for k in self._classifiers.keys()
             },
         )
-        inventory = pd.DataFrame(
+        inventory = DataFrame(
             columns=[
                 "age",
                 "area",
@@ -234,7 +238,7 @@ class StandCBMFactory:
                     inventory_df.afforestation_pre_type,
                     lambda x: (
                         -1
-                        if pd.isnull(x)
+                        if pd.is_null(x)
                         else self.defaults_ref.get_afforestation_pre_type_id(x)
                     ),
                 ),
