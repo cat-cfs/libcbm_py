@@ -3,10 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-from typing import Union
 from libcbm import data_helpers
+from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
+from libcbm.storage.backends import BackendType
 
 
 class CBMVariables:
@@ -38,7 +39,9 @@ class CBMVariables:
         pass
 
 
-def initialize_pools(n_stands: int, pool_codes: list[str]) -> DataFrame:
+def _initialize_pools(
+    n_stands: int, pool_codes: list[str], back_end: BackendType
+) -> DataFrame:
     """Create a dataframe for storing CBM pools
 
     The dataframe here has 1 row for each stand and is row-aligned with
@@ -49,12 +52,16 @@ def initialize_pools(n_stands: int, pool_codes: list[str]) -> DataFrame:
             resulting dataframe.
         pool_codes (list): a list of pool names, which are used as column
             labels in the resulting dataframe
+        back_end (BackendType): the storage type for the pools
 
     Returns:
         pandas.DataFrame: A dataframe for storing CBM pools
     """
-    pools = DataFrame(
-        data=np.zeros((n_stands, len(pool_codes))), columns=pool_codes
+    pools = dataframe.numeric_dataframe(
+        cols=pool_codes,
+        nrows=n_stands,
+        ncols=len(pool_codes),
+        back_end=back_end,
     )
 
     # By convention the libcbm CBM implementation uses an input pool at
@@ -65,8 +72,8 @@ def initialize_pools(n_stands: int, pool_codes: list[str]) -> DataFrame:
     return pools
 
 
-def initialize_flux(
-    n_stands: int, flux_indicator_codes: list[str]
+def _initialize_flux(
+    n_stands: int, flux_indicator_codes: list[str], back_end: BackendType
 ) -> DataFrame:
     """Create a dataframe for storing CBM flux indicator values
 
@@ -78,22 +85,25 @@ def initialize_flux(
             resulting dataframe.
         flux_indicator_codes (list): a list of flux indicator names, which
             are used as column labels in the resulting dataframe
+        back_end (BackendType): the storage type for the pools
 
     Returns:
         pandas.DataFrame: A dataframe for storing CBM flux indicators
     """
-    return DataFrame(
-        data=np.zeros((n_stands, len(flux_indicator_codes))),
-        columns=flux_indicator_codes,
+    return dataframe.numeric_dataframe(
+        cols=flux_indicator_codes,
+        nrows=n_stands,
+        ncols=len(flux_indicator_codes),
+        back_end=back_end,
     )
 
 
 def initialize_spinup_parameters(
     n_stands: int,
-    return_interval: Union[int, Series] = None,
-    min_rotations: Union[int, Series] = None,
-    max_rotations: Union[int, Series] = None,
-    mean_annual_temp: Union[float, Series] = None,
+    return_interval: dataframe.SeriesInitType = None,
+    min_rotations: dataframe.SeriesInitType = None,
+    max_rotations: dataframe.SeriesInitType = None,
+    mean_annual_temp: dataframe.SeriesInitType = None,
 ) -> DataFrame:
     """Create spinup parameters as a collection of variable vectors
 
@@ -126,23 +136,47 @@ def initialize_spinup_parameters(
         DataFrame: table of spinup paramaeters
     """
 
-    parameters = DataFrame()
-    parameters.return_interval = data_helpers.promote_scalar(
-        return_interval, n_stands, dtype=np.int32
+    parameters = DataFrame(
+        [
+            dataframe.Series(
+                name="return_interval",
+                len=n_stands,
+                init=return_interval,
+                dtype="int32",
+            )
+        ],
+        [
+            dataframe.Series(
+                name="min_rotations",
+                len=n_stands,
+                init=min_rotations,
+                dtype="int32",
+            )
+        ],
+        [
+            dataframe.Series(
+                name="max_rotations",
+                len=n_stands,
+                init=max_rotations,
+                dtype="int32",
+            )
+        ],
+        [
+            dataframe.Series(
+                name="mean_annual_temp",
+                len=n_stands,
+                init=mean_annual_temp,
+                dtype="float64",
+            )
+        ],
     )
-    parameters.min_rotations = data_helpers.promote_scalar(
-        min_rotations, n_stands, dtype=np.int32
-    )
-    parameters.max_rotations = data_helpers.promote_scalar(
-        max_rotations, n_stands, dtype=np.int32
-    )
-    parameters.mean_annual_temp = data_helpers.promote_scalar(
-        mean_annual_temp, n_stands, dtype=np.float64
-    )
+
     return parameters
 
 
-def initialize_spinup_state_variables(n_stands: int) -> DataFrame:
+def _initialize_spinup_state_variables(
+    n_stands: int, back_end: BackendType
+) -> DataFrame:
     """Creates a collection of vectors used as working/state variables for
     the spinup routine.
 
@@ -156,17 +190,21 @@ def initialize_spinup_state_variables(n_stands: int) -> DataFrame:
     # favouring SimpleNamespace over pd.DataFrame here because these are
     # null variables, and DataFrame does not support null columns
 
-    variables = DataFrame()
-    variables.spinup_state = np.zeros(n_stands, dtype=np.uint32)
-    variables.slow_pools = np.zeros(n_stands, dtype=np.float64)
-    variables.disturbance_type = np.zeros(n_stands, dtype=np.int32)
-    variables.rotation = np.zeros(n_stands, dtype=np.int32)
-    variables.step = np.zeros(n_stands, dtype=np.int32)
-    variables.last_rotation_slow_C = np.zeros(n_stands, dtype=np.float64)
-    variables.enabled = np.ones(n_stands, dtype=np.int32)
-    variables.age = np.zeros(n_stands, dtype=np.int32)
-    variables.growth_enabled = np.ones(n_stands, dtype=np.int32)
-
+    variables = dataframe.series_list_dataframe(
+        data=[
+            Series("spinup_state", 0, n_stands, "uint32"),
+            Series("slow_pools", 0, n_stands, "float64"),
+            Series("disturbance_type", 0, n_stands, "int32"),
+            Series("rotation", 0, n_stands, "int32"),
+            Series("step", 0, n_stands, "int32"),
+            Series("last_rotation_slow_C", 0, n_stands, "float64"),
+            Series("enabled", 0, n_stands, "int32"),
+            Series("age", 0, n_stands, "np.int32"),
+            Series("growth_enabled", 0, n_stands, "int32"),
+        ],
+        nrows=n_stands,
+        back_end=back_end,
+    )
     # these variables are not used during spinup, but are needed
     # for CBM function signatures, and will be passed as nulls
     variables.last_disturbance_type = None
