@@ -130,10 +130,8 @@ def apply_rule_based_event(
 
         # create the updated inventory by appending the split records
         cbm_vars.inventory = pd.concat(
-            [
-                cbm_vars.inventory,
-                split_inventory
-            ]).reset_index(drop=True)
+            [cbm_vars.inventory, split_inventory]
+        ).reset_index(drop=True)
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
@@ -141,23 +139,18 @@ def apply_rule_based_event(
         cbm_vars.classifiers = pd.concat(
             [
                 cbm_vars.classifiers,
-                cbm_vars.classifiers.iloc[split_index].copy()
-            ]).reset_index(drop=True)
+                cbm_vars.classifiers.iloc[split_index].copy(),
+            ]
+        ).reset_index(drop=True)
         cbm_vars.state = pd.concat(
-            [
-                cbm_vars.state,
-                cbm_vars.state.iloc[split_index].copy()
-            ]).reset_index(drop=True)
+            [cbm_vars.state, cbm_vars.state.iloc[split_index].copy()]
+        ).reset_index(drop=True)
         cbm_vars.pools = pd.concat(
-            [
-                cbm_vars.pools,
-                cbm_vars.pools.iloc[split_index].copy()
-            ]).reset_index(drop=True)
+            [cbm_vars.pools, cbm_vars.pools.iloc[split_index].copy()]
+        ).reset_index(drop=True)
         cbm_vars.flux = pd.concat(
-            [
-                cbm_vars.flux,
-                cbm_vars.flux.iloc[split_index].copy()
-            ]).reset_index(drop=True)
+            [cbm_vars.flux, cbm_vars.flux.iloc[split_index].copy()]
+        ).reset_index(drop=True)
 
         new_params = cbm_vars.parameters.iloc[split_index].copy()
         new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)

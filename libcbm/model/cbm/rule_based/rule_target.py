@@ -142,19 +142,22 @@ def sorted_disturbance_target(
 
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = (
-            target - fully_disturbed_records["target_var_sums"].max())
+            target - fully_disturbed_records["target_var_sums"].max()
+        )
 
     result = pd.concat(
         [
             result,
-            pd.DataFrame({
-                "target_var": fully_disturbed_records["target_var"],
-                "sort_var": fully_disturbed_records["sort_var"],
-                "disturbed_index": fully_disturbed_records["index"],
-                "area_proportions":  np.ones(
-                    len(fully_disturbed_records["index"]))
+            pd.DataFrame(
+                {
+                    "target_var": fully_disturbed_records["target_var"],
+                    "sort_var": fully_disturbed_records["sort_var"],
+                    "disturbed_index": fully_disturbed_records["index"],
+                    "area_proportions": np.ones(
+                        len(fully_disturbed_records["index"])
+                    ),
                 }
-            )
+            ),
         ]
     )
 
@@ -169,14 +172,19 @@ def sorted_disturbance_target(
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
-        result = pd.concat([
-            result,
-            pd.DataFrame({
-                "target_var": split_record["target_var"],
-                "sort_var": split_record["sort_var"],
-                "disturbed_index": int(split_record["index"]),
-                "area_proportions": [proportion]
-            })])
+        result = pd.concat(
+            [
+                result,
+                pd.DataFrame(
+                    {
+                        "target_var": split_record["target_var"],
+                        "sort_var": split_record["sort_var"],
+                        "disturbed_index": int(split_record["index"]),
+                        "area_proportions": [proportion],
+                    }
+                ),
+            ]
+        )
 
     result = result.reset_index(drop=True)
 

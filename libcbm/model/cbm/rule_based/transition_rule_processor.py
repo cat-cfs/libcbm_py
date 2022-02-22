@@ -283,9 +283,9 @@ class TransitionRuleProcessor(object):
             cbm_vars.parameters = pd.concat(
                 [cbm_vars.parameters, params_split]
             ).reset_index(drop=True)
-            cbm_vars.flux = pd.concat([
-                cbm_vars.flux, flux_split]
-            ).reset_index(drop=True)
+            cbm_vars.flux = pd.concat([cbm_vars.flux, flux_split]).reset_index(
+                drop=True
+            )
 
         cbm_vars.state = cbm_vars.state.astype({"regeneration_delay": "int32"})
         cbm_vars.parameters = cbm_vars.parameters.astype(

@@ -72,19 +72,25 @@ def get_parameters_factory(sit):
     matrix_values = [1.0] * len(matrix_sources)
     new_matrix = pd.DataFrame()
     for dmid in dmids:
-        new_matrix = pd.concat([
-            new_matrix,
-            pd.DataFrame(
-                data={
-                    "disturbance_matrix_id": dmid,
-                    "source_pool_id": matrix_sources,
-                    "sink_pool_id": matrix_sinks,
-                    "proportion": matrix_values,
-                },
-                columns=[
-                    "disturbance_matrix_id", "source_pool_id", "sink_pool_id",
-                    "proportion"])
-        ])
+        new_matrix = pd.concat(
+            [
+                new_matrix,
+                pd.DataFrame(
+                    data={
+                        "disturbance_matrix_id": dmid,
+                        "source_pool_id": matrix_sources,
+                        "sink_pool_id": matrix_sinks,
+                        "proportion": matrix_values,
+                    },
+                    columns=[
+                        "disturbance_matrix_id",
+                        "source_pool_id",
+                        "sink_pool_id",
+                        "proportion",
+                    ],
+                ),
+            ]
+        )
     new_matrix = new_matrix.reset_index(drop=True)
 
     parameters["disturbance_matrix_values"] = new_matrix

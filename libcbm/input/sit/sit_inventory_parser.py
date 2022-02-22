@@ -265,9 +265,9 @@ def expand_age_class_inventory(
                     {
                         "name": row.name,
                         "age": age_range,
-                        "class_size": row.class_size
+                        "class_size": row.class_size,
                     }
-                )
+                ),
             ]
         )
 
@@ -293,11 +293,10 @@ def expand_age_class_inventory(
 
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
-        columns=["age_y", "class_size", "name"])
+        columns=["age_y", "class_size", "name"]
+    )
     result = pd.concat(
-        [
-            non_using_age_class_rows,
-            age_class_merge
-        ]).reset_index(drop=True)
+        [non_using_age_class_rows, age_class_merge]
+    ).reset_index(drop=True)
 
     return result

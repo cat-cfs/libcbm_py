@@ -270,7 +270,8 @@ def _append_spinup_debug_record(
     )
     model_state_t.insert(0, "t", iteration)
     spinup_debug.model_state = pd.concat(
-        [spinup_debug.model_state, model_state_t])
+        [spinup_debug.model_state, model_state_t]
+    )
 
     pools_t = model_ctx.get_pools_df()
     pools_t.insert(0, "t", iteration)
@@ -281,7 +282,8 @@ def _append_spinup_debug_record(
     )
     spinup_vars_t.insert(0, "t", iteration)
     spinup_debug.spinup_vars = pd.concat(
-        [spinup_debug.spinup_vars, spinup_vars_t])
+        [spinup_debug.spinup_vars, spinup_vars_t]
+    )
 
 
 def spinup(model_context, enable_debugging=False):

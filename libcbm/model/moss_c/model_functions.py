@@ -79,20 +79,25 @@ def initialize_dm(disturbance_matrix_data):
             [
                 dm_values,
                 pd.DataFrame(
-                    data=[{
-                        "disturbance_type_id": dist_type_id,
-                        "source": p.name,
-                        "sink": p.name,
-                        "proportion": 1.0
-                    } for p in identity_set]
-                )
+                    data=[
+                        {
+                            "disturbance_type_id": dist_type_id,
+                            "source": p.name,
+                            "sink": p.name,
+                            "proportion": 1.0,
+                        }
+                        for p in identity_set
+                    ]
+                ),
             ]
         )
-        mat = np.column_stack([
-            np.array([Pool[p] for p in dm_values.source], dtype=float),
-            np.array([Pool[p] for p in dm_values.sink], dtype=float),
-            dm_values.proportion.to_numpy()
-        ])
+        mat = np.column_stack(
+            [
+                np.array([Pool[p] for p in dm_values.source], dtype=float),
+                np.array([Pool[p] for p in dm_values.sink], dtype=float),
+                dm_values.proportion.to_numpy(),
+            ]
+        )
         dm_dist_type_index[dist_type_id] = len(dm_list)
         dm_list.append(mat)
 
