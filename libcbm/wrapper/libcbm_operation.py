@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Iterable
 import numpy as np
 
-from libcbm import data_helpers
 from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
@@ -14,6 +13,32 @@ from libcbm.storage.dataframe import Series
 class OperationFormat(Enum):
     MatrixList = 1
     RepeatingCoordinates = 2
+
+
+def _promote_scalar(value, size, dtype):
+    """If the specified value is scalar promote it to a numpy array filled
+    with the scalar value, and otherwise return the value.  This is purely
+    a helper function to allow scalar parameters for certain vector
+    functions
+
+    Args:
+        value (numpy.ndarray, number, or None): value to promote
+        size (int): the length of the resulting vector if promotion
+            occurs
+        dtype (object): object used to define the type of the resulting
+            vector if promotion occurs
+
+
+    Returns:
+        ndarray or None: returns either the original value, a promoted
+            scalar or None depending on the specified values
+    """
+    if value is None:
+        return None
+    elif isinstance(value, np.ndarray):
+        return value
+    else:
+        return np.full(shape=size, fill_value=value, dtype=dtype)
 
 
 class Operation:
@@ -55,7 +80,7 @@ class Operation:
         coordinates = np.array([[x[0], x[1]] for x in data], dtype=np.int32)
         values = np.column_stack(
             [
-                data_helpers.promote_scalar(x[2], size=value_len, dtype=float)
+                _promote_scalar(x[2], size=value_len, dtype=float)
                 for x in data
             ]
         )
