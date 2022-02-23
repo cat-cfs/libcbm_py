@@ -79,10 +79,7 @@ class Operation:
                 break
         coordinates = np.array([[x[0], x[1]] for x in data], dtype=np.int32)
         values = np.column_stack(
-            [
-                _promote_scalar(x[2], size=value_len, dtype=float)
-                for x in data
-            ]
+            [_promote_scalar(x[2], size=value_len, dtype=float) for x in data]
         )
 
         self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
