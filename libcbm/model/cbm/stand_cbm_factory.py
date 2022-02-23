@@ -214,44 +214,36 @@ class StandCBMFactory:
             },
         )
         inventory = DataFrame(
-            columns=[
-                "age",
-                "area",
-                "spatial_unit",
-                "afforestation_pre_type_id",
-                "land_class",
-                "historical_disturbance_type",
-                "last_pass_disturbance_type",
-                "delay",
-            ],
             data={
-                "age": inventory_df.age,
-                "area": inventory_df.area,
+                "age": inventory_df["age"],
+                "area": inventory_df["area"],
                 "spatial_unit": _safe_map(
-                    inventory_df.index,
-                    lambda x: self.defaults_ref.get_spatial_unit_id(
-                        str(inventory_df.admin_boundary.iloc[x]),
-                        str(inventory_df.eco_boundary.iloc[x]),
+                    inventory_df["spatial_unit"],
+                    lambda idx, _: self.defaults_ref.get_spatial_unit_id(
+                        str(inventory_df["admin_boundary"].at(idx)),
+                        str(inventory_df["eco_boundary"].at(idx)),
                     ),
                 ),
                 "afforestation_pre_type_id": _safe_map(
-                    inventory_df.afforestation_pre_type,
-                    lambda x: (
+                    inventory_df["afforestation_pre_type"],
+                    lambda _, value: (
                         -1
-                        if pd.is_null(x)
-                        else self.defaults_ref.get_afforestation_pre_type_id(x)
+                        if dataframe_functions.is_null(value)
+                        else self.defaults_ref.get_afforestation_pre_type_id(
+                            value
+                        )
                     ),
                 ),
                 "land_class": _safe_map(
-                    inventory_df.land_class,
+                    inventory_df["land_class"],
                     self.defaults_ref.get_land_class_id,
                 ),
                 "historical_disturbance_type": _safe_map(
-                    inventory_df.historic_disturbance_type,
-                    lambda x: (
+                    inventory_df["historic_disturbance_type"],
+                    lambda _, value: (
                         -1
-                        if pd.isnull(x)
-                        else self.defaults_ref.get_disturbance_type_id(x)
+                        if dataframe_functions.is_null(value)
+                        else self.defaults_ref.get_disturbance_type_id(value)
                     ),
                 ),
                 "last_pass_disturbance_type": _safe_map(
@@ -262,8 +254,10 @@ class StandCBMFactory:
                         else self.defaults_ref.get_disturbance_type_id(x)
                     ),
                 ),
-                "delay": inventory_df.delay,
+                "delay": inventory_df["delay"],
             },
+            back_end=inventory_df.backend_type,
+            nrows=inventory_df.n_rows,
         )
         return classifiers, inventory
 
