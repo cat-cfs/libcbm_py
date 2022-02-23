@@ -90,7 +90,7 @@ class CBM:
         routines for the cbm_vars object.
 
         Args:
-            cbm_vars (CBMVariables): spinup CBM variables with the following fields
+            cbm_vars (CBMVariables): spinup CBM variables
             reporting_func (function): a function which accepts the spinup
                 iteration spinup variables for reporting results by spinup
                 iteration. The function returns None.
@@ -164,46 +164,19 @@ class CBM:
                 self.compute_functions.compute_pools(
                     [ops[x] for x in op_schedule],
                     cbm_vars.pools,
-                    cbm_vars.state.enabled,
+                    cbm_vars.state["enabled"],
                 )
             else:
-                # zero the memory (simply using flux *= 0.0 caused a copy
-                # with a change in contiguity in some cases!)
-                if isinstance(cbm_vars.flux, pd.DataFrame):
-                    cbm_vars.flux.values[:] = 0
-                else:
-                    cbm_vars.flux[:] = 0
+                cbm_vars.flux.zero()
                 self.compute_functions.compute_flux(
                     [ops[x] for x in op_schedule],
                     [self.op_processes[x] for x in op_schedule],
                     cbm_vars.pools,
                     cbm_vars.flux,
-                    cbm_vars.state.enabled,
+                    cbm_vars.state["enabled"],
                 )
             if reporting_func:
-                reporting_func(
-                    iteration,
-                    SimpleNamespace(
-                        pools=cbm_vars.pools,
-                        flux=cbm_vars.flux,
-                        state=pd.DataFrame(
-                            data={
-                                k: v
-                                for k, v in vars(cbm_vars.state).items()
-                                if v is not None
-                            }
-                        ),
-                        classifiers=cbm_vars.classifiers,
-                        parameters=pd.DataFrame(
-                            data={
-                                k: v
-                                for k, v in vars(cbm_vars.parameters).items()
-                                if v is not None
-                            }
-                        ),
-                        inventory=cbm_vars.inventory,
-                    ),
-                )
+                reporting_func(iteration, cbm_vars)
 
             self.model_functions.end_spinup_step(
                 cbm_vars.pools, cbm_vars.state
