@@ -4,9 +4,9 @@ import pyarrow as pa
 from typing import Union
 from typing import Callable
 from libcbm.storage.backends import BackendType
+from typing import Any
 
-
-SeriesInitType = Union[int, float, list, np.ndarray, pd.Series, pa.Array]
+SeriesInitType = Union[str, int, float, list, np.ndarray, pd.Series, pa.Array]
 
 
 class Series:
@@ -30,10 +30,17 @@ class Series:
         """
         raise NotImplementedError()
 
-    def map(self, arg: Union[dict, Callable]) -> "Series":
+    def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
+        raise NotImplementedError()
+
+    def at(self, idx: int) -> Any:
+        """Gets the value at the specified sequential index"""
         raise NotImplementedError()
 
     def unique(self) -> "Series":
+        raise NotImplementedError()
+
+    def to_numpy(self) -> np.ndarray:
         raise NotImplementedError()
 
 
@@ -42,6 +49,9 @@ class NullSeries(Series):
 
     def __init__(self, name):
         super().__init__(name, None, None)
+
+    def to_numpy(self) -> np.ndarray:
+        return None
 
 
 class DataFrame:
@@ -52,7 +62,7 @@ class DataFrame:
 
     def __init__(
         self,
-        data: list[Series],
+        data: Union[dict[str, Series], list[Series]],
         nrows: int,
         back_end: BackendType = BackendType.numpy,
     ):
