@@ -59,7 +59,6 @@ def _initialize_pools(
     pools = dataframe.numeric_dataframe(
         cols=pool_codes,
         nrows=n_stands,
-        ncols=len(pool_codes),
         back_end=back_end,
     )
 
@@ -92,7 +91,6 @@ def _initialize_flux(
     return dataframe.numeric_dataframe(
         cols=flux_indicator_codes,
         nrows=n_stands,
-        ncols=len(flux_indicator_codes),
         back_end=back_end,
     )
 

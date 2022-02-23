@@ -325,7 +325,6 @@ class CBM:
         flux = dataframe.numeric_dataframe(
             cols=self.flux_indicator_codes,
             nrows=n_stands,
-            ncols=len(self.flux_indicator_codes),
         )
 
         pools_copy = cbm_vars.pools.copy()

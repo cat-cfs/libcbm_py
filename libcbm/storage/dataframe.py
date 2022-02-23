@@ -98,7 +98,10 @@ class DataFrame:
     def add_column(self, series: Series, index: int) -> None:
         raise NotImplementedError()
 
-    def as_c_contiguous_matrix(self) -> np.ndarray:
+    def to_c_contiguous_numpy_array(self) -> np.ndarray:
+        raise NotImplementedError()
+
+    def to_pandas(self) -> pd.DataFrame:
         raise NotImplementedError()
 
     def zero(self):
@@ -118,7 +121,6 @@ class DataFrame:
 def numeric_dataframe(
     cols: list[str],
     nrows: int,
-    ncols: int,
     init: float = 0.0,
     back_end: BackendType = BackendType.numpy,
 ) -> DataFrame:
