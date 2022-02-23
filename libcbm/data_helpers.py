@@ -9,39 +9,39 @@ import numpy as np
 import ctypes
 
 
-def _make_contiguous(df):
-    """Orders the underlying memory in a numpy-backed dataframe as C contiguous
-    (row major ordering)
-
-    Args:
-        df (DataFrame): a dataframe
-
-    Returns:
-        DataFrame: a C contiguous copy of the input data frame.
-    """
-
-    if not df.values.flags["C_CONTIGUOUS"]:
-        return pd.DataFrame(
-            columns=df.columns.tolist(), data=np.ascontiguousarray(df)
-        )
-    return df
-
-
-def prepare(cbm_vars: CBMVariables) -> CBMVariables:
-    """prepares, validates the specified cbm_vars object for use with low
-    level functions
-
-    Args:
-        cbm_vars (CBMVariables): the cbm variables to validate and prepare
-    """
-
-    for field in ["pools", "flux", "classifiers"]:
-        if field in cbm_vars.__dict__:
-            cbm_vars.__dict__[field] = _make_contiguous(
-                cbm_vars.__dict__[field]
-            )
-
-    return cbm_vars
+# def _make_contiguous(df):
+#     """Orders the underlying memory in a numpy-backed dataframe as C contiguous
+#     (row major ordering)
+#
+#     Args:
+#         df (DataFrame): a dataframe
+#
+#     Returns:
+#         DataFrame: a C contiguous copy of the input data frame.
+#     """
+#
+#     if not df.values.flags["C_CONTIGUOUS"]:
+#         return pd.DataFrame(
+#             columns=df.columns.tolist(), data=np.ascontiguousarray(df)
+#         )
+#     return df
+#
+#
+# def prepare(cbm_vars: CBMVariables) -> CBMVariables:
+#     """prepares, validates the specified cbm_vars object for use with low
+#     level functions
+#
+#     Args:
+#         cbm_vars (CBMVariables): the cbm variables to validate and prepare
+#     """
+#
+#     for field in ["pools", "flux", "classifiers"]:
+#         if field in cbm_vars.__dict__:
+#             cbm_vars.__dict__[field] = _make_contiguous(
+#                 cbm_vars.__dict__[field]
+#             )
+#
+#     return cbm_vars
 
 
 def unpack_ndarrays(variables):
