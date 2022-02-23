@@ -29,6 +29,6 @@ def make_boolean_series(init: bool, size: int) -> Series:
 def is_null(series: Series) -> Series:
     """
     returns an Series of True where any value in the specified series
-    is null, None, or NaN, otherwise Talse
+    is null, None, or NaN, otherwise False
     """
     raise NotImplementedError()
