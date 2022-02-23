@@ -3,8 +3,6 @@ import pandas as pd
 import pyarrow as pa
 from typing import Union
 from typing import Callable
-from typing import Any
-
 from libcbm.storage.backends import BackendType
 
 
