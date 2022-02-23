@@ -17,9 +17,9 @@ def _get_disturbance_type_map_func(disturbance_type_map):
 
 def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
     dataframe.add_column(
-        Series("identifier", np.arange(0, dataframe.n_rows), "int")
+        Series("identifier", np.arange(0, dataframe.n_rows), "int"), 0
     )
-    dataframe.add_column(Series("timestep", timestep, "int"))
+    dataframe.add_column(Series("timestep", timestep, "int"), 1)
     return dataframe
 
 
