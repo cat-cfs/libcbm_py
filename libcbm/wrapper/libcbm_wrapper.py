@@ -7,7 +7,6 @@ import numpy as np
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper import libcbm_wrapper_functions
-from libcbm import data_helpers
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
@@ -215,18 +214,17 @@ class LibCBMWrapper:
 
         """
         n_ops = len(ops)
-        nd_pools = data_helpers.get_ndarray(pools)
+        nd_pools = pools.to_c_contiguous_numpy_array()
         pool_mat = LibCBM_Matrix(nd_pools)
         ops_p = ctypes.cast(
             (ctypes.c_size_t * n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t)
         )
-
         self.handle.call(
             "LibCBM_ComputePools",
             ops_p,
             n_ops,
             pool_mat,
-            data_helpers.get_nullable_ndarray(enabled, dtype=ctypes.c_int),
+            None if enabled is None else enabled.to_numpy(),
         )
 
     def compute_flux(
@@ -274,10 +272,10 @@ class LibCBMWrapper:
         n_ops = len(ops)
         if len(op_processes) != n_ops:
             raise ValueError("ops and op_processes must be of equal length")
-        nd_pools = data_helpers.get_ndarray(pools)
+        nd_pools = pools.to_c_contiguous_numpy_array()
         pools_mat = LibCBM_Matrix(nd_pools)
 
-        nd_flux = data_helpers.get_ndarray(flux)
+        nd_flux = flux.to_c_contiguous_numpy_array()
         flux_mat = LibCBM_Matrix(nd_flux)
 
         ops_p = ctypes.cast(

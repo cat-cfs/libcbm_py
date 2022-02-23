@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import pandas as pd
 import numpy as np
-from libcbm.model.cbm import cbm_variables
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
 
