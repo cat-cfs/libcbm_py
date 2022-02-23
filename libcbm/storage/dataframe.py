@@ -3,6 +3,8 @@ import pandas as pd
 import pyarrow as pa
 from typing import Union
 from typing import Callable
+from typing import Any
+
 from libcbm.storage.backends import BackendType
 
 
@@ -23,7 +25,17 @@ class Series:
     ):
         raise NotImplementedError()
 
+    def __getitem__(self, arg: "Series") -> "Series":
+        """
+        Return a new series of the elements
+        corresponding to the true values in the specified arg
+        """
+        raise NotImplementedError()
+
     def map(self, arg: Union[dict, Callable]) -> "Series":
+        raise NotImplementedError()
+
+    def unique(self) -> "Series":
         raise NotImplementedError()
 
 
