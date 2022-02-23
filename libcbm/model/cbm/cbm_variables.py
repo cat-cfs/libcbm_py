@@ -2,11 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
-from libcbm import data_helpers
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import NullSeries
 from libcbm.storage.backends import BackendType
 
 
@@ -100,6 +99,7 @@ def _initialize_flux(
 
 def initialize_spinup_parameters(
     n_stands: int,
+    back_end: BackendType = BackendType.numpy,
     return_interval: dataframe.SeriesInitType = None,
     min_rotations: dataframe.SeriesInitType = None,
     max_rotations: dataframe.SeriesInitType = None,
@@ -122,54 +122,27 @@ def initialize_spinup_parameters(
     Args:
         n_stands (int): The length of each of the resulting variables
             vectors returned by this function.
-        return_interval (numpy.ndarray or number, optional): The number of
+        return_interval (SeriesInitType, optional): The number of
             years between historical disturbances in the spinup function.
             Defaults to None.
-        min_rotations (numpy.ndarray or number, optional): The minimum number
+        min_rotations (SeriesInitType, optional): The minimum number
             of historical rotations to perform. Defaults to None.
-        max_rotations (numpy.ndarray or number, optional): The maximum number
+        max_rotations (SeriesInitType, optional): The maximum number
             of historical rotations to perform. Defaults to None.
-        mean_annual_temp (numpy.ndarray or number, optional): The mean annual
+        mean_annual_temp (SeriesInitType, optional): The mean annual
             temperature used in the spinup procedure. Defaults to None.
 
     Returns:
         DataFrame: table of spinup paramaeters
     """
 
-    parameters = DataFrame(
-        [
-            dataframe.Series(
-                name="return_interval",
-                len=n_stands,
-                init=return_interval,
-                dtype="int32",
-            )
-        ],
-        [
-            dataframe.Series(
-                name="min_rotations",
-                len=n_stands,
-                init=min_rotations,
-                dtype="int32",
-            )
-        ],
-        [
-            dataframe.Series(
-                name="max_rotations",
-                len=n_stands,
-                init=max_rotations,
-                dtype="int32",
-            )
-        ],
-        [
-            dataframe.Series(
-                name="mean_annual_temp",
-                len=n_stands,
-                init=mean_annual_temp,
-                dtype="float64",
-            )
-        ],
-    )
+    data = [
+        Series("return_interval", return_interval, "int32"),
+        Series("min_rotations", min_rotations, "int32"),
+        Series("max_rotations", max_rotations, "int32"),
+        Series("mean_annual_temp", mean_annual_temp, "float64"),
+    ]
+    parameters = DataFrame(data, n_stands, back_end)
 
     return parameters
 
@@ -190,7 +163,7 @@ def _initialize_spinup_state_variables(
     # favouring SimpleNamespace over pd.DataFrame here because these are
     # null variables, and DataFrame does not support null columns
 
-    variables = dataframe.series_list_dataframe(
+    variables = DataFrame(
         data=[
             Series("spinup_state", 0, n_stands, "uint32"),
             Series("slow_pools", 0, n_stands, "float64"),
@@ -201,23 +174,25 @@ def _initialize_spinup_state_variables(
             Series("enabled", 0, n_stands, "int32"),
             Series("age", 0, n_stands, "np.int32"),
             Series("growth_enabled", 0, n_stands, "int32"),
+            # these variables are not used during spinup, but are needed
+            # for CBM function signatures, and will be passed as nulls
+            NullSeries("last_disturbance_type"),
+            NullSeries("time_since_last_disturbance"),
+            NullSeries("growth_multiplier"),
         ],
         nrows=n_stands,
         back_end=back_end,
     )
-    # these variables are not used during spinup, but are needed
-    # for CBM function signatures, and will be passed as nulls
-    variables.last_disturbance_type = None
-    variables.time_since_last_disturbance = None
-    variables.growth_multiplier = None
+
     return variables
 
 
-def initialize_cbm_parameters(
+def _initialize_cbm_parameters(
     n_stands: int,
-    disturbance_type: int = 0,
-    reset_age: int = -1,
-    mean_annual_temp: float = None,
+    back_end: BackendType,
+    disturbance_type: dataframe.SeriesInitType = 0,
+    reset_age: dataframe.SeriesInitType = -1,
+    mean_annual_temp: dataframe.SeriesInitType = None,
 ) -> DataFrame:
     """Create CBM parameters as a collection of variable vectors
 
@@ -233,11 +208,11 @@ def initialize_cbm_parameters(
 
     Args:
         n_stands (int): The number of stands
-        disturbance_type (numpy.ndarray or int, optional): The disturbance
+        disturbance_type (SeriesInitType, optional): The disturbance
             type id which references the disturbance types defined in the
             libCBM configuration.  By convention, a negative or 0 value
             indicates no disturbance. Defaults to 0.
-        reset_age (numpy.ndarray, int, optional): The post disturbance reset
+        reset_age (SeriesInitType, int, optional): The post disturbance reset
             age. By convention, a negative value indicates a null reset_age.
             If the null reset_age value is specified the post disturbance age
             will be determined by the following decision:
@@ -248,7 +223,7 @@ def initialize_cbm_parameters(
                   age.
 
             Defaults to -1
-        mean_annual_temp (numpy.ndarray, float, optional): A value, in degrees
+        mean_annual_temp (SeriesInitType, optional): A value, in degrees
             Celsius, that defines this timestep's mean annual temperature for
             each stand. Defaults to None.
 
@@ -257,23 +232,21 @@ def initialize_cbm_parameters(
             and 1 row per stand.
     """
 
-    data = {
-        "disturbance_type": data_helpers.promote_scalar(
-            disturbance_type, n_stands, dtype=np.int32
-        ),
-        "reset_age": data_helpers.promote_scalar(
-            reset_age, n_stands, dtype=np.int32
-        ),
-    }
+    data = [
+        Series("disturbance_type", disturbance_type, "int32"),
+        Series("reset_age", reset_age, "int32"),
+    ]
     if mean_annual_temp:
-        data["mean_annual_temp"] = data_helpers.promote_scalar(
-            mean_annual_temp, n_stands, dtype=np.float64
-        )
-    parameters = DataFrame(data=data)
+        data.append(Series("mean_annual_temp", mean_annual_temp, "float64"))
+    else:
+        data.append(NullSeries("mean_annual_temp"))
+    parameters = DataFrame(data, n_stands, back_end)
     return parameters
 
 
-def initialize_cbm_state_variables(n_stands: int) -> DataFrame:
+def _initialize_cbm_state_variables(
+    n_stands: int, back_end: BackendType
+) -> DataFrame:
     """Creates a dataframe containing state variables used by CBM
     functions at simulation runtime, with default initial values.
 
@@ -286,27 +259,29 @@ def initialize_cbm_state_variables(n_stands: int) -> DataFrame:
     Returns:
         DataFrame: a dataframe containing the CBM state variables.
     """
-    state_variables = DataFrame(
-        {
-            "last_disturbance_type": np.zeros(n_stands, dtype=np.int32),
-            "time_since_last_disturbance": np.zeros(n_stands, dtype=np.int32),
-            "time_since_land_class_change": np.ones(n_stands, dtype=np.int32)
-            * -1,
-            "growth_enabled": np.zeros(n_stands, dtype=np.int32),
-            "enabled": np.ones(n_stands, dtype=np.int32),
-            "land_class": np.zeros(n_stands, dtype=np.int32),
-            "age": np.zeros(n_stands, dtype=np.int32),
-            "growth_multiplier": np.ones(n_stands, dtype=np.float64),
-            "regeneration_delay": np.zeros(n_stands, dtype=np.int32),
-        }
-    )
+    data = [
+        Series("last_disturbance_type", 0, "int32"),
+        Series("time_since_last_disturbance", 0, "int32"),
+        Series("time_since_land_class_change", -1, "int32"),
+        Series("growth_enabled", 0, "int32"),
+        Series("enabled", 1, "int32"),
+        Series("land_class", 0, "int32"),
+        Series("age", 0, "int32"),
+        Series("growth_multiplier", 1.0, "float64"),
+        Series("regeneration_delay", 0, "int32"),
+    ]
+    state_variables = DataFrame(data, n_stands, back_end)
 
     return state_variables
 
 
-def initialize_inventory(inventory: DataFrame) -> DataFrame:
+def _initialize_inventory(
+    inventory: DataFrame, back_end: BackendType
+) -> DataFrame:
     """Check fields and types of inventory input for
     :class:`libcbm.model.cbm.cbm_model.CBM` functions
+
+    Converts inventory to specified backend
 
     Example Inventory table: (abbreviated column names)
 
@@ -320,7 +295,7 @@ def initialize_inventory(inventory: DataFrame) -> DataFrame:
 
     Args:
 
-        inventory (pandas.DataFrame): Data defining the inventory. Columns:
+        inventory (DataFrame): Data defining the inventory. Columns:
 
             - age: the inventory age at the start of CBM simulation
             - area: the inventory area
@@ -340,66 +315,41 @@ def initialize_inventory(inventory: DataFrame) -> DataFrame:
     Returns:
         DataFrame: dataframe containing the inventory data.
     """
-    return DataFrame(
-        {
-            "age": inventory.age.to_numpy(dtype=np.int32),
-            "area": inventory.area.to_numpy(dtype=np.float64),
-            "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
-            "afforestation_pre_type_id": (
-                inventory.afforestation_pre_type_id.to_numpy(dtype=np.int32)
-            ),
-            "land_class": inventory.land_class.to_numpy(dtype=np.int32),
-            "historical_disturbance_type": (
-                inventory.historical_disturbance_type.to_numpy(dtype=np.int32)
-            ),
-            "last_pass_disturbance_type": (
-                inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32)
-            ),
-            "delay": inventory.delay.to_numpy(dtype=np.int32),
-        }
-    )
+
+    data = [
+        Series("age", inventory.age, "int32"),
+        Series("area", inventory.area, "float64"),
+        Series("spatial_unit", inventory.spatial_unit, "int32"),
+        Series(
+            "afforestation_pre_type_id",
+            inventory.afforestation_pre_type_id,
+            "int32",
+        ),
+        Series("land_class", inventory.land_class, "int32"),
+        Series(
+            "historical_disturbance_type",
+            inventory.historical_disturbance_type,
+            "int32",
+        ),
+        Series(
+            "last_pass_disturbance_type",
+            inventory.last_pass_disturbance_type,
+            "int32",
+        ),
+        Series("delay", inventory.delay, "int32"),
+    ]
+    return DataFrame(data, inventory.n_rows, back_end)
 
 
-def initialize_classifiers(classifiers: DataFrame) -> DataFrame:
+def _initialize_classifiers(
+    classifiers: DataFrame, back_end: BackendType
+) -> DataFrame:
     """converts classifiers table to required type"""
-    return DataFrame(
-        data=classifiers.to_numpy(dtype=np.int32), columns=list(classifiers)
-    )
-
-
-def _make_contiguous(df):
-    """Orders the underlying memory in a numpy-backed dataframe as C contiguous
-    (row major ordering)
-
-    Args:
-        df (DataFrame): a dataframe
-
-    Returns:
-        DataFrame: a C contiguous copy of the input data frame.
-    """
-
-    if not df.values.flags["C_CONTIGUOUS"]:
-        return pd.DataFrame(
-            columns=df.columns.tolist(), data=np.ascontiguousarray(df)
-        )
-    return df
-
-
-def prepare(cbm_vars: CBMVariables) -> CBMVariables:
-    """prepares, validates the specified cbm_vars object for use with low
-    level functions
-
-    Args:
-        cbm_vars (CBMVariables): the cbm variables to validate and prepare
-    """
-
-    for field in ["pools", "flux", "classifiers"]:
-        if field in cbm_vars.__dict__:
-            cbm_vars.__dict__[field] = _make_contiguous(
-                cbm_vars.__dict__[field]
-            )
-
-    return cbm_vars
+    data = [
+        Series(name, classifiers[name], "int32")
+        for name in classifiers.columns
+    ]
+    return DataFrame(data, classifiers.n_rows, back_end)
 
 
 def initialize_spinup_variables(
@@ -416,7 +366,7 @@ def initialize_spinup_variables(
     spinup_vars.pools = cbm_vars.pools
     spinup_vars.flux = cbm_vars.flux if include_flux else None
     spinup_vars.parameters = spinup_params
-    spinup_vars.state = initialize_spinup_state_variables(n_stands)
+    spinup_vars.state = _initialize_spinup_state_variables(n_stands)
     spinup_vars.inventory = cbm_vars.inventory
     spinup_vars.classifiers = cbm_vars.classifiers
     return spinup_vars
@@ -448,10 +398,10 @@ def initialize_simulation_variables(
     """
     n_stands = inventory.shape[0]
     cbm_vars = CBMVariables()
-    cbm_vars.pools = initialize_pools(n_stands, pool_codes)
-    cbm_vars.flux = initialize_flux(n_stands, flux_indicator_codes)
-    cbm_vars.parameters = initialize_cbm_parameters(n_stands)
-    cbm_vars.state = initialize_cbm_state_variables(n_stands)
-    cbm_vars.inventory = initialize_inventory(inventory)
-    cbm_vars.classifiers = initialize_classifiers(classifiers)
-    return prepare(cbm_vars)
+    cbm_vars.pools = _initialize_pools(n_stands, pool_codes)
+    cbm_vars.flux = _initialize_flux(n_stands, flux_indicator_codes)
+    cbm_vars.parameters = _initialize_cbm_parameters(n_stands)
+    cbm_vars.state = _initialize_cbm_state_variables(n_stands)
+    cbm_vars.inventory = _initialize_inventory(inventory)
+    cbm_vars.classifiers = _initialize_classifiers(classifiers)
+    return cbm_vars
