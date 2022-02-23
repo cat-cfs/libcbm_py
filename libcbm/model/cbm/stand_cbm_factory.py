@@ -25,7 +25,7 @@ def _safe_map(series: Series, map: Union[dict, Callable]):
         ValueError: at least one value in the mapped series was null
 
     Returns:
-        pd.Series: The mapped series (see :py:func:`pandas.Series.map`)
+        Series: The mapped series
     """
     out_series = series.map(map)
     null_values = dataframe_functions.is_null(out_series)
@@ -147,8 +147,8 @@ class StandCBMFactory:
         return self._classifier_idx["classifier_value_names"].copy()
 
     def _get_classifier_value_ids(
-        self, classifier_name, classifier_value_name_series
-    ):
+        self, classifier_name: str, classifier_value_name_series: Series
+    ) -> Series:
         classifier_value_name_map = self._classifier_idx[
             "classifier_value_ids"
         ][classifier_name]
