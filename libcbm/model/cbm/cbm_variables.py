@@ -116,7 +116,7 @@ def initialize_spinup_parameters(
     per-stand basis.
 
     If a scalar value is provided to any of the optional parameters, that
-    value will be promoted (see: :py:func:`promote_scalar`) in the resulting
+    value will be promoted to a Series in the resulting
     vector.
 
     Args:
