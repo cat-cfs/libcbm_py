@@ -54,7 +54,7 @@ def _initialize_pools(
         back_end (BackendType): the storage type for the pools
 
     Returns:
-        pandas.DataFrame: A dataframe for storing CBM pools
+        DataFrame: A dataframe for storing CBM pools
     """
     pools = dataframe.numeric_dataframe(
         cols=pool_codes,
@@ -87,7 +87,7 @@ def _initialize_flux(
         back_end (BackendType): the storage type for the pools
 
     Returns:
-        pandas.DataFrame: A dataframe for storing CBM flux indicators
+        DataFrame: A dataframe for storing CBM flux indicators
     """
     return dataframe.numeric_dataframe(
         cols=flux_indicator_codes,
