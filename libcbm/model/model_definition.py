@@ -1,4 +1,5 @@
 import json
+import numpy as np
 from typing import ContextManager
 from contextlib import contextmanager
 from libcbm.wrapper import libcbm_operation
@@ -6,19 +7,32 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
 from libcbm.storage.dataframe import Series
+from libcbm.storage import dataframe
+from libcbm.storage.backends import BackendType
+from libcbm.storage import dataframe_functions
 
 
 class ModelVars:
-    def __init__(self, size: int, n_pools: int, n_flux: int):
-        self.pools = np.zeros(shape=(int(size), n_pools))
-        self.flux = np.zeros(shape=(int(size), n_flux))
+    def __init__(
+        self,
+        size: int,
+        pool_names: list[str],
+        flux_names: list[str],
+        backend_type: BackendType = None,
+    ):
+        self.pools = dataframe.numeric_dataframe(
+            pool_names, size, 0, backend_type
+        )
+        self.flux = dataframe.numeric_dataframe(
+            flux_names, size, 0, backend_type
+        )
 
 
 class ModelHandle:
     def __init__(
         self,
         wrapper: LibCBMWrapper,
-        pools: list[dict],
+        pools: dict[str, int],
         flux_indicators: list[dict],
     ):
         self.wrapper = wrapper
@@ -26,7 +40,11 @@ class ModelHandle:
         self.flux_indicators = flux_indicators
 
     def allocate_model_vars(self, n: int):
-        return ModelVars(n, len(self.pools), len(self.flux_indicators))
+        return ModelVars(
+            n,
+            list(self.pools.keys()),
+            [x["name"] for x in self.flux_indicators],
+        )
 
     def _matrix_rc(self, value: list) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
@@ -70,8 +88,7 @@ class ModelHandle:
         op_processes: list[int],
         enabled: Series,
     ) -> None:
-        model_vars.pools = np.ascontiguousarray(model_vars.pools)
-        model_vars.flux = np.ascontiguousarray(model_vars.flux)
+
         libcbm_operation.compute(
             dll=self.wrapper,
             pools=model_vars.pools,
@@ -90,32 +107,22 @@ class ModelHandle:
 class ModelOutputProcessor:
     def __init__(self, model_handle: ModelHandle):
         self.model_handle = model_handle
-        self.pools = pd.DataFrame()
-        self.flux = pd.DataFrame()
+        self.pools = None
+        self.flux = None
 
     def append_results(self, t: int, model_vars: ModelVars):
-        pools_t = pd.DataFrame(
-            columns=self.model_handle.pools.keys(),
-            data=model_vars.pools.copy(),
-        )
-        pools_t.insert(0, "timestep", t)
-        pools_t.reset_index(inplace=True)
-        self.pools = self.pools.append(pools_t)
-        self.pools.reset_index(inplace=True, drop=True)
+        pools_t = model_vars.pools.copy()
+        pools_t.add_column(Series("timestep", t, "int"), 0)
+        dataframe_functions.concat_data_frame([self.pools, pools_t])
 
-        flux_t = pd.DataFrame(
-            columns=[x["name"] for x in self.model_handle.flux_indicators],
-            data=model_vars.flux.copy(),
-        )
-        flux_t.insert(0, "timestep", t)
-        flux_t.reset_index(inplace=True)
-        self.flux = self.flux.append(flux_t)
-        self.flux.reset_index(inplace=True, drop=True)
+        flux_t = model_vars.flux.copy()
+        flux_t.add_column(Series("timestep", t, "int"), 0)
+        dataframe_functions.concat_data_frame([self.flux, flux_t])
 
 
 @contextmanager
 def create_model(
-    pools: list[dict], flux_indicators: list[dict]
+    pools: dict[str, int], flux_indicators: list[dict]
 ) -> ContextManager[ModelHandle]:
 
     libcbm_config = {
