@@ -4,122 +4,10 @@
 
 
 from typing import Callable
-from libcbm import data_helpers
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.cbm_model import CBM
-
-
-def create_in_memory_reporting_func(
-    density=False, classifier_map=None, disturbance_type_map=None
-):
-    """Create storage and a function for complete simulation results.  The
-    function return value can be passed to :py:func:`simulate` to track
-    simulation results.
-
-    Args:
-        density (bool, optional): if set to true pool and flux indicators will
-            be computed as area densities (tonnes C/ha). By default, pool and
-            flux outputs are computed as mass (tonnes C) based on the area of
-            each stand. Defaults to False.
-        classifier_map (dict, optional): a classifier map for subsituting the
-            internal classifier id values with classifier value names.
-            If specified, the names associated with each id in the map are the
-            values in the  the classifiers result DataFrame  If set to None the
-            id values will be returned.
-        disturbance_type_map (dict, optional): a disturbance type map for
-            subsituting the internally defined disturbance type id with names
-            or other ids in the parameters and state tables.  If set to none no
-            substitution will occur.
-
-    Returns:
-            tuple: a pair of values:
-
-                1. types.SimpleNameSpace: an object with properties:
-
-                    - pool (pandas.DataFrame) pool results storage
-                    - flux (pandas.DataFrame) flux results storage
-                    - state (pandas.DataFrame) state results storage
-                    - classifiers (pandas.DataFrame) classifiers results
-                        storage
-                    - parameters (pandas.DataFrame) cbm params storage
-                    - area (pandas.DataFrame) area storage
-
-                2. func: a function for appending to the above results
-                    DataFrames for each timestep
-    """
-
-    results = SimpleNamespace()
-    results.pools = None
-    results.flux = None
-    results.state = None
-    results.classifiers = None
-    results.parameters = None
-    results.area = None
-
-    def append_simulation_result(timestep, cbm_vars):
-        timestep_pools = (
-            cbm_vars.pools
-            if density
-            else cbm_vars.pools.multiply(cbm_vars.inventory.area, axis=0)
-        )
-        results.pools = data_helpers.append_simulation_result(
-            results.pools, timestep_pools, timestep
-        )
-        if cbm_vars.flux is not None and len(cbm_vars.flux.index) > 0:
-            timestep_flux = (
-                cbm_vars.flux
-                if density
-                else cbm_vars.flux.multiply(cbm_vars.inventory.area, axis=0)
-            )
-            results.flux = data_helpers.append_simulation_result(
-                results.flux, timestep_flux, timestep
-            )
-
-        def disturbance_type_map_func(dist_id):
-            if dist_id <= 0:
-                return dist_id
-            else:
-                return disturbance_type_map[dist_id]
-
-        state = cbm_vars.state.copy()
-        params = cbm_vars.parameters.copy()
-        if disturbance_type_map:
-            state.last_disturbance_type = (
-                cbm_vars.state.last_disturbance_type.apply(
-                    disturbance_type_map_func
-                )
-            )
-
-            params.disturbance_type = (
-                cbm_vars.parameters.disturbance_type.apply(
-                    disturbance_type_map_func
-                )
-            )
-
-        results.state = data_helpers.append_simulation_result(
-            results.state, state, timestep
-        )
-
-        if classifier_map is None:
-            results.classifiers = data_helpers.append_simulation_result(
-                results.classifiers, cbm_vars.classifiers, timestep
-            )
-        else:
-            results.classifiers = data_helpers.append_simulation_result(
-                results.classifiers,
-                cbm_vars.classifiers.applymap(classifier_map.__getitem__),
-                timestep,
-            )
-        results.area = data_helpers.append_simulation_result(
-            results.area, cbm_vars.inventory.loc[:, ["area"]], timestep
-        )
-        results.parameters = data_helpers.append_simulation_result(
-            results.parameters, params, timestep
-        )
-
-    return results, append_simulation_result
 
 
 def simulate(
@@ -177,8 +65,6 @@ def simulate(
 
         if pre_dynamics_func:
             cbm_vars = pre_dynamics_func(time_step, cbm_vars)
-            # make memory contiguous in case pre_dynamics_func messed things up
-            cbm_vars = cbm_variables.prepare(cbm_vars)
 
         cbm_vars = cbm.step(cbm_vars)
         reporting_func(time_step, cbm_vars)
