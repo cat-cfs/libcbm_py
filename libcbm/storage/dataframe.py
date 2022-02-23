@@ -6,11 +6,15 @@ from typing import Callable
 from libcbm.storage.backends import BackendType
 
 
-class SeriesInitType(Union[int, float, list, np.ndarray, pd.Series, pa.Array]):
-    pass
+SeriesInitType = Union[int, float, list, np.ndarray, pd.Series, pa.Array]
 
 
 class Series:
+    """
+    Series is a wrapper for one of several underlying storage types which
+    presents a limited interface for internal usage by libcbm.
+    """
+
     def __init__(
         self,
         name: str,
@@ -23,20 +27,72 @@ class Series:
         raise NotImplementedError()
 
 
+class NullSeries(Series):
+    """represents a series with no elements"""
+
+    def __init__(self, name):
+        super().__init__(name, None, None)
+
+
 class DataFrame:
-    def __init__(self, data):
+    """
+    DataFrame is a wrapper for one of several underlying storage types which
+    presents a limited interface for internal usage by libcbm
+    """
+
+    def __init__(
+        self,
+        data: list[Series],
+        nrows: int,
+        back_end: BackendType = BackendType.numpy,
+    ):
         raise NotImplementedError()
 
-    def __getitem__(self) -> Series:
-        pass
+    def __getitem__(self, col_name) -> Series:
+        raise NotImplementedError()
+
+    @property
+    def n_rows(self) -> int:
+        raise NotImplementedError()
 
     @property
     def columns(self) -> list[str]:
-        pass
+        raise NotImplementedError()
 
     @property
-    def back_end(self) -> BackendType:
-        pass
+    def backend_type(self) -> BackendType:
+        raise NotImplementedError()
+
+    def copy() -> "DataFrame":
+        """produce a new in-memory copy of this dataframe"""
+        raise NotImplementedError()
+
+    def multiply(self, series: Series) -> "DataFrame":
+        """
+        Multiply this dataframe elementwise by the specified series along the
+        row axis. An error is raised if the series length is not the same as
+        the number of rows in this dataframe.  Returns new DataFrame
+        """
+        raise NotImplementedError()
+
+    def add_column(self, series: Series, index: int) -> None:
+        raise NotImplementedError()
+
+    def as_c_contiguous_matrix(self) -> np.ndarray:
+        raise NotImplementedError()
+
+    def zero(self):
+        """
+        Set all values in this dataframe to zero
+        """
+        raise NotImplementedError()
+
+    def map(self, arg: Union[dict, Callable]) -> "DataFrame":
+        """Apply the specified mapping arg on every element of this dataframe
+        to project a new dataframe with updated values. The results has the
+        same number of rows, columns and same column names
+        """
+        raise NotImplementedError()
 
 
 def numeric_dataframe(
@@ -46,12 +102,4 @@ def numeric_dataframe(
     init: float = 0.0,
     back_end: BackendType = BackendType.numpy,
 ) -> DataFrame:
-    pass
-
-
-def series_list_dataframe(
-    data: list[Series],
-    nrows: int,
-    back_end: BackendType = BackendType.numpy,
-) -> DataFrame:
-    pass
+    raise NotImplementedError()
