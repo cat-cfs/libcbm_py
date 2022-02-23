@@ -2,14 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from types import SimpleNamespace
+
 from typing import Callable
 from typing import Union
-from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe
 
 
 def get_op_names() -> list[str]:
@@ -104,7 +105,7 @@ class CBM:
             # will not be visible
             raise ValueError("flux specified without reporting_func")
 
-        n_stands = cbm_vars.pools.shape[0]
+        n_stands = cbm_vars.pools.n_rows
 
         ops = {
             x: self.compute_functions.allocate_op(n_stands)
@@ -233,12 +234,8 @@ class CBM:
         Returns:
             CBMVariables: cbm_vars
         """
-        # zero the memory (simply using flux *= 0.0 caused a copy
-        # with a change in contiguity in some cases!)
-        if isinstance(cbm_vars.flux, pd.DataFrame):
-            cbm_vars.flux.values[:] = 0
-        else:
-            cbm_vars.flux[:] = 0
+
+        cbm_vars.flux.zero()
 
         self.model_functions.advance_stand_state(
             cbm_vars.classifiers,
@@ -295,34 +292,43 @@ class CBM:
         disturbance_op_process_id = get_op_processes()["disturbance"]
 
         # The number of stands is the number of rows in the inventory table.
-        n_stands = cbm_vars.inventory.shape[0]
+        n_stands = cbm_vars.inventory.n_rows
 
         # allocate space for computing the Carbon flows
         disturbance_op = self.compute_functions.allocate_op(n_stands)
 
-        if disturbance_type is not None:
-            if np.ndim(disturbance_type) == 0:
-                # set the disturbance type for all records
-                disturbance_type = np.full(
-                    n_stands, disturbance_type, dtype=np.int32
-                )
-            # else: just use the provided array data
+        if not isinstance(disturbance_type, Series):
+            # set the disturbance type for all records
+            parameters = DataFrame(
+                [
+                    Series("disturbance_type", disturbance_type, "int32"),
+                    cbm_vars.parameters.n_rows,
+                    cbm_vars.parameters.backend_type,
+                ]
+            )
         else:
-            disturbance_type = cbm_vars.parameters.disturbance_type
+            # else: just use the provided array data
+            parameters = DataFrame(
+                [
+                    cbm_vars.parameters["disturbance_type"],
+                    cbm_vars.parameters.n_rows,
+                    cbm_vars.parameters.backend_type,
+                ]
+            )
 
         self.model_functions.get_disturbance_ops(
             disturbance_op,
             cbm_vars.inventory,
-            SimpleNamespace(disturbance_type=disturbance_type),
+            parameters,
         )
 
-        flux = cbm_variables.initialize_flux(
-            n_stands, self.flux_indicator_codes
+        flux = dataframe.numeric_dataframe(
+            cols=self.flux_indicator_codes,
+            nrows=n_stands,
+            ncols=len(self.flux_indicator_codes),
         )
 
-        pools_copy = np.array(
-            cbm_vars.pools, copy=True, order="C", dtype=np.float64
-        )
+        pools_copy = cbm_vars.pools.copy()
 
         # compute the flux based on the specified disturbance type
         self.compute_functions.compute_flux(
@@ -331,22 +337,30 @@ class CBM:
             pools_copy,
             flux,
             enabled=(
-                eligible.astype(np.int32) if eligible is not None else None
+                Series("eligible", eligible, "int32")
+                if eligible is not None
+                else None
             ),
         )
 
         self.compute_functions.free_op(disturbance_op)
         # computes C harvested by applying the disturbance matrix to the
         # specified carbon pools
-        df = pd.DataFrame(
-            data={
-                "DisturbanceSoftProduction": flux["DisturbanceSoftProduction"],
-                "DisturbanceHardProduction": flux["DisturbanceHardProduction"],
-                "DisturbanceDOMProduction": flux["DisturbanceDOMProduction"],
-                "Total": flux["DisturbanceSoftProduction"]
-                + flux["DisturbanceHardProduction"]
-                + flux["DisturbanceDOMProduction"],
-            }
+        df = DataFrame(
+            data=[
+                flux["DisturbanceSoftProduction"],
+                flux["DisturbanceHardProduction"],
+                flux["DisturbanceDOMProduction"],
+                Series(
+                    "Total",
+                    (
+                        flux["DisturbanceSoftProduction"]
+                        + flux["DisturbanceHardProduction"]
+                        + flux["DisturbanceDOMProduction"],
+                    ),
+                    "float64",
+                ),
+            ]
         )
         if density:
             return df
