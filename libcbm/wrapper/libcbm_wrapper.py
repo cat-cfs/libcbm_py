@@ -224,7 +224,7 @@ class LibCBMWrapper:
             ops_p,
             n_ops,
             pool_mat,
-            None if enabled is None else enabled.to_numpy(),
+            None if enabled is None else enabled.to_numpy_ptr(),
         )
 
     def compute_flux(
@@ -293,5 +293,5 @@ class LibCBMWrapper:
             n_ops,
             pools_mat,
             flux_mat,
-            None if enabled is None else enabled.to_numpy(),
+            None if enabled is None else enabled.to_numpy_ptr(),
         )
