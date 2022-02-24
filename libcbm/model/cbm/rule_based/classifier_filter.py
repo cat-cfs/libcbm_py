@@ -78,14 +78,15 @@ class ClassifierFilter:
 
         """
 
-        if self.n_classifiers != classifier_values.shape[
-            1
-        ] or self.n_classifiers != len(classifier_set):
+        if (
+            self.n_classifiers != classifier_values.n_cols
+            or self.n_classifiers != len(classifier_set)
+        ):
             raise ValueError(
                 "mismatch in number of classifiers: "
                 f"classifier_set {len(classifier_set)}, "
                 f"classifiers_config: {self.n_classifiers}, "
-                f"classifier value columns {classifier_values.shape[1]}"
+                f"classifier value columns {classifier_values.n_cols}"
             )
 
         expression_tokens = []

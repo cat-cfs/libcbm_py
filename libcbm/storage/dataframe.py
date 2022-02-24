@@ -80,6 +80,10 @@ class DataFrame:
         raise NotImplementedError()
 
     @property
+    def n_cols(self) -> int:
+        raise NotImplementedError()
+
+    @property
     def columns(self) -> list[str]:
         raise NotImplementedError()
 
