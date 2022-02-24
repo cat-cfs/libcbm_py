@@ -285,9 +285,6 @@ class LibCBMWrapper:
             (ctypes.c_size_t * n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t),
         )
-        enabled = data_helpers.get_nullable_ndarray(
-            enabled, dtype=ctypes.c_int
-        )
 
         self.handle.call(
             "LibCBM_ComputeFlux",
@@ -296,5 +293,5 @@ class LibCBMWrapper:
             n_ops,
             pools_mat,
             flux_mat,
-            enabled,
+            None if enabled is None else enabled.to_numpy(),
         )
