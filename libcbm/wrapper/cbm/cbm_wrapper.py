@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import ctypes
-from libcbm import data_helpers
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
@@ -114,7 +113,7 @@ class CBMWrapper(LibCBM_ctypes):
         self.handle.call(
             "LibCBM_AdvanceStandState",
             inventory.n_rows,
-            classifiers.to_c_contiguous_numpy_array(),
+            LibCBM_Matrix_Int(classifiers.to_c_contiguous_numpy_array()),
             inventory["spatial_unit"].to_numpy(),
             parameters["disturbance_type"].to_numpy(),
             parameters["reset_age"].to_numpy(),
@@ -179,7 +178,7 @@ class CBMWrapper(LibCBM_ctypes):
             inventory["age"].to_numpy(),
             inventory["spatial_unit"].to_numpy(),
             inventory["afforestation_pre_type_id"].to_numpy(),
-            pools.to_c_contiguous_numpy_array(),
+            LibCBM_Matrix(pools.to_c_contiguous_numpy_array()),
             state_variables["last_disturbance_type"].to_numpy(),
             state_variables["time_since_last_disturbance"].to_numpy(),
             state_variables["time_since_land_class_change"].to_numpy(),
@@ -220,7 +219,8 @@ class CBMWrapper(LibCBM_ctypes):
         )
         spatial_unit = (
             inventory["spatial_unit"].to_numpy_ptr()
-            if include_spatial_unit else None
+            if include_spatial_unit
+            else None
         )
 
         n_finished = self.handle.call(
@@ -253,14 +253,12 @@ class CBMWrapper(LibCBM_ctypes):
         Args:
             pools (DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are used to
-                compute a criteria for exiting the spinup routing.  The
+                compute a criteria for exiting the spinup routine.  The
                 biomass pools are also zeroed for historical and last pass
                 disturbances.
             variables (DataFrame): Spinup working variables.  Defines all
                 non-pool simulation state during spinup.  Set to an
-                end-of-timestep state by this function. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_spinup_variables`
-                for a compatible definition
+                end-of-timestep state by this function.
 
         """
         self.handle.call(
@@ -268,7 +266,7 @@ class CBMWrapper(LibCBM_ctypes):
             variables.n_rows,
             variables["spinup_state"].to_numpy(),
             variables["disturbance_type"].to_numpy(),
-            pools.to_c_contiguous_numpy_array(),
+            LibCBM_Matrix(pools.to_c_contiguous_numpy_array()),
             variables["age"].to_numpy(),
             variables["slow_pools"].to_numpy(),
             variables["growth_enabled"].to_numpy(),
@@ -306,41 +304,21 @@ class CBMWrapper(LibCBM_ctypes):
                 define all non-pool state in the CBM model.  This function
                 call will not alter this parameter.
         """
-        n = pools.shape[0]
-        poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
 
-        opIds = (ctypes.c_size_t * (2))(*[growth_op, overmature_decline_op])
-        i = data_helpers.unpack_ndarrays(inventory)
-        classifiers_mat = LibCBM_Matrix_Int(
-            data_helpers.get_ndarray(classifiers)
-        )
-        v = data_helpers.unpack_ndarrays(state_variables)
-
-        last_disturbance_type = data_helpers.get_nullable_ndarray(
-            v.last_disturbance_type, dtype=ctypes.c_int
-        )
-        time_since_last_disturbance = data_helpers.get_nullable_ndarray(
-            v.time_since_last_disturbance, dtype=ctypes.c_int
-        )
-        growth_multiplier = data_helpers.get_nullable_ndarray(
-            v.growth_multiplier, dtype=ctypes.c_double
-        )
-        growth_enabled = data_helpers.get_nullable_ndarray(
-            v.growth_enabled, dtype=ctypes.c_int
-        )
+        op_ids = (ctypes.c_size_t * (2))(*[growth_op, overmature_decline_op])
 
         self.handle.call(
             "LibCBM_GetMerchVolumeGrowthOps",
-            opIds,
-            n,
-            classifiers_mat,
-            poolMat,
-            v.age,
-            i.spatial_unit,
-            last_disturbance_type,
-            time_since_last_disturbance,
-            growth_multiplier,
-            growth_enabled,
+            op_ids,
+            inventory.n_rows,
+            LibCBM_Matrix_Int(classifiers.to_c_contiguous_numpy_array()),
+            LibCBM_Matrix(pools.to_c_contiguous_numpy_array()),
+            state_variables["age"].to_numpy(),
+            inventory["spatial_unit"].to_numpy(),
+            state_variables["last_disturbance_type"].to_numpy_ptr(),
+            state_variables["time_since_last_disturbance"].to_numpy_ptr(),
+            state_variables["growth_multiplier"].to_numpy_ptr(),
+            state_variables["growth_enabled"].to_numpy_ptr(),
         )
 
     def get_turnover_ops(
@@ -364,13 +342,16 @@ class CBMWrapper(LibCBM_ctypes):
                 passed to library initialization. Will not be modified by this
                 function.
         """
-        i = data_helpers.unpack_ndarrays(inventory)
-        n = i.spatial_unit.shape[0]
-        opIds = (ctypes.c_size_t * (2))(
+        op_ids = (ctypes.c_size_t * (2))(
             *[biomass_turnover_op, snag_turnover_op]
         )
 
-        self.handle.call("LibCBM_GetTurnoverOps", opIds, n, i.spatial_unit)
+        self.handle.call(
+            "LibCBM_GetTurnoverOps",
+            op_ids,
+            inventory.n_rows,
+            inventory["spatial_unit"].to_numpy(),
+        )
 
     def get_decay_ops(
         self,
@@ -396,9 +377,7 @@ class CBMWrapper(LibCBM_ctypes):
             inventory (object): CBM inventory data. Used by this function to
                 find correct parameters from the set of decay parameters
                 passed to library initialization. Will not be modified by this
-                function. See:
-                :py:func:`libcbm.model.cbm_variables.initialize_inventory`
-                for a compatible definition
+                function.
             parameters (object): parameters for this timestep
             historical_mean_annual_temp (bool, optional): If set to true, the
                 historical default mean annual temperature is used. This is
@@ -407,21 +386,12 @@ class CBMWrapper(LibCBM_ctypes):
                 be ignored, and the explicit mean annual temp will be used.
                 Defaults to False.
         """
-        i = data_helpers.unpack_ndarrays(inventory)
-        p = data_helpers.unpack_ndarrays(parameters)
-        n = i.spatial_unit.shape[0]
-        opIds = (ctypes.c_size_t * (3))(
+
+        op_ids = (ctypes.c_size_t * (3))(
             *[dom_decay_op, slow_decay_op, slow_mixing_op]
         )
-        spatial_unit = data_helpers.get_nullable_ndarray(
-            i.spatial_unit, dtype=ctypes.c_int
-        )
 
-        mean_annual_temp = (
-            data_helpers.get_nullable_ndarray(p.mean_annual_temp)
-            if "mean_annual_temp" in p.__dict__
-            else None
-        )
+        mean_annual_temp = parameters["mean_annual_temp"].to_numpy_ptr()
 
         if mean_annual_temp is not None:
             # If the mean annual temperature is specified, then omit the
@@ -429,11 +399,13 @@ class CBMWrapper(LibCBM_ctypes):
             # routine is to fetch the mean annual temperature value from
             # the CBM defaults database
             spatial_unit = None
+        else:
+            spatial_unit = inventory["spatial_unit"].to_numpy_ptr()
 
         self.handle.call(
             "LibCBM_GetDecayOps",
-            opIds,
-            n,
+            op_ids,
+            inventory.n_rows,
             spatial_unit,
             historical_mean_annual_temp,
             mean_annual_temp,
@@ -456,17 +428,12 @@ class CBMWrapper(LibCBM_ctypes):
                 disturbance type id to fetch the appropriate disturbance
                 matrix.
         """
-        spatial_unit = data_helpers.unpack_ndarrays(inventory).spatial_unit
-        disturbance_type = data_helpers.unpack_ndarrays(
-            parameters
-        ).disturbance_type
-        n = spatial_unit.shape[0]
-        opIds = (ctypes.c_size_t * (1))(*[disturbance_op])
+        op_ids = (ctypes.c_size_t * (1))(*[disturbance_op])
 
         self.handle.call(
             "LibCBM_GetDisturbanceOps",
-            opIds,
-            n,
-            spatial_unit,
-            disturbance_type,
+            op_ids,
+            inventory.n_rows,
+            inventory["spatial_unit"].to_numpy(),
+            parameters["disturbance_type"].to_numpy(),
         )
