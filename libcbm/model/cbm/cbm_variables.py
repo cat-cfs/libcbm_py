@@ -138,7 +138,8 @@ def initialize_spinup_parameters(
         if init is None:
             return NullSeries(name)
         else:
-            return Series(name, init, type),
+            return Series(name, init, type)
+
     data = [
         make_series("return_interval", return_interval, "int32"),
         make_series("min_rotations", min_rotations, "int32"),
