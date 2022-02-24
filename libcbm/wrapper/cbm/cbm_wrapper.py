@@ -110,30 +110,22 @@ class CBMWrapper(LibCBM_ctypes):
             parameters (DataFrame): Read-only parameters used in a CBM
                 timestep.
         """
-        i = data_helpers.unpack_ndarrays(inventory)
-        v = data_helpers.unpack_ndarrays(state_variables)
-        p = data_helpers.unpack_ndarrays(parameters)
-
-        n = i.age.shape[0]
-        classifiersMat = LibCBM_Matrix_Int(
-            data_helpers.get_ndarray(classifiers)
-        )
 
         self.handle.call(
             "LibCBM_AdvanceStandState",
-            n,
-            classifiersMat,
-            i.spatial_unit,
-            p.disturbance_type,
-            p.reset_age,
-            v.last_disturbance_type,
-            v.time_since_last_disturbance,
-            v.time_since_land_class_change,
-            v.growth_enabled,
-            v.enabled,
-            v.land_class,
-            v.regeneration_delay,
-            v.age,
+            inventory.n_rows,
+            classifiers.to_c_contiguous_numpy_array(),
+            inventory["spatial_unit"].to_numpy(),
+            parameters["disturbance_type"].to_numpy(),
+            parameters["reset_age"].to_numpy(),
+            state_variables["last_disturbance_type"].to_numpy(),
+            state_variables["time_since_last_disturbance"].to_numpy(),
+            state_variables["time_since_land_class_change"].to_numpy(),
+            state_variables["growth_enabled"].to_numpy(),
+            state_variables["enabled"].to_numpy(),
+            state_variables["land_class"].to_numpy(),
+            state_variables["regeneration_delay"].to_numpy(),
+            state_variables["age"].to_numpy(),
         )
 
     def end_step(self, state_variables: DataFrame):
@@ -145,17 +137,16 @@ class CBMWrapper(LibCBM_ctypes):
                 function call will alter this variable with end-of-step
                 changes.
         """
-        v = data_helpers.unpack_ndarrays(state_variables)
-        n = v.age.shape[0]
+
         self.handle.call(
             "LibCBM_EndStep",
-            n,
-            v.enabled,
-            v.growth_enabled,
-            v.age,
-            v.regeneration_delay,
-            v.time_since_last_disturbance,
-            v.time_since_land_class_change,
+            state_variables.n_rows,
+            state_variables["enabled"],
+            state_variables["growth_enabled"],
+            state_variables["age"],
+            state_variables["regeneration_delay"],
+            state_variables["time_since_last_disturbance"],
+            state_variables["time_since_land_class_change"],
         )
 
     def initialize_land_state(
@@ -180,27 +171,22 @@ class CBMWrapper(LibCBM_ctypes):
                 values.
 
         """
-        i = data_helpers.unpack_ndarrays(inventory)
-        v = data_helpers.unpack_ndarrays(state_variables)
-        n = i.last_pass_disturbance_type.shape[0]
-        poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
-
         self.handle.call(
             "LibCBM_InitializeLandState",
-            n,
-            i.last_pass_disturbance_type,
-            i.delay,
-            i.age,
-            i.spatial_unit,
-            i.afforestation_pre_type_id,
-            poolMat,
-            v.last_disturbance_type,
-            v.time_since_last_disturbance,
-            v.time_since_land_class_change,
-            v.growth_enabled,
-            v.enabled,
-            v.land_class,
-            v.age,
+            inventory.n_rows,
+            inventory["last_pass_disturbance_type"].to_numpy(),
+            inventory["delay"].to_numpy(),
+            inventory["age"].to_numpy(),
+            inventory["spatial_unit"].to_numpy(),
+            inventory["afforestation_pre_type_id"].to_numpy(),
+            pools.to_c_contiguous_numpy_array(),
+            state_variables["last_disturbance_type"].to_numpy(),
+            state_variables["time_since_last_disturbance"].to_numpy(),
+            state_variables["time_since_land_class_change"].to_numpy(),
+            state_variables["growth_enabled"].to_numpy(),
+            state_variables["enabled"].to_numpy(),
+            state_variables["land_class"].to_numpy(),
+            state_variables["age"].to_numpy(),
         )
 
     def advance_spinup_state(
@@ -220,53 +206,43 @@ class CBMWrapper(LibCBM_ctypes):
             as of the end of this call.
         """
 
-        i = data_helpers.unpack_ndarrays(inventory)
-        p = data_helpers.unpack_ndarrays(parameters)
-        v = data_helpers.unpack_ndarrays(variables)
-        n = i.spatial_unit.shape[0]
-
         # If return_interval, min_rotations, max_rotations are explicitly
         # set by the user, ignore the spatial unit, which is used to set
         # default value for these 3 variables.
-        return_interval = data_helpers.get_nullable_ndarray(
-            p.return_interval, dtype=ctypes.c_int
-        )
-        min_rotations = data_helpers.get_nullable_ndarray(
-            p.min_rotations, dtype=ctypes.c_int
-        )
-        max_rotations = data_helpers.get_nullable_ndarray(
-            p.max_rotations, dtype=ctypes.c_int
-        )
-        spatial_unit = None
-        if (
+        return_interval = parameters["return_interval"].to_numpy_ptr()
+        min_rotations = parameters["min_rotations"].to_numpy_ptr()
+        max_rotations = parameters["max_rotations"].to_numpy_ptr()
+
+        include_spatial_unit = (
             return_interval is None
             or min_rotations is None
             or max_rotations is None
-        ):
-            spatial_unit = data_helpers.get_nullable_ndarray(
-                i.spatial_unit, dtype=ctypes.c_int
-            )
+        )
+        spatial_unit = (
+            inventory["spatial_unit"].to_numpy_ptr()
+            if include_spatial_unit else None
+        )
 
         n_finished = self.handle.call(
             "LibCBM_AdvanceSpinupState",
-            n,
+            inventory.n_rows,
             spatial_unit,
             return_interval,
             min_rotations,
             max_rotations,
-            i.age,
-            i.delay,
-            v.slow_pools,
-            i.historical_disturbance_type,
-            i.last_pass_disturbance_type,
-            i.afforestation_pre_type_id,
-            v.spinup_state,
-            v.disturbance_type,
-            v.rotation,
-            v.step,
-            v.last_rotation_slow_C,
-            v.growth_enabled,
-            v.enabled,
+            inventory["age"].to_numpy(),
+            inventory["delay"].to_numpy(),
+            variables["slow_pools"].to_numpy(),
+            inventory["historical_disturbance_type"].to_numpy(),
+            inventory["last_pass_disturbance_type"].to_numpy(),
+            inventory["afforestation_pre_type_id"].to_numpy(),
+            variables["spinup_state"].to_numpy(),
+            variables["disturbance_type"].to_numpy(),
+            variables["rotation"].to_numpy(),
+            variables["step"].to_numpy(),
+            variables["last_rotation_slow_C"].to_numpy(),
+            variables["growth_enabled"].to_numpy(),
+            variables["enabled"].to_numpy(),
         )
 
         return n_finished
@@ -287,18 +263,15 @@ class CBMWrapper(LibCBM_ctypes):
                 for a compatible definition
 
         """
-        v = data_helpers.unpack_ndarrays(variables)
-        n = v.age.shape[0]
-        poolMat = LibCBM_Matrix(data_helpers.get_ndarray(pools))
         self.handle.call(
             "LibCBM_EndSpinupStep",
-            n,
-            v.spinup_state,
-            v.disturbance_type,
-            poolMat,
-            v.age,
-            v.slow_pools,
-            v.growth_enabled,
+            variables.n_rows,
+            variables["spinup_state"].to_numpy(),
+            variables["disturbance_type"].to_numpy(),
+            pools.to_c_contiguous_numpy_array(),
+            variables["age"].to_numpy(),
+            variables["slow_pools"].to_numpy(),
+            variables["growth_enabled"].to_numpy(),
         )
 
     def get_merch_volume_growth_ops(
