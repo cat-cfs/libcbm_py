@@ -5,6 +5,7 @@ from typing import Union
 from typing import Callable
 from libcbm.storage.backends import BackendType
 from typing import Any
+import ctypes
 
 SeriesInitType = Union[str, int, float, list, np.ndarray, pd.Series, pa.Array]
 
@@ -41,6 +42,9 @@ class Series:
         raise NotImplementedError()
 
     def to_numpy(self) -> np.ndarray:
+        raise NotImplementedError()
+
+    def to_numpy_ptr(self) -> ctypes.pointer:
         raise NotImplementedError()
 
 
