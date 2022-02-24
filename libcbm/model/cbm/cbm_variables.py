@@ -134,11 +134,16 @@ def initialize_spinup_parameters(
         DataFrame: table of spinup paramaeters
     """
 
+    def make_series(name, init, type):
+        if init is None:
+            return NullSeries(name)
+        else:
+            return Series(name, init, type),
     data = [
-        Series("return_interval", return_interval, "int32"),
-        Series("min_rotations", min_rotations, "int32"),
-        Series("max_rotations", max_rotations, "int32"),
-        Series("mean_annual_temp", mean_annual_temp, "float64"),
+        make_series("return_interval", return_interval, "int32"),
+        make_series("min_rotations", min_rotations, "int32"),
+        make_series("max_rotations", max_rotations, "int32"),
+        make_series("mean_annual_temp", mean_annual_temp, "float64"),
     ]
     parameters = DataFrame(data, n_stands, back_end)
 
