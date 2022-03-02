@@ -6,6 +6,28 @@
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+import itertools
+
+
+def _to_ranges(iterable):
+    """
+    Convert an iterable of integers into tuple pairs that describe
+    the minimum set of ranges that reproduce the iterable
+
+    https://stackoverflow.com/a/43091576/608558
+
+    for example::
+
+        >>> list(_to_ranges([1,2,3,5]))
+        [(1, 3), (5, 5)]
+    """
+    iterable = sorted(set(iterable))
+    for _, group in itertools.groupby(
+        enumerate(iterable),
+        lambda t: t[1] - t[0]
+    ):
+        group = list(group)
+        yield group[0][1], group[-1][1]
 
 
 class ClassifierFilter:
@@ -95,8 +117,8 @@ class ClassifierFilter:
             return f"c_{num}"
 
         for i_classifier, classifier in enumerate(
-            self.classifiers_config["classifiers"]
-        ):
+                self.classifiers_config["classifiers"]):
+            classifier_variable = get_classifier_variable(i_classifier)
             classifier_set_value = classifier_set[i_classifier]
             classifier_name = classifier["name"]
             classifier_id_by_name = self.classifier_value_lookup[
@@ -106,20 +128,26 @@ class ClassifierFilter:
             if classifier_set_value in classifier_id_by_name:
                 expression_tokens.append(
                     "({0} == {1})".format(
-                        get_classifier_variable(i_classifier),
-                        str(classifier_id_by_name[classifier_set_value]),
-                    )
-                )
+                        classifier_variable,
+                        str(classifier_id_by_name[classifier_set_value])))
             elif classifier_set_value in aggregates:
                 aggregate_expression_tokens = []
                 aggregate_values = aggregates[classifier_set_value]
-                for classifier_value_id in aggregate_values:
-                    aggregate_expression_tokens.append(
-                        "({0} == {1})".format(
-                            get_classifier_variable(i_classifier),
-                            str(classifier_value_id),
+                ranges = _to_ranges(aggregate_values)
+                for lower, upper in ranges:
+                    if lower == upper:
+                        aggregate_expression_tokens.append(
+                            "({0} == {1})".format(
+                                classifier_variable,
+                                str(upper)
+                            )
                         )
-                    )
+                    else:
+                        aggregate_expression_tokens.append(
+                            "(({0} >= {1}) & ({0} <= {2}))".format(
+                                classifier_variable, lower, upper
+                            )
+                        )
                 expression_tokens.append(
                     "({})".format(" | ".join(aggregate_expression_tokens))
                 )
