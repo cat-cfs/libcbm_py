@@ -113,11 +113,13 @@ class ModelOutputProcessor:
     def append_results(self, t: int, model_vars: ModelVars):
         pools_t = model_vars.pools.copy()
         pools_t.add_column(Series("timestep", t, "int"), 0)
-        dataframe_functions.concat_data_frame([self.pools, pools_t])
+        self.pools = dataframe_functions.concat_data_frame(
+            [self.pools, pools_t]
+        )
 
         flux_t = model_vars.flux.copy()
         flux_t.add_column(Series("timestep", t, "int"), 0)
-        dataframe_functions.concat_data_frame([self.flux, flux_t])
+        self.flux = dataframe_functions.concat_data_frame([self.flux, flux_t])
 
 
 @contextmanager
