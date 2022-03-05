@@ -7,9 +7,10 @@ from libcbm.input.sit import sit_classifier_parser
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 import itertools
+from typing import Iterable, Generator
 
 
-def _to_ranges(iterable):
+def _to_ranges(iterable: Iterable[int]) -> Generator[tuple[int, int]]:
     """
     Convert an iterable of integers into tuple pairs that describe
     the minimum set of ranges that reproduce the iterable
@@ -23,8 +24,7 @@ def _to_ranges(iterable):
     """
     iterable = sorted(set(iterable))
     for _, group in itertools.groupby(
-        enumerate(iterable),
-        lambda t: t[1] - t[0]
+        enumerate(iterable), lambda t: t[1] - t[0]
     ):
         group = list(group)
         yield group[0][1], group[-1][1]
@@ -117,7 +117,8 @@ class ClassifierFilter:
             return f"c_{num}"
 
         for i_classifier, classifier in enumerate(
-                self.classifiers_config["classifiers"]):
+            self.classifiers_config["classifiers"]
+        ):
             classifier_variable = get_classifier_variable(i_classifier)
             classifier_set_value = classifier_set[i_classifier]
             classifier_name = classifier["name"]
@@ -129,7 +130,9 @@ class ClassifierFilter:
                 expression_tokens.append(
                     "({0} == {1})".format(
                         classifier_variable,
-                        str(classifier_id_by_name[classifier_set_value])))
+                        str(classifier_id_by_name[classifier_set_value]),
+                    )
+                )
             elif classifier_set_value in aggregates:
                 aggregate_expression_tokens = []
                 aggregate_values = aggregates[classifier_set_value]
@@ -138,8 +141,7 @@ class ClassifierFilter:
                     if lower == upper:
                         aggregate_expression_tokens.append(
                             "({0} == {1})".format(
-                                classifier_variable,
-                                str(upper)
+                                classifier_variable, str(upper)
                             )
                         )
                     else:
