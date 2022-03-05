@@ -23,14 +23,13 @@ def get_mock_classifiers_config():
 
 
 class ClassifierFilterTest(unittest.TestCase):
-
     def test_aggregate_value_interval_feature(self):
         classifier_set = ["c1_v1", "?", "agg1"]
         classifiers_config = {
             "classifiers": [
                 {"id": 1, "name": "c1"},
                 {"id": 2, "name": "c2"},
-                {"id": 3, "name": "c3"}
+                {"id": 3, "name": "c3"},
             ],
             "classifier_values": [
                 {"id": 1, "classifier_id": 1, "value": "c1_v1"},
@@ -42,25 +41,35 @@ class ClassifierFilterTest(unittest.TestCase):
                 {"id": 7, "classifier_id": 3, "value": "c3_v3"},
                 {"id": 8, "classifier_id": 3, "value": "c3_v4"},
                 {"id": 9, "classifier_id": 3, "value": "c3_v5"},
-                {"id": 10, "classifier_id": 3, "value": "c3_v6"}
-            ]
+                {"id": 10, "classifier_id": 3, "value": "c3_v6"},
+            ],
         }
         classifier_aggregates = [
-            {'classifier_id': 3,
-             'name': 'agg1',
-             'description': 'agg1',
-             'classifier_values': [
-                 'c3_v1', 'c3_v2', 'c3_v4', 'c3_v6', 'c3_v3']}]
+            {
+                "classifier_id": 3,
+                "name": "agg1",
+                "description": "agg1",
+                "classifier_values": [
+                    "c3_v1",
+                    "c3_v2",
+                    "c3_v4",
+                    "c3_v6",
+                    "c3_v3",
+                ],
+            }
+        ]
         #           5       6        8        10       7
-        classifier_values = pd.DataFrame(
-            columns=["c1", "c2", "c3"])
+        classifier_values = pd.DataFrame(columns=["c1", "c2", "c3"])
         rule_filter = ClassifierFilter(
-            classifiers_config, classifier_aggregates)
+            classifiers_config, classifier_aggregates
+        )
         result = rule_filter.create_classifiers_filter(
-            classifier_set, classifier_values)
+            classifier_set, classifier_values
+        )
         self.assertTrue(
-            result.expression ==
-            "(c_0 == 1) & (((c_2 >= 5) & (c_2 <= 8)) | (c_2 == 10))")
+            result.expression
+            == "(c_0 == 1) & (((c_2 >= 5) & (c_2 <= 8)) | (c_2 == 10))"
+        )
 
     def test_create_classifiers_filter_expected_value(self):
 
