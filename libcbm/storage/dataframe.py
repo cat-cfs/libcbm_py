@@ -34,10 +34,10 @@ class Series:
     def take(self, indices: "Series") -> "Series":
         """return the elements of this series at the specified indices
         (returns a copy)"""
-        pass
+        raise NotImplementedError()
 
     def assign(self, indices: "Series", value: Any):
-        pass
+        raise NotImplementedError()
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         raise NotImplementedError()
@@ -71,6 +71,12 @@ class Series:
         raise NotImplementedError()
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         raise NotImplementedError()
 
 
