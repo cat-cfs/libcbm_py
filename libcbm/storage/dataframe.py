@@ -31,6 +31,14 @@ class Series:
         """
         raise NotImplementedError()
 
+    def take(self, indices: "Series") -> "Series":
+        """return the elements of this series at the specified indices
+        (returns a copy)"""
+        pass
+
+    def assign(self, indices: "Series", value: Any):
+        pass
+
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         raise NotImplementedError()
 
@@ -45,6 +53,24 @@ class Series:
         raise NotImplementedError()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
+        raise NotImplementedError()
+
+    def less(self, other: "Series") -> "Series":
+        raise NotImplementedError()
+
+    def sum(self) -> Union[int, float]:
+        raise NotImplementedError()
+
+    def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __add__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         raise NotImplementedError()
 
 
@@ -72,8 +98,14 @@ class DataFrame:
     ):
         raise NotImplementedError()
 
-    def __getitem__(self, col_name) -> Series:
+    def __getitem__(self, col_name: str) -> Series:
         raise NotImplementedError()
+
+    def take(self, indices) -> "DataFrame":
+        pass
+
+    def assign(self, col_name: str, value: Any, indices: Series = None):
+        pass
 
     @property
     def n_rows(self) -> int:
