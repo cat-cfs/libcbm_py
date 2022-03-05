@@ -2,11 +2,11 @@ from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
 
 
-def concat_data_frame(dfs: list[DataFrame]):
+def concat_data_frame(dfs: list[DataFrame]) -> DataFrame:
     raise NotImplementedError()
 
 
-def concat_series(series: list[Series]):
+def concat_series(series: list[Series]) -> Series:
     raise NotImplementedError()
 
 
