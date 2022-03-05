@@ -2,14 +2,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import pandas as pd
-import numpy as np
 from typing import Callable
 from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage.dataframe import Series
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe_functions
 
 
 class ProcessEventResult:
@@ -71,7 +71,7 @@ def process_event(
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
-    filter_result = np.logical_and(undisturbed, filter_result)
+    filter_result = dataframe_functions.logical_and(undisturbed, filter_result)
 
     rule_target_result = target_func(cbm_vars, filter_result)
 
@@ -83,13 +83,13 @@ def process_event(
 
 
 def apply_rule_based_event(
-    target: RuleTargetResult, disturbance_type_id: int, cbm_vars: CBMVariables
+    target: DataFrame, disturbance_type_id: int, cbm_vars: CBMVariables
 ) -> CBMVariables:
     """Apply the specified target to the CBM simulation variables,
     splitting them if necessary.
 
     Args:
-        target (RuleTargetResult): object describing the index of
+        target (DataFrame): object describing the index of
             records to disturbance and area split proportions.
         disturbance_type_id (int): the id for the disturbance event being
             applied.
@@ -104,58 +104,58 @@ def apply_rule_based_event(
     target_area_proportions = target["area_proportions"]
 
     splits = target_area_proportions < 1.0
-    n_splits = (splits).sum()
     split_index = target_index[splits]
-    split_inventory = cbm_vars.inventory.iloc[split_index].copy()
+    split_inventory = cbm_vars.inventory.take(split_index)
 
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
-    cbm_vars.parameters.disturbance_type.iloc[
-        target_index
-    ] = disturbance_type_id
+    cbm_vars.parameters["disturbance_type"].assign(
+        target_index, disturbance_type_id
+    )
 
-    if len(split_inventory.index) > 0:
+    if split_inventory.n_rows > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
-        updated_inv_idx = cbm_vars.inventory.index[split_index]
-        cbm_vars.inventory.loc[updated_inv_idx, "area"] = (
-            cbm_vars.inventory.loc[updated_inv_idx, "area"]
-            * target_area_proportions[splits].to_numpy()
+        cbm_vars.inventory.assign(
+            "area",
+            (
+                cbm_vars.inventory["area"].take(split_index)
+                * target_area_proportions[splits]
+            ),
+            split_index,
         )
 
         # set the split inventory as the remaining undisturbed area
-        split_inventory.area = split_inventory.area * (
-            1.0 - target_area_proportions[splits].array
+        split_inventory.assign(
+            "area",
+            split_inventory["area"] * (1.0 - target_area_proportions[splits]),
         )
 
         # create the updated inventory by appending the split records
-        cbm_vars.inventory = pd.concat(
+        cbm_vars.inventory = dataframe_functions.concat_data_frame(
             [cbm_vars.inventory, split_inventory]
-        ).reset_index(drop=True)
+        )
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
         # adding a copy of the split values.
-        cbm_vars.classifiers = pd.concat(
-            [
-                cbm_vars.classifiers,
-                cbm_vars.classifiers.iloc[split_index].copy(),
-            ]
-        ).reset_index(drop=True)
-        cbm_vars.state = pd.concat(
-            [cbm_vars.state, cbm_vars.state.iloc[split_index].copy()]
-        ).reset_index(drop=True)
-        cbm_vars.pools = pd.concat(
-            [cbm_vars.pools, cbm_vars.pools.iloc[split_index].copy()]
-        ).reset_index(drop=True)
-        cbm_vars.flux = pd.concat(
-            [cbm_vars.flux, cbm_vars.flux.iloc[split_index].copy()]
-        ).reset_index(drop=True)
+        cbm_vars.classifiers = dataframe_functions.concat_data_frame(
+            [cbm_vars.classifiers, cbm_vars.classifiers.take(split_index)]
+        )
+        cbm_vars.state = dataframe_functions.concat_data_frame(
+            [cbm_vars.state, cbm_vars.state.take(split_index)]
+        )
+        cbm_vars.pools = dataframe_functions.concat_data_frame(
+            [cbm_vars.pools, cbm_vars.pools.take(split_index)]
+        )
+        cbm_vars.flux = dataframe_functions.concat_data_frame(
+            [cbm_vars.flux, cbm_vars.flux.take(split_index)]
+        )
 
-        new_params = cbm_vars.parameters.iloc[split_index].copy()
-        new_params.disturbance_type = np.zeros(n_splits, dtype=np.int32)
-        cbm_vars.parameters = pd.concat(
+        new_params = cbm_vars.parameters.take(split_index)
+        new_params.assign("disturbance_type", 0)
+        cbm_vars.parameters = dataframe_functions.concat_data_frame(
             [cbm_vars.parameters, new_params]
-        ).reset_index(drop=True)
+        )
 
     return cbm_vars
