@@ -104,7 +104,7 @@ def apply_rule_based_event(
     target_area_proportions = target["area_proportions"]
 
     splits = target_area_proportions < 1.0
-    split_index = target_index[splits]
+    split_index = target_index.filter(splits)
     split_inventory = cbm_vars.inventory.take(split_index)
 
     # set the disturbance types for the disturbed indices, based on
@@ -120,7 +120,7 @@ def apply_rule_based_event(
             "area",
             (
                 cbm_vars.inventory["area"].take(split_index)
-                * target_area_proportions[splits]
+                * target_area_proportions.filter(splits)
             ),
             split_index,
         )
@@ -128,7 +128,8 @@ def apply_rule_based_event(
         # set the split inventory as the remaining undisturbed area
         split_inventory.assign(
             "area",
-            split_inventory["area"] * (1.0 - target_area_proportions[splits]),
+            split_inventory["area"]
+            * (1.0 - target_area_proportions.filter(splits)),
         )
 
         # create the updated inventory by appending the split records
