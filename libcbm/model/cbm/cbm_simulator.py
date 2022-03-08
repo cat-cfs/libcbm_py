@@ -43,9 +43,7 @@ def simulate(
         spinup_reporting_func (function, optional): a function which accepts
             the spinup iteration, and all spinup variables.  Specifying this
             function will result in a performance penalty as the per-iteration
-            spinup results are computed and tracked. An example compatible
-            function factory is :py:func:`create_in_memory_reporting_func`
-            which stores the results in memory.  If unspecified spinup results
+            spinup results are computed and tracked. If unspecified spinup results
             are not tracked. Defaults to None.
     """
 
