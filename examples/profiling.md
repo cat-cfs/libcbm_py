@@ -16,12 +16,13 @@ jupyter:
 ```python
 import pandas as pd
 import numpy as np
-import cProfile 
+import cProfile
 ```
 
 ```python
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
 ```
 
@@ -67,17 +68,17 @@ def run_cbm():
 
     with cbm_factory.initialize_cbm() as cbm:
 
-        cbm_results, cbm_reporting_func = \
-            cbm_simulator.create_in_memory_reporting_func(
-                classifier_map=cbm_factory.get_classifier_map(),
-                disturbance_type_map={1: "fires"})
+        in_memory_cbm_output = InMemoryCBMOutput(
+            classifier_map=cbm_factory.get_classifier_map(),
+            disturbance_type_map={1: "fires"})
         cbm_simulator.simulate(
             cbm,
             n_steps=n_steps,
             classifiers=csets,
             inventory=inv,
             pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
-            reporting_func=cbm_reporting_func)
+            reporting_func=in_memory_cbm_output.append_simulation_result
+        )
 ```
 
 ```python

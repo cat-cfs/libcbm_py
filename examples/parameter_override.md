@@ -25,6 +25,7 @@ import numpy as np
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm import cbm_defaults
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm import resources
 ```
 
@@ -58,7 +59,7 @@ def run_cbm_random():
     # use the above random parameter factory as the source for CBM parameters
     with sit_cbm_factory.initialize_cbm(sit, parameters_factory=random_parameter_factory) as cbm:
 
-        results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
+        in_memory_cbm_output = InMemoryCBMOutput()
         rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
 
         cbm_simulator.simulate(
@@ -67,7 +68,7 @@ def run_cbm_random():
             classifiers          = classifiers,
             inventory            = inventory,
             pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-            reporting_func       = reporting_func
+            reporting_func       = in_memory_cbm_output.append_simulation_result
         )
         # return a single pool value to illustrate the effect of the randomly drawn parameter
         return results.pools[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()

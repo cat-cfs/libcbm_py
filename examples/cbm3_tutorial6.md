@@ -30,6 +30,7 @@ Import the required packages from libcbm
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm import resources
 ```
 
@@ -55,12 +56,10 @@ Create storage and a function for storing CBM simulation results.  This particul
 ```python
 classifier_config = sit_cbm_factory.get_classifiers(
     sit.sit_data.classifiers, sit.sit_data.classifier_values)
-
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
+in_memory_cbm_output = InMemoryCBMOutput(
     classifier_map={
         x["id"]: x["value"]
         for x in classifier_config["classifier_values"]})
-
 ```
 
 ## Simulation
@@ -76,7 +75,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers          = classifiers,
         inventory            = inventory,
         pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = reporting_func
+        reporting_func       = in_memory_cbm_output.append_simulation_result
     )
 ```
 

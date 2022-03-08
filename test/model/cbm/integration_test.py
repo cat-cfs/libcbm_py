@@ -3,6 +3,7 @@ import pandas as pd
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
+from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
 
 
 def test_integration():
@@ -68,28 +69,24 @@ def test_integration():
     n_stands = len(inv.index)
     with cbm_factory.initialize_cbm() as cbm:
 
-        (
-            spinup_results,
-            spinup_reporting_func,
-        ) = cbm_simulator.create_in_memory_reporting_func(density=True)
-        (
-            cbm_results,
-            cbm_reporting_func,
-        ) = cbm_simulator.create_in_memory_reporting_func(
+        spinup_results = InMemoryCBMOutput(density=True)
+
+        cbm_results = InMemoryCBMOutput(
             classifier_map=cbm_factory.get_classifier_map(),
             disturbance_type_map=cbm_factory.get_disturbance_type_map(),
         )
+
         cbm_simulator.simulate(
             cbm,
             n_steps=n_steps,
             classifiers=csets,
             inventory=inv,
             pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
-            reporting_func=cbm_reporting_func,
+            reporting_func=cbm_results.append_simulation_result,
             spinup_params=cbm_variables.initialize_spinup_parameters(
                 n_stands, return_interval, n_rotations, n_rotations, -1
             ),
-            spinup_reporting_func=spinup_reporting_func,
+            spinup_reporting_func=spinup_results.append_simulation_result,
         )
         assert len(cbm_results.pools.index) == (n_steps + 1) * n_stands
         assert (

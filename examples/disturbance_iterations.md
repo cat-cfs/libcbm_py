@@ -24,6 +24,7 @@ import pandas as pd
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm import resources
 ```
 
@@ -145,7 +146,7 @@ class DynamicHarvestProcessor:
 ## Simulation
 
 ```python
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func()
+in_memory_cbm_output = InMemoryCBMOutput()
 with sit_cbm_factory.initialize_cbm(sit) as cbm:
 
     dynamic_harvest_processor = DynamicHarvestProcessor(
@@ -158,7 +159,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers       = classifiers,
         inventory         = inventory,
         pre_dynamics_func = dynamic_harvest_processor.pre_dynamics_func,
-        reporting_func    = reporting_func
+        reporting_func    = in_memory_cbm_output.append_simulation_result
     )
 ```
 

@@ -30,6 +30,7 @@ Import the required packages from libcbm
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm import resources
 ```
 
@@ -47,10 +48,10 @@ Initialize and validate the inventory in the sit dataset
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 ```
 
-Create storage and a function for storing CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
+Create storage CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
 
 ```python
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
+in_memory_cbm_output = InMemoryCBMOutput(
     classifier_map=sit.classifier_value_names,
     disturbance_type_map=sit.disturbance_name_map)
 ```
@@ -68,7 +69,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers          = classifiers,
         inventory            = inventory,
         pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = reporting_func
+        reporting_func       = in_memory_cbm_output.append_simulation_result
     )
 ```
 

@@ -7,6 +7,7 @@ from unittest.mock import patch
 
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
 from libcbm import resources
 
 
@@ -21,10 +22,8 @@ class SITCBMFactoryTest(unittest.TestCase):
         sit = sit_cbm_factory.load_sit(config_path)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            (
-                results,
-                reporting_func,
-            ) = cbm_simulator.create_in_memory_reporting_func()
+            in_memory_output = InMemoryCBMOutput()
+
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
             )
@@ -35,10 +34,12 @@ class SITCBMFactoryTest(unittest.TestCase):
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=rule_based_processor.pre_dynamics_func,
-                reporting_func=reporting_func,
+                reporting_func=in_memory_output.append_simulation_result,
             )
             self.assertTrue(
-                results.pools[results.pools.timestep == 0].shape[0]
+                in_memory_output.pools.filter(
+                    in_memory_output.pools["timestep"] == 0
+                )
                 == inventory.shape[0]
             )
             self.assertTrue(
@@ -57,10 +58,7 @@ class SITCBMFactoryTest(unittest.TestCase):
         sit = sit_cbm_factory.load_sit(config_path)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            (
-                results,
-                reporting_func,
-            ) = cbm_simulator.create_in_memory_reporting_func()
+            in_memory_cbm_output = InMemoryCBMOutput()
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
             )
@@ -71,10 +69,12 @@ class SITCBMFactoryTest(unittest.TestCase):
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=rule_based_processor.pre_dynamics_func,
-                reporting_func=reporting_func,
+                reporting_func=in_memory_cbm_output.append_simulation_result,
             )
             self.assertTrue(
-                results.pools[results.pools.timestep == 0].shape[0]
+                in_memory_cbm_output.pools.filter(
+                    in_memory_cbm_output.pools["timestep"] == 0
+                ).n_rows
                 == inventory.shape[0]
             )
             self.assertTrue(

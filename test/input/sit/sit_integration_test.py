@@ -4,6 +4,7 @@ from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_age_class_parser
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
 
 
 class SITIntegrationTest(unittest.TestCase):
@@ -48,17 +49,14 @@ class SITIntegrationTest(unittest.TestCase):
         sit = sit_cbm_factory.initialize_sit(sit_data, config)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            (
-                results,
-                reporting_func,
-            ) = cbm_simulator.create_in_memory_reporting_func()
+            in_memory_cbm_output = InMemoryCBMOutput()
             cbm_simulator.simulate(
                 cbm,
                 n_steps=1,
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
-                reporting_func=reporting_func,
+                reporting_func=in_memory_cbm_output.append_simulation_result(),
             )
             # there should be 2 rows, timestep 0 and timestep 1
-            self.assertTrue(results.pools.shape[0] == 2)
+            self.assertTrue(in_memory_cbm_output.pools.n_rows == 2)

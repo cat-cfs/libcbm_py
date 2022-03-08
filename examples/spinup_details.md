@@ -18,6 +18,7 @@ import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.output import InMemoryCBMOutput
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
 ```
 
@@ -78,21 +79,19 @@ with cbm_factory.initialize_cbm() as cbm:
 
     # can specify a function to gather results from spinup
     # this will incur a performance penalty
-    spinup_results, spinup_reporting_func = \
-        cbm_simulator.create_in_memory_reporting_func(density=True)
-    cbm_results, cbm_reporting_func = \
-        cbm_simulator.create_in_memory_reporting_func(
-            classifier_map=cbm_factory.get_classifier_map(),
-            disturbance_type_map={1: "fires"})
+    spinup_results = InMemoryCBMOutput(density=True)
+    cbm_results = InMemoryCBMOutput(
+        classifier_map=cbm_factory.get_classifier_map(),
+        disturbance_type_map={1: "fires"})
     cbm_simulator.simulate(
         cbm,
         n_steps=n_steps,
         classifiers=csets,
         inventory=inv,
         pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
-        reporting_func=cbm_reporting_func,
+        reporting_func=cbm_results.append_simulation_result,
         spinup_params=spinup_params,
-        spinup_reporting_func=spinup_reporting_func)
+        spinup_reporting_func=spinup_results.append_simulation_result)
 
 ```
 
