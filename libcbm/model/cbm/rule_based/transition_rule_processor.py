@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import pandas as pd
 from typing import Callable
 from typing import Iterable
 from libcbm.storage import dataframe_functions
@@ -176,18 +175,19 @@ class TransitionRuleProcessor(object):
 
         if not eligible.any():
             return transition_mask_output, cbm_vars
+        eligible_idx = dataframe_functions.indices_nonzero(eligible)
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max
         )
 
         # storage for split records
-        classifier_split = DataFrame()
-        inventory_split = DataFrame()
-        pool_split = DataFrame()
-        state_split = DataFrame()
-        params_split = DataFrame()
-        flux_split = DataFrame()
+        classifier_split = None
+        inventory_split = None
+        pool_split = None
+        state_split = None
+        params_split = None
+        flux_split = None
 
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
@@ -199,12 +199,12 @@ class TransitionRuleProcessor(object):
             # For all proportions other than the first we need to make
             # a copy of each of the state variables to split off the
             # percentage for the current group member
-            pools = cbm_vars.pools[eligible].copy()
-            flux = cbm_vars.flux[eligible].copy()
-            params = cbm_vars.parameters[eligible].copy()
-            state = cbm_vars.state[eligible].copy()
-            inventory = cbm_vars.inventory[eligible].copy()
-            classifiers = cbm_vars.classifiers[eligible].copy()
+            pools = cbm_vars.pools.filter(eligible)
+            flux = cbm_vars.flux.filter(eligible)
+            params = cbm_vars.parameters.filter(eligible)
+            state = cbm_vars.state.filter(eligible)
+            inventory = cbm_vars.inventory.filter(eligible)
+            classifiers = cbm_vars.classifiers.filter(eligible)
             transition_mask_output = dataframe_functions.concat_series(
                 [
                     transition_mask_output,
@@ -216,79 +216,99 @@ class TransitionRuleProcessor(object):
 
             # set the area for the split portion according to the current
             # group member proportion
-            inventory.area = inventory.area * proportion
+            inventory["area"] = inventory["area"] * proportion
 
             # if the current proportion is the remainder of 100 minus the
             # group's percentage sums, then this split portion will not be
             # transitioned, meaning the classifier set is not changed, and
             # the reset age, regeneration delay parameters will not take
             # effect for this split portion
-            is_transition_split = i_proportion < tr_group.shape[0]
+            is_transition_split = i_proportion < tr_group.n_rows
             if is_transition_split:
 
                 transition_classifier_ids = (
                     self._get_transition_classifier_set(
-                        transition_rule=tr_group.iloc[i_proportion]
+                        transition_rule=tr_group.at(i_proportion)
                     )
                 )
                 # update the split classifiers with the transitioned value
                 for classifier_name, value_id in transition_classifier_ids:
                     classifiers[classifier_name] = value_id
 
-                state.regeneration_delay = tr_group.iloc[
-                    i_proportion
-                ].regeneration_delay
+                state.assign(
+                    "regeneration_delay",
+                    int(tr_group["regeneration_delay"].at(i_proportion)),
+                )
 
-                params.reset_age = tr_group.iloc[i_proportion].reset_age
+                params.assign(
+                    "reset_age", int(tr_group["reset_age"].at(i_proportion))
+                )
 
-            classifier_split = pd.concat([classifier_split, classifiers])
-            inventory_split = pd.concat([inventory_split, inventory])
-            pool_split = pd.concat([pool_split, pools])
-            state_split = pd.concat([state_split, state])
-            params_split = pd.concat([params_split, params])
-            flux_split = pd.concat([flux_split, flux])
+            classifier_split = dataframe_functions.concat_data_frame(
+                [classifier_split, classifiers]
+            )
+            inventory_split = dataframe_functions.concat_data_frame(
+                [inventory_split, inventory]
+            )
+            pool_split = dataframe_functions.concat_data_frame(
+                [pool_split, pools]
+            )
+            state_split = dataframe_functions.concat_data_frame(
+                [state_split, state]
+            )
+            params_split = dataframe_functions.concat_data_frame(
+                [params_split, params]
+            )
+            flux_split = dataframe_functions.concat_data_frame(
+                [flux_split, flux]
+            )
 
         # for the first index in the tr_group use the existing matched records
         transition_classifier_ids = self._get_transition_classifier_set(
-            transition_rule=tr_group.iloc[0]
+            transition_rule=tr_group.at(0)
         )
+
         for classifier_name, value_id in transition_classifier_ids:
-            cbm_vars.classifiers.loc[eligible, classifier_name] = value_id
-        if proportions[0] < 1.0:
-            cbm_vars.inventory.loc[eligible, "area"] = (
-                cbm_vars.inventory.loc[eligible, "area"] * proportions[0]
+            cbm_vars.classifiers.assign(
+                classifier_name, value_id, eligible_idx
             )
 
-        cbm_vars.state.loc[eligible, "regeneration_delay"] = tr_group.iloc[
-            0
-        ].regeneration_delay
+        if proportions[0] < 1.0:
 
-        cbm_vars.parameters.loc[eligible, "reset_age"] = tr_group.iloc[
-            0
-        ].reset_age
+            cbm_vars.inventory.assign(
+                "area",
+                cbm_vars.inventory["area"].take(eligible_idx) * proportions[0],
+                eligible_idx,
+            )
+
+        cbm_vars.state.assign(
+            "regeneration_delay",
+            int(tr_group["regeneration_delay"].at(0)),
+            eligible_idx,
+        )
+
+        cbm_vars.parameters.assign(
+            "reset_age", int(tr_group["reset_age"].at(0)), eligible_idx
+        )
 
         if len(proportions) > 1:
-            cbm_vars.classifiers = pd.concat(
+            cbm_vars.classifiers = dataframe_functions.concat_data_frame(
                 [cbm_vars.classifiers, classifier_split]
-            ).reset_index(drop=True)
-            cbm_vars.inventory = pd.concat(
+            )
+            cbm_vars.inventory = dataframe_functions.concat_data_frame(
                 [cbm_vars.inventory, inventory_split]
-            ).reset_index(drop=True)
-            cbm_vars.pools = pd.concat(
+            )
+            cbm_vars.pools = dataframe_functions.concat_data_frame(
                 [cbm_vars.pools, pool_split]
-            ).reset_index(drop=True)
-            cbm_vars.state = pd.concat(
+            )
+            cbm_vars.state = dataframe_functions.concat_data_frame(
                 [cbm_vars.state, state_split]
-            ).reset_index(drop=True)
-            cbm_vars.parameters = pd.concat(
+            )
+            cbm_vars.parameters = dataframe_functions.concat_data_frame(
                 [cbm_vars.parameters, params_split]
-            ).reset_index(drop=True)
-            cbm_vars.flux = pd.concat([cbm_vars.flux, flux_split]).reset_index(
-                drop=True
+            )
+            cbm_vars.flux = dataframe_functions.concat_data_frame(
+                [cbm_vars.flux, flux_split]
             )
 
-        cbm_vars.state = cbm_vars.state.astype({"regeneration_delay": "int32"})
-        cbm_vars.parameters = cbm_vars.parameters.astype(
-            {"reset_age": "int32"}
-        )
         return transition_mask_output, cbm_vars
