@@ -24,7 +24,7 @@ class Series:
     ):
         raise NotImplementedError()
 
-    def __getitem__(self, arg: "Series") -> "Series":
+    def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
         corresponding to the true values in the specified arg
@@ -39,11 +39,23 @@ class Series:
     def assign(self, indices: "Series", value: Any):
         raise NotImplementedError()
 
+    def assign_all(self, value: Any):
+        """
+        set all values in this series to the specified value
+        """
+
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         raise NotImplementedError()
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
+        raise NotImplementedError()
+
+    def any(self) -> bool:
+        """
+        return True if at least one value in this series is
+        non-zero
+        """
         raise NotImplementedError()
 
     def unique(self) -> "Series":
@@ -56,6 +68,12 @@ class Series:
         raise NotImplementedError()
 
     def less(self, other: "Series") -> "Series":
+        """
+        returns a boolean series with:
+            True - where this series is less than the other series
+            False - where this series is greater than or equal to the other
+                series
+        """
         raise NotImplementedError()
 
     def sum(self) -> Union[int, float]:
@@ -107,7 +125,17 @@ class DataFrame:
     def __getitem__(self, col_name: str) -> Series:
         raise NotImplementedError()
 
+    def filter(self, arg) -> "DataFrame":
+        pass
+
     def take(self, indices) -> "DataFrame":
+        pass
+
+    def at(self, index) -> dict:
+        """
+        get the row at the specified 0 based sequential index as a row
+        dictionary
+        """
         pass
 
     def assign(self, col_name: str, value: Any, indices: Series = None):
