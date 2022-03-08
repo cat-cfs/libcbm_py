@@ -7,10 +7,10 @@ from libcbm.input.sit import sit_classifier_parser
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 import itertools
-from typing import Iterable, Generator
+from typing import Iterable
 
 
-def _to_ranges(iterable: Iterable[int]) -> Generator[tuple[int, int]]:
+def _to_ranges(iterable: Iterable[int]) -> Iterable[tuple[int, int]]:
     """
     Convert an iterable of integers into tuple pairs that describe
     the minimum set of ranges that reproduce the iterable

@@ -5,6 +5,7 @@
 
 import sqlite3
 import libcbm.resources.cbm_defaults_queries as queries
+from typing import Tuple
 
 
 class CBMDefaultsReference:
@@ -200,7 +201,7 @@ class CBMDefaultsReference:
             (admin_boundary_name, eco_boundary_name)
         ]["spatial_unit_id"]
 
-    def get_spatial_unit(self, spatial_unit_id: int) -> tuple[str, str]:
+    def get_spatial_unit(self, spatial_unit_id: int) -> Tuple[str, str]:
         """Get a tuple of admin boundary name, eco boundary name for the
         specified spatial unit id
 

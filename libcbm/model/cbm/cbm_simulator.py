@@ -15,10 +15,10 @@ def simulate(
     n_steps: int,
     classifiers: DataFrame,
     inventory: DataFrame,
-    reporting_func: Callable[[int, CBMVariables]],
+    reporting_func: Callable[[int, CBMVariables], None],
     pre_dynamics_func: Callable[[int, CBMVariables], CBMVariables] = None,
     spinup_params: DataFrame = None,
-    spinup_reporting_func: Callable[[int, CBMVariables]] = None,
+    spinup_reporting_func: Callable[[int, CBMVariables], None] = None,
 ):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided

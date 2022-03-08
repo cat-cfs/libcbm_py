@@ -1,6 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+from typing import Tuple
 
 
 def get_pool_variable_filter_mappings() -> list[tuple[str, list[str], str]]:
@@ -87,7 +88,7 @@ def create_pool_filter_expression(sit_data: dict) -> str:
     return expression
 
 
-def get_state_variable_age_filter_mappings() -> tuple[str, str, str]:
+def get_state_variable_age_filter_mappings() -> Tuple[str, str, str]:
     """get mappings between SIT events or transitions age criteria columns,
     and state variable columns, along with a boolean operator to compare age
     values.
@@ -102,7 +103,7 @@ def get_state_variable_age_filter_mappings() -> tuple[str, str, str]:
     return [("min_age", "age", ">="), ("max_age", "age", "<=")]
 
 
-def get_state_variable_filter_mappings() -> tuple[str, str, str]:
+def get_state_variable_filter_mappings() -> Tuple[str, str, str]:
     """get mappings between SIT events criteria columns, and state variable
     columns, along with a boolean operator to compare values.
 

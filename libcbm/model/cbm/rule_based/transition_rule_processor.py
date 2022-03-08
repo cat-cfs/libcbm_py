@@ -4,6 +4,7 @@
 
 from typing import Callable
 from typing import Iterable
+from typing import Tuple
 from libcbm.storage import dataframe_functions
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.dataframe import Series
@@ -112,7 +113,7 @@ class TransitionRuleProcessor(object):
 
     def _get_transition_classifier_set(
         self, transition_rule: dict
-    ) -> Iterable[tuple(str, int)]:
+    ) -> Iterable[Tuple[str, int]]:
         for classifier_name in self.classifier_names:
             transition_classifier_value = transition_rule[
                 classifier_name + self.transition_classifier_postfix
@@ -130,7 +131,7 @@ class TransitionRuleProcessor(object):
         tr_group: DataFrame,
         transition_mask: Series,
         cbm_vars: CBMVariables,
-    ) -> tuple[Series, CBMVariables]:
+    ) -> Tuple[Series, CBMVariables]:
         """Apply the specified transition rule group to the simulation
         variables, updating classifier values, and returning the transition
         rule variables reset age, and regeneration delay.  For each member of

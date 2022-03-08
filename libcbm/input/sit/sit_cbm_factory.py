@@ -5,6 +5,7 @@
 import os
 import json
 from typing import Callable
+from typing import Tuple
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
@@ -26,7 +27,7 @@ from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 
 
-def initialize_inventory(sit: SIT) -> tuple[pd.DataFrame, pd.DataFrame]:
+def initialize_inventory(sit: SIT) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Converts SIT inventory data input for CBM
 
     Args:

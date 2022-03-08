@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import pandas as pd
+from typing import Tuple
 from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
@@ -23,7 +24,7 @@ def get_wildcard_keyword() -> str:
 
 def parse(
     classifiers_table: pd.DataFrame,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """parse SIT_Classifiers formatted data.
 
     Args:

@@ -1,6 +1,7 @@
 from typing import Union
 from typing import Callable
 from typing import ContextManager
+from typing import Tuple
 import pandas as pd
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
@@ -175,7 +176,7 @@ class StandCBMFactory:
 
     def prepare_inventory(
         self, inventory_df: DataFrame
-    ) -> tuple[DataFrame, DataFrame]:
+    ) -> Tuple[DataFrame, DataFrame]:
         """Prepare inventory, classifiers pd.DataFrames compatible with
         :py:func:`libcbm.model.cbm.cbm_simulator.simulate` using the provided
         inventory dataframe.

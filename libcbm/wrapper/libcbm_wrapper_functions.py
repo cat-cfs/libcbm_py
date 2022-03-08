@@ -5,7 +5,7 @@ from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 
 def get_matrix_list_pointer(
     matrices: list[np.ndarray],
-) -> ctypes.pointer[LibCBM_Matrix]:
+):
     """converts a list of numpy matrices to a pointer to an array of
     LibCBM_Matrix
 
