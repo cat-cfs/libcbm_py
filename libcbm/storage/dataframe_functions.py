@@ -32,3 +32,11 @@ def is_null(series: Series) -> Series:
     is null, None, or NaN, otherwise False
     """
     raise NotImplementedError()
+
+
+def indices_nonzero(series: Series) -> Series:
+    """
+    return a series of the 0 based sequential index of non-zero values in
+    the specfied series
+    """
+    raise NotImplementedError()
