@@ -8,10 +8,9 @@ from numpy.ctypeslib import ndpointer
 from libcbm.wrapper.libcbm_error import LibCBM_Error
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
-from libcbm.wrapper.libcbm_ctypes import LibCBM_ctypes
 
 
-def initialize_CBM_ctypes(dll: LibCBM_ctypes):
+def initialize_CBM_ctypes(dll):
     """Extends a :py:class:`libcbm.wrapper.libcbm_ctypes.LibCBM_ctypes` object
     by wrapping the CBM specific functions contained in the low level c/c++
     library.

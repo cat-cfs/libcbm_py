@@ -6,10 +6,10 @@ import os
 import ctypes
 from numpy.ctypeslib import ndpointer
 
+from libcbm.wrapper.cbm import cbm_ctypes
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper.libcbm_error import LibCBM_Error
-from libcbm.wrapper.cbm import cbm_ctypes
 
 
 class LibCBM_ctypes:
