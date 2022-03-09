@@ -20,7 +20,7 @@ class Series:
         self,
         name: str,
         init: SeriesInitType,
-        type: str,
+        type: str = None,
     ):
         raise NotImplementedError()
 
@@ -116,9 +116,9 @@ class DataFrame:
 
     def __init__(
         self,
-        data: Union[dict[str, Series], list[Series]],
-        nrows: int,
-        back_end: BackendType = BackendType.numpy,
+        data: Union[dict[str, Series], list[Series], pd.DataFrame],
+        nrows: int = None,
+        back_end: BackendType = None,
     ):
         raise NotImplementedError()
 
