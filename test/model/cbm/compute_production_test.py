@@ -1,5 +1,7 @@
 import unittest
 import pandas as pd
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.dataframe import Series
 from types import SimpleNamespace
 from libcbm.model.cbm import cbm_model
 
@@ -7,18 +9,22 @@ from libcbm.model.cbm import cbm_model
 class ComputeProductionTest(unittest.TestCase):
     def test_compute_disturbance_production_expected_result(self):
 
-        mock_pools = pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]})
-        mock_inventory = pd.DataFrame({"age": [1, 1, 1], "area": [10, 20, 30]})
+        mock_pools = DataFrame(pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}))
+        mock_inventory = DataFrame(
+            pd.DataFrame({"age": [1, 1, 1], "area": [10, 20, 30]})
+        )
         flux_indicator_codes = [
             "DisturbanceSoftProduction",
             "DisturbanceHardProduction",
             "DisturbanceDOMProduction",
         ]
-        mock_flux = pd.DataFrame(
-            data=[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
-            columns=flux_indicator_codes,
+        mock_flux = DataFrame(
+            pd.DataFrame(
+                data=[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+                columns=flux_indicator_codes,
+            )
         )
-        mock_eligible = pd.Series([True, True, True])
+        mock_eligible = Series("eligible", pd.Series([True, True, True]))
         mock_disturbance_type = 15
 
         model_functions = SimpleNamespace()
