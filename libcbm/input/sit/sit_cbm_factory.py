@@ -8,6 +8,7 @@ from types import SimpleNamespace
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
+from enum import Enum
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.input.sit import sit_transition_rule_parser
@@ -19,6 +20,22 @@ from libcbm.input.sit import sit_classifier_parser
 from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
 from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
+
+
+class EventSort(Enum):
+
+    # evaluate sit events by timestep, and then order of
+    # appearance of disturbance types in
+    # sit_disturbance_types (default)
+    disturbance_type = 1
+
+    # evaluate sit events by timestep, and then the default disturbance type
+    # id defined in cbm_defaults database (CBM3 default)
+    default_disturbance_type_id = 2
+
+    # evaluate sit events sorted first by timestep, and then order of
+    # appearance of events within the sit_events table
+    natural_order = 3
 
 
 def get_classifiers(classifiers, classifier_values):
@@ -243,7 +260,10 @@ def initialize_inventory(sit):
     return classifiers_result, inventory_result
 
 
-def _initialize_events(disturbance_events, sit_mapping):
+def _initialize_events(
+    disturbance_events, sit_mapping, disturbance_types,
+    disturbance_sort_method: EventSort
+):
     """Returns a copy of the parsed sit events with the disturbance type id,
     and sort field resulting from the SIT configuration.
 
@@ -263,9 +283,20 @@ def _initialize_events(disturbance_events, sit_mapping):
     disturbance_events["disturbance_type_id"] = \
         sit_mapping.get_sit_disturbance_type_id(
             disturbance_events.disturbance_type)
-    disturbance_events["sort_field"] = disturbance_events[
-        "disturbance_type_id"
-    ]
+    if disturbance_sort_method == EventSort.disturbance_type:
+        disturbance_events["sort_field"] = disturbance_events[
+            "disturbance_type_id"
+        ]
+    elif disturbance_sort_method == EventSort.default_disturbance_type_id:
+        dist_description_map = {
+            d["id"]: d["name"] for _, d in disturbance_types.iterrows()}
+        disturbance_events["sort_field"] = \
+            sit_mapping.get_default_disturbance_type_id(
+                disturbance_events.disturbance_type.map(dist_description_map))
+    elif disturbance_sort_method == EventSort.natural_order:
+        disturbance_events["sort_field"] = range(len(disturbance_events.index))
+    else:
+        raise ValueError("unsupported EventSort type")
     return disturbance_events
 
 
@@ -403,7 +434,8 @@ def initialize_cbm(sit, dll_path=None, parameters_factory=None):
 def create_sit_rule_based_processor(
     sit, cbm, random_func=np.random.rand, reset_parameters=True,
     sit_events=None, sit_disturbance_eligibilities=None,
-    sit_transition_rules=None
+    sit_transition_rules=None,
+    event_sort: EventSort = EventSort.disturbance_type
 ):
     """initializes a class for processing SIT rule based disturbances.
 
@@ -436,6 +468,9 @@ def create_sit_rule_based_processor(
             be used by default.  If null transition rules are required with
             non-null sit_events set this parameter to a dataframe with zero
             rows `pandas.DataFrame()`.  Defaults to None.
+        event_sort (EventSort): one of the EventSort values, which determines
+            the order in which the supplied sit_events are applied within a
+            given timestep.
 
     Raises:
         ValueError: cannot specify sit_disturbance_eligibilities with no
@@ -495,7 +530,9 @@ def create_sit_rule_based_processor(
         random_func=random_func,
         classifiers_config=classifiers_config,
         classifier_aggregates=sit.sit_data.classifier_aggregates,
-        sit_events=_initialize_events(disturbance_events, sit.sit_mapping),
+        sit_events=_initialize_events(
+            disturbance_events, sit.sit_mapping,
+            sit.sit_data.disturbance_types, event_sort),
         sit_transitions=_initialize_transition_rules(
             transition_rules, sit.sit_mapping),
         tr_constants=tr_constants,
