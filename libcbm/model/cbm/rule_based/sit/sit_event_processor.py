@@ -104,12 +104,8 @@ class SITEventProcessor():
                 data=cbm_vars.state)]
 
     def _event_iterator(self, sit_events):
-
-        # TODO: In CBM-CFS3 events are sorted by default disturbance type id
-        # (ascending) In libcbm, sort order needs to be explicitly defined in
-        # cbm_defaults (or other place)
         sorted_events = sit_events.sort_values(
-            by="disturbance_type_id",
+            by="sort_field",
             kind="mergesort")
         # mergesort is a stable sort, and the default "quicksort" is not
         for event_index, sorted_event in sorted_events.iterrows():

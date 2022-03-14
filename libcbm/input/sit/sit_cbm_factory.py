@@ -244,8 +244,8 @@ def initialize_inventory(sit):
 
 
 def _initialize_events(disturbance_events, sit_mapping):
-    """Returns a copy of the parsed sit events with the disturbance type id
-    resulting from the SIT configuration.
+    """Returns a copy of the parsed sit events with the disturbance type id,
+    and sort field resulting from the SIT configuration.
 
     Args:
         disturbance_events (pandas.DataFrame): parsed sit_events data. See
@@ -263,6 +263,9 @@ def _initialize_events(disturbance_events, sit_mapping):
     disturbance_events["disturbance_type_id"] = \
         sit_mapping.get_sit_disturbance_type_id(
             disturbance_events.disturbance_type)
+    disturbance_events["sort_field"] = disturbance_events[
+        "disturbance_type_id"
+    ]
     return disturbance_events
 
 
