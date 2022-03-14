@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from libcbm.input.sit import sit_cbm_factory
+from libcbm.input.sit.sit_cbm_factory import EventSort
 from libcbm.model.cbm import cbm_simulator
 from libcbm import resources
 
@@ -147,3 +148,52 @@ class SITCBMFactoryTest(unittest.TestCase):
         self.assertTrue(
             sit.disturbance_name_map == {1: "a", 2: "b"}
         )
+
+    def test_integration_with_different_event_sort_modes(self):
+        """tests full CBM integration with rule based disturbances and
+        disturbance event eligibility expressions
+        """
+        config_path = os.path.join(
+            resources.get_test_resources_dir(),
+            "cbm3_tutorial2_eligibilities", "sit_config.json")
+        sit = sit_cbm_factory.load_sit(config_path)
+        with sit_cbm_factory.initialize_cbm(sit) as cbm:
+
+            rule_based_processor1 = \
+                sit_cbm_factory.create_sit_rule_based_processor(
+                    sit, cbm, event_sort=EventSort.disturbance_type)
+
+            self.assertTrue(
+                list(rule_based_processor1.sit_events["sort_field"])
+                == list(sit.sit_mapping.get_sit_disturbance_type_id(
+                    sit.sit_data.disturbance_events["disturbance_type"]))
+            )
+
+            rule_based_processor2 = \
+                sit_cbm_factory.create_sit_rule_based_processor(
+                    sit, cbm, event_sort=EventSort.default_disturbance_type_id)
+
+            expected_default_types = list(
+                sit.sit_mapping.get_default_disturbance_type_id(
+                    sit.sit_data.disturbance_events[
+                        ["disturbance_type"]
+                    ].merge(
+                        sit.sit_data.disturbance_types,
+                        how="left",
+                        left_on="disturbance_type",
+                        right_on="id"
+                    )["name"]
+                    )
+                )
+            assert (
+                list(rule_based_processor2.sit_events["sort_field"])
+                == expected_default_types)
+
+            rule_based_processor3 = \
+                sit_cbm_factory.create_sit_rule_based_processor(
+                    sit, cbm, event_sort=EventSort.natural_order)
+
+            self.assertTrue(
+                list(rule_based_processor3.sit_events["sort_field"])
+                == list(range(len(sit.sit_data.disturbance_events.index)))
+            )
