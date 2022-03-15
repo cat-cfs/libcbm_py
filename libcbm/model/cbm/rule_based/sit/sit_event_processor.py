@@ -4,6 +4,8 @@
 import pandas as pd
 from typing import Callable
 from typing import Union
+from typing import Iterator
+from typing import Tuple
 from libcbm.model.cbm.rule_based import event_processor
 from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
@@ -60,7 +62,7 @@ class SITEventProcessor:
         sit_event: dict,
         cbm_vars: CBMVariables,
         sit_eligibility=None,
-    ):
+    ) -> event_processor.ProcessEventResult:
 
         compute_disturbance_production = (
             self._get_compute_disturbance_production(
@@ -106,7 +108,7 @@ class SITEventProcessor:
 
     def _create_sit_event_filters(
         self, sit_event: dict, cbm_vars: CBMVariables
-    ):
+    ) -> list[rule_filter.RuleFilter]:
         pool_filter_expression = (
             sit_stand_filter.create_pool_filter_expression(sit_event)
         )
@@ -135,10 +137,12 @@ class SITEventProcessor:
             ),
         ]
 
-    def _event_iterator(self, sit_events):
+    def _event_iterator(
+        self, sit_events: DataFrame
+    ) -> Iterator[Tuple[int, dict]]:
         sorted_events = sit_events.sort_values(
-            by="sort_field",
-            kind="mergesort")
+            by="sort_field", kind="mergesort"
+        )
         # mergesort is a stable sort, and the default "quicksort" is not
         for event_index, sorted_event in sorted_events.iterrows():
             yield event_index, dict(sorted_event)
@@ -149,7 +153,7 @@ class SITEventProcessor:
         sit_events: DataFrame,
         cbm_vars: CBMVariables,
         sit_eligibilities: pd.DataFrame = None,
-    ):
+    ) -> Tuple[CBMVariables, pd.DataFrame]:
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
         timestep.
