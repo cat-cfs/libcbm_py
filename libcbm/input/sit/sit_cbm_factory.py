@@ -9,6 +9,7 @@ from typing import Tuple
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
+from enum import Enum
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_config
@@ -27,7 +28,188 @@ from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 
 
-def initialize_inventory(sit: SIT) -> Tuple[pd.DataFrame, pd.DataFrame]:
+class EventSort(Enum):
+
+    # evaluate sit events by timestep, and then order of
+    # appearance of disturbance types in
+    # sit_disturbance_types (default)
+    disturbance_type = 1
+
+    # evaluate sit events by timestep, and then the default disturbance type
+    # id defined in cbm_defaults database (CBM3 default)
+    default_disturbance_type_id = 2
+
+    # evaluate sit events sorted first by timestep, and then order of
+    # appearance of events within the sit_events table
+    natural_order = 3
+
+
+def get_classifiers(classifiers, classifier_values):
+    """Create classifier input for initializing the CBM class based on CBM
+    Standard import tool formatted data.
+
+    Args:
+        classifiers (pandas.DataFrame): the parsed SIT classifiers output
+            of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        classifier_values (pandas.DataFrame): the parsed SIT classifier values
+            output of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+
+    Returns:
+        dict: configuration dictionary for CBM. See:
+            :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
+    """
+    classifiers_config = []
+    for _, row in classifiers.iterrows():
+        values = classifier_values[
+            classifier_values.classifier_id == row.id].name
+        classifiers_config.append(cbm_config.classifier(
+            name=row["name"],
+            values=[cbm_config.classifier_value(value=x) for x in list(values)]
+        ))
+
+    config = cbm_config.classifier_config(classifiers_config)
+    return config
+
+
+def _create_disturbance_type_maps(sit):
+    """Create maps from the internally defined sequential sit disturbance type
+    id to all of:
+
+
+        * default_disturbance_id_map - maps to the default disturbance type id
+        * disturbance_id_map - maps to the sit disturbance type input "id"
+            field (col 0)
+        * disturbance_name_map - maps to the sit disturbance type input "name"
+            field (col 1)
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+    """
+    sit.default_disturbance_id_map = {
+        row.sit_disturbance_type_id: row.default_disturbance_type_id
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+    sit.disturbance_id_map = {
+        row.sit_disturbance_type_id: row.id
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+    sit.disturbance_name_map = {
+        row.sit_disturbance_type_id: row["name"]
+        for _, row in sit.sit_data.disturbance_types.iterrows()}
+
+
+def _create_classifier_value_maps(sit):
+    """Creates dictionaries for fetching internally defined identifiers
+    and attaches them to the specified sit object instance. Values can
+    then be fetched from the sit instance like the following examples::
+
+        classifier_id = sit.classifier_ids["my_classifier_name"]
+        classifier_name = sit.classifier_names[1]
+        classifier_value_id = \
+            sit.classifier_value_ids["classifier1"]["classifier1_value1"]
+
+    The following fields will be assigned to the specified sit instance:
+
+        * classifier_names - dictionary of id (int, key) to
+            name (str, value) for each classifier
+        * classifier_ids - dictionary of name (str, value)
+            to id (int, key) for each classifier
+        * classifier_value_ids - nested dictionary, with one entry per
+            classifier name. Each nested dictionary contains classifier value
+            name (str, key) to classifier value id (int, value)
+
+            Example::
+
+                {
+                    "classifier_name_1": {
+                        "classifier_1_value_name_1": 1,
+                        "classifier_1_value_name_2": 2
+                    },
+                    "classifier_name_2": {
+                        "classifier_2_value_name_1": 3,
+                        "classifier_2_value_name_2": 4
+                    },
+                    ...
+                }
+
+        * classifier_value_names - nested dictionary, with one entry per
+            classifier id. Each nested dictionary contains classifier value
+            name (str, key) to classifier value id (int, value)
+
+            Example::
+
+                {
+                    1: {
+                        1: "classifier_1_value_name_1",
+                        2: "classifier_1_value_name_2"
+                    },
+                    2: {
+                        3: "classifier_2_value_name_1"
+                        4: "classifier_2_value_name_2"
+                    },
+                    ...
+                }
+
+    Args:
+        sit (object): sit instance as returned by :py:func:`load_sit`
+    """
+    classifiers_config = get_classifiers(
+        sit.sit_data.classifiers, sit.sit_data.classifier_values)
+    idx = cbm_config.get_classifier_indexes(classifiers_config)
+    sit.classifier_names = idx["classifier_names"]
+    sit.classifier_ids = idx["classifier_ids"]
+    sit.classifier_value_ids = idx["classifier_value_ids"]
+    sit.classifier_value_names = idx["classifier_value_names"]
+
+
+def get_merch_volumes(yield_table, classifiers, classifier_values, age_classes,
+                      sit_mapping):
+    """Create merchantable volume input for initializing the CBM class
+    based on CBM Standard import tool formatted data.
+
+    Args:
+        yield_table (pandas.DataFrame): the parsed SIT yield output
+            of :py:func:`libcbm.input.sit.sit_yield_parser.parse`
+        classifiers (pandas.DataFrame): the parsed SIT classifiers output
+            of :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
+        age_classes (pandas.DataFrame): the parsed SIT age classes
+            output of :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        sit_mapping (libcbm.input.sit.sit_mapping.SITMapping): instance of
+            SITMapping used to validate species classifier and fetch species id
+
+    Returns:
+        dict: configuration dictionary for CBM. See:
+            :py:func:`libcbm.model.cbm.cbm_config.classifier_config`
+    """
+
+    unique_classifier_sets = yield_table.groupby(
+        list(classifiers.name)).size().reset_index()
+    # removes the extra field created by the above method
+    unique_classifier_sets = unique_classifier_sets.drop(columns=[0])
+    ages = list(age_classes.end_year)
+    output = []
+    yield_table.leading_species = sit_mapping.get_species(
+        yield_table.leading_species, classifiers, classifier_values)
+    for _, row in unique_classifier_sets.iterrows():
+        match = yield_table.merge(
+            pd.DataFrame([row]),
+            left_on=list(classifiers.name),
+            right_on=list(classifiers.name))
+        merch_vols = []
+        for _, match_row in match.iterrows():
+            vols = match_row.iloc[len(classifiers)+1:]
+            merch_vols.append({
+                "species_id": match_row["leading_species"],
+                "age_volume_pairs": [
+                    (ages[i], vols[i]) for i in range(len(vols))]
+            })
+        output.append(
+            cbm_config.merch_volume_curve(
+                classifier_set=list(row),
+                merch_volumes=merch_vols
+            ))
+    return output
+
+
+def initialize_inventory(sit):
     """Converts SIT inventory data input for CBM
 
     Args:
@@ -100,10 +282,11 @@ def initialize_inventory(sit: SIT) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def _initialize_events(
-    disturbance_events: pd.DataFrame, sit_mapping: SITMapping
-) -> pd.DataFrame:
-    """Returns a copy of the parsed sit events with the disturbance type id
-    resulting from the SIT configuration.
+    disturbance_events, sit_mapping, disturbance_types,
+    disturbance_sort_method: EventSort
+):
+    """Returns a copy of the parsed sit events with the disturbance type id,
+    and sort field resulting from the SIT configuration.
 
     Args:
         disturbance_events (pandas.DataFrame): parsed sit_events data. See
@@ -118,11 +301,23 @@ def _initialize_events(
     if disturbance_events is None:
         return None
     disturbance_events = disturbance_events.copy()
-    disturbance_events[
-        "disturbance_type_id"
-    ] = sit_mapping.get_sit_disturbance_type_id(
-        disturbance_events.disturbance_type
-    )
+    disturbance_events["disturbance_type_id"] = \
+        sit_mapping.get_sit_disturbance_type_id(
+            disturbance_events.disturbance_type)
+    if disturbance_sort_method == EventSort.disturbance_type:
+        disturbance_events["sort_field"] = disturbance_events[
+            "disturbance_type_id"
+        ]
+    elif disturbance_sort_method == EventSort.default_disturbance_type_id:
+        dist_description_map = {
+            d["id"]: d["name"] for _, d in disturbance_types.iterrows()}
+        disturbance_events["sort_field"] = \
+            sit_mapping.get_default_disturbance_type_id(
+                disturbance_events.disturbance_type.map(dist_description_map))
+    elif disturbance_sort_method == EventSort.natural_order:
+        disturbance_events["sort_field"] = range(len(disturbance_events.index))
+    else:
+        raise ValueError("unsupported EventSort type")
     return disturbance_events
 
 
@@ -246,14 +441,11 @@ def initialize_cbm(
 
 
 def create_sit_rule_based_processor(
-    sit: SIT,
-    cbm: CBM,
-    random_func=np.random.rand,
-    reset_parameters: bool = True,
-    sit_events: pd.DataFrame = None,
-    sit_disturbance_eligibilities: pd.DataFrame = None,
-    sit_transition_rules: pd.DataFrame = None,
-) -> sit_rule_based_processor.SITRuleBasedProcessor:
+    sit, cbm, random_func=np.random.rand, reset_parameters=True,
+    sit_events=None, sit_disturbance_eligibilities=None,
+    sit_transition_rules=None,
+    event_sort: EventSort = EventSort.disturbance_type
+):
     """initializes a class for processing SIT rule based disturbances.
 
     Args:
@@ -285,6 +477,9 @@ def create_sit_rule_based_processor(
             be used by default.  If null transition rules are required with
             non-null sit_events set this parameter to a dataframe with zero
             rows `pandas.DataFrame()`.  Defaults to None.
+        event_sort (EventSort): one of the EventSort values, which determines
+            the order in which the supplied sit_events are applied within a
+            given timestep.
 
     Raises:
         ValueError: cannot specify sit_disturbance_eligibilities with no
@@ -356,7 +551,9 @@ def create_sit_rule_based_processor(
         random_func=random_func,
         classifiers_config=classifiers_config,
         classifier_aggregates=sit.sit_data.classifier_aggregates,
-        sit_events=_initialize_events(disturbance_events, sit.sit_mapping),
+        sit_events=_initialize_events(
+            disturbance_events, sit.sit_mapping,
+            sit.sit_data.disturbance_types, event_sort),
         sit_transitions=_initialize_transition_rules(
             transition_rules, sit.sit_mapping
         ),

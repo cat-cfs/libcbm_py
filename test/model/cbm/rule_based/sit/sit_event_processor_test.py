@@ -31,9 +31,9 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_sit_events = pd.DataFrame(
                 data={
                     "time_step": [1, 1, 2, 2, 2, 2],
-                    "disturbance_type_id": [2, 1, 2, 2, 1, 1],
-                }
-            )
+                    "disturbance_type_id": [6, 5, 4, 3, 2, 1],
+                    "sort_field": [1, 2, 3, 4, 5, 6],
+                })
 
             # since everything is thoroughly mocked, this data wont matter much
             # for the purposes of this test, other than the type is DataFrame,
@@ -71,20 +71,12 @@ class SITEventProcessorTest(unittest.TestCase):
             mock_event_processor = mocks["event_processor"]
             mock_event_processor.process_event = Mock()
 
-            def mock_process_event(
-                event_filters,
-                undisturbed,
-                target_func,
-                disturbance_type_id,
-                cbm_vars,
-            ):
-                call_count = mock_event_processor.process_event.call_count
+            disturbance_id_order = []
 
-                # using call count checks event sorting
-                if call_count == 1:
-                    self.assertTrue(disturbance_type_id == 1)
-                else:
-                    self.assertTrue(disturbance_type_id == 2)
+            def mock_process_event(event_filters, undisturbed, target_func,
+                                   disturbance_type_id, cbm_vars):
+
+                disturbance_id_order.append(disturbance_type_id)
 
                 n_stands = cbm_vars.inventory.shape[0]
                 self.assertTrue(list(undisturbed) == [True] * n_stands)
@@ -163,3 +155,12 @@ class SITEventProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars_result.state.equals(mock_state_variables))
             self.assertTrue(cbm_vars_result.parameters.equals(mock_params))
             self.assertTrue(stats.shape[0] == 2)
+
+            # check that sort_order, timetstep determine the order that event
+            # are executed
+            expected_disturbance_id_order = list(
+                mock_sit_events[mock_sit_events.time_step == 1].sort_values(
+                    by=["time_step", "sort_field"]
+                ).disturbance_type_id)
+            self.assertTrue(
+                disturbance_id_order == expected_disturbance_id_order)
