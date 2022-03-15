@@ -33,7 +33,8 @@ class SITEventProcessorTest(unittest.TestCase):
                     "time_step": [1, 1, 2, 2, 2, 2],
                     "disturbance_type_id": [6, 5, 4, 3, 2, 1],
                     "sort_field": [1, 2, 3, 4, 5, 6],
-                })
+                }
+            )
 
             # since everything is thoroughly mocked, this data wont matter much
             # for the purposes of this test, other than the type is DataFrame,
@@ -73,8 +74,13 @@ class SITEventProcessorTest(unittest.TestCase):
 
             disturbance_id_order = []
 
-            def mock_process_event(event_filters, undisturbed, target_func,
-                                   disturbance_type_id, cbm_vars):
+            def mock_process_event(
+                event_filters,
+                undisturbed,
+                target_func,
+                disturbance_type_id,
+                cbm_vars,
+            ):
 
                 disturbance_id_order.append(disturbance_type_id)
 
@@ -159,8 +165,10 @@ class SITEventProcessorTest(unittest.TestCase):
             # check that sort_order, timetstep determine the order that event
             # are executed
             expected_disturbance_id_order = list(
-                mock_sit_events[mock_sit_events.time_step == 1].sort_values(
-                    by=["time_step", "sort_field"]
-                ).disturbance_type_id)
+                mock_sit_events[mock_sit_events.time_step == 1]
+                .sort_values(by=["time_step", "sort_field"])
+                .disturbance_type_id
+            )
             self.assertTrue(
-                disturbance_id_order == expected_disturbance_id_order)
+                disturbance_id_order == expected_disturbance_id_order
+            )
