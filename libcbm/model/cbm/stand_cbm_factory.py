@@ -21,6 +21,7 @@ def _safe_map(series, map):
     Returns:
         pd.Series: The mapped series (see :py:func:`pandas.Series.map`)
     """
+
     out_series = series.map(map)
     null_values = pd.isnull(out_series)
     if null_values.any():
@@ -96,14 +97,37 @@ class StandCBMFactory:
         self._merch_volumes = merch_volumes
         self._locale = locale
         self.defaults_ref = CBMDefaultsReference(self._db_path, self._locale)
-        self.merch_vol_factory = self.merch_volumes_factory()
+
         self._classifier_config = self._get_classifier_config()
         self._classifier_idx = cbm_config.get_classifier_indexes(
             self._classifier_config)
+        self.merch_vol_factory = self.merch_volumes_factory()
+
+    def _has_undefined_classifier_values(self, classifier_set):
+        """returns true if any non-wildcard value in the classifier_set does
+        not correspond to a value in self._classifiers.
+
+        Used as a convenience for when the yield table passed to this class
+        contains "extra" values that can not possibly be used due to no linkage
+        to any defined inventory/classifier set
+
+        Args:
+            classifier_set (list): list of classifier value strings
+        """
+        classifier_index = self._classifier_idx["classifier_value_ids"]
+        for i, c in enumerate(classifier_index.keys()):
+            if (
+                classifier_set[i] not in classifier_index[c]
+                and classifier_set[i] != "?"
+            ):
+                return True
+        return False
 
     def merch_volumes_factory(self):
         merch_volume_list = []
         for c in self._merch_volumes:
+            if self._has_undefined_classifier_values(c["classifier_set"]):
+                continue
             merch_volume_list.append(
                 cbm_config.merch_volume_curve(
                     classifier_set=c["classifier_set"],
@@ -112,7 +136,7 @@ class StandCBMFactory:
                             "species_id": self.defaults_ref.get_species_id(
                                 m["species"]),
                             "age_volume_pairs": [
-                                list(age_vol)
+                                [int(age_vol[0]), float(age_vol[1])]
                                 for age_vol in m["age_volume_pairs"]
                             ],
                         }
@@ -202,8 +226,8 @@ class StandCBMFactory:
                 "spatial_unit": _safe_map(
                     inventory_df.index,
                     lambda x: self.defaults_ref.get_spatial_unit_id(
-                        str(inventory_df.admin_boundary.iloc[x]),
-                        str(inventory_df.eco_boundary.iloc[x]))
+                        str(inventory_df.admin_boundary.loc[x]),
+                        str(inventory_df.eco_boundary.loc[x]))
                 ),
                 "afforestation_pre_type_id": _safe_map(
                     inventory_df.afforestation_pre_type,
