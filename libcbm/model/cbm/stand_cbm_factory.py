@@ -112,7 +112,8 @@ class StandCBMFactory:
 
         self._classifier_config = self._get_classifier_config()
         self._classifier_idx = cbm_config.get_classifier_indexes(
-            self._classifier_config)
+            self._classifier_config
+        )
         self.merch_vol_factory = self.merch_volumes_factory()
 
     def _has_undefined_classifier_values(self, classifier_set):
@@ -245,7 +246,8 @@ class StandCBMFactory:
                     inventory_df.index,
                     lambda x: self.defaults_ref.get_spatial_unit_id(
                         str(inventory_df.admin_boundary.loc[x]),
-                        str(inventory_df.eco_boundary.loc[x]))
+                        str(inventory_df.eco_boundary.loc[x]),
+                    ),
                 ),
                 "afforestation_pre_type_id": _safe_map(
                     inventory_df["afforestation_pre_type"],
