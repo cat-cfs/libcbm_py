@@ -26,6 +26,8 @@ from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
+from libcbm.storage import dataframe
+from libcbm.storage.dataframe import DataFrame
 
 
 class EventSort(Enum):
@@ -44,7 +46,7 @@ class EventSort(Enum):
     natural_order = 3
 
 
-def initialize_inventory(sit: SIT) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
     """Converts SIT inventory data input for CBM
 
     Args:
@@ -79,39 +81,45 @@ def initialize_inventory(sit: SIT) -> Tuple[pd.DataFrame, pd.DataFrame]:
     )
 
     classifiers_data = np.ascontiguousarray(classifiers_data)
-    classifiers_result = pd.DataFrame(
-        data=classifiers_data, columns=list(sit_data.classifiers.name)
+    classifiers_result = dataframe.from_pandas(
+        pd.DataFrame(
+            data=classifiers_data, columns=list(sit_data.classifiers.name)
+        )
     )
 
-    inventory_result = pd.DataFrame(
-        data={
-            "age": sit_data.inventory.age,
-            "spatial_unit": sit_mapping.get_spatial_unit(
-                sit_data.inventory,
-                sit_data.classifiers,
-                sit_data.classifier_values,
-            ),
-            "afforestation_pre_type_id": sit_mapping.get_nonforest_cover_ids(
-                sit_data.inventory,
-                sit_data.classifiers,
-                sit_data.classifier_values,
-            ),
-            "area": sit_data.inventory.area,
-            "delay": sit_data.inventory.delay,
-            "land_class": sit_mapping.get_land_class_id(
-                sit_data.inventory.land_class
-            ),
-            "historical_disturbance_type": (
-                sit_mapping.get_sit_disturbance_type_id(
-                    sit_data.inventory.historical_disturbance_type
-                )
-            ),
-            "last_pass_disturbance_type": (
-                sit_mapping.get_sit_disturbance_type_id(
-                    sit_data.inventory.last_pass_disturbance_type
-                )
-            ),
-        }
+    inventory_result = dataframe.from_pandas(
+        pd.DataFrame(
+            data={
+                "age": sit_data.inventory.age,
+                "spatial_unit": sit_mapping.get_spatial_unit(
+                    sit_data.inventory,
+                    sit_data.classifiers,
+                    sit_data.classifier_values,
+                ),
+                "afforestation_pre_type_id": (
+                    sit_mapping.get_nonforest_cover_ids(
+                        sit_data.inventory,
+                        sit_data.classifiers,
+                        sit_data.classifier_values,
+                    )
+                ),
+                "area": sit_data.inventory.area,
+                "delay": sit_data.inventory.delay,
+                "land_class": sit_mapping.get_land_class_id(
+                    sit_data.inventory.land_class
+                ),
+                "historical_disturbance_type": (
+                    sit_mapping.get_sit_disturbance_type_id(
+                        sit_data.inventory.historical_disturbance_type
+                    )
+                ),
+                "last_pass_disturbance_type": (
+                    sit_mapping.get_sit_disturbance_type_id(
+                        sit_data.inventory.last_pass_disturbance_type
+                    )
+                ),
+            }
+        )
     )
     return classifiers_result, inventory_result
 
