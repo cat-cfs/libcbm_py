@@ -8,7 +8,7 @@ from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 
 

@@ -4,8 +4,8 @@
 
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.dataframe import Series
-from libcbm.storage.dataframe import NullSeries
+from libcbm.storage.series import Series
+from libcbm.storage.series import NullSeries
 from libcbm.storage.backends import BackendType
 
 

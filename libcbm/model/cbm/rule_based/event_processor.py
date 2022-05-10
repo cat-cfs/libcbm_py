@@ -7,7 +7,7 @@ from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe_functions
 

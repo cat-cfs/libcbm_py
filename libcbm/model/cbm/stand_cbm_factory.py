@@ -5,7 +5,7 @@ from typing import Tuple
 import pandas as pd
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe_functions
 from libcbm.model.cbm import cbm_factory

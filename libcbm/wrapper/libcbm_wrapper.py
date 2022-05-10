@@ -9,7 +9,7 @@ from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix_Int
 from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 
 
 class LibCBMWrapper:

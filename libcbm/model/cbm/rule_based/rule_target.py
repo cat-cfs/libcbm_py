@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy as np
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 
 
 class RuleTargetResult:

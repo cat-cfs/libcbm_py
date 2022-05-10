@@ -1,7 +1,7 @@
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage import dataframe_functions
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 import numpy as np
 
 

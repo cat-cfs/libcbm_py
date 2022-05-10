@@ -1,7 +1,7 @@
 import unittest
 import pandas as pd
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from types import SimpleNamespace
 from libcbm.model.cbm import cbm_model
 

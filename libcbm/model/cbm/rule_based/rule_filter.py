@@ -6,7 +6,7 @@
 import numexpr
 import numpy as np
 from typing import Union
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 
 

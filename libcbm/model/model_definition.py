@@ -6,7 +6,7 @@ from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-from libcbm.storage.dataframe import Series
+from libcbm.storage.series import Series
 from libcbm.storage import dataframe
 from libcbm.storage.backends import BackendType
 from libcbm.storage import dataframe_functions
