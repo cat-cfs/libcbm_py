@@ -5,6 +5,7 @@
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
+from libcbm.storage import series
 from libcbm.storage.series import NullSeries
 from libcbm.storage.backends import BackendType
 
@@ -98,10 +99,10 @@ def _initialize_flux(
 def initialize_spinup_parameters(
     n_stands: int,
     back_end: BackendType = BackendType.numpy,
-    return_interval: dataframe.SeriesInitType = None,
-    min_rotations: dataframe.SeriesInitType = None,
-    max_rotations: dataframe.SeriesInitType = None,
-    mean_annual_temp: dataframe.SeriesInitType = None,
+    return_interval: series.SeriesInitType = None,
+    min_rotations: series.SeriesInitType = None,
+    max_rotations: series.SeriesInitType = None,
+    mean_annual_temp: series.SeriesInitType = None,
 ) -> DataFrame:
     """Create spinup parameters as a collection of variable vectors
 
@@ -194,9 +195,9 @@ def _initialize_spinup_state_variables(
 def _initialize_cbm_parameters(
     n_stands: int,
     back_end: BackendType,
-    disturbance_type: dataframe.SeriesInitType = 0,
-    reset_age: dataframe.SeriesInitType = -1,
-    mean_annual_temp: dataframe.SeriesInitType = None,
+    disturbance_type: series.SeriesInitType = 0,
+    reset_age: series.SeriesInitType = -1,
+    mean_annual_temp: series.SeriesInitType = None,
 ) -> DataFrame:
     """Create CBM parameters as a collection of variable vectors
 
