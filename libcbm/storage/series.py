@@ -21,7 +21,10 @@ class Series:
         init: SeriesInitType,
         type: str = None,
     ):
-        raise NotImplementedError()
+        self._name = name
+
+    def name(self) -> str:
+        return self._name
 
     def filter(self, arg: "Series") -> "Series":
         """
@@ -94,6 +97,9 @@ class Series:
         raise NotImplementedError()
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
+        raise NotImplementedError()
+
+    def __eq__(sefl, other: Union[int, float, "Series"]) -> "Series":
         raise NotImplementedError()
 
 
