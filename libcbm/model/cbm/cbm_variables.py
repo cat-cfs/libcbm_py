@@ -363,7 +363,7 @@ def initialize_spinup_variables(
     include_flux: bool = False,
 ) -> CBMVariables:
 
-    n_stands = cbm_vars.inventory.shape[0]
+    n_stands = cbm_vars.inventory.n_rows
     if spinup_params is None:
         spinup_params = initialize_spinup_parameters(n_stands)
 
@@ -401,7 +401,7 @@ def initialize_simulation_variables(
     Returns:
         object: Returns the cbm_vars object for simulating CBM.
     """
-    n_stands = inventory.shape[0]
+    n_stands = inventory.n_rows
     cbm_vars = CBMVariables()
     cbm_vars.pools = _initialize_pools(n_stands, pool_codes)
     cbm_vars.flux = _initialize_flux(n_stands, flux_indicator_codes)
