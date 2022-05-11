@@ -189,7 +189,7 @@ def create_sit_event_target(
         elif target_type == merchantable_target_type:
             rule_target_result = rule_target.proportion_merch_target(
                 carbon_target=target,
-                disturbance_production=production.Total,
+                disturbance_production=production["Total"],
                 inventory=cbm_vars.inventory,
                 efficiency=sit_event_row["efficiency"],
                 eligible=eligible,
