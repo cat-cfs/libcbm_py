@@ -98,11 +98,23 @@ class DataFrame:
 def numeric_dataframe(
     cols: list[str],
     nrows: int,
+    back_end: BackendType,
     init: float = 0.0,
-    back_end: BackendType = BackendType.numpy,
 ) -> DataFrame:
-    raise NotImplementedError()
+    return factory.get_backend(back_end).numeric_dataframe(cols, nrows, init)
 
 
-def from_pandas(df: pd.DataFrame) -> DataFrame:
-    return DataFrame(df, back_end=BackendType.pandas)
+def from_pandas(df: pd.DataFrame, back_end: BackendType) -> DataFrame:
+    return factory.get_backend(back_end).from_pandas(df)
+
+
+def from_series_dict(
+    series_dict: dict[str, Series], back_end: BackendType, nrows: int
+) -> DataFrame:
+    return
+
+
+def from_series_list(
+    series_list: list[Series], back_end: BackendType, nrows: int
+) -> DataFrame:
+    return
