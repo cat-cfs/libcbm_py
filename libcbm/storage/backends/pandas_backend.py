@@ -9,103 +9,70 @@ from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
 
 
-def getitem(df, col_name: str) -> Series:
-    data = df[col_name]
-    return Series(col_name, df[col_name], str(data.dtype))
+class PandasDataFrameBackend(DataFrame):
+    def __init__(self, df: pd.DataFrame) -> None:
+        super().__init__()
+        self._df = df
 
+    def getitem(self, col_name: str) -> Series:
+        data = self._df[col_name]
+        return Series(col_name, self._df[col_name], str(data.dtype))
 
-def filter(df: pd.DataFrame, arg: Series) -> DataFrame:
-    return DataFrame(df[arg.to_numpy()], back_end=BackendType.pandas)
+    def filter(self, arg: Series) -> DataFrame:
+        return DataFrame(self._df[arg.to_numpy()], back_end=BackendType.pandas)
 
+    def take(self, indices: Series) -> DataFrame:
+        return DataFrame(
+            self._df.iloc[indices.to_numpy()], back_end=BackendType.pandas
+        )
 
-def take(df: pd.DataFrame, indices: Series) -> DataFrame:
-    return DataFrame(df.iloc[indices.to_numpy()], back_end=BackendType.pandas)
+    def at(self, index: int) -> dict:
+        return self._df.iloc[index].to_dict()
 
+    def assign(self, col_name: str, value: Any, indices: Series = None):
+        if indices is not None:
+            self._df.iloc[
+                indices.to_numpy(), self._df.columns.get_loc(col_name)
+            ] = value
+        else:
+            self._df.iloc[:, self._df.columns.get_loc(col_name)] = value
 
-def at(df: pd.DataFrame, index: int) -> dict:
-    return df.iloc[index].to_dict()
+    def n_rows(self) -> int:
+        return len(self._df.index)
 
+    def n_cols(self) -> int:
+        return len(self._df.columns)
 
-def assign(
-    df: pd.DataFrame, col_name: str, value: Any, indices: Series = None
-):
-    if indices is not None:
-        df.iloc[indices.to_numpy(), df.columns.get_loc(col_name)] = value
-    else:
-        df.iloc[:, df.columns.get_loc(col_name)] = value
+    def columns(self) -> list[str]:
+        return list(self._df.columns)
 
+    def backend_type(self) -> BackendType:
+        return BackendType.pandas
 
-def n_rows(df: pd.DataFrame) -> int:
-    return len(df.index)
+    def copy(self) -> DataFrame:
+        return PandasDataFrameBackend(self._df.copy())
 
+    def multiply(self, series: Series) -> DataFrame:
+        result = self._df.multiply(series.to_numpy(), axis=0)
+        return PandasDataFrameBackend(result)
 
-def n_cols(df: pd.DataFrame) -> int:
-    return len(df.columns)
+    def add_column(self, series: Series, index: int) -> None:
+        self._df.insert(index, series.name, series.to_numpy())
 
+    def to_c_contiguous_numpy_array(self) -> np.ndarray:
+        return np.ascontiguousarray(self._df)
 
-def columns(df: pd.DataFrame) -> list[str]:
-    return list(df.columns)
+    def to_pandas(self) -> pd.DataFrame:
+        return self._df
 
+    def zero(self):
+        self._df.iloc[:] = 0
 
-def backend_type() -> BackendType:
-    return BackendType.pandas
-
-
-def copy(df: pd.DataFrame) -> DataFrame:
-    return DataFrame(df.copy(), back_end=BackendType.pandas)
-
-
-def multiply(df: pd.DataFrame, series: Series) -> DataFrame:
-    result = df.multiply(series.to_numpy(), axis=0)
-    return DataFrame(result, back_end=BackendType.pandas)
-
-
-def add_column(df: pd.DataFrame, series: Series, index: int) -> None:
-    df.insert(index, series.name, series.to_numpy())
-
-
-def to_c_contiguous_numpy_array(df: pd.DataFrame) -> np.ndarray:
-    return np.ascontiguousarray(df)
-
-
-def to_pandas(df: pd.DataFrame) -> pd.DataFrame:
-    return df
-
-
-def zero(df: pd.DataFrame):
-    df.iloc[:] = 0
-
-
-def map(df: pd.DataFrame, arg: Union[dict, Callable]) -> DataFrame:
-    cols = list(df.columns)
-    output = pd.DataFrame(
-        index=df.index,
-        columns=cols,
-        data={col: df[col].map(arg) for col in cols},
-    )
-    return DataFrame(output, back_end=BackendType.pandas)
-
-
-def numeric_dataframe(
-    cols: list[str], nrows: int, init: float = 0.0
-) -> DataFrame:
-    df = pd.DataFrame(
-        columns=cols, data=np.full(shape=(nrows, len(cols)), fill_value=init)
-    )
-    return DataFrame(df, back_end=BackendType.pandas)
-
-
-def from_pandas(df: pd.DataFrame) -> DataFrame:
-    return DataFrame(df, back_end=BackendType.pandas)
-
-
-def from_series_dict(
-    series_dict: dict[str, Series], back_end: BackendType, nrows: int
-) -> DataFrame:
-    return
-
-
-def from_series_list(
-    series_list: list[Series], back_end: BackendType, nrows: int
-) -> DataFrame:
-    return
+    def map(self, arg: Union[dict, Callable]) -> DataFrame:
+        cols = list(self._df.columns)
+        output = pd.DataFrame(
+            index=self._df.index,
+            columns=cols,
+            data={col: self._df[col].map(arg) for col in cols},
+        )
+        return DataFrame(output, back_end=BackendType.pandas)
