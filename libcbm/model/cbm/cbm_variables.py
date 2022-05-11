@@ -11,32 +11,45 @@ from libcbm.storage.backends import BackendType
 
 
 class CBMVariables:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        pools: DataFrame,
+        flux: DataFrame,
+        classifiers: DataFrame,
+        state: DataFrame,
+        inventory: DataFrame,
+        parameters: DataFrame,
+    ):
+        self._pools = pools
+        self._flux = flux
+        self._classifiers = classifiers
+        self._state = state
+        self._inventory = inventory
+        self._parameters = parameters
 
     @property
     def pools(self) -> DataFrame:
-        pass
+        return self._pools
 
     @property
     def flux(self) -> DataFrame:
-        pass
+        return self._flux
 
     @property
     def classifiers(self) -> DataFrame:
-        pass
+        return self._classifiers
 
     @property
     def state(self) -> DataFrame:
-        pass
+        return self._state
 
     @property
     def inventory(self) -> DataFrame:
-        pass
+        return self._inventory
 
     @property
     def parameters(self) -> DataFrame:
-        pass
+        return self._parameters
 
 
 def _initialize_pools(
@@ -66,7 +79,7 @@ def _initialize_pools(
     # By convention the libcbm CBM implementation uses an input pool at
     # index 0 whose value is always 1.0.
     # TODO: move this into the lower level code, since it is a model behaviour
-    pools[pool_codes[0]] = 1.0
+    pools.assign(pool_codes[0], 1.0)
 
     return pools
 
@@ -359,21 +372,24 @@ def _initialize_classifiers(
 
 def initialize_spinup_variables(
     cbm_vars: CBMVariables,
+    back_end_type: BackendType,
     spinup_params: DataFrame = None,
     include_flux: bool = False,
 ) -> CBMVariables:
 
     n_stands = cbm_vars.inventory.n_rows
     if spinup_params is None:
-        spinup_params = initialize_spinup_parameters(n_stands)
+        spinup_params = initialize_spinup_parameters(n_stands, back_end_type)
 
-    spinup_vars = CBMVariables()
-    spinup_vars.pools = cbm_vars.pools
-    spinup_vars.flux = cbm_vars.flux if include_flux else None
-    spinup_vars.parameters = spinup_params
-    spinup_vars.state = _initialize_spinup_state_variables(n_stands)
-    spinup_vars.inventory = cbm_vars.inventory
-    spinup_vars.classifiers = cbm_vars.classifiers
+    spinup_vars = CBMVariables(
+        cbm_vars.pools,
+        cbm_vars.flux if include_flux else None,
+        cbm_vars.classifiers,
+        _initialize_spinup_state_variables(n_stands, back_end_type),
+        cbm_vars.inventory,
+        spinup_params,
+    )
+
     return spinup_vars
 
 
@@ -382,6 +398,7 @@ def initialize_simulation_variables(
     inventory: DataFrame,
     pool_codes: list[str],
     flux_indicator_codes: list[str],
+    back_end_type: BackendType,
 ) -> CBMVariables:
     """Packages and initializes the cbm variables (cbm_vars) as an object with
     named properties
@@ -402,11 +419,13 @@ def initialize_simulation_variables(
         object: Returns the cbm_vars object for simulating CBM.
     """
     n_stands = inventory.n_rows
-    cbm_vars = CBMVariables()
-    cbm_vars.pools = _initialize_pools(n_stands, pool_codes)
-    cbm_vars.flux = _initialize_flux(n_stands, flux_indicator_codes)
-    cbm_vars.parameters = _initialize_cbm_parameters(n_stands)
-    cbm_vars.state = _initialize_cbm_state_variables(n_stands)
-    cbm_vars.inventory = _initialize_inventory(inventory)
-    cbm_vars.classifiers = _initialize_classifiers(classifiers)
+    cbm_vars = CBMVariables(
+        _initialize_pools(n_stands, pool_codes, back_end_type),
+        _initialize_flux(n_stands, flux_indicator_codes, back_end_type),
+        _initialize_classifiers(classifiers, back_end_type),
+        _initialize_cbm_state_variables(n_stands, back_end_type),
+        _initialize_inventory(inventory, back_end_type),
+        _initialize_cbm_parameters(n_stands, back_end_type),
+    )
+
     return cbm_vars
