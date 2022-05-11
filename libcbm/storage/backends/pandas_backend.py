@@ -29,7 +29,10 @@ def at(df: pd.DataFrame, index: int) -> dict:
 def assign(
     df: pd.DataFrame, col_name: str, value: Any, indices: Series = None
 ):
-    df.iloc[indices.to_numpy(), df.columns.get_loc[col_name]] = value
+    if indices is not None:
+        df.iloc[indices.to_numpy(), df.columns.get_loc(col_name)] = value
+    else:
+        df.iloc[:, df.columns.get_loc(col_name)] = value
 
 
 def n_rows(df: pd.DataFrame) -> int:
@@ -76,8 +79,33 @@ def zero(df: pd.DataFrame):
 def map(df: pd.DataFrame, arg: Union[dict, Callable]) -> DataFrame:
     cols = list(df.columns)
     output = pd.DataFrame(
-        index=df.index, columns=cols,
-        data={
-            col: df[col].map(arg) for col in cols
-        })
+        index=df.index,
+        columns=cols,
+        data={col: df[col].map(arg) for col in cols},
+    )
     return DataFrame(output, back_end=BackendType.pandas)
+
+
+def numeric_dataframe(
+    cols: list[str], nrows: int, init: float = 0.0
+) -> DataFrame:
+    df = pd.DataFrame(
+        columns=cols, data=np.full(shape=(nrows, len(cols)), fill_value=init)
+    )
+    return DataFrame(df, back_end=BackendType.pandas)
+
+
+def from_pandas(df: pd.DataFrame) -> DataFrame:
+    return DataFrame(df, back_end=BackendType.pandas)
+
+
+def from_series_dict(
+    series_dict: dict[str, Series], back_end: BackendType, nrows: int
+) -> DataFrame:
+    return
+
+
+def from_series_list(
+    series_list: list[Series], back_end: BackendType, nrows: int
+) -> DataFrame:
+    return
