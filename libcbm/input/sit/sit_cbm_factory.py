@@ -81,13 +81,13 @@ def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
     )
 
     classifiers_data = np.ascontiguousarray(classifiers_data)
-    classifiers_result = dataframe.from_pandas(
+    classifiers_result = DataFrame(
         pd.DataFrame(
             data=classifiers_data, columns=list(sit_data.classifiers.name)
         )
     )
 
-    inventory_result = dataframe.from_pandas(
+    inventory_result = DataFrame(
         pd.DataFrame(
             data={
                 "age": sit_data.inventory.age,
