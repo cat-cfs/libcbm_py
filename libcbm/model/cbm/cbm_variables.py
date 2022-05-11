@@ -335,26 +335,14 @@ def _initialize_inventory(
     """
 
     data = [
-        Series("age", inventory.age, "int32"),
-        Series("area", inventory.area, "float64"),
-        Series("spatial_unit", inventory.spatial_unit, "int32"),
-        Series(
-            "afforestation_pre_type_id",
-            inventory.afforestation_pre_type_id,
-            "int32",
-        ),
-        Series("land_class", inventory.land_class, "int32"),
-        Series(
-            "historical_disturbance_type",
-            inventory.historical_disturbance_type,
-            "int32",
-        ),
-        Series(
-            "last_pass_disturbance_type",
-            inventory.last_pass_disturbance_type,
-            "int32",
-        ),
-        Series("delay", inventory.delay, "int32"),
+        inventory["age"].as_type("int32"),
+        inventory["area"].as_type("float64"),
+        inventory["spatial_unit"].as_type("int32"),
+        inventory["afforestation_pre_type_id"].as_type("int32"),
+        inventory["land_class"].as_type("int32"),
+        inventory["historical_disturbance_type"].as_type("int32"),
+        inventory["last_pass_disturbance_type"].as_type("int32"),
+        inventory["delay"].as_type("int32"),
     ]
     return DataFrame(data, inventory.n_rows, back_end)
 
@@ -363,10 +351,7 @@ def _initialize_classifiers(
     classifiers: DataFrame, back_end: BackendType
 ) -> DataFrame:
     """converts classifiers table to required type"""
-    data = [
-        Series(name, classifiers[name], "int32")
-        for name in classifiers.columns
-    ]
+    data = [classifiers[name].as_type("int32") for name in classifiers.columns]
     return DataFrame(data, classifiers.n_rows, back_end)
 
 
