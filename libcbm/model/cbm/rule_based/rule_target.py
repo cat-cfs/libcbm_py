@@ -218,8 +218,8 @@ def proportion_area_target(
             that the sum of area of all disturbed records matches the specified
             area target.
     """
-    eligible_inventory = inventory.loc[eligible]
-    total_eligible_area = eligible_inventory.area.sum()
+    eligible_inventory = inventory.filter(eligible)
+    total_eligible_area = eligible_inventory["area"].sum()
     if total_eligible_area <= 0:
         return RuleTargetResult(
             target=DataFrame(
@@ -308,7 +308,7 @@ def sorted_area_target(
 
 def proportion_merch_target(
     carbon_target: float,
-    disturbance_production: DataFrame,
+    disturbance_production: Series,
     inventory: DataFrame,
     efficiency: float,
     eligible: Series,
@@ -337,11 +337,11 @@ def proportion_merch_target(
             such that the total carbon produced matches the specified carbon
             target.
     """
-    eligible_inventory = inventory[eligible]
-    eligible_production = disturbance_production[eligible]
-    production = eligible_inventory.area * eligible_production * efficiency
+    eligible_inventory = inventory.filter(eligible)
+    eligible_production = disturbance_production.filter(eligible)
+    production = eligible_production * eligible_inventory["area"] * efficiency
     total_production = production.sum()
-    n_eligible = len(eligible_inventory.index)
+    n_eligible = eligible_inventory.n_rows
     if total_production <= 0.0:
         return RuleTargetResult(
             target=DataFrame(
@@ -469,16 +469,18 @@ def sorted_merch_target(
             carbon_target is met.
 
     """
-    if inventory.shape[0] != sort_value.shape[0]:
+    if inventory.n_rows != sort_value.length:
         raise ValueError(
             "sort_value dimension must equal number of rows in inventory"
         )
-    if inventory.shape[0] != disturbance_production.shape[0]:
+    if inventory.n_rows != disturbance_production.n_rows:
         raise ValueError(
             "number of disturbance_production rows must equal number of rows "
             "in inventory"
         )
-    production_c = disturbance_production.Total * inventory.area * efficiency
+    production_c = (
+        disturbance_production["Total"] * inventory["area"] * efficiency
+    )
     result = sorted_disturbance_target(
         target_var=production_c,
         sort_var=sort_value,
