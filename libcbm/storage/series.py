@@ -1,77 +1,81 @@
-import pyarrow as pa
 import numpy as np
-import pandas as pd
 from typing import Any
 from typing import Union
 from typing import Callable
 import ctypes
+from abc import ABC
+from abc import abstractmethod
 
-SeriesInitType = Union[str, int, float, list, np.ndarray, pd.Series, pa.Array]
 
-
-class Series:
+class Series(ABC):
     """
     Series is a wrapper for one of several underlying storage types which
     presents a limited interface for internal usage by libcbm.
     """
 
-    def __init__(
-        self,
-        name: str,
-        init: SeriesInitType,
-        type: str = None,
-    ):
-        self._name = name
-
+    @abstractmethod
     def name(self) -> str:
-        return self._name
+        pass
 
+    @abstractmethod
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
         corresponding to the true values in the specified arg
         """
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def take(self, indices: "Series") -> "Series":
         """return the elements of this series at the specified indices
         (returns a copy)"""
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def as_type(self, type_name: str) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def assign(self, indices: "Series", value: Any):
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def assign_all(self, value: Any):
         """
         set all values in this series to the specified value
         """
+        pass
 
+    @abstractmethod
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def any(self) -> bool:
         """
         return True if at least one value in this series is
         non-zero
         """
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def unique(self) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def to_numpy(self) -> np.ndarray:
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def to_numpy_ptr(self) -> ctypes.pointer:
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def less(self, other: "Series") -> "Series":
         """
         returns a boolean series with:
@@ -79,31 +83,44 @@ class Series:
             False - where this series is greater than or equal to the other
                 series
         """
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def sum(self) -> Union[int, float]:
-        raise NotImplementedError()
+        pass
 
+    @property
+    @abstractmethod
+    def length(self) -> int:
+        pass
+
+    @abstractmethod
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
+    @abstractmethod
     def __eq__(sefl, other: Union[int, float, "Series"]) -> "Series":
-        raise NotImplementedError()
+        pass
 
 
 class NullSeries(Series):
