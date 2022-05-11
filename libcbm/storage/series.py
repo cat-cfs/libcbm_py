@@ -38,6 +38,9 @@ class Series:
         (returns a copy)"""
         raise NotImplementedError()
 
+    def as_type(self, type_name: str) -> "Series":
+        raise NotImplementedError()
+
     def assign(self, indices: "Series", value: Any):
         raise NotImplementedError()
 
