@@ -26,7 +26,6 @@ from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
-from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 
 
