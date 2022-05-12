@@ -1,5 +1,12 @@
 import ctypes
 import numpy as np
+import pandas as pd
+from typing import Any
+from typing import Union
+from typing import Callable
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.series import Series
+from libcbm.storage.backends import BackendType
 
 
 def get_numpy_pointer(
@@ -45,3 +52,213 @@ def get_numpy_pointer(
             raise ValueError(f"unsupported type {dtype}")
         p_result = data.ctypes.data_as(ctypes.POINTER(dtype))
         return p_result
+
+
+class NumpyDataFrameFrameBackend(DataFrame):
+    def __init__(self, data: dict[str, np.ndarray]) -> None:
+        self._data = data
+        self._n_rows: int = None
+        self._n_cols: int = len(data)
+        for k, v in self._data.items():
+            if v.ndim != 1:
+                raise ValueError(f"specified array '{k}' has ndim {v.ndim}")
+            if self._n_rows is None:
+                self._n_rows = v.shape[0]
+            else:
+                if self._n_rows != v.shape[0]:
+                    raise ValueError("uneven array lengths")
+
+    def getitem(self, col_name: str) -> Series:
+        return NumpySeriesBackend(col_name, self._data[col_name])
+
+    def filter(self, arg: Series) -> DataFrame:
+        _filter = arg.to_numpy()
+        return NumpyDataFrameFrameBackend(
+            {k: v[_filter] for k, v in self._data.items()},
+        )
+
+    def take(self, indices: Series) -> DataFrame:
+        _idx = indices.to_numpy()
+        return NumpyDataFrameFrameBackend(
+            {k: v[_idx] for k, v in self._data.items()},
+        )
+
+    def at(self, index: int) -> dict:
+        return {k: v[index] for k, v in self._data.items()}
+
+    def assign(self, col_name: str, value: Any, indices: Series = None):
+        if indices is not None:
+            _idx = indices.to_numpy()
+            self._data[col_name][_idx] = value
+        else:
+            self._data[col_name][:] = value
+
+    def n_rows(self) -> int:
+        return self._n_rows
+
+    def n_cols(self) -> int:
+        return self._n_cols
+
+    def columns(self) -> list[str]:
+        return list(self._data.keys())
+
+    def backend_type(self) -> BackendType:
+        return BackendType.numpy
+
+    def copy(self) -> DataFrame:
+        return NumpyDataFrameFrameBackend(
+            {k: v.copy() for k, v in self._data.items()}
+        )
+
+    def multiply(self, series: Series) -> DataFrame:
+        rh = series.to_numpy()
+        result = {k: v * rh for k, v in self._data.items()}
+        return NumpyDataFrameFrameBackend(result)
+
+    def add_column(self, series: Series, index: int) -> None:
+        self._df.insert(index, series.name, series.to_numpy())
+
+    def to_c_contiguous_numpy_array(self) -> np.ndarray:
+        return np.ascontiguousarray(self._df)
+
+    def to_pandas(self) -> pd.DataFrame:
+        return pd.DataFrame(self._data)
+
+    def zero(self):
+        self._df.iloc[:] = 0
+
+    def map(self, arg: Union[dict, Callable]) -> DataFrame:
+        cols = list(self._df.columns)
+        output = pd.DataFrame(
+            index=self._df.index,
+            columns=cols,
+            data={col: self._df[col].map(arg) for col in cols},
+        )
+        return DataFrame(output, back_end=BackendType.pandas)
+
+
+class NumpySeriesBackend(Series):
+    """
+    Series is a wrapper for one of several underlying storage types which
+    presents a limited interface for internal usage by libcbm.
+    """
+
+    def __init__(self, name: str, data: np.ndarray):
+        self._name = name
+        self._data = data
+
+    def name(self) -> str:
+        return self._name
+
+    def filter(self, arg: "Series") -> "Series":
+        """
+        Return a new series of the elements
+        corresponding to the true values in the specified arg
+        """
+        return NumpySeriesBackend(self._name, self._data[arg.to_numpy()])
+
+    def take(self, indices: "Series") -> "Series":
+        """return the elements of this series at the specified indices
+        (returns a copy)"""
+        return NumpySeriesBackend(
+            self._name,
+            self._data[indices.to_numpy()],
+        )
+
+    def as_type(self, type_name: str) -> "Series":
+        NumpySeriesBackend(self._name, self._data.astype(type_name))
+
+    def assign(self, indices: "Series", value: Any):
+        self._data[indices.to_numpy()] = value
+
+    def assign_all(self, value: Any):
+        """
+        set all values in this series to the specified value
+        """
+        self._data[:] = value
+
+    def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
+        return NumpySeriesBackend(self._name, self._data.map(arg))
+
+    def at(self, idx: int) -> Any:
+        """Gets the value at the specified sequential index"""
+        return self._data[idx]
+
+    def any(self) -> bool:
+        """
+        return True if at least one value in this series is
+        non-zero
+        """
+        return self._data.any()
+
+    def unique(self) -> "Series":
+        return NumpySeriesBackend(
+            self._name, pd.Series(name=self._name, data=self._series.unique())
+        )
+
+    def to_numpy(self) -> np.ndarray:
+        return self._data
+
+    def to_numpy_ptr(self) -> ctypes.pointer:
+        if str(self._data.dtype) == "int32":
+            ptr_type = ctypes.c_int32
+        elif str(self._data.dtype) == "float64":
+            ptr_type = ctypes.c_double
+        else:
+            raise ValueError(
+                f"series type not supported {str(self._data.dtype)}"
+            )
+        return get_numpy_pointer(self._data, ptr_type)
+
+    def less(self, other: "Series") -> "Series":
+        """
+        returns a boolean series with:
+            True - where this series is less than the other series
+            False - where this series is greater than or equal to the other
+                series
+        """
+        return PandasSeriesBackend(
+            self._name, (self._series < other.to_numpy())
+        )
+
+    def sum(self) -> Union[int, float]:
+        return self._series.sum()
+
+    @property
+    def length(self) -> int:
+        return self._series.size
+
+    def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (self._series * other).reset_index(drop=True)
+        )
+
+    def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other * self._series).reset_index(drop=True)
+        )
+
+    def __add__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other + self._series).reset_index(drop=True)
+        )
+
+    def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other + self._series).reset_index(drop=True)
+        )
+
+    def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other > self._series).reset_index(drop=True)
+        )
+
+    def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other < self._series).reset_index(drop=True)
+        )
+
+    def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasDataFrameBackend(
+            self._name, (other == self._series).reset_index(drop=True)
+        )
