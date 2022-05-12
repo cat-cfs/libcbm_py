@@ -217,7 +217,9 @@ class PandasSeriesBackend(Series):
 def concat_data_frame(
     dfs: list[PandasDataFrameBackend],
 ) -> PandasDataFrameBackend:
-    pass
+    return PandasDataFrameBackend(
+        pd.concat([d._df for d in dfs], ignore_index=True)
+    )
 
 
 def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
@@ -227,27 +229,30 @@ def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
 def logical_and(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    raise NotImplementedError()
+    return PandasSeriesBackend(None, s1._series & s2._series)
 
 
 def logical_not(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    raise NotImplementedError()
+    return PandasSeriesBackend(None, ~(series._series))
 
 
 def logical_or(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    raise NotImplementedError()
+    return PandasSeriesBackend(None, s1._series | s2._series)
 
 
 def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
-    raise NotImplementedError()
+    return PandasSeriesBackend(
+        None, pd.Series(np.full(shape=size, fill_value=init, dtype="bool"))
+    )
 
 
 def is_null(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    raise NotImplementedError()
+    return PandasSeriesBackend(None, pd.Series(pd.isnull(series._series)))
 
 
 def indices_nonzero(series: PandasSeriesBackend) -> PandasSeriesBackend:
-
-    raise NotImplementedError()
+    return PandasSeriesBackend(
+        None, pd.Series(series._series.to_numpy().nonzero()[0])
+    )
