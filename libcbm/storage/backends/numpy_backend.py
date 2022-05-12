@@ -116,25 +116,45 @@ class NumpyDataFrameFrameBackend(DataFrame):
         return NumpyDataFrameFrameBackend(result)
 
     def add_column(self, series: Series, index: int) -> None:
+        if series.name in self._data:
+            raise ValueError(
+                f"{series.name} already present in this Dataframe")
+        data = series.to_numpy()
+        if data.shape[0] != self.n_rows:
+            raise ValueError(
+                "specified series does not have the same length as the "
+                "number of rows in this DataFrame")
+        if index == self.n_cols:
+            self._data[series.name] = series.to_numpy()
+        elif index >= 0:
+            new_data = {}
+            for i, (k, v) in enumerate(self._data.items()):
+                if i == index:
+                    new_data[series.name] = series.to_numpy()
+                else:
+                    new_data[k] = v
+            self._data = new_data
+        else:
+            raise ValueError("index out of range")
         self._df.insert(index, series.name, series.to_numpy())
 
     def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        return np.ascontiguousarray(self._df)
+        return np.ascontiguousarray(
+            np.column_stack(list(self._data.values()))
+        )
 
     def to_pandas(self) -> pd.DataFrame:
         return pd.DataFrame(self._data)
 
     def zero(self):
-        self._df.iloc[:] = 0
+        for v in self._data:
+            v[:] = 0
 
     def map(self, arg: Union[dict, Callable]) -> DataFrame:
-        cols = list(self._df.columns)
-        output = pd.DataFrame(
-            index=self._df.index,
-            columns=cols,
-            data={col: self._df[col].map(arg) for col in cols},
-        )
-        return DataFrame(output, back_end=BackendType.pandas)
+        out_data = {}
+        for k, v in self._data.items():
+            out_data[k] = NumpySeriesBackend(k, v).map(arg).to_numpy()
+        return NumpyDataFrameFrameBackend(out_data)
 
 
 class NumpySeriesBackend(Series):
