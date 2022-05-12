@@ -78,7 +78,7 @@ class PandasDataFrameBackend(DataFrame):
             columns=cols,
             data={col: self._df[col].map(arg) for col in cols},
         )
-        return DataFrame(output, back_end=BackendType.pandas)
+        return PandasDataFrameBackend(output)
 
 
 class PandasSeriesBackend(Series):
