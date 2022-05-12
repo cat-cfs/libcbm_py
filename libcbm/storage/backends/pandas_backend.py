@@ -8,29 +8,25 @@ import ctypes
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
+from libcbm.storage.backends import numpy_backend
 
 
 class PandasDataFrameBackend(DataFrame):
     def __init__(self, df: pd.DataFrame) -> None:
-        super().__init__()
         self._df = df
 
     def getitem(self, col_name: str) -> Series:
         data = self._df[col_name]
-        return PandasSeriesBackend(
-            col_name, self._df[col_name], str(data.dtype)
-        )
+        return PandasSeriesBackend(col_name, data)
 
     def filter(self, arg: Series) -> DataFrame:
-        return DataFrame(
-            self._df[arg.to_numpy()].reset_index(drop=True),
-            back_end=BackendType.pandas,
+        return PandasDataFrameBackend(
+            self._df[arg.to_numpy()].reset_index(drop=True)
         )
 
     def take(self, indices: Series) -> DataFrame:
-        return DataFrame(
-            self._df.iloc[indices.to_numpy()].reset_index(drop=True),
-            back_end=BackendType.pandas,
+        return PandasDataFrameBackend(
+            self._df.iloc[indices.to_numpy()].reset_index(drop=True)
         )
 
     def at(self, index: int) -> dict:
@@ -150,7 +146,15 @@ class PandasSeriesBackend(Series):
         return self._series.to_numpy()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
-        pass
+        if str(self._series.dtype) == "int32":
+            ptr_type = ctypes.c_int32
+        elif str(self._series.dtype) == "float64":
+            ptr_type = ctypes.c_double
+        else:
+            raise ValueError(
+                f"series type not supported {str(self._series.dtype)}"
+            )
+        return numpy_backend.get_numpy_pointer(self._series, ptr_type)
 
     def less(self, other: "Series") -> "Series":
         """
@@ -159,10 +163,12 @@ class PandasSeriesBackend(Series):
             False - where this series is greater than or equal to the other
                 series
         """
-        pass
+        return PandasSeriesBackend(
+            self._name, (self._series < other.to_numpy())
+        )
 
     def sum(self) -> Union[int, float]:
-        pass
+        return self._series.sum()
 
     @property
     def length(self) -> int:
