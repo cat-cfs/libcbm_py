@@ -3,6 +3,7 @@ from typing import Any
 from typing import Union
 from typing import Callable
 import ctypes
+from libcbm.storage.backends import BackendType
 from abc import ABC
 from abc import abstractmethod
 
@@ -92,6 +93,11 @@ class Series(ABC):
     @property
     @abstractmethod
     def length(self) -> int:
+        pass
+
+    @property
+    @abstractmethod
+    def backend_type(self) -> BackendType:
         pass
 
     @abstractmethod
