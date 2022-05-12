@@ -32,7 +32,7 @@ def _safe_map(series: Series, map: Union[dict, Callable]):
     out_series = series.map(map)
     null_values = dataframe_functions.is_null(out_series)
     if null_values.any():
-        missing_entries = list(series[null_values].unique())
+        missing_entries = list(series.filter(null_values).unique().to_numpy())
         raise ValueError(f"undefined values detected {missing_entries[:10]}")
     return out_series
 
