@@ -174,6 +174,10 @@ class PandasSeriesBackend(Series):
     def length(self) -> int:
         return self._series.size
 
+    @property
+    def backend_type(self) -> BackendType:
+        return BackendType.pandas
+
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
             self._name, (self._series * other).reset_index(drop=True)
@@ -208,3 +212,42 @@ class PandasSeriesBackend(Series):
         return PandasSeriesBackend(
             self._name, (other == self._series).reset_index(drop=True)
         )
+
+
+def concat_data_frame(
+    dfs: list[PandasDataFrameBackend],
+) -> PandasDataFrameBackend:
+    pass
+
+
+def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
+    pd.concat([s._series for s in series])
+
+
+def logical_and(
+    s1: PandasSeriesBackend, s2: PandasSeriesBackend
+) -> PandasSeriesBackend:
+    raise NotImplementedError()
+
+
+def logical_not(series: PandasSeriesBackend) -> PandasSeriesBackend:
+    raise NotImplementedError()
+
+
+def logical_or(
+    s1: PandasSeriesBackend, s2: PandasSeriesBackend
+) -> PandasSeriesBackend:
+    raise NotImplementedError()
+
+
+def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
+    raise NotImplementedError()
+
+
+def is_null(series: PandasSeriesBackend) -> PandasSeriesBackend:
+    raise NotImplementedError()
+
+
+def indices_nonzero(series: PandasSeriesBackend) -> PandasSeriesBackend:
+
+    raise NotImplementedError()

@@ -244,7 +244,11 @@ class NumpySeriesBackend(Series):
 
     @property
     def length(self) -> int:
-        return self._series.size
+        return self._data.size
+
+    @property
+    def backend_type(self) -> BackendType:
+        return BackendType.numpy
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (self._data * other))
@@ -266,3 +270,42 @@ class NumpySeriesBackend(Series):
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other == self._data))
+
+
+def concat_data_frame(
+    dfs: list[NumpyDataFrameFrameBackend],
+) -> NumpyDataFrameFrameBackend:
+    dfs[0].backend_type
+
+
+def concat_series(series: list[NumpySeriesBackend]) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def logical_and(
+    s1: NumpySeriesBackend, s2: NumpySeriesBackend
+) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def logical_not(series: NumpySeriesBackend) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def logical_or(
+    s1: NumpySeriesBackend, s2: NumpySeriesBackend
+) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def make_boolean_series(init: bool, size: int) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def is_null(series: NumpySeriesBackend) -> NumpySeriesBackend:
+    raise NotImplementedError()
+
+
+def indices_nonzero(series: NumpySeriesBackend) -> NumpySeriesBackend:
+
+    raise NotImplementedError()
