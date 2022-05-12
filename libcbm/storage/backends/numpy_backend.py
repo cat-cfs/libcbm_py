@@ -275,37 +275,48 @@ class NumpySeriesBackend(Series):
 def concat_data_frame(
     dfs: list[NumpyDataFrameFrameBackend],
 ) -> NumpyDataFrameFrameBackend:
-    dfs[0].backend_type
+    new_data = {}
+    cols = []
+    for df in dfs:
+        if not cols:
+            cols = list(df._data.keys())
+        elif cols != list(df._data.keys()):
+            raise ValueError("cols do not match")
+
+    for name in cols:
+        new_data[name] = np.concatenate([df._data[name] for df in dfs])
+    return NumpyDataFrameFrameBackend(new_data)
 
 
 def concat_series(series: list[NumpySeriesBackend]) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, np.concatenate([s._data for s in series]))
 
 
 def logical_and(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, np.logical_and([s1._data, s2._data]))
 
 
 def logical_not(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, np.logical_not(series._data))
 
 
 def logical_or(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, np.logical_or([s1._data, s2._data]))
 
 
 def make_boolean_series(init: bool, size: int) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(
+        None, np.full(shape=size, fill_value=init, dtype="bool")
+    )
 
 
 def is_null(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, pd.isnull(series._data))
 
 
 def indices_nonzero(series: NumpySeriesBackend) -> NumpySeriesBackend:
-
-    raise NotImplementedError()
+    return NumpySeriesBackend(None, pd.isnull(series._data))
