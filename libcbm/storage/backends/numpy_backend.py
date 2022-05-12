@@ -247,35 +247,22 @@ class NumpySeriesBackend(Series):
         return self._series.size
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (self._data * other)
-        )
+        return NumpySeriesBackend(self._name, (self._data * other))
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other * self._data)
-        )
+        return NumpySeriesBackend(self._name, (other * self._data))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other + self._data)
-        )
+        return NumpySeriesBackend(self._name, (other + self._data))
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other + self._data)        )
+        return NumpySeriesBackend(self._name, (other + self._data))
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other > self._data)
-        )
+        return NumpySeriesBackend(self._name, (other > self._data))
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other < self._data)
-        )
+        return NumpySeriesBackend(self._name, (other < self._data))
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, (other == self._data)
-        )
+        return NumpySeriesBackend(self._name, (other == self._data))
