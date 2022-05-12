@@ -124,7 +124,7 @@ class PandasSeriesBackend(Series):
         self._series.iloc[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
-        return PandasDataFrameBackend(self._name, self._series.map(arg))
+        return PandasSeriesBackend(self._name, self._series.map(arg))
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
@@ -138,7 +138,7 @@ class PandasSeriesBackend(Series):
         return self._series.any()
 
     def unique(self) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, pd.Series(name=self._name, data=self._series.unique())
         )
 
@@ -175,36 +175,36 @@ class PandasSeriesBackend(Series):
         return self._series.size
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (self._series * other).reset_index(drop=True)
         )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other * self._series).reset_index(drop=True)
         )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other + self._series).reset_index(drop=True)
         )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other + self._series).reset_index(drop=True)
         )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other > self._series).reset_index(drop=True)
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other < self._series).reset_index(drop=True)
         )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
+        return PandasSeriesBackend(
             self._name, (other == self._series).reset_index(drop=True)
         )
