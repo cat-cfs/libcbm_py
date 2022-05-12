@@ -118,12 +118,14 @@ class NumpyDataFrameFrameBackend(DataFrame):
     def add_column(self, series: Series, index: int) -> None:
         if series.name in self._data:
             raise ValueError(
-                f"{series.name} already present in this Dataframe")
+                f"{series.name} already present in this Dataframe"
+            )
         data = series.to_numpy()
         if data.shape[0] != self.n_rows:
             raise ValueError(
                 "specified series does not have the same length as the "
-                "number of rows in this DataFrame")
+                "number of rows in this DataFrame"
+            )
         if index == self.n_cols:
             self._data[series.name] = series.to_numpy()
         elif index >= 0:
@@ -139,9 +141,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
         self._df.insert(index, series.name, series.to_numpy())
 
     def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        return np.ascontiguousarray(
-            np.column_stack(list(self._data.values()))
-        )
+        return np.ascontiguousarray(np.column_stack(list(self._data.values())))
 
     def to_pandas(self) -> pd.DataFrame:
         return pd.DataFrame(self._data)
@@ -198,7 +198,9 @@ class NumpySeriesBackend(Series):
         self._data[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
-        return NumpySeriesBackend(self._name, self._data.map(arg))
+        return NumpySeriesBackend(
+            self._name, pd.Series(self._data).map(arg).to_numpy()
+        )
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
@@ -212,9 +214,7 @@ class NumpySeriesBackend(Series):
         return self._data.any()
 
     def unique(self) -> "Series":
-        return NumpySeriesBackend(
-            self._name, pd.Series(name=self._name, data=self._series.unique())
-        )
+        return NumpySeriesBackend(self._name, np.unique(self._data))
 
     def to_numpy(self) -> np.ndarray:
         return self._data
@@ -237,48 +237,45 @@ class NumpySeriesBackend(Series):
             False - where this series is greater than or equal to the other
                 series
         """
-        return PandasSeriesBackend(
-            self._name, (self._series < other.to_numpy())
-        )
+        return self._data < other.to_numpy()
 
     def sum(self) -> Union[int, float]:
-        return self._series.sum()
+        return self._data.sum()
 
     @property
     def length(self) -> int:
         return self._series.size
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (self._series * other).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (self._data * other)
         )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other * self._series).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (other * self._data)
         )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other + self._series).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (other + self._data)
         )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other + self._series).reset_index(drop=True)
-        )
+        return NumpySeriesBackend(
+            self._name, (other + self._data)        )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other > self._series).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (other > self._data)
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other < self._series).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (other < self._data)
         )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasDataFrameBackend(
-            self._name, (other == self._series).reset_index(drop=True)
+        return NumpySeriesBackend(
+            self._name, (other == self._data)
         )
