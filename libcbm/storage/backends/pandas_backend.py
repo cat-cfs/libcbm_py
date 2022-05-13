@@ -256,3 +256,26 @@ def indices_nonzero(series: PandasSeriesBackend) -> PandasSeriesBackend:
     return PandasSeriesBackend(
         None, pd.Series(series._series.to_numpy().nonzero()[0])
     )
+
+
+def numeric_dataframe(
+    cols: list[str],
+    nrows: int,
+    init: float = 0.0,
+) -> PandasDataFrameBackend:
+    return PandasDataFrameBackend(
+        pd.DataFrame(np.full((nrows, len(cols), init, "float64")))
+    )
+
+
+def allocate(
+    cols: dict[str, tuple[Union[int, float]]], n_rows: int
+) -> PandasDataFrameBackend:
+    return PandasDataFrameBackend(
+        pd.DataFrame(
+            {
+                col: np.full(n_rows, init, dtype)
+                for col, (init, dtype) in cols.items()
+            }
+        )
+    )

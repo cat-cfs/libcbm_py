@@ -320,3 +320,24 @@ def is_null(series: NumpySeriesBackend) -> NumpySeriesBackend:
 
 def indices_nonzero(series: NumpySeriesBackend) -> NumpySeriesBackend:
     return NumpySeriesBackend(None, pd.isnull(series._data))
+
+
+def numeric_dataframe(
+    cols: list[str],
+    nrows: int,
+    init: float = 0.0,
+) -> NumpyDataFrameFrameBackend:
+    return NumpyDataFrameFrameBackend(
+        {col: np.full(nrows, init, "float64") for col in cols}
+    )
+
+
+def allocate(
+    cols: dict[str, tuple[Union[int, float]]], n_rows: int
+) -> NumpyDataFrameFrameBackend:
+    return NumpyDataFrameFrameBackend(
+        {
+            col: np.full(n_rows, init, dtype)
+            for col, (init, dtype) in cols.items()
+        }
+    )
