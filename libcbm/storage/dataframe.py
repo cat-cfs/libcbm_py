@@ -6,7 +6,6 @@ from typing import Callable
 from libcbm.storage.backends import BackendType
 from libcbm.storage.series import Series
 from typing import Any
-from libcbm.storage.backends import factory
 from abc import ABC
 from abc import abstractmethod
 
@@ -183,7 +182,7 @@ def _get_uniform_backend(
 
 
 def concat_data_frame(
-    data: list[Union[DataFrame, Series]], backend_type: BackendType = None
+    data: list[DataFrame], backend_type: BackendType = None
 ) -> Union[DataFrame, Series]:
 
     backend_type, uniform_dfs = _get_uniform_backend(data, backend_type)
@@ -245,7 +244,30 @@ def numeric_dataframe(
     back_end: BackendType,
     init: float = 0.0,
 ) -> DataFrame:
-    return factory.get_backend(back_end).numeric_dataframe(cols, nrows, init)
+    return get_backend(back_end).numeric_dataframe(cols, nrows, init)
+
+
+def allocate(
+    cols: dict[str, tuple[Union[int, float]]],
+    n_rows: int,
+    back_end: BackendType,
+) -> DataFrame:
+    """Allocate an initialized dataframe with columns specified by the keys in
+    the specified list of init dict.  Each dict value in the list specifies a
+    numeric value, string dtype pair
+
+    Args:
+        data (dict[tuple[str, Any, str]]): Column description
+        n_rows (int): number of rows in the resulting DataFrame
+
+    Returns:
+        DataFrame: An initialzed dataframe
+    """
+    return get_backend(back_end).allocate(cols, n_rows)
+
+
+def from_series_list(data: list[Series]) -> DataFrame:
+    pass
 
 
 def from_pandas(df: pd.DataFrame) -> DataFrame:
