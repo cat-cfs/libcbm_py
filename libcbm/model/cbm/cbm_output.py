@@ -1,8 +1,7 @@
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.series import Series
-import numpy as np
+from libcbm.storage import series
 
 
 def _get_disturbance_type_map_func(disturbance_type_map):
@@ -17,9 +16,21 @@ def _get_disturbance_type_map_func(disturbance_type_map):
 
 def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
     dataframe.add_column(
-        Series("identifier", np.arange(0, dataframe.n_rows), "int"), 0
+        series.range(
+            "identifier", 0, dataframe.n_rows, 1, "int", dataframe.backend_type
+        ),
+        0,
     )
-    dataframe.add_column(Series("timestep", timestep, "int"), 1)
+    dataframe.add_column(
+        series.allocate(
+            "timestep",
+            dataframe.n_rows,
+            timestep,
+            "int",
+            dataframe.backend_type,
+        ),
+        1,
+    )
     return dataframe
 
 
@@ -78,11 +89,11 @@ class InMemoryCBMOutput:
             timestep, self.pools, timestep_pools
         )
 
-        if cbm_vars.flux is not None and len(cbm_vars.flux.index) > 0:
+        if cbm_vars.flux is not None and cbm_vars.flux.n_rows > 0:
             timestep_flux = (
                 cbm_vars.flux.copy()
                 if self._density
-                else cbm_vars.flux.multiply(cbm_vars.inventory["area"], axis=0)
+                else cbm_vars.flux.multiply(cbm_vars.inventory["area"])
             )
             self.flux = _concat_timestep_results(
                 timestep, self.flux, timestep_flux
@@ -109,7 +120,7 @@ class InMemoryCBMOutput:
             timestep, self.state, timestep_state
         )
 
-        self.state = _concat_timestep_results(
+        self.parameters = _concat_timestep_results(
             timestep, self.parameters, timestep_params
         )
 
@@ -126,13 +137,9 @@ class InMemoryCBMOutput:
         self.area = _concat_timestep_results(
             timestep,
             self.area,
-            DataFrame(
+            dataframe.from_series_list(
                 [cbm_vars.inventory["area"]],
-                cbm_vars.inventory.n_rows,
-                cbm_vars.inventory.backend_type,
-            ),
-        )
-
-        self.parameters = _concat_timestep_results(
-            timestep, self.parameters, cbm_vars.parameters
+                nrows=cbm_vars.inventory.n_rows,
+                back_end=cbm_vars.inventory.backend_type
+            )
         )
