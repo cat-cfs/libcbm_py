@@ -31,7 +31,7 @@ class RuleFilter:
         """
         a dictionary or table containing named variables to filter.
         """
-        return self.local_dict
+        return self._local_dict
 
 
 def create_filter(expression: str, data: Union[DataFrame, dict[str, Series]]):
