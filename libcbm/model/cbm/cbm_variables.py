@@ -146,22 +146,13 @@ def initialize_spinup_parameters(
     Returns:
         DataFrame: table of spinup paramaeters
     """
-
+    data = []
+    for s in [return_interval, min_rotations, max_rotations, mean_annual_temp]:
+        if s is not None:
+            data.append(s)
     parameters = dataframe.from_series_list(
-        [
-            return_interval
-            if return_interval
-            else SeriesDef("return_inverval", None, None),
-            min_rotations
-            if min_rotations
-            else SeriesDef("min_rotations", None, None),
-            max_rotations
-            if max_rotations
-            else SeriesDef("max_rotations", None, None),
-            mean_annual_temp
-            if mean_annual_temp
-            else SeriesDef("mean_annual_temp", None, None),
-        ],
+        data,
+        nrows=n_stands,
         back_end=back_end,
     )
 
@@ -193,13 +184,8 @@ def _initialize_spinup_state_variables(
             SeriesDef("step", 0, "int32"),
             SeriesDef("last_rotation_slow_C", 0, "float64"),
             SeriesDef("enabled", 0, "int32"),
-            SeriesDef("age", 0, "np.int32"),
+            SeriesDef("age", 0, "int32"),
             SeriesDef("growth_enabled", 0, "int32"),
-            # these variables are not used during spinup, but are needed
-            # for CBM function signatures, and will be passed as nulls
-            SeriesDef("last_disturbance_type", None, None),
-            SeriesDef("time_since_last_disturbance", None, None),
-            SeriesDef("growth_multiplier", None, None),
         ],
         nrows=n_stands,
         back_end=back_end,
@@ -211,42 +197,11 @@ def _initialize_spinup_state_variables(
 def _initialize_cbm_parameters(
     n_stands: int,
     back_end: BackendType,
-    disturbance_type: Series,
-    reset_age: Series,
-    mean_annual_temp: Series,
 ) -> DataFrame:
-    """Create CBM parameters as a collection of variable vectors
-
-    The variables here are all of length N stands and are row-aligned with
-    all other vectors and dataframes using this convention.
-
-    The mean_annual temperature keyword argument is optional, and if
-    unspecified, libcbm will use a default for the corresponding parameter
-    drawn from the cbm_defaults database.
-
-    If a scalar value is provided to any of the optional parameters, that value
-    will be filled in the resulting vector.
+    """Create CBM parameters
 
     Args:
         n_stands (int): The number of stands
-        disturbance_type (SeriesInitType, optional): The disturbance
-            type id which references the disturbance types defined in the
-            libCBM configuration.  By convention, a negative or 0 value
-            indicates no disturbance. Defaults to 0.
-        reset_age (SeriesInitType, int, optional): The post disturbance reset
-            age. By convention, a negative value indicates a null reset_age.
-            If the null reset_age value is specified the post disturbance age
-            will be determined by the following decision:
-
-                - if the disturbance type results in no biomass after the
-                  disturbance matrix is applied, the age is reset to zero.
-                - otherwise, the age is not modified from the pre-disturbance
-                  age.
-
-            Defaults to -1
-        mean_annual_temp (SeriesInitType, optional): A value, in degrees
-            Celsius, that defines this timestep's mean annual temperature for
-            each stand. Defaults to None.
 
     Returns:
         DataFrame: dataframe with CBM timestep parameters as columns
@@ -254,13 +209,10 @@ def _initialize_cbm_parameters(
     """
 
     data = [
-        SeriesDef("disturbance_type", disturbance_type, "int32"),
-        SeriesDef("reset_age", reset_age, "int32"),
+        SeriesDef("disturbance_type", 0, "int32"),
+        SeriesDef("reset_age", -1, "int32"),
     ]
-    if mean_annual_temp:
-        data.append(SeriesDef("mean_annual_temp", mean_annual_temp, "float64"))
-    else:
-        data.append(SeriesDef("mean_annual_temp", None, None))
+
     parameters = dataframe.from_series_list(data, n_stands, back_end)
     return parameters
 
@@ -355,7 +307,7 @@ def _initialize_classifiers(
 ) -> DataFrame:
     """converts classifiers table to required type"""
     data = [classifiers[name].as_type("int32") for name in classifiers.columns]
-    return DataFrame(data, classifiers.n_rows, back_end)
+    return dataframe.from_series_list(data, classifiers.n_rows, back_end)
 
 
 def initialize_spinup_variables(
