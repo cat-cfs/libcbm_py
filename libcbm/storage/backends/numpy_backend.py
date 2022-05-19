@@ -193,14 +193,20 @@ class NumpySeriesBackend(Series):
     def as_type(self, type_name: str) -> "Series":
         return NumpySeriesBackend(self._name, self._data.astype(type_name))
 
-    def assign(self, indices: "Series", value: Any):
-        self._data[indices.to_numpy()] = value
+    def assign(self, indices: "Series", value: Union["Series", Any]):
+        if isinstance(value, Series):
+            self._data[indices.to_numpy()] = value.to_numpy()
+        else:
+            self._data[indices.to_numpy()] = value
 
-    def assign_all(self, value: Any):
+    def assign_all(self, value: Union["Series", Any]):
         """
         set all values in this series to the specified value
         """
-        self._data[:] = value
+        if isinstance(value, Series):
+            self._data[:] = value.to_numpy()
+        else:
+            self._data[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         return NumpySeriesBackend(
@@ -267,8 +273,14 @@ class NumpySeriesBackend(Series):
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other + self._data))
 
+    def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (other >= self._data))
+
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other > self._data))
+
+    def __le__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (other <= self._data))
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other < self._data))
@@ -345,3 +357,15 @@ def from_series_list(
 
 def allocate(name: str, len: int, init: Any, dtype: str) -> NumpySeriesBackend:
     return NumpySeriesBackend(name, np.full(len, init, dtype))
+
+
+def range(
+    name: str,
+    start: int,
+    stop: int,
+    step: int,
+    dtype: str,
+) -> Series:
+    return NumpySeriesBackend(
+        name, np.arange(start=start, stop=stop, step=step, dtype=dtype)
+    )

@@ -119,14 +119,20 @@ class PandasSeriesBackend(Series):
     def as_type(self, type_name: str) -> "Series":
         return PandasSeriesBackend(self._name, self._series.astype(type_name))
 
-    def assign(self, indices: "Series", value: Any):
-        self._series.iloc[indices.to_numpy()] = value
+    def assign(self, indices: "Series", value: Union["Series", Any]):
+        if isinstance(value, Series):
+            self._series.iloc[indices.to_numpy()] = value.to_numpy()
+        else:
+            self._series.iloc[indices.to_numpy()] = value
 
-    def assign_all(self, value: Any):
+    def assign_all(self, value: Union["Series", Any]):
         """
         set all values in this series to the specified value
         """
-        self._series.iloc[:] = value
+        if isinstance(value, Series):
+            self._series.iloc[:] = value.to_numpy()
+        else:
+            self._series.iloc[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         return PandasSeriesBackend(self._name, self._series.map(arg))
@@ -205,9 +211,19 @@ class PandasSeriesBackend(Series):
             self._name, (other + self._series).reset_index(drop=True)
         )
 
+    def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(
+            self._name, (other >= self._series).reset_index(drop=True)
+        )
+
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
             self._name, (other > self._series).reset_index(drop=True)
+        )
+
+    def __le__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(
+            self._name, (other <= self._series).reset_index(drop=True)
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
@@ -289,3 +305,16 @@ def allocate(
     name: str, len: int, init: Any, dtype: str
 ) -> PandasSeriesBackend:
     return PandasSeriesBackend(name, pd.Series(np.full(len, init, dtype)))
+
+
+def range(
+    name: str,
+    start: int,
+    stop: int,
+    step: int,
+    dtype: str,
+) -> Series:
+    return PandasSeriesBackend(
+        name,
+        pd.Series(np.arange(start=start, stop=stop, step=step, dtype=dtype)),
+    )

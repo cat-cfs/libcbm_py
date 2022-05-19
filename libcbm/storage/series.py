@@ -39,11 +39,11 @@ class Series(ABC):
         pass
 
     @abstractmethod
-    def assign(self, indices: "Series", value: Any):
+    def assign(self, indices: "Series", value: Union["Series", Any]):
         pass
 
     @abstractmethod
-    def assign_all(self, value: Any):
+    def assign_all(self, value: Union["Series", Any]):
         """
         set all values in this series to the specified value
         """
@@ -119,7 +119,15 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __le__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
     @abstractmethod
@@ -145,3 +153,14 @@ def allocate(
     name: str, len: int, init: Any, dtype: str, back_end: BackendType
 ) -> Series:
     return get_backend(back_end).allocate(name, len, init, dtype)
+
+
+def range(
+    name: str,
+    start: int,
+    stop: int,
+    step: int,
+    dtype: str,
+    back_end: BackendType,
+) -> Series:
+    return get_backend(back_end).range(name, start, stop, step, dtype)
