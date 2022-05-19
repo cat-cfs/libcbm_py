@@ -15,7 +15,7 @@ class PandasDataFrameBackend(DataFrame):
     def __init__(self, df: pd.DataFrame) -> None:
         self._df = df
 
-    def getitem(self, col_name: str) -> Series:
+    def __getitem__(self, col_name: str) -> Series:
         data = self._df[col_name]
         return PandasSeriesBackend(col_name, data)
 
@@ -40,15 +40,19 @@ class PandasDataFrameBackend(DataFrame):
         else:
             self._df.iloc[:, self._df.columns.get_loc(col_name)] = value
 
+    @property
     def n_rows(self) -> int:
         return len(self._df.index)
 
+    @property
     def n_cols(self) -> int:
         return len(self._df.columns)
 
+    @property
     def columns(self) -> list[str]:
         return list(self._df.columns)
 
+    @property
     def backend_type(self) -> BackendType:
         return BackendType.pandas
 
@@ -91,6 +95,7 @@ class PandasSeriesBackend(Series):
         self._name = name
         self._series = series
 
+    @property
     def name(self) -> str:
         return self._name
 
@@ -112,7 +117,7 @@ class PandasSeriesBackend(Series):
         )
 
     def as_type(self, type_name: str) -> "Series":
-        PandasSeriesBackend(self._name, self._series.astype(type_name))
+        return PandasSeriesBackend(self._name, self._series.astype(type_name))
 
     def assign(self, indices: "Series", value: Any):
         self._series.iloc[indices.to_numpy()] = value
@@ -154,7 +159,9 @@ class PandasSeriesBackend(Series):
             raise ValueError(
                 f"series type not supported {str(self._series.dtype)}"
             )
-        return numpy_backend.get_numpy_pointer(self._series, ptr_type)
+        return numpy_backend.get_numpy_pointer(
+            self._series.to_numpy(), ptr_type
+        )
 
     def less(self, other: "Series") -> "Series":
         """
@@ -264,7 +271,9 @@ def numeric_dataframe(
     init: float = 0.0,
 ) -> PandasDataFrameBackend:
     return PandasDataFrameBackend(
-        pd.DataFrame(np.full((nrows, len(cols), init, "float64")))
+        pd.DataFrame(
+            columns=cols, data=np.full((nrows, len(cols)), init, "float64")
+        )
     )
 
 

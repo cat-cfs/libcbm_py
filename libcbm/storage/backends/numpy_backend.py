@@ -68,7 +68,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 if self._n_rows != v.shape[0]:
                     raise ValueError("uneven array lengths")
 
-    def getitem(self, col_name: str) -> Series:
+    def __getitem__(self, col_name: str) -> Series:
         return NumpySeriesBackend(col_name, self._data[col_name])
 
     def filter(self, arg: Series) -> DataFrame:
@@ -93,15 +93,19 @@ class NumpyDataFrameFrameBackend(DataFrame):
         else:
             self._data[col_name][:] = value
 
+    @property
     def n_rows(self) -> int:
         return self._n_rows
 
+    @property
     def n_cols(self) -> int:
         return self._n_cols
 
+    @property
     def columns(self) -> list[str]:
         return list(self._data.keys())
 
+    @property
     def backend_type(self) -> BackendType:
         return BackendType.numpy
 
@@ -167,6 +171,7 @@ class NumpySeriesBackend(Series):
         self._name = name
         self._data = data
 
+    @property
     def name(self) -> str:
         return self._name
 
@@ -186,7 +191,7 @@ class NumpySeriesBackend(Series):
         )
 
     def as_type(self, type_name: str) -> "Series":
-        NumpySeriesBackend(self._name, self._data.astype(type_name))
+        return NumpySeriesBackend(self._name, self._data.astype(type_name))
 
     def assign(self, indices: "Series", value: Any):
         self._data[indices.to_numpy()] = value
@@ -338,7 +343,5 @@ def from_series_list(
     return NumpyDataFrameFrameBackend({s.name: s._data for s in series_list})
 
 
-def allocate(
-    name: str, len: int, init: Any, dtype: str
-) -> NumpySeriesBackend:
+def allocate(name: str, len: int, init: Any, dtype: str) -> NumpySeriesBackend:
     return NumpySeriesBackend(name, np.full(len, init, dtype))
