@@ -90,7 +90,7 @@ class SITEventProcessor:
                 ),
                 self.classifier_filter_builder.create_classifiers_filter(
                     sit_stand_filter.get_classifier_set(
-                        sit_event, cbm_vars.classifiers.columns.tolist()
+                        sit_event, cbm_vars.classifiers.columns
                     ),
                     cbm_vars.classifiers,
                 ),
@@ -128,7 +128,7 @@ class SITEventProcessor:
             ),
             self.classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
-                    sit_event, cbm_vars.classifiers.columns.tolist()
+                    sit_event, cbm_vars.classifiers.columns
                 ),
                 cbm_vars.classifiers,
             ),
@@ -190,7 +190,7 @@ class SITEventProcessor:
                 for _, row in sit_eligibilities.iterrows()
             }
         for event_index, sit_event in self._event_iterator(time_step_events):
-            eligible = cbm_vars.parameters.disturbance_type <= 0
+            eligible = cbm_vars.parameters["disturbance_type"] <= 0
             expression = None
             if eligibilty_expressions:
                 expression = eligibilty_expressions[

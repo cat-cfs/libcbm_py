@@ -93,7 +93,7 @@ class TransitionRuleProcessor(object):
 
         dist_type_target = tr_group_key["disturbance_type_id"]
         classifier_set = [
-            tr_group_key[x] for x in cbm_vars.classifiers.columns.tolist()
+            tr_group_key[x] for x in cbm_vars.classifiers.columns
         ]
         tr_filters = [
             self.state_variable_filter_func(tr_group_key, cbm_vars.state),

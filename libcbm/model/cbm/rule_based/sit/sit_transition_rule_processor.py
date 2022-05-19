@@ -102,7 +102,7 @@ class SITTransitionRuleProcessor:
 
         classifiers = cbm_vars.classifiers
         n_stands = classifiers.shape[0]
-        classifier_names = classifiers.columns.tolist()
+        classifier_names = classifiers.columns
         transition_iterator = sit_transition_rule_iterator(
             sit_transitions, classifier_names
         )
