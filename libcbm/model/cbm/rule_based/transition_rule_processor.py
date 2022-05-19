@@ -251,18 +251,10 @@ class TransitionRuleProcessor(object):
             inventory_split = dataframe.concat_data_frame(
                 [inventory_split, inventory]
             )
-            pool_split = dataframe.concat_data_frame(
-                [pool_split, pools]
-            )
-            state_split = dataframe.concat_data_frame(
-                [state_split, state]
-            )
-            params_split = dataframe.concat_data_frame(
-                [params_split, params]
-            )
-            flux_split = dataframe.concat_data_frame(
-                [flux_split, flux]
-            )
+            pool_split = dataframe.concat_data_frame([pool_split, pools])
+            state_split = dataframe.concat_data_frame([state_split, state])
+            params_split = dataframe.concat_data_frame([params_split, params])
+            flux_split = dataframe.concat_data_frame([flux_split, flux])
 
         # for the first index in the tr_group use the existing matched records
         transition_classifier_ids = self._get_transition_classifier_set(

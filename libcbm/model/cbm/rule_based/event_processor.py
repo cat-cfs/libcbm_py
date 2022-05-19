@@ -11,6 +11,7 @@ from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 
+
 class ProcessEventResult:
     """Storage class for the result of the :py:func:`process_event`
     function.
