@@ -10,6 +10,13 @@ from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.storage.dataframe import DataFrame
 
 
+def _unpack_nullable_ptr(col_name: str, data: DataFrame):
+    nullable_value = None
+    if col_name in data.columns:
+        nullable_value = data[col_name].to_numpy_ptr()
+    return nullable_value
+
+
 class CBMWrapper(LibCBM_ctypes):
     """Exposes low level ctypes wrapper to regular python, for CBM
     specific libcbm functions.
@@ -208,9 +215,9 @@ class CBMWrapper(LibCBM_ctypes):
         # If return_interval, min_rotations, max_rotations are explicitly
         # set by the user, ignore the spatial unit, which is used to set
         # default value for these 3 variables.
-        return_interval = parameters["return_interval"].to_numpy_ptr()
-        min_rotations = parameters["min_rotations"].to_numpy_ptr()
-        max_rotations = parameters["max_rotations"].to_numpy_ptr()
+        return_interval = _unpack_nullable_ptr("return_interval", parameters)
+        min_rotations = _unpack_nullable_ptr("min_rotations", parameters)
+        max_rotations = _unpack_nullable_ptr("max_rotations", parameters)
 
         include_spatial_unit = (
             return_interval is None
@@ -315,10 +322,12 @@ class CBMWrapper(LibCBM_ctypes):
             LibCBM_Matrix(pools.to_c_contiguous_numpy_array()),
             state_variables["age"].to_numpy(),
             inventory["spatial_unit"].to_numpy(),
-            state_variables["last_disturbance_type"].to_numpy_ptr(),
-            state_variables["time_since_last_disturbance"].to_numpy_ptr(),
-            state_variables["growth_multiplier"].to_numpy_ptr(),
-            state_variables["growth_enabled"].to_numpy_ptr(),
+            _unpack_nullable_ptr("last_disturbance_type", state_variables),
+            _unpack_nullable_ptr(
+                "time_since_last_disturbance", state_variables
+            ),
+            _unpack_nullable_ptr("growth_multiplier", state_variables),
+            _unpack_nullable_ptr("growth_enabled", state_variables),
         )
 
     def get_turnover_ops(
@@ -391,7 +400,7 @@ class CBMWrapper(LibCBM_ctypes):
             *[dom_decay_op, slow_decay_op, slow_mixing_op]
         )
 
-        mean_annual_temp = parameters["mean_annual_temp"].to_numpy_ptr()
+        mean_annual_temp = _unpack_nullable_ptr("mean_annual_temp", parameters)
 
         if mean_annual_temp is not None:
             # If the mean annual temperature is specified, then omit the
