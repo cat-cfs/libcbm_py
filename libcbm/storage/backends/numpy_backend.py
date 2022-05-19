@@ -332,12 +332,13 @@ def numeric_dataframe(
     )
 
 
-def allocate(
-    cols: dict[str, tuple[Union[int, float]]], n_rows: int
+def from_series_list(
+    series_list: list[NumpySeriesBackend],
 ) -> NumpyDataFrameFrameBackend:
-    return NumpyDataFrameFrameBackend(
-        {
-            col: np.full(n_rows, init, dtype)
-            for col, (init, dtype) in cols.items()
-        }
-    )
+    return NumpyDataFrameFrameBackend({s.name: s._data for s in series_list})
+
+
+def allocate(
+    name: str, len: int, init: Any, dtype: str
+) -> NumpySeriesBackend:
+    return NumpySeriesBackend(name, np.full(len, init, dtype))
