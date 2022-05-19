@@ -4,9 +4,8 @@
 
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.series import SeriesDef
 from libcbm.storage.series import Series
-from libcbm.storage import series
-from libcbm.storage.series import NullSeries
 from libcbm.storage.backends import BackendType
 
 
@@ -112,10 +111,10 @@ def _initialize_flux(
 def initialize_spinup_parameters(
     n_stands: int,
     back_end: BackendType = BackendType.numpy,
-    return_interval: series.SeriesInitType = None,
-    min_rotations: series.SeriesInitType = None,
-    max_rotations: series.SeriesInitType = None,
-    mean_annual_temp: series.SeriesInitType = None,
+    return_interval: Series = None,
+    min_rotations: Series = None,
+    max_rotations: Series = None,
+    mean_annual_temp: Series = None,
 ) -> DataFrame:
     """Create spinup parameters as a collection of variable vectors
 
@@ -134,33 +133,37 @@ def initialize_spinup_parameters(
     Args:
         n_stands (int): The length of each of the resulting variables
             vectors returned by this function.
-        return_interval (SeriesInitType, optional): The number of
+        return_interval (Series, optional): The number of
             years between historical disturbances in the spinup function.
             Defaults to None.
-        min_rotations (SeriesInitType, optional): The minimum number
+        min_rotations (Series, optional): The minimum number
             of historical rotations to perform. Defaults to None.
-        max_rotations (SeriesInitType, optional): The maximum number
+        max_rotations (Series, optional): The maximum number
             of historical rotations to perform. Defaults to None.
-        mean_annual_temp (SeriesInitType, optional): The mean annual
+        mean_annual_temp (Series, optional): The mean annual
             temperature used in the spinup procedure. Defaults to None.
 
     Returns:
         DataFrame: table of spinup paramaeters
     """
 
-    def make_series(name, init, type):
-        if init is None:
-            return NullSeries(name)
-        else:
-            return Series(name, init, type)
-
-    data = [
-        make_series("return_interval", return_interval, "int32"),
-        make_series("min_rotations", min_rotations, "int32"),
-        make_series("max_rotations", max_rotations, "int32"),
-        make_series("mean_annual_temp", mean_annual_temp, "float64"),
-    ]
-    parameters = DataFrame(data, n_stands, back_end)
+    parameters = dataframe.from_series_list(
+        [
+            return_interval
+            if return_interval
+            else SeriesDef("return_inverval", None, None),
+            min_rotations
+            if min_rotations
+            else SeriesDef("min_rotations", None, None),
+            max_rotations
+            if max_rotations
+            else SeriesDef("max_rotations", None, None),
+            mean_annual_temp
+            if mean_annual_temp
+            else SeriesDef("mean_annual_temp", None, None),
+        ],
+        back_end=back_end,
+    )
 
     return parameters
 
@@ -181,22 +184,22 @@ def _initialize_spinup_state_variables(
     # favouring SimpleNamespace over pd.DataFrame here because these are
     # null variables, and DataFrame does not support null columns
 
-    variables = DataFrame(
-        data=[
-            Series("spinup_state", 0, n_stands, "uint32"),
-            Series("slow_pools", 0, n_stands, "float64"),
-            Series("disturbance_type", 0, n_stands, "int32"),
-            Series("rotation", 0, n_stands, "int32"),
-            Series("step", 0, n_stands, "int32"),
-            Series("last_rotation_slow_C", 0, n_stands, "float64"),
-            Series("enabled", 0, n_stands, "int32"),
-            Series("age", 0, n_stands, "np.int32"),
-            Series("growth_enabled", 0, n_stands, "int32"),
+    variables = dataframe.from_series_list(
+        [
+            SeriesDef("spinup_state", 0, "uint32"),
+            SeriesDef("slow_pools", 0, "float64"),
+            SeriesDef("disturbance_type", 0, "int32"),
+            SeriesDef("rotation", 0, "int32"),
+            SeriesDef("step", 0, "int32"),
+            SeriesDef("last_rotation_slow_C", 0, "float64"),
+            SeriesDef("enabled", 0, "int32"),
+            SeriesDef("age", 0, "np.int32"),
+            SeriesDef("growth_enabled", 0, "int32"),
             # these variables are not used during spinup, but are needed
             # for CBM function signatures, and will be passed as nulls
-            NullSeries("last_disturbance_type"),
-            NullSeries("time_since_last_disturbance"),
-            NullSeries("growth_multiplier"),
+            SeriesDef("last_disturbance_type", None, None),
+            SeriesDef("time_since_last_disturbance", None, None),
+            SeriesDef("growth_multiplier", None, None),
         ],
         nrows=n_stands,
         back_end=back_end,
@@ -208,9 +211,9 @@ def _initialize_spinup_state_variables(
 def _initialize_cbm_parameters(
     n_stands: int,
     back_end: BackendType,
-    disturbance_type: series.SeriesInitType = 0,
-    reset_age: series.SeriesInitType = -1,
-    mean_annual_temp: series.SeriesInitType = None,
+    disturbance_type: Series,
+    reset_age: Series,
+    mean_annual_temp: Series,
 ) -> DataFrame:
     """Create CBM parameters as a collection of variable vectors
 
@@ -251,14 +254,14 @@ def _initialize_cbm_parameters(
     """
 
     data = [
-        Series("disturbance_type", disturbance_type, "int32"),
-        Series("reset_age", reset_age, "int32"),
+        SeriesDef("disturbance_type", disturbance_type, "int32"),
+        SeriesDef("reset_age", reset_age, "int32"),
     ]
     if mean_annual_temp:
-        data.append(Series("mean_annual_temp", mean_annual_temp, "float64"))
+        data.append(SeriesDef("mean_annual_temp", mean_annual_temp, "float64"))
     else:
-        data.append(NullSeries("mean_annual_temp"))
-    parameters = DataFrame(data, n_stands, back_end)
+        data.append(SeriesDef("mean_annual_temp", None, None))
+    parameters = dataframe.from_series_list(data, n_stands, back_end)
     return parameters
 
 
@@ -278,17 +281,17 @@ def _initialize_cbm_state_variables(
         DataFrame: a dataframe containing the CBM state variables.
     """
     data = [
-        Series("last_disturbance_type", 0, "int32"),
-        Series("time_since_last_disturbance", 0, "int32"),
-        Series("time_since_land_class_change", -1, "int32"),
-        Series("growth_enabled", 0, "int32"),
-        Series("enabled", 1, "int32"),
-        Series("land_class", 0, "int32"),
-        Series("age", 0, "int32"),
-        Series("growth_multiplier", 1.0, "float64"),
-        Series("regeneration_delay", 0, "int32"),
+        SeriesDef("last_disturbance_type", 0, "int32"),
+        SeriesDef("time_since_last_disturbance", 0, "int32"),
+        SeriesDef("time_since_land_class_change", -1, "int32"),
+        SeriesDef("growth_enabled", 0, "int32"),
+        SeriesDef("enabled", 1, "int32"),
+        SeriesDef("land_class", 0, "int32"),
+        SeriesDef("age", 0, "int32"),
+        SeriesDef("growth_multiplier", 1.0, "float64"),
+        SeriesDef("regeneration_delay", 0, "int32"),
     ]
-    state_variables = DataFrame(data, n_stands, back_end)
+    state_variables = dataframe.from_series_list(data, n_stands, back_end)
 
     return state_variables
 
