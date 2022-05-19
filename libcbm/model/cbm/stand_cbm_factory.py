@@ -253,7 +253,7 @@ class StandCBMFactory:
                     inventory_df["afforestation_pre_type"],
                     lambda _, value: (
                         -1
-                        if dataframe_functions.is_null(value)
+                        if dataframe.is_null(value)
                         else self.defaults_ref.get_afforestation_pre_type_id(
                             value
                         )
@@ -267,7 +267,7 @@ class StandCBMFactory:
                     inventory_df["historic_disturbance_type"],
                     lambda _, value: (
                         -1
-                        if dataframe_functions.is_null(value)
+                        if dataframe.is_null(value)
                         else self.defaults_ref.get_disturbance_type_id(value)
                     ),
                 ),
