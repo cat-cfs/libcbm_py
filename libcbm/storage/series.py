@@ -137,3 +137,21 @@ class NullSeries(Series):
 
     def to_numpy(self) -> np.ndarray:
         return None
+
+
+class SeriesDef:
+    def __init__(self, name: str, init: Any, dtype: str):
+        self.name = name
+        self.init = init
+        self.dtype = dtype
+
+    def make_series(self, len: int, back_end: BackendType):
+        if not self.init and not self.dtype:
+            return NullSeries(self.name)
+        return allocate(self.name, len, self.init, self.dtype, back_end)
+
+
+def allocate(
+    name: str, len: int, init: Any, dtype: str, back_end: BackendType
+) -> Series:
+    pass
