@@ -107,28 +107,24 @@ class DataFrame(ABC):
 def concat_data_frame(
     data: list[DataFrame], backend_type: BackendType = None
 ) -> Union[DataFrame, Series]:
-
-    backend_type, uniform_dfs = backends.get_uniform_backend(
-        data, backend_type
-    )
+    data = [d for d in data if d is not None]
+    if not data:
+        return None
+    backend_type, uniform_dfs = get_uniform_backend(data, backend_type)
     return backends.get_backend(backend_type).concat_data_frame(uniform_dfs)
 
 
 def concat_series(
     series: list[Series], backend_type: BackendType = None
 ) -> Series:
-    backend_type, uniform_dfs = backends.get_uniform_backend(
-        series, backend_type
-    )
+    backend_type, uniform_dfs = get_uniform_backend(series, backend_type)
     return backends.get_backend(backend_type).concat_series(uniform_dfs)
 
 
 def logical_and(
     s1: Series, s2: Series, backend_type: BackendType = None
 ) -> Series:
-    backend_type, uniform_dfs = backends.get_uniform_backend(
-        [s1, s2], backend_type
-    )
+    backend_type, uniform_dfs = get_uniform_backend([s1, s2], backend_type)
     return backends.get_backend(backend_type).logical_and(
         uniform_dfs[0], uniform_dfs[1]
     )
@@ -141,9 +137,7 @@ def logical_not(series: Series) -> Series:
 def logical_or(
     s1: Series, s2: Series, backend_type: BackendType = None
 ) -> Series:
-    backend_type, uniform_dfs = backends.get_uniform_backend(
-        [s1, s2], backend_type
-    )
+    backend_type, uniform_dfs = get_uniform_backend([s1, s2], backend_type)
     return backends.get_backend(backend_type).logical_or(
         uniform_dfs[0], uniform_dfs[1]
     )
@@ -190,9 +184,7 @@ def from_series_list(
             data_series.append(s)
         else:
             data_series.append(s.make_series(nrows, back_end))
-    backend_type, uniform_series = backends.get_uniform_backend(
-        data_series, back_end
-    )
+    backend_type, uniform_series = get_uniform_backend(data_series, back_end)
     return backends.get_backend(backend_type).from_series_list(uniform_series)
 
 
@@ -206,3 +198,68 @@ def from_numpy(data: dict[str, np.ndarray]) -> DataFrame:
     from libcbm.storage.backends import numpy_backend
 
     return numpy_backend.NumpyDataFrameFrameBackend(data)
+
+
+def convert_series_backend(
+    series: Series, backend_type: BackendType
+) -> Series:
+    if series.backend_type == backend_type:
+        return series
+
+    elif backend_type == BackendType.numpy:
+        from libcbm.storage.backends import numpy_backend
+
+        return numpy_backend.NumpySeriesBackend(series.name, series.to_numpy())
+    elif backend_type == BackendType.pandas:
+        from libcbm.storage.backends import pandas_backend
+
+        return pandas_backend.PandasSeriesBackend(
+            series.name, pd.Series(series.to_numpy())
+        )
+    else:
+        raise NotImplementedError()
+
+
+def convert_dataframe_backend(
+    df: DataFrame, backend_type: BackendType
+) -> DataFrame:
+    if df.backend_type == backend_type:
+        return df
+    elif backend_type == BackendType.numpy:
+        from libcbm.storage.backends import numpy_backend
+
+        return numpy_backend.NumpyDataFrameFrameBackend(
+            {col: df[col].to_numpy() for col in df.columns}
+        )
+    elif backend_type == BackendType.pandas:
+        from libcbm.storage.backends import pandas_backend
+
+        return pandas_backend.PandasDataFrameBackend(
+            pd.DataFrame({col: df[col].to_numpy() for col in df.columns})
+        )
+    else:
+        raise NotImplementedError()
+
+
+def get_uniform_backend(
+    data: list[Union[DataFrame, Series]], backend_type: BackendType = None
+) -> tuple[BackendType, list[Union[DataFrame, Series]]]:
+    if backend_type is None:
+        inferred_backend = None
+        for _d in data:
+            if inferred_backend is None:
+                inferred_backend = _d.backend_type
+            elif inferred_backend != _d.backend_type:
+                raise ValueError(
+                    "backend type must be specified with non-uniform list of "
+                    "dataframes backends"
+                )
+
+        backend_type = inferred_backend
+    output = []
+    for _d in data:
+        if isinstance(_d, DataFrame):
+            output.append(convert_dataframe_backend(_d, backend_type))
+        else:
+            output.append(convert_series_backend(_d, backend_type))
+    return backend_type, output
