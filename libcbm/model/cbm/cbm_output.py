@@ -99,9 +99,10 @@ class InMemoryCBMOutput:
                 timestep, self.flux, timestep_flux
             )
 
+        timestep_state = cbm_vars.state.copy()
+        timestep_params = cbm_vars.parameters.copy()
         if self._disturbance_type_map:
-            timestep_state = cbm_vars.state.copy()
-            timestep_params = cbm_vars.parameters.copy()
+
             dist_map_func = _get_disturbance_type_map_func(
                 self._disturbance_type_map
             )
@@ -112,9 +113,6 @@ class InMemoryCBMOutput:
             timestep_params["disturbance_type"] = timestep_params[
                 "disturbance_type"
             ].map(dist_map_func)
-        else:
-            timestep_state = cbm_vars.state
-            timestep_params = cbm_vars.parameters
 
         self.state = _concat_timestep_results(
             timestep, self.state, timestep_state
@@ -126,7 +124,7 @@ class InMemoryCBMOutput:
 
         if self._classifier_map is None:
             self.classifiers = _concat_timestep_results(
-                timestep, self.classifiers, cbm_vars.classifiers
+                timestep, self.classifiers, cbm_vars.classifiers.copy()
             )
         else:
             timestep_classifiers = cbm_vars.classifiers.copy()
