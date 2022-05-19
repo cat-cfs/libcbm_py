@@ -27,6 +27,7 @@ from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe
 
 
 class EventSort(Enum):
@@ -80,13 +81,13 @@ def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
     )
 
     classifiers_data = np.ascontiguousarray(classifiers_data)
-    classifiers_result = DataFrame(
+    classifiers_result = dataframe.from_pandas(
         pd.DataFrame(
             data=classifiers_data, columns=list(sit_data.classifiers.name)
         )
     )
 
-    inventory_result = DataFrame(
+    inventory_result = dataframe.from_pandas(
         pd.DataFrame(
             data={
                 "age": sit_data.inventory.age,
