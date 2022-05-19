@@ -4,6 +4,7 @@ from typing import Union
 from typing import Callable
 import ctypes
 from libcbm.storage.backends import BackendType
+from libcbm.storage.backends import get_backend
 from abc import ABC
 from abc import abstractmethod
 
@@ -154,4 +155,4 @@ class SeriesDef:
 def allocate(
     name: str, len: int, init: Any, dtype: str, back_end: BackendType
 ) -> Series:
-    pass
+    get_backend(back_end).allocate(name, len, init, dtype)
