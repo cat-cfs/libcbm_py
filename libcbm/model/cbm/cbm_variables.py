@@ -347,7 +347,7 @@ def _initialize_inventory(
         inventory["last_pass_disturbance_type"].as_type("int32"),
         inventory["delay"].as_type("int32"),
     ]
-    return DataFrame(data, inventory.n_rows, back_end)
+    return dataframe.from_series_list(data, inventory.n_rows, back_end)
 
 
 def _initialize_classifiers(
