@@ -59,7 +59,10 @@ def simulate(
     )
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
-        cbm_vars, spinup_params, include_flux=spinup_reporting_func is not None
+        cbm_vars,
+        back_end_type,
+        spinup_params,
+        include_flux=spinup_reporting_func is not None,
     )
 
     cbm.spinup(spinup_vars, reporting_func=spinup_reporting_func)
