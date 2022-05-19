@@ -29,9 +29,7 @@ def _concat_timestep_results(
 
     _add_timestep_series(timestep, timestep_result)
 
-    return dataframe.concat_data_frame(
-        [running_result, timestep_result]
-    )
+    return dataframe.concat_data_frame([running_result, timestep_result])
 
 
 class InMemoryCBMOutput:
