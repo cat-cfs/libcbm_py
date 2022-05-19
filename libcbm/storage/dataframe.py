@@ -4,6 +4,7 @@ import pandas as pd
 from typing import Union
 from typing import Callable
 from libcbm.storage.backends import BackendType
+from libcbm.storage.backends import get_backend
 from libcbm.storage.series import Series
 from libcbm.storage.series import SeriesDef
 from typing import Any
@@ -101,20 +102,6 @@ class DataFrame(ABC):
         same number of rows, columns and same column names
         """
         pass
-
-
-def get_backend(backend_type: BackendType):
-
-    if backend_type == BackendType.numpy:
-        from libcbm.storage.backends import numpy_backend
-
-        return numpy_backend
-    elif backend_type == BackendType.pandas:
-        from libcbm.storage.backends import pandas_backend
-
-        return pandas_backend
-    else:
-        raise NotImplementedError()
 
 
 def convert_series_backend(
@@ -251,7 +238,15 @@ def numeric_dataframe(
 def from_series_list(
     data: list[Union[Series, SeriesDef]], nrows: int, back_end: BackendType
 ) -> DataFrame:
-    pass
+
+    data_series = []
+    for s in data:
+        if isinstance(s, Series):
+            data_series.append(s)
+        else:
+            data_series.append(s.make_series(nrows, back_end))
+    backend_type, uniform_series = _get_uniform_backend(data_series, back_end)
+    get_backend(backend_type).from_series_list(uniform_series)
 
 
 def from_pandas(df: pd.DataFrame) -> DataFrame:
