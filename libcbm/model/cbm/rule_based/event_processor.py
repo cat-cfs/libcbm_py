@@ -9,8 +9,7 @@ from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage import dataframe_functions
-
+from libcbm.storage import dataframe
 
 class ProcessEventResult:
     """Storage class for the result of the :py:func:`process_event`
@@ -71,7 +70,7 @@ def process_event(
 
     # set to false those stands affected by a previous disturbance from
     # eligibility
-    filter_result = dataframe_functions.logical_and(undisturbed, filter_result)
+    filter_result = dataframe.logical_and(undisturbed, filter_result)
 
     rule_target_result = target_func(cbm_vars, filter_result)
 
@@ -133,29 +132,29 @@ def apply_rule_based_event(
         )
 
         # create the updated inventory by appending the split records
-        cbm_vars.inventory = dataframe_functions.concat_data_frame(
+        cbm_vars.inventory = dataframe.concat_data_frame(
             [cbm_vars.inventory, split_inventory]
         )
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
         # adding a copy of the split values.
-        cbm_vars.classifiers = dataframe_functions.concat_data_frame(
+        cbm_vars.classifiers = dataframe.concat_data_frame(
             [cbm_vars.classifiers, cbm_vars.classifiers.take(split_index)]
         )
-        cbm_vars.state = dataframe_functions.concat_data_frame(
+        cbm_vars.state = dataframe.concat_data_frame(
             [cbm_vars.state, cbm_vars.state.take(split_index)]
         )
-        cbm_vars.pools = dataframe_functions.concat_data_frame(
+        cbm_vars.pools = dataframe.concat_data_frame(
             [cbm_vars.pools, cbm_vars.pools.take(split_index)]
         )
-        cbm_vars.flux = dataframe_functions.concat_data_frame(
+        cbm_vars.flux = dataframe.concat_data_frame(
             [cbm_vars.flux, cbm_vars.flux.take(split_index)]
         )
 
         new_params = cbm_vars.parameters.take(split_index)
         new_params.assign("disturbance_type", 0)
-        cbm_vars.parameters = dataframe_functions.concat_data_frame(
+        cbm_vars.parameters = dataframe.concat_data_frame(
             [cbm_vars.parameters, new_params]
         )
 

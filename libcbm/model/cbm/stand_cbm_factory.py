@@ -7,7 +7,7 @@ from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage import dataframe_functions
+from libcbm.storage import dataframe
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
@@ -30,7 +30,7 @@ def _safe_map(series: Series, map: Union[dict, Callable]):
     """
 
     out_series = series.map(map)
-    null_values = dataframe_functions.is_null(out_series)
+    null_values = dataframe.is_null(out_series)
     if null_values.any():
         missing_entries = list(series.filter(null_values).unique().to_numpy())
         raise ValueError(f"undefined values detected {missing_entries[:10]}")

@@ -5,7 +5,7 @@
 from typing import Callable
 from typing import Iterable
 from typing import Tuple
-from libcbm.storage import dataframe_functions
+from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.model.cbm.cbm_variables import CBMVariables
@@ -166,17 +166,17 @@ class TransitionRuleProcessor(object):
         filtered = self._filter_stands(tr_group_key, cbm_vars)
 
         # sets the transitioned array with the transition filter result
-        eligible = dataframe_functions.logical_and(
-            dataframe_functions.logical_not(transition_mask), filtered
+        eligible = dataframe.logical_and(
+            dataframe.logical_not(transition_mask), filtered
         )
 
-        transition_mask_output = dataframe_functions.logical_or(
+        transition_mask_output = dataframe.logical_or(
             transition_mask, eligible
         )
 
         if not eligible.any():
             return transition_mask_output, cbm_vars
-        eligible_idx = dataframe_functions.indices_nonzero(eligible)
+        eligible_idx = dataframe.indices_nonzero(eligible)
 
         proportions = create_split_proportions(
             tr_group_key, tr_group, self.grouped_percent_err_max
@@ -206,10 +206,10 @@ class TransitionRuleProcessor(object):
             state = cbm_vars.state.filter(eligible)
             inventory = cbm_vars.inventory.filter(eligible)
             classifiers = cbm_vars.classifiers.filter(eligible)
-            transition_mask_output = dataframe_functions.concat_series(
+            transition_mask_output = dataframe.concat_series(
                 [
                     transition_mask_output,
-                    dataframe_functions.make_boolean_series(
+                    dataframe.make_boolean_series(
                         init=True, size=pools.shape[0]
                     ),
                 ]
@@ -245,22 +245,22 @@ class TransitionRuleProcessor(object):
                     "reset_age", int(tr_group["reset_age"].at(i_proportion))
                 )
 
-            classifier_split = dataframe_functions.concat_data_frame(
+            classifier_split = dataframe.concat_data_frame(
                 [classifier_split, classifiers]
             )
-            inventory_split = dataframe_functions.concat_data_frame(
+            inventory_split = dataframe.concat_data_frame(
                 [inventory_split, inventory]
             )
-            pool_split = dataframe_functions.concat_data_frame(
+            pool_split = dataframe.concat_data_frame(
                 [pool_split, pools]
             )
-            state_split = dataframe_functions.concat_data_frame(
+            state_split = dataframe.concat_data_frame(
                 [state_split, state]
             )
-            params_split = dataframe_functions.concat_data_frame(
+            params_split = dataframe.concat_data_frame(
                 [params_split, params]
             )
-            flux_split = dataframe_functions.concat_data_frame(
+            flux_split = dataframe.concat_data_frame(
                 [flux_split, flux]
             )
 
@@ -293,22 +293,22 @@ class TransitionRuleProcessor(object):
         )
 
         if len(proportions) > 1:
-            cbm_vars.classifiers = dataframe_functions.concat_data_frame(
+            cbm_vars.classifiers = dataframe.concat_data_frame(
                 [cbm_vars.classifiers, classifier_split]
             )
-            cbm_vars.inventory = dataframe_functions.concat_data_frame(
+            cbm_vars.inventory = dataframe.concat_data_frame(
                 [cbm_vars.inventory, inventory_split]
             )
-            cbm_vars.pools = dataframe_functions.concat_data_frame(
+            cbm_vars.pools = dataframe.concat_data_frame(
                 [cbm_vars.pools, pool_split]
             )
-            cbm_vars.state = dataframe_functions.concat_data_frame(
+            cbm_vars.state = dataframe.concat_data_frame(
                 [cbm_vars.state, state_split]
             )
-            cbm_vars.parameters = dataframe_functions.concat_data_frame(
+            cbm_vars.parameters = dataframe.concat_data_frame(
                 [cbm_vars.parameters, params_split]
             )
-            cbm_vars.flux = dataframe_functions.concat_data_frame(
+            cbm_vars.flux = dataframe.concat_data_frame(
                 [cbm_vars.flux, flux_split]
             )
 

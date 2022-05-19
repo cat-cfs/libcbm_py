@@ -1,5 +1,5 @@
 from libcbm.model.cbm.cbm_variables import CBMVariables
-from libcbm.storage import dataframe_functions
+from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 import numpy as np
@@ -29,7 +29,7 @@ def _concat_timestep_results(
 
     _add_timestep_series(timestep, timestep_result)
 
-    return dataframe_functions.concat_data_frame(
+    return dataframe.concat_data_frame(
         [running_result, timestep_result]
     )
 
