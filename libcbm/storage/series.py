@@ -15,6 +15,7 @@ class Series(ABC):
     presents a limited interface for internal usage by libcbm.
     """
 
+    @property
     @abstractmethod
     def name(self) -> str:
         pass
@@ -130,16 +131,6 @@ class Series(ABC):
         pass
 
 
-class NullSeries(Series):
-    """represents a series with no elements"""
-
-    def __init__(self, name):
-        super().__init__(name, None, None)
-
-    def to_numpy(self) -> np.ndarray:
-        return None
-
-
 class SeriesDef:
     def __init__(self, name: str, init: Any, dtype: str):
         self.name = name
@@ -147,12 +138,10 @@ class SeriesDef:
         self.dtype = dtype
 
     def make_series(self, len: int, back_end: BackendType):
-        if not self.init and not self.dtype:
-            return NullSeries(self.name)
         return allocate(self.name, len, self.init, self.dtype, back_end)
 
 
 def allocate(
     name: str, len: int, init: Any, dtype: str, back_end: BackendType
 ) -> Series:
-    get_backend(back_end).allocate(name, len, init, dtype)
+    return get_backend(back_end).allocate(name, len, init, dtype)
