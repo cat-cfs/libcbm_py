@@ -3,17 +3,14 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 
-import numexpr
-import numpy as np
+from libcbm.storage import dataframe
 from typing import Union
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 
 
 class RuleFilter:
-    def __init__(
-        self, expression: str, data: DataFrame
-    ):
+    def __init__(self, expression: str, data: DataFrame):
         self._expression = expression
         self._data = data
 
@@ -41,8 +38,7 @@ def create_filter(expression: str, data: DataFrame):
     Args:
         expression (str): a boolean expression in terms of the values in
             column_variable_map
-        data: the data to for which to
-            create a filter
+        data: the data to for which to create a filter
 
     Returns:
         RuleFilter: rule_filter object
@@ -60,14 +56,15 @@ def evaluate_filters(*filter_objs: RuleFilter) -> Series:
     Returns:
         Series: filter result (boolean array)
     """
-    output = True
+    output = None
     for filter_obj in filter_objs:
         if not filter_obj or not filter_obj.expression:
             continue
-        result = numexpr.evaluate(filter_obj.expression, filter_obj.data)
-        if output is True:
+        result = filter_obj.data.evaluate_filter(filter_obj.expression)
+
+        if output is None:
             output = result
         else:
-            output = np.logical_and(output, result)
+            output = dataframe.logical_and(output, result)
 
     return output
