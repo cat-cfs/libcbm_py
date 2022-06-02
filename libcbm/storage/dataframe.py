@@ -107,6 +107,10 @@ class DataFrame(ABC):
     def evaluate_filter(self, expression: str) -> Series:
         pass
 
+    @abstractmethod
+    def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
+        pass
+
 
 def concat_data_frame(
     data: list[DataFrame], backend_type: BackendType = None
