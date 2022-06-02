@@ -103,6 +103,10 @@ class DataFrame(ABC):
         """
         pass
 
+    @abstractmethod
+    def evaluate_filter(self, expression: str) -> Series:
+        pass
+
 
 def concat_data_frame(
     data: list[DataFrame], backend_type: BackendType = None
