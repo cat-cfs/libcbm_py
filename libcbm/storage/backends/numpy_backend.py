@@ -1,6 +1,7 @@
 import ctypes
 import numpy as np
 import pandas as pd
+import numexpr
 from typing import Any
 from typing import Union
 from typing import Callable
@@ -159,6 +160,11 @@ class NumpyDataFrameFrameBackend(DataFrame):
         for k, v in self._data.items():
             out_data[k] = NumpySeriesBackend(k, v).map(arg).to_numpy()
         return NumpyDataFrameFrameBackend(out_data)
+
+    def evaluate_filter(self, expression: str) -> Series:
+        return NumpySeriesBackend(
+            None, numexpr.evaluate(expression, self._data)
+        )
 
 
 class NumpySeriesBackend(Series):

@@ -84,6 +84,9 @@ class PandasDataFrameBackend(DataFrame):
         )
         return PandasDataFrameBackend(output)
 
+    def evaluate_filter(self, expression: str) -> Series:
+        return PandasSeriesBackend(None, self._df.eval(expression))
+
 
 class PandasSeriesBackend(Series):
     """
