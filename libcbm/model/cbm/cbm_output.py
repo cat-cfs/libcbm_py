@@ -138,6 +138,6 @@ class InMemoryCBMOutput:
             dataframe.from_series_list(
                 [cbm_vars.inventory["area"]],
                 nrows=cbm_vars.inventory.n_rows,
-                back_end=cbm_vars.inventory.backend_type
-            )
+                back_end=cbm_vars.inventory.backend_type,
+            ),
         )
