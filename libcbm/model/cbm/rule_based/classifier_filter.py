@@ -114,15 +114,16 @@ class ClassifierFilter:
 
         expression_tokens = []
 
-        def get_classifier_variable(num: int) -> str:
-            return f"c_{num}"
+        def get_classifier_variable(name: str) -> str:
+            return f"`{name}`"
 
         for i_classifier, classifier in enumerate(
             self.classifiers_config["classifiers"]
         ):
-            classifier_variable = get_classifier_variable(i_classifier)
+
             classifier_set_value = classifier_set[i_classifier]
             classifier_name = classifier["name"]
+            classifier_variable = get_classifier_variable(classifier_name)
             classifier_id_by_name = self.classifier_value_lookup[
                 classifier_name
             ]
