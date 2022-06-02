@@ -28,7 +28,7 @@ class RuleFilter:
         """
         a dictionary or table containing named variables to filter.
         """
-        return self._local_dict
+        return self._data
 
 
 def create_filter(expression: str, data: DataFrame):
