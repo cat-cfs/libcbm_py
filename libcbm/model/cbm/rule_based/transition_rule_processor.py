@@ -102,9 +102,7 @@ class TransitionRuleProcessor(object):
             ),
             rule_filter.create_filter(
                 expression=f"(disturbance_type_id == {dist_type_target})",
-                data={
-                    "disturbance_type_id": cbm_vars.parameters.disturbance_type
-                },
+                data=cbm_vars.parameters,
             ),
         ]
 

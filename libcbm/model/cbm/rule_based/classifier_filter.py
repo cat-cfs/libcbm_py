@@ -6,6 +6,7 @@
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
+from libcbm.model.cbm.rule_based import rule_filter
 import itertools
 from typing import Iterable
 
@@ -158,18 +159,13 @@ class ClassifierFilter:
                     f"undefined classifier set value {classifier_set_value}"
                 )
 
-        result = RuleFilter(expression="", local_dict={})
+        result = rule_filter.create_filter(expression="", data=None)
         if not expression_tokens:
             # this can happen if the classifier set is all wildcards
             return result
 
-        result = RuleFilter(
+        result = rule_filter.create_filter(
             expression=" & ".join(expression_tokens),
-            local_dict={
-                get_classifier_variable(i): classifier_values[
-                    x["name"]
-                ].to_numpy()
-                for i, x in enumerate(self.classifiers_config["classifiers"])
-            },
+            data=classifier_values,
         )
         return result

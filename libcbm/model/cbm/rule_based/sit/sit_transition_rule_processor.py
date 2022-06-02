@@ -35,7 +35,7 @@ def create_state_variable_filter(
         tr_group_key, True
     )
     return rule_filter.create_filter(
-        expression=state_filter_expression, data={"age": state_variables.age}
+        expression=state_filter_expression, data=state_variables
     )
 
 
