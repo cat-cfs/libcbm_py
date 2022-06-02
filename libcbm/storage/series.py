@@ -92,6 +92,10 @@ class Series(ABC):
     def sum(self) -> Union[int, float]:
         pass
 
+    @abstractmethod
+    def cumsum(self) -> "Series":
+        pass
+
     @property
     @abstractmethod
     def length(self) -> int:
