@@ -44,14 +44,16 @@ def _is_production_based(sit_event_row: dict) -> bool:
 def _get_production_sort_value(
     sort_type: str, production: DataFrame, cbm_vars: CBMVariables
 ) -> Series:
-    if sum(production.Total) == 0:
-        return cbm_vars.pools.SoftwoodMerch + cbm_vars.pools.HardwoodMerch
+    if sum(production["Total"]) == 0:
+        return (
+            cbm_vars.pools["SoftwoodMerch"] + cbm_vars.pools["HardwoodMerch"]
+        )
     if sort_type == "MERCHCSORT_TOTAL":
-        return production.Total
+        return production["Total"]
     elif sort_type == "MERCHCSORT_SW":
         return (
-            production.DisturbanceSoftProduction
-            + production.DisturbanceDOMProduction
+            production["DisturbanceSoftProduction"]
+            + production["DisturbanceDOMProduction"]
         )
     elif sort_type == "MERCHCSORT_HW":
         return (
@@ -70,15 +72,16 @@ def _get_sort_value(
     random_generator: Callable[[int], Series],
 ) -> Series:
     if sort_type == "SORT_BY_SW_AGE" or sort_type == "SORT_BY_HW_AGE":
-        return cbm_vars.state.age
+        return cbm_vars.state["age"]
     elif sort_type == "TOTALSTEMSNAG":
         return (
-            cbm_vars.pools.SoftwoodStemSnag + cbm_vars.pools.HardwoodStemSnag
+            cbm_vars.pools["SoftwoodStemSnag"]
+            + cbm_vars.pools["HardwoodStemSnag"]
         )
     elif sort_type == "SWSTEMSNAG":
-        return cbm_vars.pools.SoftwoodStemSnag
+        return cbm_vars.pools["SoftwoodStemSnag"]
     elif sort_type == "HWSTEMSNAG":
-        return cbm_vars.pools.HardwoodStemSnag
+        return cbm_vars.pools["HardwoodStemSnag"]
     elif sort_type == "RANDOMSORT":
         return random_generator(cbm_vars.pools.shape[0])
     else:
