@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 import pandas as pd
 import numpy as np
+from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 
@@ -51,23 +52,26 @@ def spatially_indexed_target(
         RuleTargetResult: object with information on spatially indexed
             stand to disturb
     """
-    match = inventory[inventory.spatial_reference == identifier]
-    match_index = match.index
-    if len(match_index) < 1:
+
+    matches = dataframe.indices_nonzero(inventory["spatial_reference"] == identifier)
+
+    if matches.length < 1:
         raise ValueError(
             "no matching value in inventory spatial_reference column for "
             f"identifier {identifier}"
         )
-    if len(match_index) > 1:
+    if matches.length > 1:
         raise ValueError(
             "multiple matching values in inventory spatial_reference column "
             f"for identifier {identifier}"
         )
+    match_idx = matches.at(0)
+    match_inv = inventory.at(match_idx)
     result = DataFrame(
         {
-            "target_var": [match.area],
+            "target_var": [match_inv["area"]],
             "sort_var": None,
-            "disturbed_index": [match_index[0]],
+            "disturbed_index": [match_idx],
             "area_proportions": [1.0],
         }
     )
@@ -108,11 +112,11 @@ def sorted_disturbance_target(
     result = DataFrame()
 
     disturbed = DataFrame({"target_var": target_var, "sort_var": sort_var})
-    disturbed = disturbed[eligible]
+    disturbed = disturbed.filter(eligible)
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
     # filter out records that produced nothing towards the target
-    disturbed = disturbed.loc[disturbed.target_var > 0]
-    if disturbed.shape[0] == 0:
+    disturbed = disturbed.filter(disturbed["target_var"] > 0)
+    if disturbed.n_rows == 0:
         return RuleTargetResult(
             target=DataFrame(
                 columns=[
@@ -135,9 +139,9 @@ def sorted_disturbance_target(
     # compute the cumulative sums of the target var to compare versus the
     # target value
     disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
-    disturbed = disturbed.reset_index()
 
-    fully_disturbed_records = disturbed[disturbed.target_var_sums <= target]
+
+    fully_disturbed_records = disturbed.filter(disturbed["target_var_sums"] <= target)
 
     if fully_disturbed_records.shape[0] > 0:
         remaining_target = (
