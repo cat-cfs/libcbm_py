@@ -116,7 +116,7 @@ class PandasSeriesBackend(Series):
         (returns a copy)"""
         return PandasSeriesBackend(
             self._name,
-            self._series.iloc[indices.to_numpy].reset_index(drop=True),
+            self._series.iloc[indices.to_numpy()].reset_index(drop=True),
         )
 
     def as_type(self, type_name: str) -> "Series":
