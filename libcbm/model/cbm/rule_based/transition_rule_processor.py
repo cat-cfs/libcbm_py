@@ -216,7 +216,7 @@ class TransitionRuleProcessor(object):
 
             # set the area for the split portion according to the current
             # group member proportion
-            inventory["area"] = inventory["area"] * proportion
+            inventory["area"].assign_all(inventory["area"] * proportion)
 
             # if the current proportion is the remainder of 100 minus the
             # group's percentage sums, then this split portion will not be
