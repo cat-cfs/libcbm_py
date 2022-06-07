@@ -75,6 +75,10 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def to_list(self) -> list:
+        pass
+
+    @abstractmethod
     def to_numpy_ptr(self) -> ctypes.pointer:
         pass
 
@@ -120,6 +124,14 @@ class Series(ABC):
 
     @abstractmethod
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
     @abstractmethod
