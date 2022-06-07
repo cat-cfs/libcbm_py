@@ -96,6 +96,14 @@ class Series(ABC):
     def cumsum(self) -> "Series":
         pass
 
+    @abstractmethod
+    def max(self) -> Union[int, float]:
+        pass
+
+    @abstractmethod
+    def min(self) -> Union[int, float]:
+        pass
+
     @property
     @abstractmethod
     def length(self) -> int:
