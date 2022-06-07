@@ -204,49 +204,31 @@ class PandasSeriesBackend(Series):
         return BackendType.pandas
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (self._series * other)
-        )
+        return PandasSeriesBackend(self._name, (self._series * other))
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other * self._series)
-        )
+        return PandasSeriesBackend(self._name, (other * self._series))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other + self._series)
-        )
+        return PandasSeriesBackend(self._name, (other + self._series))
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other + self._series)
-        )
+        return PandasSeriesBackend(self._name, (other + self._series))
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other >= self._series)
-        )
+        return PandasSeriesBackend(self._name, (other >= self._series))
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other > self._series)
-        )
+        return PandasSeriesBackend(self._name, (other > self._series))
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other <= self._series)
-        )
+        return PandasSeriesBackend(self._name, (other <= self._series))
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other < self._series)
-        )
+        return PandasSeriesBackend(self._name, (other < self._series))
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(
-            self._name, (other == self._series)
-        )
+        return PandasSeriesBackend(self._name, (other == self._series))
 
 
 def concat_data_frame(
