@@ -83,7 +83,7 @@ def _get_sort_value(
     elif sort_type == "HWSTEMSNAG":
         return cbm_vars.pools["HardwoodStemSnag"]
     elif sort_type == "RANDOMSORT":
-        return random_generator(cbm_vars.pools.shape[0])
+        return random_generator(cbm_vars.pools.n_rows)
     else:
         raise ValueError(
             f"specified sort_type '{sort_type}' is not sort value"
