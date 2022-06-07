@@ -186,6 +186,15 @@ class PandasSeriesBackend(Series):
     def sum(self) -> Union[int, float]:
         return self._series.sum()
 
+    def cumsum(self) -> "PandasSeriesBackend":
+        return PandasSeriesBackend(self.name, self._series.cumsum())
+
+    def max(self) -> Union[int, float]:
+        return self._series.max()
+
+    def min(self) -> Union[int, float]:
+        return self._series.min()
+
     @property
     def length(self) -> int:
         return self._series.size
