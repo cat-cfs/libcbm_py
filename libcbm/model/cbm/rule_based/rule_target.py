@@ -121,21 +121,21 @@ def sorted_disturbance_target(
         # filter out records that produced nothing towards the target
     )
     idx_disturbed = dataframe.indices_nonzero(filter)
-
+    out_index = series.range(
+        "index",
+        0,
+        target_var.length,
+        1,
+        "int",
+        target_var.backend_type,
+    ).take(idx_disturbed)
     target_var = target_var.take(idx_disturbed)
     target_var.name = "target_var"
     sort_var = sort_var.take(idx_disturbed)
     sort_var.name = "sort_var"
     disturbed = dataframe.from_series_list(
         [
-            series.range(
-                "index",
-                0,
-                target_var.length,
-                1,
-                "int",
-                target_var.backend_type,
-            ),
+            out_index,
             target_var,
             sort_var,
         ],
@@ -242,6 +242,14 @@ def proportion_area_target(
             area target.
     """
     eligible_inventory = inventory.filter(eligible)
+    eligible_inventory_index = series.range(
+        "disturbed_index",
+        0,
+        inventory.n_rows,
+        1,
+        "int",
+        inventory.backend_type,
+    ).filter(eligible)
     total_eligible_area = eligible_inventory["area"].sum()
     if total_eligible_area <= 0:
         return RuleTargetResult(
@@ -261,25 +269,29 @@ def proportion_area_target(
         # shortfall
         area_proportion = 1.0
         total_achieved = total_eligible_area
-    target = DataFrame(
-        {
-            "target_var": eligible_inventory.area * area_proportion,
-            "sort_var": None,
-            "disturbed_index": eligible_inventory.index,
-            "area_proportions": area_proportion,
-        }
+    target_var = eligible_inventory["area"] * area_proportion
+    target_var.name = "target_var"
+
+    target = dataframe.from_series_list(
+        [
+            target_var,
+            SeriesDef("sort_var", None, "float"),
+            eligible_inventory_index,
+        ],
+        nrows=eligible_inventory.n_rows,
+        back_end=eligible_inventory.backend_type,
     )
 
-    num_splits = len(eligible_inventory.index) if area_proportion < 1.0 else 0
+    num_splits = eligible_inventory.n_rows if area_proportion < 1.0 else 0
     return RuleTargetResult(
         target=target,
         statistics={
             "total_eligible_value": total_eligible_area,
             "total_achieved": total_achieved,
             "shortfall": area_target_value - total_achieved,
-            "num_records_disturbed": len(eligible_inventory.index),
+            "num_records_disturbed": eligible_inventory.n_rows,
             "num_splits": num_splits,
-            "num_eligible": len(eligible_inventory.index),
+            "num_eligible": eligible_inventory.n_rows,
         },
     )
 
