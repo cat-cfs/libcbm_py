@@ -42,9 +42,9 @@ def create_split_proportions(
     # is allowed and is modelled as "unchanged" as far as transitioning
     # classifiers, etc.
 
-    percent_sum = tr_group.percent.sum()
+    percent_sum = tr_group["percent"].sum()
     if abs(percent_sum - 100) < group_error_max:
-        return list(tr_group.percent / percent_sum)
+        return (tr_group["percent"] / percent_sum).to_list()
     elif percent_sum > 100:
         raise ValueError(
             f"total percent ({percent_sum}) in transition rule group "
@@ -52,8 +52,9 @@ def create_split_proportions(
         )
     else:
         remainder = 100 - percent_sum
-        appended_percent = tr_group.percent.append(Series([remainder]))
-        return list(appended_percent / appended_percent.sum())
+        appended_percent = tr_group["percent"].to_list() + [remainder]
+        appended_percent_sum = sum(appended_percent)
+        return [p / appended_percent_sum for p in appended_percent]
 
 
 class TransitionRuleProcessor(object):
