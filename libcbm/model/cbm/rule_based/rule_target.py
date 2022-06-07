@@ -365,21 +365,23 @@ def proportion_merch_target(
             such that the total carbon produced matches the specified carbon
             target.
     """
+    inventory_idx = series.range(
+        "disturbed_index",
+        0,
+        inventory.n_rows,
+        1,
+        "int",
+        inventory.backend_type,
+    )
     eligible_inventory = inventory.filter(eligible)
+    eligible_inventory_idx = inventory_idx.filter(eligible)
     eligible_production = disturbance_production.filter(eligible)
     production = eligible_production * eligible_inventory["area"] * efficiency
     total_production = production.sum()
     n_eligible = eligible_inventory.n_rows
     if total_production <= 0.0:
         return RuleTargetResult(
-            target=DataFrame(
-                columns=[
-                    "target_var",
-                    "sort_var",
-                    "disturbed_index",
-                    "area_proportions",
-                ]
-            ),
+            target=None,
             statistics={
                 "total_eligible_value": total_production,
                 "total_achieved": 0.0,
@@ -393,15 +395,20 @@ def proportion_merch_target(
     if proportion > 1:
         proportion = 1.0
 
-    target = DataFrame(
-        {
-            "target_var": production * proportion,
-            "sort_var": None,
-            "disturbed_index": eligible_inventory.index,
-            "area_proportions": proportion * efficiency,
-        }
+    target_var = production * proportion
+    target_var.name = "target_var"
+
+    target = dataframe.from_series_list(
+        [
+            target_var,
+            SeriesDef("sort_var", None, "float"),
+            eligible_inventory_idx,
+            SeriesDef("area_proportions", proportion * efficiency, "float"),
+        ],
+        nrows=target_var.length,
+        back_end=target_var.backend_type,
     )
-    total_achieved = target.target_var.sum()
+    total_achieved = target_var.sum()
     return RuleTargetResult(
         target,
         statistics={
@@ -438,18 +445,29 @@ def proportion_sort_proportion_target(
         raise ValueError(
             "proportion target may not be less than zero or greater than 1."
         )
-    eligible_inventory = inventory.loc[eligible]
 
-    n_disturbed = len(eligible_inventory.index)
+    disturbed_index = series.range(
+        "disturbed_index",
+        0,
+        inventory.n_rows,
+        1,
+        "int",
+        inventory.backend_type,
+    ).filter(eligible)
 
-    target = DataFrame(
-        {
-            "target_var": proportion_target,
-            "sort_var": None,
-            "disturbed_index": eligible_inventory.index,
-            "area_proportions": proportion_target,
-        }
+    eligible_inventory = inventory.filter(eligible)
+
+    n_disturbed = eligible_inventory.n_rows
+
+    target = dataframe.from_series_list(
+        [
+            SeriesDef("target_var", proportion_target, "float"),
+            SeriesDef("sort_var", None, "float"),
+            disturbed_index,
+            SeriesDef("area_proportions", proportion_target, "float"),
+        ]
     )
+
     return RuleTargetResult(
         target,
         statistics={
