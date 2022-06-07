@@ -1,11 +1,11 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
-import pandas as pd
-import numpy as np
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import series
 from libcbm.storage.series import Series
+from libcbm.storage.series import SeriesDef
 
 
 class RuleTargetResult:
@@ -53,7 +53,9 @@ def spatially_indexed_target(
             stand to disturb
     """
 
-    matches = dataframe.indices_nonzero(inventory["spatial_reference"] == identifier)
+    matches = dataframe.indices_nonzero(
+        inventory["spatial_reference"] == identifier
+    )
 
     if matches.length < 1:
         raise ValueError(
@@ -67,14 +69,17 @@ def spatially_indexed_target(
         )
     match_idx = matches.at(0)
     match_inv = inventory.at(match_idx)
-    result = DataFrame(
-        {
-            "target_var": [match_inv["area"]],
-            "sort_var": None,
-            "disturbed_index": [match_idx],
-            "area_proportions": [1.0],
-        }
+    result = dataframe.from_series_list(
+        [
+            series.SeriesDef("target_var", match_inv["area"], "float"),
+            series.SeriesDef("sort_var", None, float),
+            series.SeriesDef("sort_var", match_idx, "int32"),
+            series.SeriesDef("area_proportions", 1.0, "float"),
+        ],
+        nrows=1,
+        back_end=inventory.backend_type,
     )
+
     return RuleTargetResult(target=result, statistics=None)
 
 
@@ -108,24 +113,41 @@ def sorted_disturbance_target(
         raise ValueError("target is less than zero")
     if (target_var < 0).any():
         raise ValueError("less than zero values detected in target_var")
-    remaining_target = target
-    result = DataFrame()
 
-    disturbed = DataFrame({"target_var": target_var, "sort_var": sort_var})
-    disturbed = disturbed.filter(eligible)
+    remaining_target = target
+    filter = (
+        eligible
+        & (target_var > 0)
+        # filter out records that produced nothing towards the target
+    )
+    idx_disturbed = dataframe.indices_nonzero(filter)
+
+    target_var = target_var.take(idx_disturbed)
+    target_var.name = "target_var"
+    sort_var = sort_var.take(idx_disturbed)
+    sort_var.name = "sort_var"
+    disturbed = dataframe.from_series_list(
+        [
+            series.range(
+                "index",
+                0,
+                target_var.length,
+                1,
+                "int",
+                target_var.backend_type,
+            ),
+            target_var,
+            sort_var,
+        ],
+        target_var.length,
+        target_var.backend_type,
+    )
+
     disturbed = disturbed.sort_values(by="sort_var", ascending=False)
-    # filter out records that produced nothing towards the target
-    disturbed = disturbed.filter(disturbed["target_var"] > 0)
+
     if disturbed.n_rows == 0:
         return RuleTargetResult(
-            target=DataFrame(
-                columns=[
-                    "target_var",
-                    "sort_var",
-                    "disturbed_index",
-                    "area_proportions",
-                ]
-            ),
+            target=None,
             statistics={
                 "total_eligible_value": disturbed["target_var"].sum(),
                 "total_achieved": 0,
@@ -138,64 +160,61 @@ def sorted_disturbance_target(
 
     # compute the cumulative sums of the target var to compare versus the
     # target value
-    disturbed["target_var_sums"] = disturbed["target_var"].cumsum()
+    target_var_sums = disturbed["target_var"].cumsum()
+    max_target_var_sum = target_var_sums.at(target_var_sums.length - 1)
+    fully_disturbed_idx = dataframe.indices_nonzero(target_var_sums <= target)
+    fully_disturbed_records = disturbed.take(fully_disturbed_idx)
+    target_var_sums = target_var_sums.take(fully_disturbed_idx)
+    last_sum = target_var_sums.at(target_var_sums.length - 1)
+    if fully_disturbed_records.n_rows > 0:
+        remaining_target = target - last_sum
 
-
-    fully_disturbed_records = disturbed.filter(disturbed["target_var_sums"] <= target)
-
-    if fully_disturbed_records.shape[0] > 0:
-        remaining_target = (
-            target - fully_disturbed_records["target_var_sums"].max()
-        )
-
-    result = pd.concat(
+    result = dataframe.from_series_list(
         [
-            result,
-            pd.DataFrame(
-                {
-                    "target_var": fully_disturbed_records["target_var"],
-                    "sort_var": fully_disturbed_records["sort_var"],
-                    "disturbed_index": fully_disturbed_records["index"],
-                    "area_proportions": np.ones(
-                        len(fully_disturbed_records["index"])
-                    ),
-                }
-            ),
-        ]
+            fully_disturbed_records["target_var"],
+            fully_disturbed_records["sort_var"],
+        ],
+        nrows=fully_disturbed_records.n_rows,
+        back_end=target_var.backend_type,
     )
 
-    partial_disturb = disturbed[disturbed.target_var_sums > target]
-
     num_splits = 0
-    if partial_disturb.shape[0] > 0 and remaining_target > 0:
+    if remaining_target > 0 and max_target_var_sum > target:
         # for merch C and area targets a final record is split to meet target
         # exactly
         num_splits = 1
-        split_record = partial_disturb.iloc[0]
+        split_record = disturbed.at(fully_disturbed_idx + 1)
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
-        result = pd.concat(
+        result = dataframe.concat_data_frame(
             [
                 result,
-                pd.DataFrame(
-                    {
-                        "target_var": split_record["target_var"],
-                        "sort_var": split_record["sort_var"],
-                        "disturbed_index": int(split_record["index"]),
-                        "area_proportions": [proportion],
-                    }
+                dataframe.from_series_list(
+                    [
+                        SeriesDef(
+                            "target_var", split_record["target_var"], "float"
+                        ),
+                        SeriesDef(
+                            "sort_var", split_record["sort_var"], "float"
+                        ),
+                        SeriesDef(
+                            "disturbed_index", split_record["index"], "int"
+                        ),
+                        SeriesDef("area_proportions", proportion, "float"),
+                    ],
+                    nrows=1,
+                    back_end=target_var.backend_type,
                 ),
-            ]
+            ],
+            backend_type=target_var.backend_type,
         )
-
-    result = result.reset_index(drop=True)
 
     stats = {
         "total_eligible_value": disturbed["target_var"].sum(),
         "total_achieved": target - remaining_target,
         "shortfall": remaining_target,
-        "num_records_disturbed": result.shape[0],
+        "num_records_disturbed": result.n_rows,
         "num_splits": num_splits,
         "num_eligible": eligible.sum(),
     }
@@ -226,21 +245,14 @@ def proportion_area_target(
     total_eligible_area = eligible_inventory["area"].sum()
     if total_eligible_area <= 0:
         return RuleTargetResult(
-            target=DataFrame(
-                columns=[
-                    "target_var",
-                    "sort_var",
-                    "disturbed_index",
-                    "area_proportions",
-                ]
-            ),
+            target=None,
             statistics={
                 "total_eligible_value": total_eligible_area,
                 "total_achieved": 0.0,
                 "shortfall": area_target_value,
                 "num_records_disturbed": 0,
                 "num_splits": 0,
-                "num_eligible": len(eligible_inventory.index),
+                "num_eligible": eligible_inventory.n_rows,
             },
         )
     area_proportion = area_target_value / total_eligible_area
@@ -298,12 +310,12 @@ def sorted_area_target(
             target value.
 
     """
-    if inventory.shape[0] != sort_value.shape[0]:
+    if inventory.n_rows != sort_value.length:
         raise ValueError(
             "sort_value dimension must equal number of rows in inventory"
         )
     return sorted_disturbance_target(
-        target_var=inventory.area,
+        target_var=inventory["area"],
         sort_var=sort_value,
         target=area_target_value,
         eligible=eligible,
