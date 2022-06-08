@@ -166,6 +166,12 @@ class NumpyDataFrameFrameBackend(DataFrame):
             None, numexpr.evaluate(expression, self._data)
         )
 
+    def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
+        index_array = np.argsort(self._data[by], kind="mergesort")
+        return NumpyDataFrameFrameBackend(
+            {k: v[index_array] for k, v in self._data.items()}
+        )
+
 
 class NumpySeriesBackend(Series):
     """
@@ -236,6 +242,9 @@ class NumpySeriesBackend(Series):
     def to_numpy(self) -> np.ndarray:
         return self._data
 
+    def to_list(self) -> list:
+        return self._data.tolist()
+
     def to_numpy_ptr(self) -> ctypes.pointer:
         if str(self._data.dtype) == "int32":
             ptr_type = ctypes.c_int32
@@ -281,6 +290,12 @@ class NumpySeriesBackend(Series):
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other * self._data))
+
+    def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (self._data / other))
+
+    def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (other / self._data))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other + self._data))

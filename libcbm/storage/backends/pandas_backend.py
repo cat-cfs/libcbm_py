@@ -87,6 +87,11 @@ class PandasDataFrameBackend(DataFrame):
     def evaluate_filter(self, expression: str) -> Series:
         return PandasSeriesBackend(None, self._df.eval(expression))
 
+    def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
+        return PandasDataFrameBackend(
+            self._df.sort_values(by=by, ascending=ascending, kind="mergesort")
+        )
+
 
 class PandasSeriesBackend(Series):
     """
@@ -159,6 +164,9 @@ class PandasSeriesBackend(Series):
     def to_numpy(self) -> np.ndarray:
         return self._series.to_numpy()
 
+    def to_list(self) -> list:
+        return self._series.to_list()
+
     def to_numpy_ptr(self) -> ctypes.pointer:
         if str(self._series.dtype) == "int32":
             ptr_type = ctypes.c_int32
@@ -208,6 +216,12 @@ class PandasSeriesBackend(Series):
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (other * self._series))
+
+    def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (self._series / other))
+
+    def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (other / self._series))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (other + self._series))
