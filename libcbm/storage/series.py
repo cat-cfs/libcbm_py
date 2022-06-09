@@ -20,6 +20,11 @@ class Series(ABC):
     def name(self) -> str:
         pass
 
+    @name.setter
+    @abstractmethod
+    def name(self, value) -> str:
+        pass
+
     @abstractmethod
     def filter(self, arg: "Series") -> "Series":
         """
@@ -159,7 +164,27 @@ class Series(ABC):
         pass
 
     @abstractmethod
-    def __eq__(sefl, other: Union[int, float, "Series"]) -> "Series":
+    def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __and__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __or__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __invert__(self) -> "Series":
         pass
 
 

@@ -107,6 +107,10 @@ class PandasSeriesBackend(Series):
     def name(self) -> str:
         return self._name
 
+    @name.setter
+    def name(self, value) -> str:
+        self._name = value
+
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
@@ -243,6 +247,21 @@ class PandasSeriesBackend(Series):
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (self._series == other))
+
+    def __and__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (self._series & other))
+
+    def __or__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (self._series | other))
+
+    def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (other & self._series))
+
+    def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (other | self._series))
+
+    def __invert__(self) -> "Series":
+        return PandasSeriesBackend(self._name, ~self._series)
 
 
 def concat_data_frame(
