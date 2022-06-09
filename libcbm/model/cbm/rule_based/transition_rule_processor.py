@@ -102,7 +102,7 @@ class TransitionRuleProcessor(object):
                 classifier_set, cbm_vars.classifiers
             ),
             rule_filter.create_filter(
-                expression=f"(disturbance_type_id == {dist_type_target})",
+                expression=f"(disturbance_type == {dist_type_target})",
                 data=cbm_vars.parameters,
             ),
         ]
