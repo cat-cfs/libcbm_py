@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import numpy as np
 import pandas as pd
 from typing import Iterable
 from libcbm.input.sit import sit_transition_rule_parser
@@ -13,6 +12,7 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import (
 )
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe
 from libcbm.model.cbm.cbm_variables import CBMVariables
 
 
@@ -101,17 +101,22 @@ class SITTransitionRuleProcessor:
             return cbm_vars
 
         classifiers = cbm_vars.classifiers
-        n_stands = classifiers.shape[0]
+        n_stands = classifiers.n_rows
         classifier_names = classifiers.columns
         transition_iterator = sit_transition_rule_iterator(
             sit_transitions, classifier_names
         )
-        transition_mask = np.zeros(n_stands, dtype=bool)
+        transition_mask = dataframe.make_boolean_series(
+            False, n_stands, cbm_vars.inventory.backend_type
+        )
         for tr_group_key, tr_group in transition_iterator:
             (
                 transition_mask,
                 cbm_vars,
             ) = self.transition_rule_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, cbm_vars
+                tr_group_key,
+                dataframe.from_pandas(tr_group),
+                transition_mask,
+                cbm_vars,
             )
         return cbm_vars
