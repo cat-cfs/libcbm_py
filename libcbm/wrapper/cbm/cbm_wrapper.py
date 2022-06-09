@@ -147,12 +147,12 @@ class CBMWrapper(LibCBM_ctypes):
         self.handle.call(
             "LibCBM_EndStep",
             state_variables.n_rows,
-            state_variables["enabled"],
-            state_variables["growth_enabled"],
-            state_variables["age"],
-            state_variables["regeneration_delay"],
-            state_variables["time_since_last_disturbance"],
-            state_variables["time_since_land_class_change"],
+            state_variables["enabled"].to_numpy(),
+            state_variables["growth_enabled"].to_numpy(),
+            state_variables["age"].to_numpy(),
+            state_variables["regeneration_delay"].to_numpy(),
+            state_variables["time_since_last_disturbance"].to_numpy(),
+            state_variables["time_since_land_class_change"].to_numpy(),
         )
 
     def initialize_land_state(
