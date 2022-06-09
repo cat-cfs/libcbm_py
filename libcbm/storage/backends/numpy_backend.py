@@ -298,25 +298,25 @@ class NumpySeriesBackend(Series):
         return NumpySeriesBackend(self._name, (other / self._data))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other + self._data))
+        return NumpySeriesBackend(self._name, (self._data + other))
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other + self._data))
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other >= self._data))
+        return NumpySeriesBackend(self._name, (self._data >= other))
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other > self._data))
+        return NumpySeriesBackend(self._name, (self._data > other))
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other <= self._data))
+        return NumpySeriesBackend(self._name, (self._data <= other))
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other < self._data))
+        return NumpySeriesBackend(self._name, (self._data < other))
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other == self._data))
+        return NumpySeriesBackend(self._name, (self._data == other))
 
 
 def concat_data_frame(

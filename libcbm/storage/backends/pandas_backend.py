@@ -224,25 +224,25 @@ class PandasSeriesBackend(Series):
         return PandasSeriesBackend(self._name, (other / self._series))
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other + self._series))
+        return PandasSeriesBackend(self._name, (self._series + other))
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (other + self._series))
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other >= self._series))
+        return PandasSeriesBackend(self._name, (self._series >= other))
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other > self._series))
+        return PandasSeriesBackend(self._name, (self._series > other))
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other <= self._series))
+        return PandasSeriesBackend(self._name, (self._series <= other))
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other < self._series))
+        return PandasSeriesBackend(self._name, (self._series < other))
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other == self._series))
+        return PandasSeriesBackend(self._name, (self._series == other))
 
 
 def concat_data_frame(
