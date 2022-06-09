@@ -67,7 +67,7 @@ class PandasDataFrameBackend(DataFrame):
         self._df.insert(index, series.name, series.to_numpy())
 
     def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        return np.ascontiguousarray(self._df)
+        return np.ascontiguousarray(self._df.values)
 
     def to_pandas(self) -> pd.DataFrame:
         return self._df
@@ -166,7 +166,7 @@ class PandasSeriesBackend(Series):
         )
 
     def to_numpy(self) -> np.ndarray:
-        return self._series.to_numpy()
+        return self._series.values
 
     def to_list(self) -> list:
         return self._series.to_list()
@@ -181,7 +181,7 @@ class PandasSeriesBackend(Series):
                 f"series type not supported {str(self._series.dtype)}"
             )
         return numpy_backend.get_numpy_pointer(
-            self._series.to_numpy(), ptr_type
+            self._series.values, ptr_type
         )
 
     def less(self, other: "Series") -> "Series":
