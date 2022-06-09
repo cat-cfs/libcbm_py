@@ -129,18 +129,18 @@ class PandasSeriesBackend(Series):
 
     def assign(self, indices: "Series", value: Union["Series", Any]):
         if isinstance(value, Series):
-            self._series.iloc[indices.to_numpy()] = value.to_numpy()
+            self._series[indices.to_numpy()] = value.to_numpy()
         else:
-            self._series.iloc[indices.to_numpy()] = value
+            self._series[indices.to_numpy()] = value
 
     def assign_all(self, value: Union["Series", Any]):
         """
         set all values in this series to the specified value
         """
         if isinstance(value, Series):
-            self._series.iloc[:] = value.to_numpy()
+            self._series[:] = value.to_numpy()
         else:
-            self._series.iloc[:] = value
+            self._series[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         return PandasSeriesBackend(self._name, self._series.map(arg))
