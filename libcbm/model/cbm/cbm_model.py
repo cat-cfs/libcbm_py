@@ -388,7 +388,7 @@ class CBM:
         Returns:
             CBMVariables: cbm_vars
         """
-        n_stands = cbm_vars.pools.shape[0]
+        n_stands = cbm_vars.pools.n_rows
         disturbance_op = self.compute_functions.allocate_op(n_stands)
         self.model_functions.get_disturbance_ops(
             disturbance_op, cbm_vars.inventory, cbm_vars.parameters
@@ -419,7 +419,7 @@ class CBM:
         Returns:
             CBMVariables: cbm_vars
         """
-        n_stands = cbm_vars.pools.shape[0]
+        n_stands = cbm_vars.pools.n_rows
 
         ops = {
             x: self.compute_functions.allocate_op(n_stands)
@@ -463,7 +463,7 @@ class CBM:
             [self.op_processes[x] for x in annual_process_op_schedule],
             cbm_vars.pools,
             cbm_vars.flux,
-            cbm_vars.state.enabled,
+            cbm_vars.state["enabled"],
         )
         for op_name in self.op_names:
             self.compute_functions.free_op(ops[op_name])
