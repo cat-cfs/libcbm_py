@@ -73,7 +73,7 @@ def spatially_indexed_target(
         [
             series.SeriesDef("target_var", match_inv["area"], "float"),
             series.SeriesDef("sort_var", None, float),
-            series.SeriesDef("sort_var", match_idx, "int32"),
+            series.SeriesDef("disturbed_index", match_idx, "int32"),
             series.SeriesDef("area_proportions", 1.0, "float"),
         ],
         nrows=1,
@@ -122,7 +122,7 @@ def sorted_disturbance_target(
     )
     idx_disturbed = dataframe.indices_nonzero(filter)
     out_index = series.range(
-        "index",
+        "disturbed_index",
         0,
         target_var.length,
         1,
@@ -161,6 +161,7 @@ def sorted_disturbance_target(
     # compute the cumulative sums of the target var to compare versus the
     # target value
     target_var_sums = disturbed["target_var"].cumsum()
+
     max_target_var_sum = target_var_sums.at(target_var_sums.length - 1)
     fully_disturbed_idx = dataframe.indices_nonzero(target_var_sums <= target)
     fully_disturbed_records = disturbed.take(fully_disturbed_idx)
@@ -173,6 +174,8 @@ def sorted_disturbance_target(
         [
             fully_disturbed_records["target_var"],
             fully_disturbed_records["sort_var"],
+            fully_disturbed_records["disturbed_index"],
+            SeriesDef("area_proportions", 1.0, "float"),
         ],
         nrows=fully_disturbed_records.n_rows,
         back_end=target_var.backend_type,
@@ -199,7 +202,9 @@ def sorted_disturbance_target(
                             "sort_var", split_record["sort_var"], "float"
                         ),
                         SeriesDef(
-                            "disturbed_index", split_record["index"], "int"
+                            "disturbed_index",
+                            split_record["disturbed_index"],
+                            "int",
                         ),
                         SeriesDef("area_proportions", proportion, "float"),
                     ],
