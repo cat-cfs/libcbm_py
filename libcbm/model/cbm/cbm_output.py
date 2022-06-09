@@ -85,7 +85,7 @@ class InMemoryCBMOutput:
             if self._density
             else cbm_vars.pools.multiply(cbm_vars.inventory["area"])
         )
-        self.pool = _concat_timestep_results(
+        self.pools = _concat_timestep_results(
             timestep, self.pools, timestep_pools
         )
 
