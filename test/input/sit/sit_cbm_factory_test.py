@@ -76,7 +76,7 @@ class SITCBMFactoryTest(unittest.TestCase):
                 in_memory_cbm_output.pools.filter(
                     in_memory_cbm_output.pools["timestep"] == 0
                 ).n_rows
-                == inventory.shape[0]
+                == inventory.n_rows
             )
             self.assertTrue(
                 len(rule_based_processor.sit_event_stats_by_timestep) > 0
