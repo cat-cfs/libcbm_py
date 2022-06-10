@@ -56,7 +56,7 @@ class SITIntegrationTest(unittest.TestCase):
                 classifiers=classifiers,
                 inventory=inventory,
                 pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
-                reporting_func=in_memory_cbm_output.append_simulation_result(),
+                reporting_func=in_memory_cbm_output.append_simulation_result,
             )
             # there should be 2 rows, timestep 0 and timestep 1
             self.assertTrue(in_memory_cbm_output.pools.n_rows == 2)
