@@ -4,7 +4,6 @@
 
 
 from libcbm.storage import dataframe
-from typing import Union
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 
@@ -18,15 +17,14 @@ class RuleFilter:
     def expression(self) -> str:
         """
         a boolean expression to filter the values
-        in local_dict. The variables are defined as the keys in
-        data.
+        in self.data.
         """
         return self._expression
 
     @property
-    def data(self) -> Union[DataFrame, dict[str, Series]]:
+    def data(self) -> DataFrame:
         """
-        a dictionary or table containing named variables to filter.
+        a table containing columns to filter.
         """
         return self._data
 
