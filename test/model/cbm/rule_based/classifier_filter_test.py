@@ -222,5 +222,6 @@ class ClassifierFilterTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             rule_filter.create_classifiers_filter(
-                ["undefined", "?", "agg1"],  dataframe.from_pandas(pd.DataFrame([[1, 3, 5]]))
+                ["undefined", "?", "agg1"],
+                dataframe.from_pandas(pd.DataFrame([[1, 3, 5]])),
             )
