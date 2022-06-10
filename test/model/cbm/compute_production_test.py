@@ -1,7 +1,6 @@
 import unittest
 import pandas as pd
-from libcbm.storage.dataframe import DataFrame
-from libcbm.storage.series import Series
+from libcbm.storage import dataframe
 from types import SimpleNamespace
 from libcbm.model.cbm import cbm_model
 
@@ -9,8 +8,10 @@ from libcbm.model.cbm import cbm_model
 class ComputeProductionTest(unittest.TestCase):
     def test_compute_disturbance_production_expected_result(self):
 
-        mock_pools = DataFrame(pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]}))
-        mock_inventory = DataFrame(
+        mock_pools = dataframe.from_pandas(
+            pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]})
+        )
+        mock_inventory = dataframe.from_pandas(
             pd.DataFrame({"age": [1, 1, 1], "area": [10, 20, 30]})
         )
         flux_indicator_codes = [
@@ -18,22 +19,24 @@ class ComputeProductionTest(unittest.TestCase):
             "DisturbanceHardProduction",
             "DisturbanceDOMProduction",
         ]
-        mock_flux = DataFrame(
+        mock_flux = dataframe.from_pandas(
             pd.DataFrame(
                 data=[[0, 0, 0], [0, 0, 0], [0, 0, 0]],
                 columns=flux_indicator_codes,
             )
         )
-        mock_eligible = Series("eligible", pd.Series([True, True, True]))
+        mock_eligible = dataframe.make_boolean_series(
+            True, mock_inventory.n_rows, mock_inventory.backend_type
+        )
         mock_disturbance_type = 15
 
         model_functions = SimpleNamespace()
 
         def mock_get_disturbance_ops(op, inventory, parameters):
             self.assertTrue(op == 999)
-            self.assertTrue(inventory.equals(mock_inventory))
+            self.assertTrue(inventory == mock_inventory)
             self.assertTrue(
-                (parameters.disturbance_type == mock_disturbance_type).all()
+                (parameters["disturbance_type"] == mock_disturbance_type).all()
             )
 
         model_functions.get_disturbance_ops = mock_get_disturbance_ops
@@ -51,9 +54,9 @@ class ComputeProductionTest(unittest.TestCase):
                 op_processes == [cbm_model.get_op_processes()["disturbance"]]
             )
             self.assertTrue(ops == [999])
-            self.assertTrue((pools == mock_pools.values).all())
-            self.assertTrue(list(enabled) == list(mock_eligible))
-            flux[:] = 1
+            self.assertTrue(pools.to_pandas().equals(mock_pools.to_pandas()))
+            self.assertTrue((enabled == mock_eligible).all())
+            flux.to_pandas()[:] = 1
 
         compute_functions.compute_flux = mock_compute_flux
 
@@ -74,5 +77,5 @@ class ComputeProductionTest(unittest.TestCase):
             mock_cbm_vars, mock_disturbance_type, mock_eligible
         )
         for flux_code in flux_indicator_codes:
-            self.assertTrue(list(result[flux_code]) == [1, 1, 1])
-        self.assertTrue(list(result["Total"]) == [3, 3, 3])
+            self.assertTrue(result[flux_code].to_list() == [1, 1, 1])
+        self.assertTrue(result["Total"].to_list() == [3, 3, 3])
