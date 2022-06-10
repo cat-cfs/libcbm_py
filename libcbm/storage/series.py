@@ -72,6 +72,13 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def all(self) -> bool:
+        """
+        return True if all values in this series are non-zero
+        """
+        pass
+
+    @abstractmethod
     def unique(self) -> "Series":
         pass
 

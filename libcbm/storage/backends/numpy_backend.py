@@ -240,6 +240,12 @@ class NumpySeriesBackend(Series):
         """
         return self._data.any()
 
+    def all(self) -> bool:
+        """
+        return True if all values in this series are non-zero
+        """
+        return self._data.all()
+
     def unique(self) -> "Series":
         return NumpySeriesBackend(self._name, np.unique(self._data))
 

@@ -160,6 +160,12 @@ class PandasSeriesBackend(Series):
         """
         return self._series.any()
 
+    def all(self) -> bool:
+        """
+        return True if all values in this series are non-zero
+        """
+        return self._series.all()
+
     def unique(self) -> "Series":
         return PandasSeriesBackend(
             self._name, pd.Series(name=self._name, data=self._series.unique())
