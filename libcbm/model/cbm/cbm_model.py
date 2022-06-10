@@ -9,6 +9,7 @@ from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.storage.series import Series
+from libcbm.storage.series import SeriesDef
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 
@@ -301,21 +302,21 @@ class CBM:
 
         if not isinstance(disturbance_type, Series):
             # set the disturbance type for all records
-            parameters = DataFrame(
+            parameters = dataframe.from_series_list(
                 [
-                    Series("disturbance_type", disturbance_type, "int32"),
-                    cbm_vars.parameters.n_rows,
-                    cbm_vars.parameters.backend_type,
-                ]
+                    SeriesDef("disturbance_type", disturbance_type, "int32"),
+                ],
+                cbm_vars.inventory.n_rows,
+                cbm_vars.inventory.backend_type,
             )
         else:
             # else: just use the provided array data
-            parameters = DataFrame(
+            parameters = dataframe.from_series_list(
                 [
                     cbm_vars.parameters["disturbance_type"],
-                    cbm_vars.parameters.n_rows,
-                    cbm_vars.parameters.backend_type,
-                ]
+                ],
+                cbm_vars.inventory.n_rows,
+                cbm_vars.inventory.backend_type,
             )
 
         self.model_functions.get_disturbance_ops(
@@ -339,7 +340,7 @@ class CBM:
             pools_copy,
             flux,
             enabled=(
-                Series("eligible", eligible, "int32")
+                eligible
                 if eligible is not None
                 else None
             ),
@@ -348,21 +349,21 @@ class CBM:
         self.compute_functions.free_op(disturbance_op)
         # computes C harvested by applying the disturbance matrix to the
         # specified carbon pools
-        df = DataFrame(
-            data=[
+        total_series = (
+                        flux["DisturbanceSoftProduction"]
+                        + flux["DisturbanceHardProduction"]
+                        + flux["DisturbanceDOMProduction"]
+                    )
+        total_series.name = "Total"
+        df = dataframe.from_series_list(
+            [
                 flux["DisturbanceSoftProduction"],
                 flux["DisturbanceHardProduction"],
                 flux["DisturbanceDOMProduction"],
-                Series(
-                    "Total",
-                    (
-                        flux["DisturbanceSoftProduction"]
-                        + flux["DisturbanceHardProduction"]
-                        + flux["DisturbanceDOMProduction"],
-                    ),
-                    "float64",
-                ),
-            ]
+                total_series
+            ],
+            nrows=flux.n_rows,
+            back_end=flux.backend_type
         )
         if density:
             return df
