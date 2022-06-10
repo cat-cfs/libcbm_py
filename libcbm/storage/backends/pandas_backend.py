@@ -180,9 +180,7 @@ class PandasSeriesBackend(Series):
             raise ValueError(
                 f"series type not supported {str(self._series.dtype)}"
             )
-        return numpy_backend.get_numpy_pointer(
-            self._series.values, ptr_type
-        )
+        return numpy_backend.get_numpy_pointer(self._series.values, ptr_type)
 
     def less(self, other: "Series") -> "Series":
         """
