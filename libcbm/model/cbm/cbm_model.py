@@ -339,31 +339,27 @@ class CBM:
             [disturbance_op_process_id],
             pools_copy,
             flux,
-            enabled=(
-                eligible
-                if eligible is not None
-                else None
-            ),
+            enabled=(eligible if eligible is not None else None),
         )
 
         self.compute_functions.free_op(disturbance_op)
         # computes C harvested by applying the disturbance matrix to the
         # specified carbon pools
         total_series = (
-                        flux["DisturbanceSoftProduction"]
-                        + flux["DisturbanceHardProduction"]
-                        + flux["DisturbanceDOMProduction"]
-                    )
+            flux["DisturbanceSoftProduction"]
+            + flux["DisturbanceHardProduction"]
+            + flux["DisturbanceDOMProduction"]
+        )
         total_series.name = "Total"
         df = dataframe.from_series_list(
             [
                 flux["DisturbanceSoftProduction"],
                 flux["DisturbanceHardProduction"],
                 flux["DisturbanceDOMProduction"],
-                total_series
+                total_series,
             ],
             nrows=flux.n_rows,
-            back_end=flux.backend_type
+            back_end=flux.backend_type,
         )
         if density:
             return df
