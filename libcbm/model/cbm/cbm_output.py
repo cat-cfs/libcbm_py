@@ -106,13 +106,13 @@ class InMemoryCBMOutput:
             dist_map_func = _get_disturbance_type_map_func(
                 self._disturbance_type_map
             )
-            timestep_state["last_disturbance_type"] = timestep_state[
-                "last_disturbance_type"
-            ].map(dist_map_func)
+            timestep_state["last_disturbance_type"].assign_all(
+                timestep_state["last_disturbance_type"].map(dist_map_func)
+            )
 
-            timestep_params["disturbance_type"] = timestep_params[
-                "disturbance_type"
-            ].map(dist_map_func)
+            timestep_params["disturbance_type"].assign_all(
+                timestep_params["disturbance_type"].map(dist_map_func)
+            )
 
         self.state = _concat_timestep_results(
             timestep, self.state, timestep_state
