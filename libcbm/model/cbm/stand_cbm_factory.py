@@ -2,16 +2,17 @@ from typing import Union
 from typing import Callable
 from typing import ContextManager
 from typing import Tuple
-import pandas as pd
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
+from libcbm.storage import series
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
+import pandas as pd
 
 
 def _safe_map(series: Series, map: Union[dict, Callable]):
@@ -231,32 +232,33 @@ class StandCBMFactory:
                 1: inventory DataFrame
         """
 
-        classifiers = DataFrame(
-            columns=self._classifiers.keys(),
-            data={
-                k: self._get_classifier_value_ids(k, inventory_df[k])
-                for k in self._classifiers.keys()
-            },
-        )
-        inventory = DataFrame(
-            data={
+        classifier_series = []
+        for k in self._classifiers.keys():
+            c_series = self._get_classifier_value_ids(k, inventory_df[k])
+            c_series.name = k
+            classifier_series.append(c_series)
+
+        classifiers = dataframe.from_series_list(classifier_series)
+
+        inventory = dataframe.from_series_dict(
+            {
                 "age": inventory_df["age"],
                 "area": inventory_df["area"],
                 "spatial_unit": _safe_map(
-                    inventory_df.index,
+                    series.range(
+                        "spatial_unit", 0, inventory_df.n_rows, 1, "int"
+                    ),
                     lambda x: self.defaults_ref.get_spatial_unit_id(
-                        str(inventory_df.admin_boundary.loc[x]),
-                        str(inventory_df.eco_boundary.loc[x]),
+                        str(inventory_df["admin_boundary"].at(x)),
+                        str(inventory_df["eco_boundary"].at(x)),
                     ),
                 ),
                 "afforestation_pre_type_id": _safe_map(
                     inventory_df["afforestation_pre_type"],
-                    lambda _, value: (
+                    lambda x: (
                         -1
-                        if dataframe.is_null(value)
-                        else self.defaults_ref.get_afforestation_pre_type_id(
-                            value
-                        )
+                        if pd.isnull(x)
+                        else self.defaults_ref.get_afforestation_pre_type_id(x)
                     ),
                 ),
                 "land_class": _safe_map(
@@ -265,14 +267,14 @@ class StandCBMFactory:
                 ),
                 "historical_disturbance_type": _safe_map(
                     inventory_df["historic_disturbance_type"],
-                    lambda _, value: (
+                    lambda x: (
                         -1
-                        if dataframe.is_null(value)
-                        else self.defaults_ref.get_disturbance_type_id(value)
+                        if pd.isnull(x)
+                        else self.defaults_ref.get_disturbance_type_id(x)
                     ),
                 ),
                 "last_pass_disturbance_type": _safe_map(
-                    inventory_df.last_pass_disturbance_type,
+                    inventory_df["last_pass_disturbance_type"],
                     lambda x: (
                         -1
                         if pd.isnull(x)
