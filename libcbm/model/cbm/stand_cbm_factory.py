@@ -232,13 +232,14 @@ class StandCBMFactory:
                 1: inventory DataFrame
         """
 
-        classifier_series = []
-        for k in self._classifiers.keys():
-            c_series = self._get_classifier_value_ids(k, inventory_df[k])
-            c_series.name = k
-            classifier_series.append(c_series)
-
-        classifiers = dataframe.from_series_list(classifier_series)
+        classifiers = dataframe.from_series_dict(
+            {
+                k: self._get_classifier_value_ids(k, inventory_df[k])
+                for k in self._classifiers.keys()
+            },
+            nrows=inventory_df.n_rows,
+            back_end=inventory_df.backend_type,
+        )
 
         inventory = dataframe.from_series_dict(
             {
@@ -246,7 +247,12 @@ class StandCBMFactory:
                 "area": inventory_df["area"],
                 "spatial_unit": _safe_map(
                     series.range(
-                        "spatial_unit", 0, inventory_df.n_rows, 1, "int"
+                        "spatial_unit",
+                        0,
+                        inventory_df.n_rows,
+                        1,
+                        "int",
+                        back_end=inventory_df.backend_type,
                     ),
                     lambda x: self.defaults_ref.get_spatial_unit_id(
                         str(inventory_df["admin_boundary"].at(x)),
