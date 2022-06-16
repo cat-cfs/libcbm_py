@@ -410,6 +410,14 @@ def from_series_list(
     return NumpyDataFrameFrameBackend({s.name: s._data for s in series_list})
 
 
+def from_series_dict(
+    data: dict[str, NumpySeriesBackend],
+) -> DataFrame:
+    return NumpySeriesBackend(
+        pd.DataFrame({k: v._data for k, v in data.items()})
+    )
+
+
 def allocate(name: str, len: int, init: Any, dtype: str) -> NumpySeriesBackend:
     return NumpySeriesBackend(name, np.full(len, init, dtype))
 

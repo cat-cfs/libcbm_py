@@ -332,6 +332,14 @@ def from_series_list(
     )
 
 
+def from_series_dict(
+    data: dict[str, PandasSeriesBackend],
+) -> DataFrame:
+    return PandasDataFrameBackend(
+        pd.DataFrame({k: v._series for k, v in data.items()})
+    )
+
+
 def allocate(
     name: str, len: int, init: Any, dtype: str
 ) -> PandasSeriesBackend:

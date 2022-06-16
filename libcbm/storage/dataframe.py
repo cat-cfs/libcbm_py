@@ -196,6 +196,25 @@ def from_series_list(
     return backends.get_backend(backend_type).from_series_list(uniform_series)
 
 
+def from_series_dict(
+    data: dict[str, Union[Series, SeriesDef]],
+    nrows: int,
+    back_end: BackendType,
+) -> DataFrame:
+    data_series = []
+    names = []
+    for k, v in data.items():
+        names.append(k)
+        if isinstance(v, Series):
+            data_series.append(v)
+        else:
+            data_series.append(v.make_series(nrows, back_end))
+    backend_type, uniform_series = get_uniform_backend(data_series, back_end)
+    return backends.get_backend(backend_type).from_series_dict(
+        dict(zip(names, uniform_series))
+    )
+
+
 def from_pandas(df: pd.DataFrame) -> DataFrame:
     from libcbm.storage.backends import pandas_backend
 
