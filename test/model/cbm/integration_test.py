@@ -90,7 +90,7 @@ def test_integration():
                 n_stands,
                 inventory.backend_type,
                 series.allocate(
-                    "return_inverval",
+                    "return_interval",
                     n_stands,
                     return_interval,
                     "int32",
