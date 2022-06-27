@@ -273,6 +273,10 @@ class NumpySeriesBackend(Series):
             )
         return get_numpy_pointer(self._data, ptr_type)
 
+    @property
+    def data(self) -> np.ndarray:
+        return self._data
+
     def less(self, other: "Series") -> "Series":
         """
         returns a boolean series with:
@@ -303,55 +307,89 @@ class NumpySeriesBackend(Series):
         return BackendType.numpy
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data * other))
+        return NumpySeriesBackend(
+            self._name, (self._data * self._get_operand(other))
+        )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other * self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) * self._data)
+        )
 
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data / other))
+        return NumpySeriesBackend(
+            self._name, (self._data / self._get_operand(other))
+        )
 
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other / self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) / self._data)
+        )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data + other))
+        return NumpySeriesBackend(
+            self._name, (self._data + self._get_operand(other))
+        )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other + self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) + self._data)
+        )
 
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data - other))
+        return NumpySeriesBackend(
+            self._name, (self._data - self._get_operand(other))
+        )
 
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other - self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) - self._data)
+        )
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data >= other))
+        return NumpySeriesBackend(
+            self._name, (self._data >= self._get_operand(other))
+        )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data > other))
+        return NumpySeriesBackend(
+            self._name, (self._data > self._get_operand(other))
+        )
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data <= other))
+        return NumpySeriesBackend(
+            self._name, (self._data <= self._get_operand(other))
+        )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data < other))
+        return NumpySeriesBackend(
+            self._name, (self._data < self._get_operand(other))
+        )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data == other))
+        return NumpySeriesBackend(
+            self._name, (self._data == self._get_operand(other))
+        )
 
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data & other))
+        return NumpySeriesBackend(
+            self._name, (self._data & self._get_operand(other))
+        )
 
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (self._data | other))
+        return NumpySeriesBackend(
+            self._name, (self._data | self._get_operand(other))
+        )
 
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other & self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) & self._data)
+        )
 
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
-        return NumpySeriesBackend(self._name, (other | self._data))
+        return NumpySeriesBackend(
+            self._name, (self._get_operand(other) | self._data)
+        )
 
     def __invert__(self) -> "Series":
         return NumpySeriesBackend(self._name, ~self._data)

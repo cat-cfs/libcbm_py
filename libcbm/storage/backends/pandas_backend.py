@@ -195,6 +195,10 @@ class PandasSeriesBackend(Series):
             )
         return numpy_backend.get_numpy_pointer(self._series.values, ptr_type)
 
+    @property
+    def data(self) -> pd.Series:
+        return self._series
+
     def less(self, other: "Series") -> "Series":
         """
         returns a boolean series with:
@@ -227,55 +231,89 @@ class PandasSeriesBackend(Series):
         return BackendType.pandas
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series * other))
+        return PandasSeriesBackend(
+            self._name, (self._series * self._get_operand(other))
+        )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other * self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) * self._series)
+        )
 
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series / other))
+        return PandasSeriesBackend(
+            self._name, (self._series / self._get_operand(other))
+        )
 
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other / self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) / self._series)
+        )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series + other))
+        return PandasSeriesBackend(
+            self._name, (self._series + self._get_operand(other))
+        )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other + self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) + self._series)
+        )
 
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series - other))
+        return PandasSeriesBackend(
+            self._name, (self._series - self._get_operand(other))
+        )
 
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other - self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) - self._series)
+        )
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series >= other))
+        return PandasSeriesBackend(
+            self._name, (self._series >= self._get_operand(other))
+        )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series > other))
+        return PandasSeriesBackend(
+            self._name, (self._series > self._get_operand(other))
+        )
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series <= other))
+        return PandasSeriesBackend(
+            self._name, (self._series <= self._get_operand(other))
+        )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series < other))
+        return PandasSeriesBackend(
+            self._name, (self._series < self._get_operand(other))
+        )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series == other))
+        return PandasSeriesBackend(
+            self._name, (self._series == self._get_operand(other))
+        )
 
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series & other))
+        return PandasSeriesBackend(
+            self._name, (self._series & self._get_operand(other))
+        )
 
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (self._series | other))
+        return PandasSeriesBackend(
+            self._name, (self._series | self._get_operand(other))
+        )
 
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other & self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) & self._series)
+        )
 
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
-        return PandasSeriesBackend(self._name, (other | self._series))
+        return PandasSeriesBackend(
+            self._name, (self._get_operand(other) | self._series)
+        )
 
     def __invert__(self) -> "Series":
         return PandasSeriesBackend(self._name, ~self._series)
