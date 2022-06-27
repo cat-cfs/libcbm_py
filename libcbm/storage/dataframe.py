@@ -39,7 +39,9 @@ class DataFrame(ABC):
         pass
 
     @abstractmethod
-    def assign(self, col_name: str, value: Any, indices: Series = None):
+    def assign(
+        self, col_name: str, value: Union[Series, Any], indices: Series = None
+    ):
         pass
 
     @property
