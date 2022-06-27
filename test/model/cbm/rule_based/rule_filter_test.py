@@ -69,19 +69,17 @@ class RuleFilterTest(unittest.TestCase):
 
     def test_true_series_retured_with_null_or_empty_strexpressions(self):
         result = rule_filter.evaluate_filters(
-                rule_filter.create_filter(
-                    None,
-                    dataframe.from_pandas(
-                        pd.DataFrame({"a": range(1, 10), "c": range(1, 10)})
-                    ),
+            rule_filter.create_filter(
+                None,
+                dataframe.from_pandas(
+                    pd.DataFrame({"a": range(1, 10), "c": range(1, 10)})
                 ),
-                rule_filter.create_filter(
-                    "",
-                    dataframe.from_pandas(
-                        pd.DataFrame({"f": range(1, 10), "g": range(1, 10)})
-                    ),
-                )
-            )
-        self.assertTrue(
-            result.to_list() == [True] * 9
+            ),
+            rule_filter.create_filter(
+                "",
+                dataframe.from_pandas(
+                    pd.DataFrame({"f": range(1, 10), "g": range(1, 10)})
+                ),
+            ),
         )
+        self.assertTrue(result.to_list() == [True] * 9)
