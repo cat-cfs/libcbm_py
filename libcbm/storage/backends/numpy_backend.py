@@ -313,6 +313,12 @@ class NumpySeriesBackend(Series):
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (other + self._data))
 
+    def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (self._data - other))
+
+    def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
+        return NumpySeriesBackend(self._name, (other - self._data))
+
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(self._name, (self._data >= other))
 

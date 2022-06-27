@@ -237,6 +237,12 @@ class PandasSeriesBackend(Series):
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (other + self._series))
 
+    def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (self._series - other))
+
+    def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(self._name, (other - self._series))
+
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(self._name, (self._series >= other))
 

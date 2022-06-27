@@ -156,6 +156,14 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
+    def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
