@@ -279,35 +279,61 @@ class EventProcessorTest(unittest.TestCase):
     def test_apply_rule_based_event_expected_result_no_target_rows(self):
 
         mock_cbm_vars = SimpleNamespace(
-            classifiers=pd.DataFrame({"classifier1": [1, 2, 3, 4]}),
-            inventory=pd.DataFrame({"area": [1, 2, 3, 4]}),
-            state=pd.DataFrame({"s1": [1, 2, 3, 4]}),
-            pools=pd.DataFrame({"p1": [1, 2, 3, 4]}),
-            flux=pd.DataFrame({"f1": [1, 2, 3, 4]}),
-            parameters=pd.DataFrame({"disturbance_type": [0, 0, 0, 0]}),
+            classifiers=dataframe.from_pandas(
+                pd.DataFrame({"classifier1": [1, 2, 3, 4]})
+            ),
+            inventory=dataframe.from_pandas(
+                pd.DataFrame({"area": [1, 2, 3, 4]})
+            ),
+            state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
+            pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
+            flux=dataframe.from_pandas(pd.DataFrame({"f1": [1, 2, 3, 4]})),
+            parameters=dataframe.from_pandas(
+                pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+            ),
         )
 
         disturbance_type_id = 9000
         cbm_vars_result = event_processor.apply_rule_based_event(
-            target=pd.DataFrame(
-                {
-                    "disturbed_index": pd.Series(dtype=int),
-                    "area_proportions": pd.Series(dtype=float),
-                }
+            target=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "disturbed_index": pd.Series(dtype=int),
+                        "area_proportions": pd.Series(dtype=float),
+                    }
+                )
             ),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars,
         )
 
         self.assertTrue(
-            cbm_vars_result.classifiers.equals(mock_cbm_vars.classifiers)
+            cbm_vars_result.classifiers.to_pandas().equals(
+                mock_cbm_vars.classifiers.to_pandas()
+            )
         )
         self.assertTrue(
-            cbm_vars_result.inventory.equals(mock_cbm_vars.inventory)
+            cbm_vars_result.inventory.to_pandas().equals(
+                mock_cbm_vars.inventory.to_pandas()
+            )
         )
-        self.assertTrue(cbm_vars_result.state.equals(mock_cbm_vars.state))
-        self.assertTrue(cbm_vars_result.pools.equals(mock_cbm_vars.pools))
-        self.assertTrue(cbm_vars_result.flux.equals(mock_cbm_vars.flux))
         self.assertTrue(
-            cbm_vars_result.parameters.equals(mock_cbm_vars.parameters)
+            cbm_vars_result.state.to_pandas().equals(
+                mock_cbm_vars.state.to_pandas()
+            )
+        )
+        self.assertTrue(
+            cbm_vars_result.pools.to_pandas().equals(
+                mock_cbm_vars.pools.to_pandas()
+            )
+        )
+        self.assertTrue(
+            cbm_vars_result.flux.to_pandas().equals(
+                mock_cbm_vars.flux.to_pandas()
+            )
+        )
+        self.assertTrue(
+            cbm_vars_result.parameters.to_pandas().equals(
+                mock_cbm_vars.parameters.to_pandas()
+            )
         )
