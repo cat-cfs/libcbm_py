@@ -10,7 +10,6 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.storage.series import Series
 from libcbm.storage.series import SeriesDef
-from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 
 
