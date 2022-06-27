@@ -3,6 +3,7 @@ from unittest.mock import patch
 from types import SimpleNamespace
 from mock import Mock
 import pandas as pd
+import numpy as np
 from libcbm.storage import dataframe
 from libcbm.storage import series
 from libcbm.model.cbm.rule_based import event_processor
@@ -207,22 +208,30 @@ class EventProcessorTest(unittest.TestCase):
     def test_apply_rule_based_event_expected_result_with_split(self):
 
         mock_cbm_vars = SimpleNamespace(
-            classifiers=dataframe.from_pandas(pd.DataFrame({"classifier1": [1, 2, 3, 4]})),
-            inventory=dataframe.from_pandas(pd.DataFrame({"area": [1, 2, 3, 4]})),
+            classifiers=dataframe.from_pandas(
+                pd.DataFrame({"classifier1": [1, 2, 3, 4]})
+            ),
+            inventory=dataframe.from_pandas(
+                pd.DataFrame({"area": [1, 2, 3, 4]})
+            ),
             state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
             flux=dataframe.from_pandas(pd.DataFrame({"f1": [1, 2, 3, 4]})),
-            parameters=dataframe.from_pandas(pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})),
+            parameters=dataframe.from_pandas(
+                pd.DataFrame({"disturbance_type": [0, 0, 0, 0]})
+            ),
         )
 
         disturbance_type_id = 9000
         cbm_vars_result = event_processor.apply_rule_based_event(
-            target=dataframe.from_pandas(pd.DataFrame(
-                {
-                    "disturbed_index": pd.Series([0, 1, 2]),
-                    "area_proportions": pd.Series([1.0, 0.85, 0.9]),
-                }
-            )),
+            target=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "disturbed_index": pd.Series([0, 1, 2]),
+                        "area_proportions": pd.Series([1.0, 0.85, 0.9]),
+                    }
+                )
+            ),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars,
         )
@@ -247,22 +256,22 @@ class EventProcessorTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            cbm_vars_result.pools.equals(
+            cbm_vars_result.pools.to_pandas().equals(
                 pd.DataFrame({"p1": [1, 2, 3, 4, 2, 3]})
             )
         )
         self.assertTrue(
-            cbm_vars_result.state.equals(
+            cbm_vars_result.state.to_pandas().equals(
                 pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})
             )
         )
         self.assertTrue(
-            cbm_vars_result.flux.equals(
+            cbm_vars_result.flux.to_pandas().equals(
                 pd.DataFrame({"f1": [1, 2, 3, 4, 2, 3]})
             )
         )
         self.assertTrue(
-            cbm_vars_result.parameters.equals(
+            cbm_vars_result.parameters.to_pandas().equals(
                 pd.DataFrame({"disturbance_type": [9000, 9000, 9000, 0, 0, 0]})
             )
         )
