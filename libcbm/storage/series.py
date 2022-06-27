@@ -95,6 +95,19 @@ class Series(ABC):
     def to_numpy_ptr(self) -> ctypes.pointer:
         pass
 
+    @staticmethod
+    def _get_operand(
+        op: Union[int, float, "Series"]
+    ) -> Union[int, float, np.ndarray, pd.DataFrame]:
+        if isinstance(op, Series):
+            return op.data
+        return op
+
+    @property
+    @abstractmethod
+    def data(self) -> Union[np.ndarray, pd.Series]:
+        pass
+
     @abstractmethod
     def less(self, other: "Series") -> "Series":
         """
