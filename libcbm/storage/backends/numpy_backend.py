@@ -367,7 +367,7 @@ def concat_series(series: list[NumpySeriesBackend]) -> NumpySeriesBackend:
 def logical_and(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.logical_and([s1._data, s2._data]))
+    return NumpySeriesBackend(None, np.logical_and(s1._data, s2._data))
 
 
 def logical_not(series: NumpySeriesBackend) -> NumpySeriesBackend:
