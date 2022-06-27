@@ -32,13 +32,20 @@ class PandasDataFrameBackend(DataFrame):
     def at(self, index: int) -> dict:
         return self._df.iloc[index].to_dict()
 
-    def assign(self, col_name: str, value: Any, indices: Series = None):
+    def assign(
+        self, col_name: str, value: Union[Series, Any], indices: Series = None
+    ):
+        assign_value = None
+        if isinstance(value, Series):
+            assign_value = value.to_numpy()
+        else:
+            assign_value = value
         if indices is not None:
             self._df.iloc[
                 indices.to_numpy(), self._df.columns.get_loc(col_name)
-            ] = value
+            ] = assign_value
         else:
-            self._df.iloc[:, self._df.columns.get_loc(col_name)] = value
+            self._df.iloc[:, self._df.columns.get_loc(col_name)] = assign_value
 
     @property
     def n_rows(self) -> int:

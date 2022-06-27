@@ -87,12 +87,19 @@ class NumpyDataFrameFrameBackend(DataFrame):
     def at(self, index: int) -> dict:
         return {k: v[index] for k, v in self._data.items()}
 
-    def assign(self, col_name: str, value: Any, indices: Series = None):
+    def assign(
+        self, col_name: str, value: Union[Series, Any], indices: Series = None
+    ):
+        assign_value = None
+        if isinstance(value, Series):
+            assign_value = value.to_numpy()
+        else:
+            assign_value = value
         if indices is not None:
             _idx = indices.to_numpy()
-            self._data[col_name][_idx] = value
+            self._data[col_name][_idx] = assign_value
         else:
-            self._data[col_name][:] = value
+            self._data[col_name][:] = assign_value
 
     @property
     def n_rows(self) -> int:
