@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from typing import Any
 from typing import Union
@@ -220,3 +221,19 @@ def range(
     back_end: BackendType,
 ) -> Series:
     return get_backend(back_end).range(name, start, stop, step, dtype)
+
+
+def from_pandas(series: pd.Series, name: str = None) -> Series:
+    return get_backend(BackendType.pandas).PandasSeriesBackend(
+        name if name else series.name, series
+    )
+
+
+def from_numpy(name: str, data: np.ndarray) -> Series:
+    return get_backend(BackendType.numpy).NumpySeriesBackend(name, data)
+
+
+def from_list(name: str, data: list) -> Series:
+    return get_backend(BackendType.numpy).NumpySeriesBackend(
+        name, np.array(data)
+    )
