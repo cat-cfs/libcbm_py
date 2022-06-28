@@ -3,7 +3,6 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from typing import Union
-from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
@@ -64,14 +63,16 @@ def evaluate_filters(*filter_objs: RuleFilter) -> Union[Series, None]:
     out_series_length = None
     out_series_backend_type = None
     output = None
+
     for filter_obj in filter_objs:
-        if not out_series_length:
-            out_series_length = filter_obj.data.n_rows
-            out_series_backend_type = filter_obj.data.backend_type
-        elif out_series_length != filter_obj.data.n_rows:
-            raise ValueError("data length mismatch")
-    for filter_obj in filter_objs:
-        if not filter_obj or not filter_obj.expression:
+        if filter_obj.data:
+            if not out_series_length:
+                out_series_length = filter_obj.data.n_rows
+                out_series_backend_type = filter_obj.data.backend_type
+            elif out_series_length != filter_obj.data.n_rows:
+                raise ValueError("data length mismatch")
+
+        if not filter_obj or not filter_obj.expression or not filter_obj.data:
             continue
 
         result = filter_obj.data.evaluate_filter(filter_obj.expression)
