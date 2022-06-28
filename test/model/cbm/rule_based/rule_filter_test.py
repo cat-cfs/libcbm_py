@@ -83,3 +83,33 @@ class RuleFilterTest(unittest.TestCase):
             ),
         )
         self.assertTrue(result.to_list() == [True] * 9)
+
+    def test_error_raised_with_non_matching_row_dimension(self):
+        with self.assertRaises(ValueError):
+            rule_filter.evaluate_filters(
+                rule_filter.create_filter(
+                    "a == 2",
+                    dataframe.from_pandas(
+                        pd.DataFrame({"a": range(1, 5), "c": range(1, 5)})
+                    ),
+                ),
+                rule_filter.create_filter(
+                    "g < 2",
+                    dataframe.from_pandas(
+                        pd.DataFrame({"f": range(1, 10), "g": range(1, 10)})
+                    ),
+                ),
+            )
+
+    def test_none_retured_with_no_data_specified(self):
+        result = rule_filter.evaluate_filters(
+            rule_filter.create_filter(
+                "a",
+                None,
+            ),
+            rule_filter.create_filter(
+                "",
+                None,
+            ),
+        )
+        self.assertTrue(result is None)
