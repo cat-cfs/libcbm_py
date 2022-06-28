@@ -230,9 +230,7 @@ class LibCBMWrapper:
             ops_p,
             n_ops,
             pool_mat,
-            numpy_backend.get_numpy_pointer(
-                _enabled, ctypes.c_int32
-            ),
+            numpy_backend.get_numpy_pointer(_enabled, ctypes.c_int32),
         )
 
     def compute_flux(
@@ -305,7 +303,5 @@ class LibCBMWrapper:
             n_ops,
             pools_mat,
             flux_mat,
-            numpy_backend.get_numpy_pointer(
-                _enabled, ctypes.c_int32
-            ),
+            numpy_backend.get_numpy_pointer(_enabled, ctypes.c_int32),
         )
