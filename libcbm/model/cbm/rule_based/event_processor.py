@@ -133,30 +133,33 @@ def apply_rule_based_event(
         )
 
         # create the updated inventory by appending the split records
-        cbm_vars.inventory = dataframe.concat_data_frame(
+        inventory = dataframe.concat_data_frame(
             [cbm_vars.inventory, split_inventory]
         )
 
         # Since classifiers, pools, flux, and state variables are not altered
         # here (this is done in the model) splitting is just a matter of
         # adding a copy of the split values.
-        cbm_vars.classifiers = dataframe.concat_data_frame(
+        classifiers = dataframe.concat_data_frame(
             [cbm_vars.classifiers, cbm_vars.classifiers.take(split_index)]
         )
-        cbm_vars.state = dataframe.concat_data_frame(
+        state = dataframe.concat_data_frame(
             [cbm_vars.state, cbm_vars.state.take(split_index)]
         )
-        cbm_vars.pools = dataframe.concat_data_frame(
+        pools = dataframe.concat_data_frame(
             [cbm_vars.pools, cbm_vars.pools.take(split_index)]
         )
-        cbm_vars.flux = dataframe.concat_data_frame(
+        flux = dataframe.concat_data_frame(
             [cbm_vars.flux, cbm_vars.flux.take(split_index)]
         )
 
         new_params = cbm_vars.parameters.take(split_index)
         new_params.assign("disturbance_type", 0)
-        cbm_vars.parameters = dataframe.concat_data_frame(
+        parameters = dataframe.concat_data_frame(
             [cbm_vars.parameters, new_params]
         )
 
+        cbm_vars = CBMVariables(
+            pools, flux, classifiers, state, inventory, parameters
+        )
     return cbm_vars
