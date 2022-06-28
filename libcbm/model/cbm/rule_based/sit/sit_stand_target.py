@@ -44,7 +44,7 @@ def _is_production_based(sit_event_row: dict) -> bool:
 def _get_production_sort_value(
     sort_type: str, production: DataFrame, cbm_vars: CBMVariables
 ) -> Series:
-    if sum(production["Total"]) == 0:
+    if production["Total"].sum() == 0:
         return (
             cbm_vars.pools["SoftwoodMerch"] + cbm_vars.pools["HardwoodMerch"]
         )
@@ -57,8 +57,8 @@ def _get_production_sort_value(
         )
     elif sort_type == "MERCHCSORT_HW":
         return (
-            production.DisturbanceHardProduction
-            + production.DisturbanceDOMProduction
+            production["DisturbanceHardProduction"]
+            + production["DisturbanceDOMProduction"]
         )
     else:
         raise ValueError(
