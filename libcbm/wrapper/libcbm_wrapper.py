@@ -10,6 +10,7 @@ from libcbm.wrapper import libcbm_wrapper_functions
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
+from libcbm.storage.backends import numpy_backend
 
 
 class LibCBMWrapper:
@@ -219,12 +220,19 @@ class LibCBMWrapper:
         ops_p = ctypes.cast(
             (ctypes.c_size_t * n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t)
         )
+        _enabled = None
+        if enabled is not None:
+            _enabled = enabled.to_numpy()
+            if _enabled.dtype == "bool":
+                _enabled = numpy_backend.get_numpy_pointer(
+                    _enabled.astype("int32"), ctypes.c_int32
+                )
         self.handle.call(
             "LibCBM_ComputePools",
             ops_p,
             n_ops,
             pool_mat,
-            None if enabled is None else enabled.to_numpy_ptr(),
+            _enabled,
         )
 
     def compute_flux(
@@ -285,7 +293,13 @@ class LibCBMWrapper:
             (ctypes.c_size_t * n_ops)(*op_processes),
             ctypes.POINTER(ctypes.c_size_t),
         )
-
+        _enabled = None
+        if enabled is not None:
+            _enabled = enabled.to_numpy()
+            if _enabled.dtype == "bool":
+                _enabled = numpy_backend.get_numpy_pointer(
+                    _enabled.astype("int32"), ctypes.c_int32
+                )
         self.handle.call(
             "LibCBM_ComputeFlux",
             ops_p,
@@ -293,5 +307,5 @@ class LibCBMWrapper:
             n_ops,
             pools_mat,
             flux_mat,
-            None if enabled is None else enabled.to_numpy_ptr(),
+            _enabled,
         )
