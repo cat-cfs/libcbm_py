@@ -224,15 +224,15 @@ class LibCBMWrapper:
         if enabled is not None:
             _enabled = enabled.to_numpy()
             if _enabled.dtype == "bool":
-                _enabled = numpy_backend.get_numpy_pointer(
-                    _enabled.astype("int32"), ctypes.c_int32
-                )
+                _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputePools",
             ops_p,
             n_ops,
             pool_mat,
-            _enabled,
+            numpy_backend.get_numpy_pointer(
+                _enabled, ctypes.c_int32
+            ),
         )
 
     def compute_flux(
@@ -297,9 +297,7 @@ class LibCBMWrapper:
         if enabled is not None:
             _enabled = enabled.to_numpy()
             if _enabled.dtype == "bool":
-                _enabled = numpy_backend.get_numpy_pointer(
-                    _enabled.astype("int32"), ctypes.c_int32
-                )
+                _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputeFlux",
             ops_p,
@@ -307,5 +305,7 @@ class LibCBMWrapper:
             n_ops,
             pools_mat,
             flux_mat,
-            _enabled,
+            numpy_backend.get_numpy_pointer(
+                _enabled, ctypes.c_int32
+            ),
         )
