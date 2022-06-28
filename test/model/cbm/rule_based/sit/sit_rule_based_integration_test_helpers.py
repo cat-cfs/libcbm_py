@@ -17,6 +17,7 @@ from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
     TransitionRuleProcessor,
 )
+from libcbm.storage.backends import BackendType
 
 
 def get_parameters_factory(sit):
@@ -169,6 +170,7 @@ def setup_cbm_vars(sit):
         inventory,
         sit.defaults.get_pools(),
         sit.defaults.get_flux_indicators(),
+        back_end_type=BackendType.pandas
     )
     return cbm_vars
 
