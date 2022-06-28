@@ -166,8 +166,9 @@ def sorted_disturbance_target(
     fully_disturbed_idx = dataframe.indices_nonzero(target_var_sums <= target)
     fully_disturbed_records = disturbed.take(fully_disturbed_idx)
     target_var_sums = target_var_sums.take(fully_disturbed_idx)
-    last_sum = target_var_sums.at(target_var_sums.length - 1)
+
     if fully_disturbed_records.n_rows > 0:
+        last_sum = target_var_sums.at(target_var_sums.length - 1)
         remaining_target = target - last_sum
 
     result = dataframe.from_series_list(
@@ -186,9 +187,12 @@ def sorted_disturbance_target(
         # for merch C and area targets a final record is split to meet target
         # exactly
         num_splits = 1
-        split_record = disturbed.at(
-            fully_disturbed_idx.at(fully_disturbed_idx.length - 1) + 1
+        split_record_idx = (
+            (fully_disturbed_idx.at(fully_disturbed_idx.length - 1) + 1)
+            if fully_disturbed_idx.length > 0
+            else 0
         )
+        split_record = disturbed.at(split_record_idx)
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
