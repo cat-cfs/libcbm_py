@@ -200,6 +200,7 @@ class SITEventProcessor:
             process_event_result = self._process_event(
                 eligible, sit_event, cbm_vars, expression
             )
+            cbm_vars = process_event_result.cbm_vars
             stats = process_event_result.rule_target_result.statistics
             stats["sit_event_index"] = event_index
             stats_rows.append(stats)
