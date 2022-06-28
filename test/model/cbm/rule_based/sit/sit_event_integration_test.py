@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from libcbm.input.sit import sit_cbm_factory
+from libcbm.storage import series
 import test.model.cbm.rule_based.sit.sit_rule_based_integration_test_helpers as helpers  # noqa 501
 
 
@@ -276,11 +277,13 @@ class SITEventIntegrationTest(unittest.TestCase):
                 )
             )
 
-            self.assertTrue(cbm_vars.pools.shape[0] == 3)
-            self.assertTrue(cbm_vars.flux.shape[0] == 3)
-            self.assertTrue(cbm_vars.state.shape[0] == 3)
+            self.assertTrue(cbm_vars_result.pools.n_rows == 3)
+            self.assertTrue(cbm_vars_result.flux.n_rows == 3)
+            self.assertTrue(cbm_vars_result.state.n_rows == 3)
             # note the age sort order caused the first record to split
-            self.assertTrue(list(cbm_vars.inventory.area) == [1, 5, 4])
+            self.assertTrue(
+                cbm_vars_result.inventory["area"].to_list() == [1, 5, 4]
+            )
 
             stats_row = sit_rule_based_processor.sit_event_stats_by_timestep[
                 1
@@ -451,8 +454,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
-        cbm_vars.pools.SoftwoodMerch = 1.0
-        cbm_vars.state.age = np.array([99, 100])
+        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
+        cbm_vars.state["age"].assign_all(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -464,17 +467,19 @@ class SITEventIntegrationTest(unittest.TestCase):
             )
 
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types, ["dist2", "dist2", None]
                 )
             )
 
-            self.assertTrue(cbm_vars.pools.shape[0] == 3)
-            self.assertTrue(cbm_vars.flux.shape[0] == 3)
-            self.assertTrue(cbm_vars.state.shape[0] == 3)
+            self.assertTrue(cbm_vars_result.pools.n_rows == 3)
+            self.assertTrue(cbm_vars_result.flux.n_rows == 3)
+            self.assertTrue(cbm_vars_result.state.n_rows == 3)
             # note the age sort order caused the first record to split
-            self.assertTrue(list(cbm_vars.inventory.area) == [2, 5, 3])
+            self.assertTrue(
+                cbm_vars_result.inventory["area"].to_list() == [2, 5, 3]
+            )
 
             stats_row = sit_rule_based_processor.sit_event_stats_by_timestep[
                 4
@@ -538,19 +543,19 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
-        cbm_vars.pools.HardwoodMerch = 1.0
-        cbm_vars.state.age = np.array([50])
+        cbm_vars.pools["HardwoodMerch"].assign_all(1.0)
+        cbm_vars.state["age"].assign_all(np.array([50]))
 
         with helpers.get_rule_based_processor(
             sit,
-            random_func=np.ones,  # don't really do a random sort
+            random_func=lambda size: series.from_numpy(None, np.ones(size)),
             parameters_factory=helpers.get_parameters_factory(sit),
         ) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
                 time_step=100, cbm_vars=cbm_vars
             )
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist1", "dist2", "dist3", None],
@@ -558,7 +563,8 @@ class SITEventIntegrationTest(unittest.TestCase):
             )
 
             self.assertTrue(
-                list(cbm_vars.inventory.area) == [20, 100, 20, 860]
+                cbm_vars_result.inventory["area"].to_list()
+                == [20, 100, 20, 860]
             )
 
             stats = sit_rule_based_processor.sit_event_stats_by_timestep[100]
