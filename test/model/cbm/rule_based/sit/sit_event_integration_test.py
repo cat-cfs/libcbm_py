@@ -45,7 +45,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state.age = np.array([99, 100, 98, 100])
+        cbm_vars.state["age"].assign_all(np.array([99, 100, 98, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -56,7 +56,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             # they are the oldest stands, and together they exactly satisfy
             # the target.
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types,
                     ["dist1", None, None, "dist1"],
@@ -113,7 +113,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state.age = np.array([99, 100, 98, 100])
+        cbm_vars.state["age"].assign_all(np.array([99, 100, 98, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -124,7 +124,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             # they are the oldest stands, and together they exactly satisfy
             # the target.
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types, [None, "dist1", None, None]
                 )
@@ -190,7 +190,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state.age = np.array([100, 99, 98, 97, 96])
+        cbm_vars.state["age"].assign_all(np.array([100, 99, 98, 97, 96]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -203,7 +203,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             )
 
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == expected_disturbance_types
             )
 
@@ -388,8 +388,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event,
         # with target = 10, therefore the expected shortfall is 1
-        cbm_vars.pools.SoftwoodMerch = 1.0
-        cbm_vars.state.age = np.array([99, 100, 98])
+        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
+        cbm_vars.state["age"].assign_all(np.array([99, 100, 98]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -401,7 +401,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             )
 
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types, ["dist2", "dist2", "dist2"]
                 )
