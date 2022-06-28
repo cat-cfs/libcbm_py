@@ -186,7 +186,9 @@ def sorted_disturbance_target(
         # for merch C and area targets a final record is split to meet target
         # exactly
         num_splits = 1
-        split_record = disturbed.at(fully_disturbed_idx + 1)
+        split_record = disturbed.at(
+            fully_disturbed_idx.at(fully_disturbed_idx.length - 1) + 1
+        )
         proportion = remaining_target / split_record["target_var"]
         remaining_target = 0
 
