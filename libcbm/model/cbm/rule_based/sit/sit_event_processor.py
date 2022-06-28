@@ -189,6 +189,7 @@ class SITEventProcessor:
                 int(row.disturbance_eligibility_id): row
                 for _, row in sit_eligibilities.iterrows()
             }
+
         for event_index, sit_event in self._event_iterator(time_step_events):
             eligible = cbm_vars.parameters["disturbance_type"] <= 0
             expression = None
