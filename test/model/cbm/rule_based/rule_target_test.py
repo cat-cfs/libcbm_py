@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from libcbm.model.cbm.rule_based import rule_target
+from libcbm.storage import series
 
 
 class RuleTargetTest(unittest.TestCase):
@@ -118,7 +119,7 @@ class RuleTargetTest(unittest.TestCase):
             area_target_value=5.1,
             sort_value=mock_inventory.age,
             inventory=mock_inventory,
-            eligible=pd.Series([True, True, True, True]),
+            eligible=series.from_pandas(pd.Series([True, True, True, True])),
         )
         self.assertTrue(list(result.target.disturbed_index) == [3, 1, 2])
         self.assertTrue(list(result.target.target_var) == [3.0, 2.0, 2.0])
@@ -146,9 +147,11 @@ class RuleTargetTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             rule_target.sorted_area_target(
                 area_target_value=5.1,
-                sort_value=pd.Series([1, 2, 3]),
+                sort_value=series.from_pandas(pd.Series([1, 2, 3])),
                 inventory=mock_inventory,
-                eligible=pd.Series([True, True, True, True]),
+                eligible=series.from_pandas(
+                    pd.Series([True, True, True, True])
+                ),
             )
 
     def test_sorted_merch_target_expected_result(self):
