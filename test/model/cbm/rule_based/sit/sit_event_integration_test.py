@@ -262,7 +262,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since the sort is by age, the first record will be fully disturbed
         # and the second will be split into 1 and 4 hectare stands.
-        cbm_vars.state.age = np.array([99, 100])
+        cbm_vars.state["age"].assign_all(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -270,7 +270,7 @@ class SITEventIntegrationTest(unittest.TestCase):
             )
 
             self.assertTrue(
-                list(cbm_vars_result.parameters.disturbance_type)
+                cbm_vars_result.parameters["disturbance_type"].to_list()
                 == helpers.get_disturbance_type_ids(
                     sit.sit_data.disturbance_types, ["dist1", "dist1", None]
                 )
@@ -325,8 +325,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * 10 ha total = 10 tonnes C
-        cbm_vars.pools.SoftwoodMerch = 1.0
-        cbm_vars.state.age = np.array([99, 100])
+        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
+        cbm_vars.state["age"].assign_all(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -348,7 +348,7 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_eligible"] == 2)
 
         self.assertTrue(
-            list(cbm_vars_result.parameters.disturbance_type)
+            cbm_vars_result.parameters["disturbance_type"].to_list()
             == helpers.get_disturbance_type_ids(
                 sit.sit_data.disturbance_types, ["dist2", "dist2"]
             )
