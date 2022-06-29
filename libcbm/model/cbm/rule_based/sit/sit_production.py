@@ -34,12 +34,10 @@ def is_production_based(sit_event_row: dict) -> bool:
 
 
 def get_production_sort_value(
-    sort_type: str, production: DataFrame, cbm_vars: CBMVariables
+    sort_type: str, production: DataFrame, pools: DataFrame
 ) -> Series:
     if production["Total"].sum() == 0:
-        return (
-            cbm_vars.pools["SoftwoodMerch"] + cbm_vars.pools["HardwoodMerch"]
-        )
+        return pools["SoftwoodMerch"] + pools["HardwoodMerch"]
     if sort_type == "MERCHCSORT_TOTAL":
         return production["Total"]
     elif sort_type == "MERCHCSORT_SW":
