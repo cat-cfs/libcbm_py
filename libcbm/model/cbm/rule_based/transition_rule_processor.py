@@ -213,7 +213,8 @@ class TransitionRuleProcessor(object):
                         size=pools.n_rows,
                         backend_type=cbm_vars.pools.backend_type,
                     ),
-                ]
+                ],
+                backend_type=transition_mask.backend_type,
             )
 
             # set the area for the split portion according to the current
