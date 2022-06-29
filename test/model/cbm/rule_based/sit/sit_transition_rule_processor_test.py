@@ -4,6 +4,7 @@ from unittest.mock import patch
 from types import SimpleNamespace
 import pandas as pd
 import numpy as np
+from libcbm.storage import dataframe
 from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor import (
     SITTransitionRuleProcessor,
@@ -48,7 +49,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
             )
             rule_filter.create_filter.assert_called_once_with(
                 expression="mock_state_filter_expression",
-                data={"age": "mock_age"},
+                data=mock_state_variables,
             )
 
     def test_sit_transition_rule_iterator(self):
@@ -136,8 +137,12 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
     def test_process_transition_rules(self):
 
         mock_cbm_vars = SimpleNamespace(
-            classifiers=pd.DataFrame({"c1": [1], "c2": [1]}),
-            parameters=pd.DataFrame({"reset_age": np.array([1, 2])}),
+            classifiers=dataframe.from_pandas(
+                pd.DataFrame({"c1": [1], "c2": [1]})
+            ),
+            parameters=dataframe.from_pandas(
+                pd.DataFrame({"reset_age": np.array([1, 2])})
+            ),
         )
 
         mock_transition_rule_processor = Mock()
@@ -159,10 +164,12 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                     "disturbance_type_id": 1,
                 }
             )
-            self.assertTrue(tr_group.equals(mock_sit_transitions))
-            self.assertTrue(list(transition_mask) == [False])
+            self.assertTrue(tr_group.to_pandas().equals(mock_sit_transitions))
+            self.assertTrue(transition_mask.to_list() == [False])
             self.assertTrue(
-                cbm_vars.classifiers.equals(mock_cbm_vars.classifiers)
+                cbm_vars.classifiers.to_pandas().equals(
+                    mock_cbm_vars.classifiers.to_pandas()
+                )
             )
 
             return "mock_mask", "mock_cbm_vars_result"
