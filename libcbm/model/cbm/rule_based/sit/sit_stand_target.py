@@ -5,65 +5,11 @@
 from typing import Callable
 from typing import Union
 from libcbm.input.sit import sit_disturbance_event_parser
+from libcbm.model.cbm.rule_based.sit import sit_production
 from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage.series import Series
-from libcbm.storage.dataframe import DataFrame
-
-
-def _is_production_sort(sit_event_row: dict) -> bool:
-    production_sorts = ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]
-    if sit_event_row["sort_type"] in production_sorts:
-        # sorted by the production
-        return True
-    return False
-
-
-def _is_production_based(sit_event_row: dict) -> bool:
-    """Returns true if the specified disturbance event requires computation
-    of production via disturbance matrix
-
-    Args:
-        sit_event_row (dict): a row dict from parsed SIT disturbance events
-    """
-    if sit_event_row["sort_type"] == "SVOID":
-        # spatially explicit cannot be a merch production target
-        return False
-    if _is_production_sort(sit_event_row):
-        return True
-    if (
-        sit_event_row["target_type"]
-        == sit_disturbance_event_parser.get_target_types()["M"]
-    ):
-        # the production is the target variable
-        return True
-    return False
-
-
-def _get_production_sort_value(
-    sort_type: str, production: DataFrame, cbm_vars: CBMVariables
-) -> Series:
-    if production["Total"].sum() == 0:
-        return (
-            cbm_vars.pools["SoftwoodMerch"] + cbm_vars.pools["HardwoodMerch"]
-        )
-    if sort_type == "MERCHCSORT_TOTAL":
-        return production["Total"]
-    elif sort_type == "MERCHCSORT_SW":
-        return (
-            production["DisturbanceSoftProduction"]
-            + production["DisturbanceDOMProduction"]
-        )
-    elif sort_type == "MERCHCSORT_HW":
-        return (
-            production["DisturbanceHardProduction"]
-            + production["DisturbanceDOMProduction"]
-        )
-    else:
-        raise ValueError(
-            f"specified sort_type '{sort_type}' is not a production sort"
-        )
 
 
 def _get_sort_value(
@@ -127,16 +73,17 @@ def create_sit_event_target(
     merchantable_target_type = target_types["M"]
     proportional_target_type = target_types["P"]
     non_sorted = ["SVOID", "PROPORTION_OF_EVERY_RECORD"]
-    if _is_production_based(sit_event_row):
+
+    if sit_production.is_production_based(sit_event_row):
         production = disturbance_production_func(
             cbm_vars, sit_event_row["disturbance_type_id"]
         )
     rule_target_result = None
     if target_type == area_target_type and sort not in non_sorted:
-        if _is_production_sort(sit_event_row):
+        if sit_production.is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_area_target(
                 area_target_value=target,
-                sort_value=_get_production_sort_value(
+                sort_value=sit_production.get_production_sort_value(
                     sort, production, cbm_vars.pools
                 ),
                 inventory=cbm_vars.inventory,
@@ -150,12 +97,12 @@ def create_sit_event_target(
                 eligible=eligible,
             )
     elif target_type == merchantable_target_type and sort not in non_sorted:
-        if _is_production_sort(sit_event_row):
+        if sit_production.is_production_sort(sit_event_row):
             rule_target_result = rule_target.sorted_merch_target(
                 carbon_target=target,
                 disturbance_production=production,
                 inventory=cbm_vars.inventory,
-                sort_value=_get_production_sort_value(
+                sort_value=sit_production.get_production_sort_value(
                     sort, production, cbm_vars.pools
                 ),
                 efficiency=sit_event_row["efficiency"],
