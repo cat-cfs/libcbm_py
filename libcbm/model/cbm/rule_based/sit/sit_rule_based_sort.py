@@ -1,4 +1,3 @@
-
 from typing import Callable
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.storage.series import Series

@@ -68,7 +68,9 @@ def create_sit_event_target(
         else:
             rule_target_result = rule_target.sorted_area_target(
                 area_target_value=target,
-                sort_value=sit_rule_based_sort.get_sort_value(sort, cbm_vars, random_generator),
+                sort_value=sit_rule_based_sort.get_sort_value(
+                    sort, cbm_vars, random_generator
+                ),
                 inventory=cbm_vars.inventory,
                 eligible=eligible,
             )
@@ -89,7 +91,9 @@ def create_sit_event_target(
                 carbon_target=target,
                 disturbance_production=production,
                 inventory=cbm_vars.inventory,
-                sort_value=sit_rule_based_sort.get_sort_value(sort, cbm_vars, random_generator),
+                sort_value=sit_rule_based_sort.get_sort_value(
+                    sort, cbm_vars, random_generator
+                ),
                 efficiency=sit_event_row["efficiency"],
                 eligible=eligible,
             )
