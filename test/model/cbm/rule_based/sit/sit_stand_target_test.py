@@ -25,6 +25,7 @@ def call_test_function(
         inventory=mock_inventory, pools=mock_pools, state=mock_state_variables
     )
     create_target(cbm_vars=mock_cbm_vars, eligible=mock_eligible)
+    return mock_cbm_vars
 
 
 class SITStandTargetTest(unittest.TestCase):
@@ -78,6 +79,9 @@ class SITStandTargetTest(unittest.TestCase):
 
         sit_production.is_production_sort.side_effect = lambda _: True
         sit_production.is_production_based.side_effect = lambda _: True
+        sit_production.get_production_sort_value.side_effect = (
+            lambda *args: "production_sort_value"
+        )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 2)
@@ -85,36 +89,44 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
+        mock_sit_event_row = {
+            "sort_type": "MERCHCSORT_TOTAL",
+            "target_type": "Area",
+            "target": 18,
+            "disturbance_type_id": 2,
+        }
         call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_TOTAL",
-                "target_type": "Area",
-                "target": 18,
-                "disturbance_type_id": 2,
-            },
+            mock_sit_event_row=mock_sit_event_row,
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
         )
+        sit_production.is_production_sort.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.is_production_based.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.get_production_sort_value.assert_called_with(
+            "MERCHCSORT_TOTAL", mock_production, "pools"
+        )
         rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=18,
-            sort_value=mock_production["Total"],
+            sort_value="production_sort_value",
             inventory="inventory",
             eligible="eligible",
         )
 
     @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
-    def test_merch_sw_sort_area_target(self, rule_target):
-        mock_production = dataframe.from_pandas(
-            pd.DataFrame(
-                dict(
-                    Total=[3, 3, 3, 3],
-                    DisturbanceSoftProduction=[1, 1, 1, 1],
-                    DisturbanceHardProduction=[1, 1, 1, 1],
-                    DisturbanceDOMProduction=[1, 1, 1, 1],
-                )
-            )
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.sit_production")
+    def test_merch_sw_sort_area_target(self, sit_production, rule_target):
+        mock_production = "mock_production"
+
+        sit_production.is_production_sort.side_effect = lambda _: True
+        sit_production.is_production_based.side_effect = lambda _: True
+        sit_production.get_production_sort_value.side_effect = (
+            lambda *args: "production_sort_value"
         )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -123,43 +135,47 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        # tests that the + operator is used for the correct production fields
-        expected_sort_value = (
-            mock_production.DisturbanceSoftProduction
-            + mock_production.DisturbanceDOMProduction
-        )
+        mock_sit_event_row = {
+            "sort_type": "MERCHCSORT_SW",
+            "target_type": "Area",
+            "target": 18,
+            "disturbance_type_id": 4000,
+        }
 
         call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_SW",
-                "target_type": "Area",
-                "target": 18,
-                "disturbance_type_id": 4000,
-            },
+            mock_sit_event_row=mock_sit_event_row,
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
         )
 
+        sit_production.is_production_sort.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.is_production_based.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.get_production_sort_value.assert_called_with(
+            "MERCHCSORT_SW", mock_production, "pools"
+        )
+
         rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=18,
-            sort_value=expected_sort_value,
+            sort_value="production_sort_value",
             inventory="inventory",
             eligible="eligible",
         )
 
     @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
-    def test_merch_hw_sort_area_target(self, rule_target):
-        mock_production = dataframe.from_pandas(
-            pd.DataFrame(
-                dict(
-                    Total=[3, 3, 3, 3],
-                    DisturbanceSoftProduction=[1, 1, 1, 1],
-                    DisturbanceHardProduction=[1, 1, 1, 1],
-                    DisturbanceDOMProduction=[1, 1, 1, 1],
-                )
-            )
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.sit_production")
+    def test_merch_hw_sort_area_target(self, sit_production, rule_target):
+        mock_production = "mock_production"
+
+        sit_production.is_production_sort.side_effect = lambda _: True
+        sit_production.is_production_based.side_effect = lambda _: True
+        sit_production.get_production_sort_value.side_effect = (
+            lambda *args: "production_sort_value"
         )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -168,54 +184,70 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        # tests that the + operator is used for the correct production fields
-        expected_sort_value = (
-            mock_production.DisturbanceHardProduction
-            + mock_production.DisturbanceDOMProduction
-        )
-
+        mock_sit_event_row = {
+            "sort_type": "MERCHCSORT_HW",
+            "target_type": "Area",
+            "target": 19,
+            "disturbance_type_id": 100,
+        }
         call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_HW",
-                "target_type": "Area",
-                "target": 19,
-                "disturbance_type_id": 100,
-            },
+            mock_sit_event_row=mock_sit_event_row,
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
         )
 
+        sit_production.is_production_sort.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.is_production_based.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.get_production_sort_value.assert_called_with(
+            "MERCHCSORT_HW", mock_production, "pools"
+        )
+
         rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=19,
-            sort_value=expected_sort_value,
+            sort_value="production_sort_value",
             inventory="inventory",
             eligible="eligible",
         )
 
     @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
-    def test_random_sort_area_target(self, rule_target):
-        mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.sit_production")
+    def test_random_sort_area_target(self, sit_production, rule_target):
+        mock_pools = dataframe.from_pandas(pd.DataFrame({"a": [12, 3, 4, 5]}))
 
         def mock_random_gen(n_values):
             return [1] * n_values
 
+        sit_production.is_production_sort.side_effect = lambda _: False
+        sit_production.is_production_based.side_effect = lambda _: False
+
+        mock_sit_event_row = {
+            "sort_type": "RANDOMSORT",
+            "target_type": "Area",
+            "target": 11,
+            "disturbance_type": "fire",
+        }
         call_test_function(
-            mock_sit_event_row={
-                "sort_type": "RANDOMSORT",
-                "target_type": "Area",
-                "target": 11,
-                "disturbance_type": "fire",
-            },
+            mock_sit_event_row=mock_sit_event_row,
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
             mock_random_generator=mock_random_gen,
         )
 
+        sit_production.is_production_sort.assert_called_with(
+            mock_sit_event_row
+        )
+        sit_production.is_production_based.assert_called_with(
+            mock_sit_event_row
+        )
         rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=11,
-            sort_value=mock_random_gen(mock_pools.shape[0]),
+            sort_value=mock_random_gen(mock_pools.n_rows),
             inventory="inventory",
             eligible="eligible",
         )
