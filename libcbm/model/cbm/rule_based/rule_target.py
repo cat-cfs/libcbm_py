@@ -347,7 +347,7 @@ def sorted_area_target(
 
 def proportion_merch_target(
     carbon_target: float,
-    disturbance_production: Series,
+    disturbance_production: DataFrame,
     inventory: DataFrame,
     efficiency: float,
     eligible: Series,
@@ -386,7 +386,7 @@ def proportion_merch_target(
     )
     eligible_inventory = inventory.filter(eligible)
     eligible_inventory_idx = inventory_idx.filter(eligible)
-    eligible_production = disturbance_production.filter(eligible)
+    eligible_production = disturbance_production["Total"].filter(eligible)
     production = eligible_production * eligible_inventory["area"] * efficiency
     total_production = production.sum()
     n_eligible = eligible_inventory.n_rows
