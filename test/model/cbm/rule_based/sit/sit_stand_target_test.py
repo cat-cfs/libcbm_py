@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
-import pandas as pd
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
 
 
