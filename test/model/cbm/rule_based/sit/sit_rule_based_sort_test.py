@@ -74,7 +74,7 @@ def test_get_production_sort_value_no_production():
         }
     )
     result = sit_rule_based_sort.get_production_sort_value(
-        sort_type="any",
+        sort_type="MERCHCSORT_SW",
         production=dataframe.from_pandas(mock_production),
         pools=dataframe.from_pandas(mock_pools),
     )
