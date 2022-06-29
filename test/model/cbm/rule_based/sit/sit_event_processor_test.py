@@ -23,7 +23,6 @@ class SITEventProcessorTest(unittest.TestCase):
             PATCH_PATH,
             event_processor=DEFAULT,
             rule_filter=DEFAULT,
-            rule_target=DEFAULT,
             sit_stand_filter=DEFAULT,
             sit_stand_target=DEFAULT,
         ) as mocks:
@@ -64,9 +63,6 @@ class SITEventProcessorTest(unittest.TestCase):
             rule_filter.create_filter.side_effect = (
                 lambda expression, data: "mock_filter"
             )
-
-            # mock rule target
-            mocks["rule_target"].compute_disturbance_production = Mock()
 
             # mock event processor
             mock_event_processor = mocks["event_processor"]
