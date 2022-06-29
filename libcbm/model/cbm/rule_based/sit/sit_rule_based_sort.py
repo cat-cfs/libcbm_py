@@ -61,6 +61,10 @@ def is_production_based(sit_event_row: dict) -> bool:
 def get_production_sort_value(
     sort_type: str, production: DataFrame, pools: DataFrame
 ) -> Series:
+    if sort_type not in ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]:
+        raise ValueError(
+            f"specified sort_type '{sort_type}' is not a production sort"
+        )
     if production["Total"].sum() == 0:
         return pools["SoftwoodMerch"] + pools["HardwoodMerch"]
     if sort_type == "MERCHCSORT_TOTAL":
@@ -76,6 +80,4 @@ def get_production_sort_value(
             + production["DisturbanceDOMProduction"]
         )
     else:
-        raise ValueError(
-            f"specified sort_type '{sort_type}' is not a production sort"
-        )
+        raise

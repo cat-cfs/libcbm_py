@@ -1,7 +1,9 @@
 import pytest
+import pandas as pd
 from unittest.mock import MagicMock
 from types import SimpleNamespace
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_sort
+from libcbm.storage import dataframe
 
 
 def test_get_sort_value():
@@ -32,12 +34,90 @@ def test_get_sort_value():
             "unsupported", mock_cbm_vars, random_generator
         )
 
+
 def test_is_production_sort():
-    pass
+    for s in ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]:
+        assert sit_rule_based_sort.is_production_sort(dict(sort_type=s))
+    assert not sit_rule_based_sort.is_production_sort(
+        dict(sort_type="anything else")
+    )
 
 
 def test_is_production_based():
-    pass
+    assert not sit_rule_based_sort.is_production_based(
+        dict(sort_type="SVOID", target_type="anything")
+    )
+    for s in ["MERCHCSORT_TOTAL", "MERCHCSORT_SW", "MERCHCSORT_HW"]:
+        assert sit_rule_based_sort.is_production_based(
+            dict(sort_type=s, target_type="anything")
+        )
+    assert sit_rule_based_sort.is_production_based(
+        dict(sort_type="anything", target_type="Merchantable")
+    )
+    assert not sit_rule_based_sort.is_production_based(
+        dict(sort_type="anything else", target_type="anything else")
+    )
 
-def test_get_production_sort_value():
-    pass
+
+def test_get_production_sort_value_no_production():
+    SoftwoodMerch = 10
+    HardwoodMerch = 20
+
+    mock_pools = pd.DataFrame(
+        {"SoftwoodMerch": [SoftwoodMerch], "HardwoodMerch": [HardwoodMerch]}
+    )
+    mock_production = pd.DataFrame(
+        {
+            "Total": [0],
+            "DisturbanceSoftProduction": [0],
+            "DisturbanceDOMProduction": [0],
+        }
+    )
+    result = sit_rule_based_sort.get_production_sort_value(
+        sort_type="any",
+        production=dataframe.from_pandas(mock_production),
+        pools=dataframe.from_pandas(mock_pools),
+    )
+    assert result.sum() == SoftwoodMerch + HardwoodMerch
+
+
+def test_get_production_sort_values():
+    SoftwoodMerch = None
+    HardwoodMerch = None
+    Total = 50
+    DisturbanceSoftProduction = 15
+    DisturbanceHardProduction = 18
+    DisturbanceDOMProduction = 17
+    mock_pools = pd.DataFrame(
+        {"SoftwoodMerch": [SoftwoodMerch], "HardwoodMerch": [HardwoodMerch]}
+    )
+    mock_production = pd.DataFrame(
+        {
+            "Total": [Total],
+            "DisturbanceSoftProduction": [DisturbanceSoftProduction],
+            "DisturbanceHardProduction": [DisturbanceHardProduction],
+            "DisturbanceDOMProduction": [DisturbanceDOMProduction],
+        }
+    )
+    sort_types = {
+        "MERCHCSORT_TOTAL": 50,
+        "MERCHCSORT_SW": DisturbanceSoftProduction + DisturbanceDOMProduction,
+        "MERCHCSORT_HW": DisturbanceHardProduction + DisturbanceDOMProduction,
+    }
+
+    for sort_type, expected_value in sort_types.items():
+        result = sit_rule_based_sort.get_production_sort_value(
+            sort_type=sort_type,
+            production=dataframe.from_pandas(mock_production),
+            pools=dataframe.from_pandas(mock_pools),
+        )
+        assert result.sum() == expected_value
+
+
+def test_error_raised_on_unspported_sort():
+    with pytest.raises(ValueError):
+        sit_rule_based_sort.get_production_sort_value(
+            sort_type="unsupported sort type",
+            production=None,
+            pools=None,
+        )
