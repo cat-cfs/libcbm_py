@@ -213,7 +213,9 @@ class SITStandTargetTest(unittest.TestCase):
 
     @patch(f"{PATCH_PREFIX}.rule_target")
     @patch(f"{PATCH_PREFIX}.sit_rule_based_sort")
-    def test_non_production_sort_production_target(self, sit_rule_based_sort, rule_target):
+    def test_non_production_sort_production_target(
+        self, sit_rule_based_sort, rule_target
+    ):
         mock_production = "mock_production"
         sort_type = "mock_sort_type"
         sit_rule_based_sort.is_production_sort.side_effect = lambda _: False
@@ -260,25 +262,6 @@ class SITStandTargetTest(unittest.TestCase):
             sort_type, mock_cbm_vars, "mock random generator"
         )
 
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_age_sort_area_target(self, rule_target):
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "SORT_BY_HW_AGE",
-                "target_type": "Area",
-                "target": 100,
-            },
-            mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
-            mock_pools="pools",
-            mock_random_generator=None,
-        )
-
-        rule_target.sorted_area_target.assert_called_once_with(
-            area_target_value=100,
-            sort_value=[10, 2, 30],
-            inventory="inventory",
-            eligible="eligible",
-        )
 
     @patch(f"{PATCH_PREFIX}.rule_target")
     def test_svoid_sort_proportion_target(self, rule_target):
