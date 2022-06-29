@@ -1,24 +1,22 @@
 import unittest
+from unittest.mock import patch
 from types import SimpleNamespace
 import pandas as pd
-from mock import Mock
 from libcbm.model.cbm.rule_based.sit import sit_stand_target
-from libcbm.model.cbm.rule_based import rule_target
+from libcbm.storage import dataframe
 
 
-def get_test_function(
+def call_test_function(
     mock_sit_event_row,
     mock_state_variables,
     mock_pools,
     mock_random_generator,
     mock_disturbance_production_func=None,
 ):
-    mock_rule_target = Mock(spec=rule_target)
 
     mock_inventory = "inventory"
     mock_eligible = "eligible"
     create_target = sit_stand_target.create_sit_event_target_factory(
-        rule_target=mock_rule_target,
         sit_event_row=mock_sit_event_row,
         disturbance_production_func=mock_disturbance_production_func,
         random_generator=mock_random_generator,
@@ -28,16 +26,15 @@ def get_test_function(
     )
     create_target(cbm_vars=mock_cbm_vars, eligible=mock_eligible)
 
-    return mock_rule_target
-
 
 class SITStandTargetTest(unittest.TestCase):
     """Tests for functions that compute CBM rule based disturbance event
     targets based on SIT disturbance event input.
     """
 
-    def test_proportion_sort_proportion_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_proportion_sort_proportion_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "PROPORTION_OF_EVERY_RECORD",
                 "target_type": "Proportion",
@@ -47,12 +44,15 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="mock_state_vars",
             mock_pools="mock_pools",
             mock_random_generator=None,
-        ).proportion_sort_proportion_target.assert_called_once_with(
+        )
+
+        rule_target.proportion_sort_proportion_target.assert_called_once_with(
             proportion_target=0.8, inventory="inventory", eligible="eligible"
         )
 
-    def test_proportion_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_proportion_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "PROPORTION_OF_EVERY_RECORD",
                 "target_type": "Area",
@@ -62,20 +62,22 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="mock_state_vars",
             mock_pools="mock_pools",
             mock_random_generator=None,
-        ).proportion_area_target.assert_called_once_with(
+        )
+
+        rule_target.proportion_area_target.assert_called_once_with(
             area_target_value=13,
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_merch_total_sort_area_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.sit_production")
+    def test_merch_total_sort_area_target(self, sit_production, rule_target):
 
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
-        )
+        mock_production = "mock_production"
+
+        sit_production.is_production_sort.side_effect = lambda _: True
+        sit_production.is_production_based.side_effect = lambda _: True
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
             self.assertTrue(disturbance_type_id == 2)
@@ -83,7 +85,7 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_TOTAL",
                 "target_type": "Area",
@@ -94,19 +96,25 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_area_target.assert_called_once_with(
+        )
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=18,
-            sort_value=mock_production.Total,
+            sort_value=mock_production["Total"],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_merch_sw_sort_area_target(self):
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_merch_sw_sort_area_target(self, rule_target):
+        mock_production = dataframe.from_pandas(
+            pd.DataFrame(
+                dict(
+                    Total=[3, 3, 3, 3],
+                    DisturbanceSoftProduction=[1, 1, 1, 1],
+                    DisturbanceHardProduction=[1, 1, 1, 1],
+                    DisturbanceDOMProduction=[1, 1, 1, 1],
+                )
+            )
         )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -121,7 +129,7 @@ class SITStandTargetTest(unittest.TestCase):
             + mock_production.DisturbanceDOMProduction
         )
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_SW",
                 "target_type": "Area",
@@ -132,19 +140,26 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=18,
             sort_value=expected_sort_value,
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_merch_hw_sort_area_target(self):
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_merch_hw_sort_area_target(self, rule_target):
+        mock_production = dataframe.from_pandas(
+            pd.DataFrame(
+                dict(
+                    Total=[3, 3, 3, 3],
+                    DisturbanceSoftProduction=[1, 1, 1, 1],
+                    DisturbanceHardProduction=[1, 1, 1, 1],
+                    DisturbanceDOMProduction=[1, 1, 1, 1],
+                )
+            )
         )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -159,7 +174,7 @@ class SITStandTargetTest(unittest.TestCase):
             + mock_production.DisturbanceDOMProduction
         )
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_HW",
                 "target_type": "Area",
@@ -170,20 +185,23 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=19,
             sort_value=expected_sort_value,
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_random_sort_area_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_random_sort_area_target(self, rule_target):
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
 
         def mock_random_gen(n_values):
             return [1] * n_values
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "RANDOMSORT",
                 "target_type": "Area",
@@ -193,15 +211,18 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="mock_state_vars",
             mock_pools=mock_pools,
             mock_random_generator=mock_random_gen,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=11,
             sort_value=mock_random_gen(mock_pools.shape[0]),
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_total_stem_snag_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_total_stem_snag_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "TOTALSTEMSNAG",
                 "target_type": "Area",
@@ -209,11 +230,18 @@ class SITStandTargetTest(unittest.TestCase):
                 "disturbance_type": "fire",
             },
             mock_state_variables="mock_state_vars",
-            mock_pools=SimpleNamespace(
-                SoftwoodStemSnag=[1, 2, 3, 4], HardwoodStemSnag=[5, 6, 7, 8]
+            mock_pools=dataframe.from_pandas(
+                pd.DataFrame(
+                    dict(
+                        SoftwoodStemSnag=[1, 2, 3, 4],
+                        HardwoodStemSnag=[5, 6, 7, 8],
+                    )
+                )
             ),
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=50,
             # since it's difficult for mock to test with
             # pd.DataSeries (simple equality won't work)
@@ -223,8 +251,9 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_sw_stem_snag_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_sw_stem_snag_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SWSTEMSNAG",
                 "target_type": "Area",
@@ -234,15 +263,18 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="mock_state_vars",
             mock_pools=SimpleNamespace(SoftwoodStemSnag=[1, 2, 3, 4]),
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=1,
             sort_value=[1, 2, 3, 4],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_hw_stem_snag_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_hw_stem_snag_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "HWSTEMSNAG",
                 "target_type": "Area",
@@ -252,16 +284,19 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="mock_state_vars",
             mock_pools=SimpleNamespace(HardwoodStemSnag=[1, 2, 3, 4]),
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=1,
             sort_value=[1, 2, 3, 4],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_swage_sort_area_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_swage_sort_area_target(self, rule_target):
         """confirm state_variable.age is used as a sort value"""
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SORT_BY_SW_AGE",
                 "target_type": "Area",
@@ -271,16 +306,19 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
             mock_pools="pools",
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_hwage_sort_area_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_hwage_sort_area_target(self, rule_target):
         """confirm state_variable.age is used as a sort value"""
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SORT_BY_HW_AGE",
                 "target_type": "Area",
@@ -290,14 +328,17 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
             mock_pools="pools",
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_proportion_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_proportion_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -311,7 +352,7 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "PROPORTION_OF_EVERY_RECORD",
                 "target_type": "Merchantable",
@@ -323,7 +364,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).proportion_merch_target.assert_called_once_with(
+        )
+
+        rule_target.proportion_merch_target.assert_called_once_with(
             carbon_target=17,
             disturbance_production=mock_production.Total,
             inventory="inventory",
@@ -331,7 +374,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_merch_total_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_merch_total_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -345,7 +389,7 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_TOTAL",
                 "target_type": "Merchantable",
@@ -357,7 +401,8 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=4,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -366,7 +411,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_merch_sw_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_merch_sw_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -386,7 +432,7 @@ class SITStandTargetTest(unittest.TestCase):
             + mock_production.DisturbanceDOMProduction
         )
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_SW",
                 "target_type": "Merchantable",
@@ -398,7 +444,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=23,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -407,7 +455,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_merch_hw_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_merch_hw_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(
             Total=[3, 3, 3, 3],
             DisturbanceSoftProduction=[1, 1, 1, 1],
@@ -427,7 +476,7 @@ class SITStandTargetTest(unittest.TestCase):
             + mock_production.DisturbanceDOMProduction
         )
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "MERCHCSORT_HW",
                 "target_type": "Merchantable",
@@ -439,7 +488,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools="pools",
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=31,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -448,7 +499,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_random_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_random_sort_merch_target(self, rule_target):
 
         mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
 
@@ -468,7 +520,7 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(list(cbm_vars.pools.a) == [12, 3, 4, 5])
             return mock_production
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "RANDOMSORT",
                 "target_type": "Merchantable",
@@ -480,7 +532,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools=mock_pools,
             mock_random_generator=mock_random_gen,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=31,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -489,7 +543,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_total_stem_snag_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_total_stem_snag_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -503,7 +558,7 @@ class SITStandTargetTest(unittest.TestCase):
             SoftwoodStemSnag=[1, 2, 3], HardwoodStemSnag=[1, 2, 3]
         )
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "TOTALSTEMSNAG",
                 "target_type": "Merchantable",
@@ -515,7 +570,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools=mock_pools,
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=37,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -527,7 +584,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_sw_stem_snag_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_sw_stem_snag_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -538,7 +596,7 @@ class SITStandTargetTest(unittest.TestCase):
 
         mock_pools = SimpleNamespace(SoftwoodStemSnag=[1, 2, 3])
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SWSTEMSNAG",
                 "target_type": "Merchantable",
@@ -550,7 +608,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools=mock_pools,
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=47,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -559,7 +619,8 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_hw_stem_snag_sort_merch_target(self):
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_hw_stem_snag_sort_merch_target(self, rule_target):
         mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -570,7 +631,7 @@ class SITStandTargetTest(unittest.TestCase):
 
         mock_pools = SimpleNamespace(HardwoodStemSnag=[1, 2, 3])
 
-        get_test_function(
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "HWSTEMSNAG",
                 "target_type": "Merchantable",
@@ -582,7 +643,9 @@ class SITStandTargetTest(unittest.TestCase):
             mock_pools=mock_pools,
             mock_random_generator=None,
             mock_disturbance_production_func=mock_disturbance_production_func,
-        ).sorted_merch_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=97,
             disturbance_production=mock_production,
             inventory="inventory",
@@ -591,8 +654,9 @@ class SITStandTargetTest(unittest.TestCase):
             eligible="eligible",
         )
 
-    def test_age_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_age_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SORT_BY_HW_AGE",
                 "target_type": "Area",
@@ -601,15 +665,18 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables=SimpleNamespace(age=[10, 2, 30]),
             mock_pools="pools",
             mock_random_generator=None,
-        ).sorted_area_target.assert_called_once_with(
+        )
+
+        rule_target.sorted_area_target.assert_called_once_with(
             area_target_value=100,
             sort_value=[10, 2, 30],
             inventory="inventory",
             eligible="eligible",
         )
 
-    def test_svoid_sort_proportion_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_svoid_sort_proportion_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
                 "target_type": "Proportion",
@@ -619,12 +686,15 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="inventory",
             mock_pools="pools",
             mock_random_generator=None,
-        ).spatially_indexed_target.assert_called_once_with(
+        )
+
+        rule_target.spatially_indexed_target.assert_called_once_with(
             identifier=1000, inventory="inventory"
         )
 
-    def test_svoid_sort_merch_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_svoid_sort_merch_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
                 "target_type": "Merchantable",
@@ -634,12 +704,15 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="inventory",
             mock_pools="pools",
             mock_random_generator=None,
-        ).spatially_indexed_target.assert_called_once_with(
+        )
+
+        rule_target.spatially_indexed_target.assert_called_once_with(
             identifier=4000, inventory="inventory"
         )
 
-    def test_svoid_sort_area_target(self):
-        get_test_function(
+    @patch("libcbm.model.cbm.rule_based.sit.sit_stand_target.rule_target")
+    def test_svoid_sort_area_target(self, rule_target):
+        call_test_function(
             mock_sit_event_row={
                 "sort_type": "SVOID",
                 "target_type": "Area",
@@ -649,6 +722,8 @@ class SITStandTargetTest(unittest.TestCase):
             mock_state_variables="inventory",
             mock_pools="pools",
             mock_random_generator=None,
-        ).spatially_indexed_target.assert_called_once_with(
+        )
+
+        rule_target.spatially_indexed_target.assert_called_once_with(
             identifier=1050, inventory="inventory"
         )
