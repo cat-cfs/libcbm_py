@@ -428,7 +428,7 @@ def logical_not(series: NumpySeriesBackend) -> NumpySeriesBackend:
 def logical_or(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.logical_or([s1._data, s2._data]))
+    return NumpySeriesBackend(None, np.logical_or(s1._data, s2._data))
 
 
 def make_boolean_series(init: bool, size: int) -> NumpySeriesBackend:
@@ -442,7 +442,7 @@ def is_null(series: NumpySeriesBackend) -> NumpySeriesBackend:
 
 
 def indices_nonzero(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, pd.isnull(series._data))
+    return NumpySeriesBackend(None, np.nonzero(series._data)[0])
 
 
 def numeric_dataframe(
