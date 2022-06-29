@@ -3,6 +3,8 @@ from unittest.mock import patch
 from mock import Mock
 import pandas as pd
 import numpy as np
+from libcbm.storage import dataframe
+from libcbm.storage import series
 from types import SimpleNamespace
 from libcbm.model.cbm.rule_based import transition_rule_processor
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
@@ -104,29 +106,35 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         )
 
         tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
-        tr_group = pd.DataFrame(
-            {
-                "a": ["a1"],
-                "b": ["b1"],
-                "disturbance_type_id": [55],
-                "a_tr": ["a2"],
-                "b_tr": ["?"],
-                "regeneration_delay": [10],
-                "reset_age": [40],
-                "percent": [100],
-            }
+        tr_group = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "a": ["a1"],
+                    "b": ["b1"],
+                    "disturbance_type_id": [55],
+                    "a_tr": ["a2"],
+                    "b_tr": ["?"],
+                    "regeneration_delay": [10],
+                    "reset_age": [40],
+                    "percent": [100],
+                }
+            )
         )
-        transition_mask = np.array([False], dtype=bool)
-        mock_classifiers = pd.DataFrame({"a": [1], "b": [3]})
-        mock_inventory = pd.DataFrame({"area": [1.0]})
-        mock_pools = pd.DataFrame({"p0": [1], "p1": [4]})
-        mock_state_variables = pd.DataFrame(
-            {"age": [0], "regeneration_delay": [0]}
+        transition_mask = series.from_numpy("", np.array([False], dtype=bool))
+        mock_classifiers = dataframe.from_pandas(
+            pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_params = pd.DataFrame(
-            {"disturbance_type": [0], "reset_age": [-1]}
+        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_pools = dataframe.from_pandas(
+            pd.DataFrame({"p0": [1], "p1": [4]})
         )
-        mock_flux = pd.DataFrame({"f1": [0], "f2": [0]})
+        mock_state_variables = dataframe.from_pandas(
+            pd.DataFrame({"age": [0], "regeneration_delay": [0]})
+        )
+        mock_params = dataframe.from_pandas(
+            pd.DataFrame({"disturbance_type": [0], "reset_age": [-1]})
+        )
+        mock_flux = dataframe.from_pandas(pd.DataFrame({"f1": [0], "f2": [0]}))
         mock_cbm_vars = SimpleNamespace(
             classifiers=mock_classifiers,
             inventory=mock_inventory,
@@ -138,27 +146,31 @@ class TransitionRuleProcessorTest(unittest.TestCase):
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             mock_rule_filter.evaluate_filters.side_effect = (
-                lambda *args: np.array([True], dtype=bool)
+                lambda *args: series.from_numpy(
+                    "", np.array([True], dtype=bool)
+                )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                 tr_group_key, tr_group, transition_mask, mock_cbm_vars
             )
-            self.assertTrue(list(transition_mask) == [True])
-            self.assertTrue(list(cbm_vars.state.regeneration_delay) == [10])
-            self.assertTrue(list(cbm_vars.state.age) == [0])
-            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40])
+            self.assertTrue(transition_mask.to_list() == [True])
+            self.assertTrue(
+                cbm_vars.state["regeneration_delay"].to_list() == [10]
+            )
+            self.assertTrue(cbm_vars.state["age"].to_list() == [0])
+            self.assertTrue(cbm_vars.parameters["reset_age"].to_list() == [40])
 
             # note the changed classifier id
-            self.assertTrue(list(cbm_vars.classifiers.a) == [2])
+            self.assertTrue(cbm_vars.classifiers["a"].to_list() == [2])
 
             # note unchanged since "?" was used for transition classifier value
-            self.assertTrue(list(cbm_vars.classifiers.b) == [3])
+            self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3])
 
-            self.assertTrue(list(cbm_vars.inventory.area) == [1.0])
-            self.assertTrue(list(cbm_vars.pools.p0) == [1])
-            self.assertTrue(list(cbm_vars.pools.p1) == [4])
-            self.assertTrue(list(cbm_vars.flux.f1) == [0])
-            self.assertTrue(list(cbm_vars.flux.f2) == [0])
+            self.assertTrue(cbm_vars.inventory["area"].to_list() == [1.0])
+            self.assertTrue(cbm_vars.pools["p0"].to_list() == [1])
+            self.assertTrue(cbm_vars.pools["p1"].to_list() == [4])
+            self.assertTrue(cbm_vars.flux["f1"].to_list() == [0])
+            self.assertTrue(cbm_vars.flux["f2"].to_list() == [0])
 
     def test_single_record_split_remainder_transition(self):
         mock_classifier_filter_builder = Mock()
@@ -184,29 +196,35 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         )
 
         tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
-        tr_group = pd.DataFrame(
-            {
-                "a": ["a1"],
-                "b": ["?"],
-                "disturbance_type_id": [55],
-                "a_tr": ["a2"],
-                "b_tr": ["?"],
-                "regeneration_delay": [10],
-                "reset_age": [40],
-                "percent": [50],
-            }
+        tr_group = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "a": ["a1"],
+                    "b": ["?"],
+                    "disturbance_type_id": [55],
+                    "a_tr": ["a2"],
+                    "b_tr": ["?"],
+                    "regeneration_delay": [10],
+                    "reset_age": [40],
+                    "percent": [50],
+                }
+            )
         )
-        transition_mask = np.array([False], dtype=bool)
-        mock_classifiers = pd.DataFrame({"a": [1], "b": [3]})
-        mock_inventory = pd.DataFrame({"area": [1.0]})
-        mock_pools = pd.DataFrame({"p0": [1], "p1": [4]})
-        mock_state_variables = pd.DataFrame(
-            {"age": [0], "regeneration_delay": [0]}
+        transition_mask = series.from_numpy("", np.array([False], dtype=bool))
+        mock_classifiers = dataframe.from_pandas(
+            pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_params = pd.DataFrame(
-            {"disturbance_type": [0], "reset_age": [-1]}
+        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_pools = dataframe.from_pandas(
+            pd.DataFrame({"p0": [1], "p1": [4]})
         )
-        mock_flux = pd.DataFrame({"f1": [0], "f2": [0]})
+        mock_state_variables = dataframe.from_pandas(
+            pd.DataFrame({"age": [0], "regeneration_delay": [0]})
+        )
+        mock_params = dataframe.from_pandas(
+            pd.DataFrame({"disturbance_type": [0], "reset_age": [-1]})
+        )
+        mock_flux = dataframe.from_pandas(pd.DataFrame({"f1": [0], "f2": [0]}))
         mock_cbm_vars = SimpleNamespace(
             classifiers=mock_classifiers,
             inventory=mock_inventory,
@@ -218,32 +236,36 @@ class TransitionRuleProcessorTest(unittest.TestCase):
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             mock_rule_filter.evaluate_filters.side_effect = (
-                lambda *args: np.array([True], dtype=bool)
+                lambda *args: series.from_numpy(
+                    "", np.array([True], dtype=bool)
+                )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                 tr_group_key, tr_group, transition_mask, mock_cbm_vars
             )
 
-            self.assertTrue(list(transition_mask) == [True, True])
-            self.assertTrue(list(cbm_vars.state.regeneration_delay) == [10, 0])
-            self.assertTrue(list(cbm_vars.state.age) == [0, 0])
-            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40, -1])
+            self.assertTrue(transition_mask.to_list() == [True, True])
+            self.assertTrue(
+                cbm_vars.state["regeneration_delay"].to_list() == [10, 0]
+            )
+            self.assertTrue(cbm_vars.state["age"].to_list() == [0, 0])
+            self.assertTrue(cbm_vars.parameters["reset_age"] == [40, -1])
 
             # note the changed classifier id for index 0, but not for index 1
             # (because of the remainder split)
-            self.assertTrue(list(cbm_vars.classifiers.a) == [2, 1])
+            self.assertTrue(cbm_vars.classifiers["a"].to_list() == [2, 1])
 
             # note unchanged since "?" was used for transition classifier value
-            self.assertTrue(list(cbm_vars.classifiers.b) == [3, 3])
+            self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3, 3])
 
-            self.assertTrue(list(cbm_vars.inventory.area) == [0.5, 0.5])
+            self.assertTrue(cbm_vars.inventory["area"].to_list() == [0.5, 0.5])
 
             # since pools are area densities the are just copied here
-            self.assertTrue(list(cbm_vars.pools.p0) == [1, 1])
-            self.assertTrue(list(cbm_vars.pools.p1) == [4, 4])
+            self.assertTrue(cbm_vars.pools["p0"].to_list() == [1, 1])
+            self.assertTrue(cbm_vars.pools["p1"].to_list() == [4, 4])
 
-            self.assertTrue(list(cbm_vars.flux.f1) == [0, 0])
-            self.assertTrue(list(cbm_vars.flux.f2) == [0, 0])
+            self.assertTrue(cbm_vars.flux["f1"].to_list() == [0, 0])
+            self.assertTrue(cbm_vars.flux["f2"].to_list() == [0, 0])
 
     def test_single_record_split_transition(self):
         mock_classifier_filter_builder = Mock()
@@ -270,29 +292,37 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         )
 
         tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
-        tr_group = pd.DataFrame(
-            {
-                "a": ["a1", "a1"],
-                "b": ["?", "?"],
-                "disturbance_type_id": [55, 55],
-                "a_tr": ["a2", "a1"],
-                "b_tr": ["?", "b2"],
-                "regeneration_delay": [10, -1],
-                "reset_age": [40, 21],
-                "percent": [35, 65],
-            }
+        tr_group = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "a": ["a1", "a1"],
+                    "b": ["?", "?"],
+                    "disturbance_type_id": [55, 55],
+                    "a_tr": ["a2", "a1"],
+                    "b_tr": ["?", "b2"],
+                    "regeneration_delay": [10, -1],
+                    "reset_age": [40, 21],
+                    "percent": [35, 65],
+                }
+            )
         )
-        transition_mask = np.array([False], dtype=bool)
-        mock_classifiers = pd.DataFrame({"a": [1], "b": [3]})
-        mock_inventory = pd.DataFrame({"area": [1.0]})
-        mock_pools = pd.DataFrame({"p0": [33], "p1": [11]})
-        mock_state_variables = pd.DataFrame(
-            {"age": [0], "regeneration_delay": [0]}
+        transition_mask = series.from_numpy("", np.array([False], dtype=bool))
+        mock_classifiers = dataframe.from_pandas(
+            pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_params = pd.DataFrame(
-            {"disturbance_type": [0], "reset_age": [-1]}
+        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_pools = dataframe.from_pandas(
+            pd.DataFrame({"p0": [33], "p1": [11]})
         )
-        mock_flux = pd.DataFrame({"f1": [10], "f2": [100]})
+        mock_state_variables = dataframe.from_pandas(
+            pd.DataFrame({"age": [0], "regeneration_delay": [0]})
+        )
+        mock_params = dataframe.from_pandas(
+            pd.DataFrame({"disturbance_type": [0], "reset_age": [-1]})
+        )
+        mock_flux = dataframe.from_pandas(
+            pd.DataFrame({"f1": [10], "f2": [100]})
+        )
         mock_cbm_vars = SimpleNamespace(
             classifiers=mock_classifiers,
             inventory=mock_inventory,
@@ -304,25 +334,31 @@ class TransitionRuleProcessorTest(unittest.TestCase):
 
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             mock_rule_filter.evaluate_filters.side_effect = (
-                lambda *args: np.array([True], dtype=bool)
+                lambda *args: series.from_numpy(
+                    "", np.array([True], dtype=bool)
+                )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                 tr_group_key, tr_group, transition_mask, mock_cbm_vars
             )
 
-            self.assertTrue(list(transition_mask) == [True, True])
+            self.assertTrue(transition_mask.to_list() == [True, True])
             self.assertTrue(
-                list(cbm_vars.state.regeneration_delay) == [10, -1]
+                cbm_vars.state["regeneration_delay"].to_list() == [10, -1]
             )
-            self.assertTrue(list(cbm_vars.state.age) == [0, 0])
-            self.assertTrue(list(cbm_vars.parameters.reset_age) == [40, 21])
-            self.assertTrue(list(cbm_vars.classifiers.a) == [2, 1])
-            self.assertTrue(list(cbm_vars.classifiers.b) == [3, 4])
-            self.assertTrue(list(cbm_vars.inventory.area) == [0.35, 0.65])
-            self.assertTrue(list(cbm_vars.pools.p0) == [33, 33])
-            self.assertTrue(list(cbm_vars.pools.p1) == [11, 11])
-            self.assertTrue(list(cbm_vars.flux.f1) == [10, 10])
-            self.assertTrue(list(cbm_vars.flux.f2) == [100, 100])
+            self.assertTrue(cbm_vars.state["age"].to_list() == [0, 0])
+            self.assertTrue(
+                cbm_vars.parameters["reset_age"].to_list() == [40, 21]
+            )
+            self.assertTrue(cbm_vars.classifiers["a"].to_list() == [2, 1])
+            self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3, 4])
+            self.assertTrue(
+                cbm_vars.inventory["area"].to_list() == [0.35, 0.65]
+            )
+            self.assertTrue(cbm_vars.pools["p0"].to_list() == [33, 33])
+            self.assertTrue(cbm_vars.pools["p1"].to_list() == [11, 11])
+            self.assertTrue(cbm_vars.flux["f1"].to_list() == [10, 10])
+            self.assertTrue(cbm_vars.flux["f2"].to_list() == [100, 100])
 
     def test_multiple_records_multiple_split_transitions(self):
         mock_classifier_filter_builder = Mock()
@@ -352,31 +388,41 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         )
 
         tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
-        tr_group = pd.DataFrame(
-            {
-                "a": ["a1", "a1", "a1"],
-                "b": ["?", "?", "?"],
-                "disturbance_type_id": [55, 55, 55],
-                "a_tr": ["a2", "a1", "a3"],
-                "b_tr": ["?", "b1", "b2"],
-                "regeneration_delay": [1, 2, 3],
-                "reset_age": [1, 2, 3],
-                "percent": [10, 10, 10],
-            }
+        tr_group = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "a": ["a1", "a1", "a1"],
+                    "b": ["?", "?", "?"],
+                    "disturbance_type_id": [55, 55, 55],
+                    "a_tr": ["a2", "a1", "a3"],
+                    "b_tr": ["?", "b1", "b2"],
+                    "regeneration_delay": [1, 2, 3],
+                    "reset_age": [1, 2, 3],
+                    "percent": [10, 10, 10],
+                }
+            )
         )
-        transition_mask = np.array([False], dtype=bool)
-        mock_classifiers = pd.DataFrame({"a": [1, 2, 1], "b": [3, 6, 4]})
-        mock_inventory = pd.DataFrame(
-            {"index": [0, 1, 2], "area": [1.0, 5.0, 10.0]}
+        transition_mask = series.from_numpy("", np.array([False], dtype=bool))
+        mock_classifiers = dataframe.from_pandas(
+            pd.DataFrame({"a": [1, 2, 1], "b": [3, 6, 4]})
         )
-        mock_pools = pd.DataFrame({"p0": [33, 22, 11], "p1": [11, 0, -11]})
-        mock_state_variables = pd.DataFrame(
-            {"age": [0, 1, 2], "regeneration_delay": [0, 0, 0]}
+        mock_inventory = dataframe.from_pandas(
+            pd.DataFrame({"index": [0, 1, 2], "area": [1.0, 5.0, 10.0]})
         )
-        mock_params = pd.DataFrame(
-            {"disturbance_type": [0, 0, 0], "reset_age": [-1, -1, -1]}
+        mock_pools = dataframe.from_pandas(
+            pd.DataFrame({"p0": [33, 22, 11], "p1": [11, 0, -11]})
         )
-        mock_flux = pd.DataFrame({"f1": [10, 20, 30], "f2": [100, 90, 80]})
+        mock_state_variables = dataframe.from_pandas(
+            pd.DataFrame({"age": [0, 1, 2], "regeneration_delay": [0, 0, 0]})
+        )
+        mock_params = dataframe.from_pandas(
+            pd.DataFrame(
+                {"disturbance_type": [0, 0, 0], "reset_age": [-1, -1, -1]}
+            )
+        )
+        mock_flux = dataframe.from_pandas(
+            pd.DataFrame({"f1": [10, 20, 30], "f2": [100, 90, 80]})
+        )
         mock_cbm_vars = SimpleNamespace(
             classifiers=mock_classifiers,
             inventory=mock_inventory,
@@ -389,19 +435,26 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         with patch(PATCH_PATH + ".rule_filter") as mock_rule_filter:
             # for the test, indexes 0 and 2 will be eligible
             mock_rule_filter.evaluate_filters.side_effect = (
-                lambda *args: np.array([True, False, True], dtype=bool)
+                lambda *args: series.from_numpy(
+                    "", np.array([True, False, True], dtype=bool)
+                )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
                 tr_group_key, tr_group, transition_mask, mock_cbm_vars
             )
 
             result = (
-                cbm_vars.inventory.join(cbm_vars.classifiers)
-                .join(cbm_vars.state)
-                .join(cbm_vars.parameters)
-                .join(cbm_vars.pools)
-                .join(cbm_vars.flux)
-                .join(pd.DataFrame({"transition_mask": transition_mask}))
+                cbm_vars.inventory.to_pandas()
+                .join(cbm_vars.classifiers.to_pandas())
+                .join(cbm_vars.state.to_pandas())
+                .join(cbm_vars.parameters.to_pandas())
+                .join(cbm_vars.pools.to_pandas())
+                .join(cbm_vars.flux.to_pandas())
+                .join(
+                    pd.DataFrame(
+                        {"transition_mask": transition_mask.to_numpy()}
+                    )
+                )
             )
 
             transitioned_1 = result[result["index"] == 0]
