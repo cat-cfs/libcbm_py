@@ -65,7 +65,7 @@ def evaluate_filters(*filter_objs: RuleFilter) -> Union[Series, None]:
     output = None
 
     for filter_obj in filter_objs:
-        if filter_obj.data:
+        if filter_obj and filter_obj.data:
             if not out_series_length:
                 out_series_length = filter_obj.data.n_rows
                 out_series_backend_type = filter_obj.data.backend_type
