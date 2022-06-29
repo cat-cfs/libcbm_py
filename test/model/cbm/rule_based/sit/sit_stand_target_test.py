@@ -261,7 +261,6 @@ class SITStandTargetTest(unittest.TestCase):
             sort_type, mock_cbm_vars, "mock random generator"
         )
 
-
     @patch(f"{PATCH_PREFIX}.rule_target")
     def test_svoid_sort_proportion_target(self, rule_target):
         call_test_function(
