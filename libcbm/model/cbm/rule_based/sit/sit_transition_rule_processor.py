@@ -107,7 +107,7 @@ class SITTransitionRuleProcessor:
             sit_transitions, classifier_names
         )
         transition_mask = dataframe.make_boolean_series(
-            False, n_stands, cbm_vars.inventory.backend_type
+            False, n_stands, cbm_vars.classifiers.backend_type
         )
         for tr_group_key, tr_group in transition_iterator:
             (
