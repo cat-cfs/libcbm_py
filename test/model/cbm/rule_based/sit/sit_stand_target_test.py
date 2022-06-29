@@ -212,12 +212,14 @@ class SITStandTargetTest(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_merch_total_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
+    @patch(f"{PATCH_PREFIX}.sit_rule_based_sort")
+    def test_non_production_sort_production_target(self, sit_rule_based_sort, rule_target):
+        mock_production = "mock_production"
+        sort_type = "mock_sort_type"
+        sit_rule_based_sort.is_production_sort.side_effect = lambda _: False
+        sit_rule_based_sort.is_production_based.side_effect = lambda _: True
+        sit_rule_based_sort.get_sort_value.side_effect = (
+            lambda sort_type, cbm_vars, random_generator: "mock sort value"
         )
 
         def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
@@ -226,269 +228,36 @@ class SITStandTargetTest(unittest.TestCase):
             self.assertTrue(cbm_vars.pools == "pools")
             return mock_production
 
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_TOTAL",
-                "target_type": "Merchantable",
-                "target": 4,
-                "disturbance_type_id": 99,
-                "efficiency": 100,
-            },
+        mock_sit_event_row = {
+            "sort_type": sort_type,
+            "target_type": "Merchantable",
+            "target": 4,
+            "disturbance_type_id": 99,
+            "efficiency": 100,
+        }
+        mock_cbm_vars = call_test_function(
+            mock_sit_event_row=mock_sit_event_row,
             mock_state_variables="mock_state_vars",
             mock_pools="pools",
-            mock_random_generator=None,
+            mock_random_generator="mock random generator",
             mock_disturbance_production_func=mock_disturbance_production_func,
         )
         rule_target.sorted_merch_target.assert_called_once_with(
             carbon_target=4,
             disturbance_production=mock_production,
             inventory="inventory",
-            sort_value=mock_production.Total,
+            sort_value="mock sort value",
             efficiency=100,
             eligible="eligible",
         )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_merch_sw_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
+        sit_rule_based_sort.is_production_sort.assert_called_with(
+            mock_sit_event_row
         )
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 45)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(cbm_vars.pools == "pools")
-            return mock_production
-
-        # tests that the + operator is used for the correct production fields
-        expected_sort_value = (
-            mock_production.DisturbanceSoftProduction
-            + mock_production.DisturbanceDOMProduction
+        sit_rule_based_sort.is_production_based.assert_called_with(
+            mock_sit_event_row
         )
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_SW",
-                "target_type": "Merchantable",
-                "target": 23,
-                "disturbance_type_id": 45,
-                "efficiency": 0.1,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools="pools",
-            mock_random_generator=None,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=23,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            sort_value=expected_sort_value,
-            efficiency=0.1,
-            eligible="eligible",
-        )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_merch_hw_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
-        )
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 73)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(cbm_vars.pools == "pools")
-            return mock_production
-
-        # tests that the + operator is used for the correct production fields
-        expected_sort_value = (
-            mock_production.DisturbanceHardProduction
-            + mock_production.DisturbanceDOMProduction
-        )
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "MERCHCSORT_HW",
-                "target_type": "Merchantable",
-                "target": 31,
-                "disturbance_type_id": 73,
-                "efficiency": 0.99,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools="pools",
-            mock_random_generator=None,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=31,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            sort_value=expected_sort_value,
-            efficiency=0.99,
-            eligible="eligible",
-        )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_random_sort_merch_target(self, rule_target):
-
-        mock_pools = pd.DataFrame({"a": [12, 3, 4, 5]})
-
-        def mock_random_gen(n_values):
-            return [1] * n_values
-
-        mock_production = SimpleNamespace(
-            Total=[3, 3, 3, 3],
-            DisturbanceSoftProduction=[1, 1, 1, 1],
-            DisturbanceHardProduction=[1, 1, 1, 1],
-            DisturbanceDOMProduction=[1, 1, 1, 1],
-        )
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 43)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(list(cbm_vars.pools.a) == [12, 3, 4, 5])
-            return mock_production
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "RANDOMSORT",
-                "target_type": "Merchantable",
-                "target": 31,
-                "disturbance_type_id": 43,
-                "efficiency": 0.99,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools=mock_pools,
-            mock_random_generator=mock_random_gen,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=31,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            sort_value=mock_random_gen(mock_pools.shape[0]),
-            efficiency=0.99,
-            eligible="eligible",
-        )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_total_stem_snag_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 15)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(cbm_vars.pools.SoftwoodStemSnag == [1, 2, 3])
-            self.assertTrue(cbm_vars.pools.HardwoodStemSnag == [1, 2, 3])
-            return mock_production
-
-        mock_pools = SimpleNamespace(
-            SoftwoodStemSnag=[1, 2, 3], HardwoodStemSnag=[1, 2, 3]
-        )
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "TOTALSTEMSNAG",
-                "target_type": "Merchantable",
-                "target": 37,
-                "disturbance_type_id": 15,
-                "efficiency": 1.0,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools=mock_pools,
-            mock_random_generator=None,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=37,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            # simply confirm the '+' operator is used on the correct pools
-            sort_value=(
-                mock_pools.SoftwoodStemSnag + mock_pools.HardwoodStemSnag
-            ),
-            efficiency=1.0,
-            eligible="eligible",
-        )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_sw_stem_snag_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 57)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(cbm_vars.pools.SoftwoodStemSnag == [1, 2, 3])
-            return mock_production
-
-        mock_pools = SimpleNamespace(SoftwoodStemSnag=[1, 2, 3])
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "SWSTEMSNAG",
-                "target_type": "Merchantable",
-                "target": 47,
-                "disturbance_type_id": 57,
-                "efficiency": 1.1,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools=mock_pools,
-            mock_random_generator=None,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=47,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            sort_value=mock_pools.SoftwoodStemSnag,
-            efficiency=1.1,
-            eligible="eligible",
-        )
-
-    @patch(f"{PATCH_PREFIX}.rule_target")
-    def test_hw_stem_snag_sort_merch_target(self, rule_target):
-        mock_production = SimpleNamespace(Total=[3, 3, 3, 3])
-
-        def mock_disturbance_production_func(cbm_vars, disturbance_type_id):
-            self.assertTrue(disturbance_type_id == 9)
-            self.assertTrue(cbm_vars.inventory == "inventory")
-            self.assertTrue(cbm_vars.pools.HardwoodStemSnag == [1, 2, 3])
-            return mock_production
-
-        mock_pools = SimpleNamespace(HardwoodStemSnag=[1, 2, 3])
-
-        call_test_function(
-            mock_sit_event_row={
-                "sort_type": "HWSTEMSNAG",
-                "target_type": "Merchantable",
-                "target": 97,
-                "disturbance_type_id": 9,
-                "efficiency": 2.1,
-            },
-            mock_state_variables="mock_state_vars",
-            mock_pools=mock_pools,
-            mock_random_generator=None,
-            mock_disturbance_production_func=mock_disturbance_production_func,
-        )
-
-        rule_target.sorted_merch_target.assert_called_once_with(
-            carbon_target=97,
-            disturbance_production=mock_production,
-            inventory="inventory",
-            sort_value=mock_pools.HardwoodStemSnag,
-            efficiency=2.1,
-            eligible="eligible",
+        sit_rule_based_sort.get_sort_value.assert_called_with(
+            sort_type, mock_cbm_vars, "mock random generator"
         )
 
     @patch(f"{PATCH_PREFIX}.rule_target")
