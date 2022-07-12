@@ -75,9 +75,10 @@ def process_event(
 
     rule_target_result = target_func(cbm_vars, filter_result)
 
-    cbm_vars = apply_rule_based_event(
-        rule_target_result.target, disturbance_type_id, cbm_vars
-    )
+    if rule_target_result.target is not None:
+        cbm_vars = apply_rule_based_event(
+            rule_target_result.target, disturbance_type_id, cbm_vars
+        )
 
     return ProcessEventResult(cbm_vars, filter_result, rule_target_result)
 
@@ -100,6 +101,7 @@ def apply_rule_based_event(
         CBMVariables: updated and expanded cbm_vars
 
     """
+
     target_index = target["disturbed_index"]
     target_area_proportions = target["area_proportions"]
 
