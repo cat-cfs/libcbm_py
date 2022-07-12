@@ -106,10 +106,6 @@ def initialize_dm(disturbance_matrix_data):
     )
 
 
-def to_numpy_namespace(df):
-    return SimpleNamespace(**{col: df[col].to_numpy() for col in df.columns})
-
-
 @numba.njit()
 def _small_slow_diff(last_rotation_slow, this_rotation_slow):
     return (
