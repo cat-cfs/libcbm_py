@@ -1,12 +1,19 @@
 from types import SimpleNamespace
-import numpy as np
 import numba.types
+from numba.typed import Dict
+import numpy as np
+import pandas as pd
+from libcbm.storage.series import Series
 
 
 @numba.njit()
 def _get_merch_volume(
-    volume_lookup_dict, max_age_lookup_dict, age, merch_vol_id, output
-):
+    volume_lookup_dict: Dict,
+    max_age_lookup_dict: Dict,
+    age,
+    merch_vol_id: np.ndarray,
+    output: np.ndarray,
+) -> None:
     for i, age in np.ndenumerate(age):
         _id = merch_vol_id[i]
         lookup = volume_lookup_dict[_id]
@@ -21,7 +28,7 @@ def _get_merch_volume(
 
 
 class MerchVolumeLookup:
-    def __init__(self, merch_volume):
+    def __init__(self, merch_volume: pd.DataFrame):
 
         self._lookup = {
             int(i): SimpleNamespace(age_volume_pairs={}, max_age=0)
@@ -30,15 +37,15 @@ class MerchVolumeLookup:
 
         for _, row in merch_volume.iterrows():
             record = self._lookup[int(row.name)]
-            volume = float(row.volume)
-            age = int(row.age)
+            volume = float(row["volume"])
+            age = int(row["age"])
             if age < 0 or volume < 0:
                 raise ValueError("negative age or volume found")
             if age >= record.max_age:
                 record.max_age = age
             record.age_volume_pairs[age] = volume
 
-        self._numba_lookup = numba.typed.Dict.empty(
+        self._numba_lookup = Dict.empty(
             key_type=numba.types.int64,
             value_type=numba.types.DictType(
                 numba.types.int64, numba.types.float64
@@ -58,9 +65,13 @@ class MerchVolumeLookup:
             for age, volume in record.age_volume_pairs.items():
                 self._numba_lookup[i][age] = volume
 
-    def get_merch_vol(self, age, merch_vol_id):
-        output = np.zeros(shape=age.shape, dtype=float)
+    def get_merch_vol(self, age: Series, merch_vol_id: Series) -> np.ndarray:
+        output = np.zeros(shape=age.length, dtype=float)
         _get_merch_volume(
-            self._numba_lookup, self._numba_max_ages, age, merch_vol_id, output
+            self._numba_lookup,
+            self._numba_max_ages,
+            age.to_numpy(),
+            merch_vol_id.to_numpy(),
+            output,
         )
         return output
