@@ -1,6 +1,5 @@
 import os
 import json
-from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
@@ -11,9 +10,13 @@ from libcbm.model.moss_c import model_functions
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
+from libcbm.storage import dataframe
+from libcbm.storage.backends import BackendType
 
 
-def _checked_merge(df1, df2, left_on):
+def _checked_merge(
+    df1: pd.DataFrame, df2: pd.DataFrame, left_on: str
+) -> pd.DataFrame:
     merged = df1.merge(
         df2, left_on=left_on, right_index=True, validate="m:1", how="left"
     )
@@ -29,14 +32,14 @@ def _checked_merge(df1, df2, left_on):
 class InputData:
     def __init__(
         self,
-        decay_parameter,
-        disturbance_type,
-        disturbance_matrix,
-        moss_c_parameter,
-        inventory,
-        mean_annual_temperature,
-        merch_volume,
-        spinup_parameter,
+        decay_parameter: pd.DataFrame,
+        disturbance_type: pd.DataFrame,
+        disturbance_matrix: pd.DataFrame,
+        moss_c_parameter: pd.DataFrame,
+        inventory: pd.DataFrame,
+        mean_annual_temperature: pd.DataFrame,
+        merch_volume: pd.DataFrame,
+        spinup_parameter: pd.DataFrame,
     ):
         self.decay_parameter = decay_parameter
         self.disturbance_type = disturbance_type
@@ -59,7 +62,7 @@ class ModelContext:
         self._initialize_model_state()
         self._initialize_disturbance_data()
 
-    def _initialize_libcbm(self):
+    def _initialize_libcbm(self) -> None:
         libcbm_config = {
             "pools": [
                 {"name": p.name, "id": int(p), "index": p_idx}
@@ -82,7 +85,7 @@ class ModelContext:
             )
         )
 
-    def _initialize_dynamics_parameter(self):
+    def _initialize_dynamics_parameter(self) -> None:
         max_vols = pd.DataFrame(
             {
                 "max_merch_vol": self.input_data.merch_volume.volume.groupby(
@@ -118,49 +121,48 @@ class ModelContext:
 
         if (dynamics_param.index != self.input_data.inventory.index).any():
             raise ValueError()
-        self.parameters = model_functions.to_numpy_namespace(dynamics_param)
+        self.parameters = dataframe.from_pandas(dynamics_param)
 
-    def get_pools_df(self):
-        return pd.DataFrame(
-            index=self.input_data.inventory.index,
-            columns=Pool.__members__.keys(),
-            data=self.pools,
+    def get_pools_df(self) -> pd.DataFrame:
+        return self.pools.to_pandas()
+
+    def _initialize_pools(self) -> None:
+        pools = dataframe.numeric_dataframe(
+            Pool.__members__.keys(), self.n_stands, BackendType.numpy
         )
-
-    def _initialize_pools(self):
-        pools = np.zeros(shape=(self.n_stands, len(Pool)))
-        pools[:, Pool.Input] = 1.0
+        pools[Pool.Input.name].assign_all(1.0)
         self.pools = pools
 
-    def initialize_flux(self):
-        self.flux = pd.DataFrame(
-            columns=[x["name"] for x in FLUX_INDICATORS],
-            data=np.zeros(shape=(self.n_stands, len(FLUX_INDICATORS))),
+    def initialize_flux(self) -> None:
+        self.flux = dataframe.numeric_dataframe(
+            [x["name"] for x in FLUX_INDICATORS],
+            self.n_stands,
+            BackendType.numpy,
         )
 
-    def _initialize_model_state(self):
+    def _initialize_model_state(self) -> None:
         initial_age = np.full(self.n_stands, 0, dtype=int)
-        model_state = SimpleNamespace(
+        model_state = dict(
             age=initial_age,
             merch_vol=self.merch_vol_lookup.get_merch_vol(
-                initial_age, self.parameters.merch_volume_id
+                initial_age, self.parameters["merch_volume_id"]
             ),
             enabled=np.ones(self.n_stands, dtype=np.int32),
             disturbance_type=np.zeros(self.n_stands, dtype=np.uintp),
         )
 
-        self.state = model_state
+        self.state = dataframe.from_numpy(model_state)
 
-    def _initialize_disturbance_data(self):
+    def _initialize_disturbance_data(self) -> None:
         self.disturbance_matrices = model_functions.initialize_dm(
             self.input_data.disturbance_matrix
         )
-        historical_dist_types = (
-            self.input_data.inventory.historical_disturbance_type_id.to_numpy()
-        )
-        last_pass_dist_types = (
-            self.input_data.inventory.last_pass_disturbance_type_id.to_numpy()
-        )
+        historical_dist_types = self.input_data.inventory[
+            "historical_disturbance_type_id"
+        ].to_numpy()
+        last_pass_dist_types = self.input_data.inventory[
+            "last_pass_disturbance_type_id"
+        ].to_numpy()
         self.historical_dm_index = model_functions.np_map(
             historical_dist_types,
             self.disturbance_matrices.dm_dist_type_index,
@@ -174,17 +176,17 @@ class ModelContext:
 
 
 def create_from_csv(
-    dir,
-    decay_parameter_fn="decay_parameter.csv",
-    disturbance_type_fn="disturbance_type.csv",
-    disturbance_matrix_fn="disturbance_matrix.csv",
-    moss_c_parameter_fn="moss_c_parameter.csv",
-    inventory_fn="inventory.csv",
-    mean_annual_temperature_fn="mean_annual_temperature.csv",
-    merch_volume_fn="merch_volume.csv",
-    spinup_parameter_fn="spinup_parameter.csv",
+    dir: str,
+    decay_parameter_fn: str = "decay_parameter.csv",
+    disturbance_type_fn: str = "disturbance_type.csv",
+    disturbance_matrix_fn: str = "disturbance_matrix.csv",
+    moss_c_parameter_fn: str = "moss_c_parameter.csv",
+    inventory_fn: str = "inventory.csv",
+    mean_annual_temperature_fn: str = "mean_annual_temperature.csv",
+    merch_volume_fn: str = "merch_volume.csv",
+    spinup_parameter_fn: str = "spinup_parameter.csv",
 ):
-    def read_csv(fn, index_col="id"):
+    def read_csv(fn: str, index_col: str = "id"):
         path = os.path.join(dir, fn)
         return pd.read_csv(path, index_col=index_col)
 
