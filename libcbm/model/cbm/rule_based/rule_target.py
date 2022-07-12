@@ -288,6 +288,7 @@ def proportion_area_target(
             target_var,
             SeriesDef("sort_var", None, "float"),
             eligible_inventory_index,
+            SeriesDef("area_proportions", area_proportion, "float"),
         ],
         nrows=eligible_inventory.n_rows,
         back_end=eligible_inventory.backend_type,
@@ -476,7 +477,9 @@ def proportion_sort_proportion_target(
             SeriesDef("sort_var", None, "float"),
             disturbed_index,
             SeriesDef("area_proportions", proportion_target, "float"),
-        ]
+        ],
+        nrows=disturbed_index.length,
+        back_end=inventory.backend_type,
     )
 
     return RuleTargetResult(
