@@ -421,7 +421,7 @@ class RuleTargetTest(unittest.TestCase):
         result = rule_target.proportion_area_target(
             area_target_value=1000, inventory=mock_inventory, eligible=eligible
         )
-        self.assertTrue(result.target["index"].length == 0)
+        self.assertTrue(result.target is None)
         self.assertTrue(result.statistics["total_eligible_value"] == 0.0)
         self.assertTrue(result.statistics["total_achieved"] == 0)
         self.assertTrue(result.statistics["shortfall"] == 1000)
@@ -438,8 +438,8 @@ class RuleTargetTest(unittest.TestCase):
             )
         )
         carbon_target = 100.0
-        disturbance_production = series.from_pandas(
-            pd.Series([5.0, 5.0, 4.0, 10.0])
+        disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [5.0, 5.0, 4.0, 10.0]})
         )
         eligible = series.from_pandas(pd.Series([True, False, True, True]))
         efficiency = 0.9
@@ -478,7 +478,7 @@ class RuleTargetTest(unittest.TestCase):
             result.statistics["total_eligible_value"]
             == (
                 mock_inventory["area"].filter(eligible)
-                * disturbance_production.filter(eligible)
+                * disturbance_production["Total"].filter(eligible)
                 * efficiency
             ).sum()
         )
@@ -497,8 +497,8 @@ class RuleTargetTest(unittest.TestCase):
             )
         )
         carbon_target = 100.0
-        disturbance_production = series.from_pandas(
-            pd.Series([5.0, 5.0, 4.0, 10.0])
+        disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [5.0, 5.0, 4.0, 10.0]})
         )
         eligible = series.from_pandas(pd.Series([True, False, True, True]))
 
@@ -511,17 +511,17 @@ class RuleTargetTest(unittest.TestCase):
         )
 
         total_eligible_production = (
-            disturbance_production.filter(eligible)
+            disturbance_production["Total"].filter(eligible)
             * mock_inventory["area"].filter(eligible)
         ).sum()
         target_proportion = carbon_target / total_eligible_production
         self.assertTrue(
             result.target["target_var"].to_list()
-            == list(
-                disturbance_production.filter(eligible)
+            == (
+                disturbance_production["Total"].filter(eligible)
                 * mock_inventory["area"].filter(eligible)
                 * target_proportion
-            )
+            ).to_list()
         )
         self.assertTrue(pd.isnull(result.target["sort_var"].to_list()).all())
         self.assertTrue(
@@ -536,7 +536,7 @@ class RuleTargetTest(unittest.TestCase):
             result.statistics["total_eligible_value"]
             == (
                 mock_inventory["area"].filter(eligible)
-                * disturbance_production.filter(eligible)
+                * disturbance_production["Total"].filter(eligible)
             ).sum()
         )
         self.assertTrue(result.statistics["total_achieved"] == 100)
@@ -554,8 +554,8 @@ class RuleTargetTest(unittest.TestCase):
             )
         )
         carbon_target = 50.0
-        disturbance_production = series.from_pandas(
-            pd.Series([5.0, 5.0, 0.0, 10.0])
+        disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [5.0, 5.0, 0.0, 10.0]})
         )
         eligible = series.from_pandas(pd.Series([True, False, True, True]))
 
@@ -568,17 +568,17 @@ class RuleTargetTest(unittest.TestCase):
         )
 
         total_eligible_production = (
-            disturbance_production.filter(eligible)
+            disturbance_production["Total"].filter(eligible)
             * mock_inventory["area"].filter(eligible)
         ).sum()
         target_proportion = carbon_target / total_eligible_production
         self.assertTrue(
             result.target["target_var"].to_list()
-            == list(
-                disturbance_production.filter(eligible)
+            == (
+                disturbance_production["Total"].filter(eligible)
                 * mock_inventory["area"].filter(eligible)
                 * target_proportion
-            )
+            ).to_list()
         )
         self.assertTrue(pd.isnull(result.target["sort_var"].to_list()).all())
         self.assertTrue(
@@ -593,7 +593,7 @@ class RuleTargetTest(unittest.TestCase):
             result.statistics["total_eligible_value"]
             == (
                 mock_inventory["area"].filter(eligible)
-                * disturbance_production.filter(eligible)
+                * disturbance_production["Total"].filter(eligible)
             ).sum()
         )
         self.assertTrue(result.statistics["total_achieved"] == carbon_target)
@@ -612,8 +612,8 @@ class RuleTargetTest(unittest.TestCase):
         )
         carbon_target = 50.0
         # no disturbance production at all to meet the above target
-        disturbance_production = series.from_pandas(
-            pd.Series([0.0, 0.0, 0.0, 0.0])
+        disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [0.0, 0.0, 0.0, 0.0]})
         )
         eligible = series.from_pandas(pd.Series([True, False, True, True]))
 
@@ -625,7 +625,7 @@ class RuleTargetTest(unittest.TestCase):
             eligible=eligible,
         )
 
-        self.assertTrue(result.target["index"].length == 0)
+        self.assertTrue(result.target is None)
         self.assertTrue(result.statistics["total_eligible_value"] == 0)
         self.assertTrue(result.statistics["total_achieved"] == 0)
         self.assertTrue(result.statistics["shortfall"] == carbon_target)
@@ -642,8 +642,8 @@ class RuleTargetTest(unittest.TestCase):
             )
         )
         carbon_target = 500.0
-        disturbance_production = series.from_pandas(
-            pd.Series([5.0, 5.0, 4.0, 10.0])
+        disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [5.0, 5.0, 4.0, 10.0]})
         )
         eligible = series.from_pandas(pd.Series([True, False, True, True]))
         efficiency = 0.9
@@ -661,14 +661,14 @@ class RuleTargetTest(unittest.TestCase):
         # sum of the above is 54 + 36 + 63 = 153 (tC eligible production)
         # area proportion = 500/153 (>1.0)
 
-        self.assertTrue(result.target.target_var.sum())
+        self.assertTrue(result.target["target_var"].sum())
         self.assertTrue(
             result.target["target_var"].to_list()
-            == list(
+            == (
                 mock_inventory["area"].filter(eligible)
-                * disturbance_production.filter(eligible)
+                * disturbance_production["Total"].filter(eligible)
                 * efficiency
-            )
+            ).to_list()
         )
         self.assertTrue(pd.isnull(result.target["sort_var"].to_list()).all())
         self.assertTrue(
@@ -683,7 +683,7 @@ class RuleTargetTest(unittest.TestCase):
             result.statistics["total_eligible_value"]
             == (
                 mock_inventory["area"].filter(eligible)
-                * disturbance_production.filter(eligible)
+                * disturbance_production["Total"].filter(eligible)
                 * efficiency
             ).sum()
         )
