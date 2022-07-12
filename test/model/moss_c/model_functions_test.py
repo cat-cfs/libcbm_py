@@ -80,17 +80,6 @@ class ModelFunctionsTest(unittest.TestCase):
                 (expected_matrix == result_coo_mat.toarray()).all()
             )
 
-    def test_to_numpy_namespace(self):
-        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
-        numpy_namespace = model_functions.to_numpy_namespace(df)
-        self.assertTrue(
-            df.equals(
-                pd.DataFrame(
-                    data={k: v for k, v in numpy_namespace.__dict__.items()}
-                )
-            )
-        )
-
     def test_advance_spinup_state(self):
         def run_test(expected_output, **input_kwargs):
             test_kwargs = {k: np.array([v]) for k, v in input_kwargs.items()}
