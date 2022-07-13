@@ -74,7 +74,12 @@ class PandasDataFrameBackend(DataFrame):
         self._df.insert(index, series.name, series.to_numpy())
 
     def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        return np.ascontiguousarray(self._df.values)
+        self._df = pd.DataFrame(
+            index=self._df.index,
+            columns=list(self._df.columns),
+            data=np.ascontiguousarray(self._df.values),
+        )
+        return self._df.values
 
     def to_pandas(self) -> pd.DataFrame:
         return self._df
