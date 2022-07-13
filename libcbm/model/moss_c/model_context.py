@@ -32,8 +32,8 @@ class ModelContext:
         self._merch_vol_lookup = MerchVolumeLookup(merch_volume.to_pandas())
         self._dll = self._initialize_libcbm()
         self._pools = self._initialize_pools()
-        self._flux = self._initialize_flux()
-        self.state = self._initialize_model_state()
+        self._flux = self.initialize_flux()
+        self._state = self._initialize_model_state()
         self._disturbance_matrices = self._initialize_disturbance_data()
 
     @property
@@ -106,7 +106,7 @@ class ModelContext:
         pools[Pool.Input.name].assign_all(1.0)
         return pools
 
-    def _initialize_flux(self) -> DataFrame:
+    def initialize_flux(self) -> DataFrame:
         return dataframe.numeric_dataframe(
             [x["name"] for x in FLUX_INDICATORS],
             self.n_stands,
@@ -131,7 +131,11 @@ class ModelContext:
                     back_end=self._backend_type,
                 ),
                 disturbance_type=series.allocate(
-                    "disturbance_type", self.n_stands, 0, "uintp"
+                    "disturbance_type",
+                    self.n_stands,
+                    0,
+                    "uintp",
+                    self._backend_type,
                 ),
             ),
             nrows=self.n_stands,
@@ -156,7 +160,8 @@ class ModelContext:
                     disturbance_matrices.dm_dist_type_index,
                     dtype="int64",
                 ),
-            )
+            ),
+            self._inventory.n_cols,
         )
         self._inventory.add_column(
             series.from_numpy(
@@ -166,6 +171,7 @@ class ModelContext:
                     disturbance_matrices.dm_dist_type_index,
                     dtype="int64",
                 ),
-            )
+            ),
+            self._inventory.n_cols,
         )
         return disturbance_matrices
