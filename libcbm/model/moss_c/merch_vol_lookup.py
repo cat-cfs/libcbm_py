@@ -4,6 +4,7 @@ from numba.typed import Dict
 import numpy as np
 import pandas as pd
 from libcbm.storage.series import Series
+from libcbm.storage import series
 
 
 @numba.njit()
@@ -65,13 +66,15 @@ class MerchVolumeLookup:
             for age, volume in record.age_volume_pairs.items():
                 self._numba_lookup[i][age] = volume
 
-    def get_merch_vol(self, age: Series, merch_vol_id: Series) -> np.ndarray:
-        output = np.zeros(shape=age.length, dtype=float)
+    def get_merch_vol(self, age: Series, merch_vol_id: Series) -> Series:
+        output = series.allocate(
+            "merch_vol", age.length, 0.0, "float", age.backend_type
+        )
         _get_merch_volume(
             self._numba_lookup,
             self._numba_max_ages,
             age.to_numpy(),
             merch_vol_id.to_numpy(),
-            output,
+            output.to_numpy(),
         )
         return output
