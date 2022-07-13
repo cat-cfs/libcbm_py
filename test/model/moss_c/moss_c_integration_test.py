@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from libcbm.model.moss_c import model_context
+from libcbm.model.moss_c import model_context_factory
 from libcbm.model.moss_c import model
 from libcbm.model.moss_c.pools import ECOSYSTEM_POOLS
 from libcbm import resources
@@ -18,7 +19,7 @@ class MossCIntegrationTest(unittest.TestCase):
         expected_output = pd.read_csv(
             os.path.join(test_data_dir, "expected_output.csv")
         )
-        ctx = model_context.create_from_csv(test_data_dir)
+        ctx = model_context_factory.create_from_csv(test_data_dir)
         pool_results = pd.DataFrame()
         flux_results = pd.DataFrame()
 
@@ -26,11 +27,11 @@ class MossCIntegrationTest(unittest.TestCase):
 
             model.step(ctx)
 
-            pools = ctx.get_pools_df()
+            pools = ctx.pools.to_pandas().copy()
             pools.insert(0, "t", i)
             pool_results = pd.concat([pool_results, pools])
 
-            flux = ctx.flux.copy()
+            flux = ctx.flux.to_pandas().copy()
             flux.insert(0, "t", i)
             flux_results = pd.concat([flux_results, flux])
 
@@ -44,7 +45,7 @@ class MossCIntegrationTest(unittest.TestCase):
             resources.get_test_resources_dir(), "moss_c_test_case"
         )
 
-        ctx = model_context.create_from_csv(test_data_dir)
+        ctx = model_context_factory.create_from_csv(test_data_dir)
         spinup_debug = model.spinup(ctx, enable_debugging=True)
         self.assertTrue(spinup_debug is not None)
 

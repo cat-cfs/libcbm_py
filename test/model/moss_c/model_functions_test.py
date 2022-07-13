@@ -5,6 +5,7 @@ import scipy.sparse
 from libcbm.model.moss_c.model_functions import SpinupState
 from libcbm.model.moss_c import model_functions
 from libcbm.model.moss_c.pools import Pool
+from libcbm.storage import series
 
 
 class ModelFunctionsTest(unittest.TestCase):
@@ -82,7 +83,10 @@ class ModelFunctionsTest(unittest.TestCase):
 
     def test_advance_spinup_state(self):
         def run_test(expected_output, **input_kwargs):
-            test_kwargs = {k: np.array([v]) for k, v in input_kwargs.items()}
+            test_kwargs = {
+                k: series.from_numpy(k, np.array([v]))
+                for k, v in input_kwargs.items()
+            }
             out = model_functions.advance_spinup_state(**test_kwargs)
             self.assertTrue(expected_output == out)
 
