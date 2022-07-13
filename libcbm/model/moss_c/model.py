@@ -395,11 +395,10 @@ class SpinupDebug:
                 iteration,
                 "int",
                 state_t.backend_type,
-            ), index=0
+            ),
+            index=0,
         )
-        self.state = dataframe.concat_data_frame(
-            [self.state, state_t]
-        )
+        self.state = dataframe.concat_data_frame([self.state, state_t])
 
         pools_t = model_context.pools.copy()
         pools_t.add_column(
@@ -409,7 +408,8 @@ class SpinupDebug:
                 iteration,
                 "int",
                 pools_t.backend_type,
-            ), index=0
+            ),
+            index=0,
         )
         self.pools = dataframe.concat_data_frame([self.pools, pools_t])
 
@@ -421,7 +421,8 @@ class SpinupDebug:
                 iteration,
                 "int",
                 spinup_vars_t.backend_type,
-            ), index=0
+            ),
+            index=0,
         )
         self.spinup_vars = dataframe.concat_data_frame(
             [self.spinup_vars, spinup_vars_t]
