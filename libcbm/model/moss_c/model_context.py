@@ -72,6 +72,7 @@ class ModelContext:
     def state(self) -> DataFrame:
         return self._state
 
+    @property
     def disturbance_matrices(self) -> DMData:
         return self._disturbance_matrices
 
