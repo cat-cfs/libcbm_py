@@ -2,6 +2,7 @@ import unittest
 import pandas as pd
 import numpy as np
 from libcbm.model.moss_c.merch_vol_lookup import MerchVolumeLookup
+from libcbm.storage import series
 
 
 class MerchVolumeLookupTest(unittest.TestCase):
@@ -26,8 +27,12 @@ class MerchVolumeLookupTest(unittest.TestCase):
         )
 
         output = mv_lookup.get_merch_vol(
-            age=np.array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6]),
-            merch_vol_id=np.array([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]),
+            age=series.from_numpy(
+                "age", np.array([0, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 6])
+            ),
+            merch_vol_id=series.from_numpy(
+                "merch_vol_id", np.array([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2])
+            ),
         )
         self.assertTrue(
             (
@@ -53,7 +58,8 @@ class MerchVolumeLookupTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             mv_lookup.get_merch_vol(
-                age=np.array([2]), merch_vol_id=np.array([1])
+                age=series.from_numpy("age", np.array([2])),
+                merch_vol_id=series.from_numpy("", np.array([1])),
             )
 
     def test_error_on_negative_values(self):
