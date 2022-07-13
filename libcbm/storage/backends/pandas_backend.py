@@ -298,6 +298,11 @@ class PandasSeriesBackend(Series):
             self._name, (self._series == self._get_operand(other))
         )
 
+    def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
+        return PandasSeriesBackend(
+            self._name, (self._series != self._get_operand(other))
+        )
+
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
             self._name, (self._series & self._get_operand(other))

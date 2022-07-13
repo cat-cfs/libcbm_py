@@ -201,6 +201,10 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
+        pass
+
+    @abstractmethod
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
