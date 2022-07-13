@@ -7,20 +7,30 @@
 # Canadian Journal of Forest Research. 46. 10.1139/cjfr-2015-0512.
 #
 
+from typing import Union
 from types import SimpleNamespace
 import numba
 import numpy as np
-import pandas as pd
+
 
 from libcbm.model.moss_c.pools import Pool
 from libcbm.model.moss_c.pools import ANNUAL_PROCESSES
 from libcbm.model.moss_c.pools import DISTURBANCE_PROCESS
 from libcbm.model.moss_c import model_functions
 from libcbm.model.moss_c.model_functions import SpinupState
+from libcbm.model.moss_c.model_context import ModelContext
 from libcbm.wrapper import libcbm_operation
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe
+from libcbm.storage.series import SeriesDef
+from libcbm.storage import series
 
 
-def f1(merch_vol, a, b):
+def f1(
+    merch_vol: Union[float, np.ndarray],
+    a: Union[float, np.ndarray],
+    b: Union[float, np.ndarray],
+) -> np.ndarray:
     """Returns Canopy openess, O(t) as a function of Merch. Volume
 
     10^(((a)*(Log(V(t))) + b)
@@ -45,7 +55,12 @@ def f1(merch_vol, a, b):
     )
 
 
-def f2(openness, stand_age, c, d):
+def f2(
+    openness: Union[float, np.ndarray],
+    stand_age: Union[float, np.ndarray],
+    c: Union[float, np.ndarray],
+    d: Union[float, np.ndarray],
+) -> np.ndarray:
     """returns Feather moss ground cover, GCfm(t)
 
     (O(t)* c) + d
@@ -64,7 +79,12 @@ def f2(openness, stand_age, c, d):
     )
 
 
-def f3(openness, stand_age, e, f):
+def f3(
+    openness: Union[float, np.ndarray],
+    stand_age: Union[float, np.ndarray],
+    e: Union[float, np.ndarray],
+    f: Union[float, np.ndarray],
+) -> np.ndarray:
     """returns Sphagnum moss ground cover, GCsp(t)
 
     (O(t)* e) + f
@@ -83,7 +103,11 @@ def f3(openness, stand_age, e, f):
     )
 
 
-def f4(openness, g, h):
+def f4(
+    openness: Union[float, np.ndarray],
+    g: Union[float, np.ndarray],
+    h: Union[float, np.ndarray],
+) -> np.ndarray:
     """Feathermoss NPP (assuming 100% ground cover), NPPfm
 
     g*O(t)^h
@@ -96,7 +120,12 @@ def f4(openness, g, h):
     return np.where(openness < 5.0, 0.6, g * np.power(openness, h))
 
 
-def f5(openness, i, j, _l):
+def f5(
+    openness: Union[float, np.ndarray],
+    i: Union[float, np.ndarray],
+    j: Union[float, np.ndarray],
+    _l: Union[float, np.ndarray],
+) -> np.ndarray:
     """Sphagnum NPP (assuming 100% ground cover), NPPsp
 
     i*(O(t)^2) + j*(O(t) + l
@@ -113,7 +142,11 @@ def f5(openness, i, j, _l):
     return i * openness**2.0 + j * openness + _l
 
 
-def f6(merch_vol, m, n):
+def f6(
+    merch_vol: Union[float, np.ndarray],
+    m: Union[float, np.ndarray],
+    n: Union[float, np.ndarray],
+) -> np.ndarray:
     """
 
     Args:
@@ -124,7 +157,12 @@ def f6(merch_vol, m, n):
     return np.log(merch_vol) * m + n
 
 
-def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
+def f7(
+    mean_annual_temp: Union[float, np.ndarray],
+    base_decay_rate: Union[float, np.ndarray],
+    q10: Union[float, np.ndarray],
+    t_ref: Union[float, np.ndarray],
+) -> np.ndarray:
     """Applied Decay rate, ak this applies to any of the moss DOM
     pools feather moss fast (kff), feather moss slow (kfs), sphagnum
     fast (ksf), and sphagnum slow (kss)
@@ -140,34 +178,109 @@ def f7(mean_annual_temp, base_decay_rate, q10, t_ref):
     )
 
 
-def annual_process_dynamics(state, params):
+class AnnualProcessDynamics:
+    def __init__(
+        self,
+        kss: Union[float, np.ndarray],
+        openness: Union[float, np.ndarray],
+        akff: Union[float, np.ndarray],
+        akfs: Union[float, np.ndarray],
+        aksf: Union[float, np.ndarray],
+        akss: Union[float, np.ndarray],
+        GCfm: Union[float, np.ndarray],
+        GCsp: Union[float, np.ndarray],
+        NPPfm: Union[float, np.ndarray],
+        NPPsp: Union[float, np.ndarray],
+    ):
+        self._kss = kss
+        self._openness = openness
+        self._akff = akff
+        self._akfs = akfs
+        self._aksf = aksf
+        self._akss = akss
+        self._GCfm = GCfm
+        self._GCsp = GCsp
+        self._NPPfm = NPPfm
+        self._NPPsp = NPPsp
 
-    kss = f6(params.max_merch_vol, params.m, params.n)
-    openness = f1(state.merch_vol, params.a, params.b)
+    @property
+    def kss(self) -> Union[float, np.ndarray]:
+        return self._kss
 
-    return SimpleNamespace(
+    @property
+    def openness(self) -> Union[float, np.ndarray]:
+        return self._openness
+
+    @property
+    def akff(self) -> Union[float, np.ndarray]:
+        return self._akff
+
+    @property
+    def akfs(self) -> Union[float, np.ndarray]:
+        return self._akfs
+
+    @property
+    def aksf(self) -> Union[float, np.ndarray]:
+        return self._aksf
+
+    @property
+    def akss(self) -> Union[float, np.ndarray]:
+        return self._akss
+
+    @property
+    def GCfm(self) -> Union[float, np.ndarray]:
+        return self._GCfm
+
+    @property
+    def GCsp(self) -> Union[float, np.ndarray]:
+        return self._GCsp
+
+    @property
+    def NPPfm(self) -> Union[float, np.ndarray]:
+        return self._NPPfm
+
+    @property
+    def NPPsp(self) -> Union[float, np.ndarray]:
+        return self._NPPsp
+
+
+def annual_process_dynamics(
+    state: DataFrame, params: DataFrame
+) -> AnnualProcessDynamics:
+
+    _p = SimpleNamespace(
+        **{col: params[col].to_numpy() for col in params.columns}
+    )
+    _s = SimpleNamespace(
+        **{col: state[col].to_numpy() for col in state.columns}
+    )
+
+    kss = f6(_p.max_merch_vol, _p.m, _p.n)
+    openness = f1(_s.merch_vol, _p.a, _p.b)
+
+    return AnnualProcessDynamics(
         kss=kss,
         openness=openness,
         # applied feather moss fast pool decay rate
-        akff=f7(params.mean_annual_temp, params.kff, params.q10, params.tref),
+        akff=f7(_p.mean_annual_temp, _p.kff, _p.q10, _p.tref),
         # applied feather moss slow pool decay rate
-        akfs=f7(params.mean_annual_temp, params.kfs, params.q10, params.tref),
+        akfs=f7(_p.mean_annual_temp, _p.kfs, _p.q10, _p.tref),
         # applied sphagnum fast pool applied decay rate
-        aksf=f7(params.mean_annual_temp, params.ksf, params.q10, params.tref),
+        aksf=f7(_p.mean_annual_temp, _p.ksf, _p.q10, _p.tref),
         # applied sphagnum slow pool applied decay rate
-        akss=f7(params.mean_annual_temp, kss, params.q10, params.tref),
+        akss=f7(_p.mean_annual_temp, kss, _p.q10, _p.tref),
         # Feather moss ground cover
-        GCfm=f2(openness, state.age, params.c, params.d),
+        GCfm=f2(openness, _s.age, _p.c, _p.d),
         # Sphagnum ground cover
-        GCsp=f3(openness, state.age, params.e, params.f),
+        GCsp=f3(openness, _s.age, _p.e, _p.f),
         # Feathermoss NPP (assuming 100% ground cover)
-        NPPfm=f4(openness, params.g, params.h),
+        NPPfm=f4(openness, _p.g, _p.h),
         # Sphagnum NPP (assuming 100% ground cover)
-        NPPsp=f5(openness, params.i, params.j, params.l),
+        NPPsp=f5(openness, _p.i, _p.j, _p.l),
     )
 
 
-def get_annual_process_matrix(dynamics_param):
+def get_annual_process_matrix(dynamics_param: AnnualProcessDynamics) -> list:
     mat = [
         [
             Pool.Input,
@@ -226,17 +339,17 @@ def get_annual_process_matrix(dynamics_param):
 
 @numba.njit()
 def update_spinup_variables(
-    n_stands,
-    spinup_state,
-    dist_type,
-    pools,
-    last_rotation_slow,
-    this_rotation_slow,
-    rotation_num,
-    historical_dist_type,
-    last_pass_dist_type,
-    enabled,
-):
+    n_stands: int,
+    spinup_state: np.ndarray,
+    dist_type: np.ndarray,
+    pools: np.ndarray,
+    last_rotation_slow: np.ndarray,
+    this_rotation_slow: np.ndarray,
+    rotation_num: np.ndarray,
+    historical_dist_type: np.ndarray,
+    last_pass_dist_type: np.ndarray,
+    enabled: np.ndarray,
+) -> bool:
     enabled_count = n_stands
     for i in range(n_stands):
         state = spinup_state[i]
@@ -261,78 +374,113 @@ def update_spinup_variables(
     return enabled_count == 0
 
 
-def _append_spinup_debug_record(
-    spinup_debug, iteration, model_ctx, spinup_vars
-):
+class SpinupDebug:
+    def __init__(self):
+        self.pools = None
+        self.state = None
+        self.model_context = None
+        self.spinup_vars = None
 
-    model_state_t = pd.DataFrame(
-        {k: v for k, v in model_ctx.state.__dict__.items()}
-    )
-    model_state_t.insert(0, "t", iteration)
-    spinup_debug.model_state = pd.concat(
-        [spinup_debug.model_state, model_state_t]
-    )
+    def append_spinup_debug_record(
+        self,
+        iteration: int,
+        model_context: ModelContext,
+        spinup_vars: DataFrame,
+    ):
+        state_t = model_context.state.copy()
+        state_t.add_column(
+            series.allocate(
+                "t",
+                state_t.n_rows,
+                iteration,
+                "int",
+                state_t.backend_type,
+            ), index=0
+        )
+        self.state = dataframe.concat_data_frame(
+            [self.state, state_t]
+        )
 
-    pools_t = model_ctx.get_pools_df()
-    pools_t.insert(0, "t", iteration)
-    spinup_debug.pools = pd.concat([spinup_debug.pools, pools_t])
+        pools_t = model_context.pools.copy()
+        pools_t.add_column(
+            series.allocate(
+                "t",
+                pools_t.n_rows,
+                iteration,
+                "int",
+                pools_t.backend_type,
+            ), index=0
+        )
+        self.pools = dataframe.concat_data_frame([self.pools, pools_t])
 
-    spinup_vars_t = pd.DataFrame(
-        {k: v for k, v in spinup_vars.__dict__.items()}
-    )
-    spinup_vars_t.insert(0, "t", iteration)
-    spinup_debug.spinup_vars = pd.concat(
-        [spinup_debug.spinup_vars, spinup_vars_t]
-    )
+        spinup_vars_t = spinup_vars.copy()
+        spinup_vars_t.add_column(
+            series.allocate(
+                "t",
+                spinup_vars_t.n_rows,
+                iteration,
+                "int",
+                spinup_vars_t.backend_type,
+            ), index=0
+        )
+        self.spinup_vars = dataframe.concat_data_frame(
+            [self.spinup_vars, spinup_vars_t]
+        )
 
 
-def spinup(model_context, enable_debugging=False):
+def spinup(
+    model_context: ModelContext, enable_debugging: bool = False
+) -> Union[None, SpinupDebug]:
 
     if enable_debugging:
-        spinup_debug = SimpleNamespace(
-            model_state=pd.DataFrame(),
-            pools=pd.DataFrame(),
-            spinup_vars=pd.DataFrame(),
-        )
+        spinup_debug = SpinupDebug()
     else:
         spinup_debug = None
 
-    spinup_vars = SimpleNamespace(
-        spinup_state=np.full(
-            model_context.n_stands, SpinupState.AnnualProcesses
-        ),
-        rotation_num=np.full(model_context.n_stands, 0, dtype=int),
-        last_rotation_slow=np.full(model_context.n_stands, 0.0, dtype=float),
-        this_rotation_slow=np.full(model_context.n_stands, 0.0, dtype=float),
+    spinup_vars: DataFrame = dataframe.from_series_list(
+        [
+            SeriesDef("spinup_state", SpinupState.AnnualProcesses, "int"),
+            SeriesDef("rotation_num", 0, "int"),
+            SeriesDef("last_rotation_slow", 0.0, "float"),
+            SeriesDef("this_rotation_slow", 0.0, "float"),
+        ],
+        nrows=model_context.inventory.n_rows,
+        back_end=model_context.backend_type,
     )
     iteration = 0
     while True:
 
-        spinup_vars.spinup_state = model_functions.advance_spinup_state(
-            spinup_state=spinup_vars.spinup_state,
-            age=model_context.state.age,
-            final_age=model_context.parameters.age,
-            return_interval=model_context.parameters.return_interval,
-            rotation_num=spinup_vars.rotation_num,
-            max_rotations=model_context.parameters.max_rotations,
-            last_rotation_slow=spinup_vars.last_rotation_slow,
-            this_rotation_slow=spinup_vars.this_rotation_slow,
+        state = model_functions.advance_spinup_state(
+            spinup_state=spinup_vars["spinup_state"],
+            age=model_context.state["age"],
+            final_age=model_context.parameters["age"],
+            return_interval=model_context.parameters["return_interval"],
+            rotation_num=spinup_vars["rotation_num"],
+            max_rotations=model_context.parameters["max_rotations"],
+            last_rotation_slow=spinup_vars["last_rotation_slow"],
+            this_rotation_slow=spinup_vars["this_rotation_slow"],
         )
+        spinup_vars["spinup_state"].assign_all(state)
+
         all_finished = update_spinup_variables(
             n_stands=model_context.n_stands,
-            spinup_state=spinup_vars.spinup_state,
-            dist_type=model_context.state.disturbance_type,
-            pools=model_context.pools,
-            last_rotation_slow=spinup_vars.last_rotation_slow,
-            this_rotation_slow=spinup_vars.this_rotation_slow,
-            rotation_num=spinup_vars.rotation_num,
-            historical_dist_type=model_context.historical_dm_index,
-            last_pass_dist_type=model_context.last_pass_dm_index,
-            enabled=model_context.state.enabled,
+            spinup_state=spinup_vars["spinup_state"].to_numpy(),
+            dist_type=model_context.state["disturbance_type"].to_numpy(),
+            pools=model_context.pools.to_c_contiguous_numpy_array(),
+            last_rotation_slow=spinup_vars["last_rotation_slow"].to_numpy(),
+            this_rotation_slow=spinup_vars["this_rotation_slow"].to_numpy(),
+            rotation_num=spinup_vars["rotation_num"].to_numpy(),
+            historical_dist_type=model_context.inventory[
+                "historical_dm_index"
+            ].to_numpy(),
+            last_pass_dist_type=model_context.inventory[
+                "last_pass_dm_index"
+            ].to_numpy(),
+            enabled=model_context.state["enabled"].to_numpy(),
         )
         if all_finished:
             # re-enable everything for subsequent processes
-            model_context.state.enabled[:] = 1
+            model_context.state["enabled"].assign_all(1)
             break
         step(
             model_context,
@@ -340,8 +488,8 @@ def spinup(model_context, enable_debugging=False):
             include_flux=False,
         )
         if enable_debugging:
-            _append_spinup_debug_record(
-                spinup_debug, iteration, model_context, spinup_vars
+            spinup_debug.append_spinup_debug_record(
+                iteration, model_context, spinup_vars
             )
         iteration += 1
 
@@ -349,12 +497,15 @@ def spinup(model_context, enable_debugging=False):
 
 
 def step(
-    model_context, disturbance_before_annual_process=True, include_flux=True
-):
-    n_stands = len(model_context.state.age)
-    model_context.state.merch_vol = (
+    model_context: ModelContext,
+    disturbance_before_annual_process: bool = True,
+    include_flux: bool = True,
+) -> None:
+    n_stands = model_context.state["age"].length
+    model_context.state["merch_vol"].assign_all(
         model_context.merch_vol_lookup.get_merch_vol(
-            model_context.state.age, model_context.parameters.merch_volume_id
+            model_context.state["age"],
+            model_context.parameters["merch_volume_id"],
         )
     )
     dynamics_param = annual_process_dynamics(
@@ -374,7 +525,9 @@ def step(
         libcbm_operation.OperationFormat.MatrixList,
         model_context.disturbance_matrices.dm_list,
     )
-    disturbance_matrices.set_matrix_index(model_context.state.disturbance_type)
+    disturbance_matrices.set_matrix_index(
+        model_context.state["disturbance_type"].to_numpy()
+    )
 
     flux = None
     if include_flux:
@@ -394,18 +547,22 @@ def step(
         operations=ops,
         op_processes=op_processes,
         flux=flux,
-        enabled=model_context.state.enabled,
+        enabled=model_context.state["enabled"],
     )
 
     for op in ops:
         op.dispose()
 
-    model_context.state.age = np.where(
-        model_context.state.enabled == 0,
-        model_context.state.age,
-        np.where(
-            model_context.state.disturbance_type != 0,
-            0,
-            model_context.state.age + 1,
-        ),
+    age_zero_indices = dataframe.indices_nonzero(
+        (model_context.state["disturbance_type"] != 0)
+        & (model_context.state["enabled"] != 0)
     )
+    age_increment_indices = dataframe.indices_nonzero(
+        (model_context.state["disturbance_type"] == 0)
+        & (model_context.state["enabled"] != 0)
+    )
+    model_context.state["age"].assign(
+        age_increment_indices,
+        model_context.state["age"].take(age_increment_indices) + 1,
+    )
+    model_context.state["age"].assign(age_zero_indices, 0)
