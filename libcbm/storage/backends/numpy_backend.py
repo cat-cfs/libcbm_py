@@ -198,6 +198,9 @@ class NumpySeriesBackend(Series):
     def name(self, value) -> str:
         self._name = value
 
+    def copy(self):
+        return NumpySeriesBackend(self._name, self._data.copy())
+
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements

@@ -27,6 +27,10 @@ class Series(ABC):
         pass
 
     @abstractmethod
+    def copy(self) -> "Series":
+        pass
+
+    @abstractmethod
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements

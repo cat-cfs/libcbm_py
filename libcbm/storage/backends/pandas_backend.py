@@ -118,6 +118,9 @@ class PandasSeriesBackend(Series):
     def name(self, value) -> str:
         self._name = value
 
+    def copy(self):
+        return PandasSeriesBackend(self._name, self._series.copy())
+
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
