@@ -6,6 +6,7 @@ from libcbm.model.moss_c.pools import Pool
 import numba
 import numba.typed
 import numba.types
+from libcbm.storage.series import Series
 
 
 class SpinupState(IntEnum):
@@ -135,27 +136,27 @@ def _small_slow_diff(
 
 
 def advance_spinup_state(
-    spinup_state: np.ndarray,
-    age: np.ndarray,
-    final_age: np.ndarray,
-    return_interval: np.ndarray,
-    rotation_num: np.ndarray,
-    max_rotations: np.ndarray,
-    last_rotation_slow: np.ndarray,
-    this_rotation_slow: np.ndarray,
+    spinup_state: Series,
+    age: Series,
+    final_age: Series,
+    return_interval: Series,
+    rotation_num: Series,
+    max_rotations: Series,
+    last_rotation_slow: Series,
+    this_rotation_slow: Series,
 ) -> np.ndarray:
 
-    out_state = spinup_state.copy()
+    out_state = spinup_state.copy().to_numpy()
     _advance_spinup_state(
-        age.shape[0],
-        spinup_state,
-        age,
-        final_age,
-        return_interval,
-        rotation_num,
-        max_rotations,
-        last_rotation_slow,
-        this_rotation_slow,
+        age.length,
+        spinup_state.to_numpy(),
+        age.to_numpy(),
+        final_age.to_numpy(),
+        return_interval.to_numpy(),
+        rotation_num.to_numpy(),
+        max_rotations.to_numpy(),
+        last_rotation_slow.to_numpy(),
+        this_rotation_slow.to_numpy(),
         out_state,
     )
     return out_state
