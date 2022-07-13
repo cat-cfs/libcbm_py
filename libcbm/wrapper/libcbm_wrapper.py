@@ -183,7 +183,7 @@ class LibCBMWrapper:
         )
 
     def compute_pools(
-        self, ops: np.ndarray, pools: DataFrame, enabled: Series = None
+        self, ops: list, pools: DataFrame, enabled: Series = None
     ):
         """Computes flows between pool values for all stands.
 
@@ -201,7 +201,7 @@ class LibCBMWrapper:
         matrix for the op, stand index combination.
 
         Args:
-            ops (ndarray): list of matrix block ids as allocated by the
+            ops (list): list of matrix block ids as allocated by the
                 :py:func:`allocate_op` function.
             pools (DataFrame): matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
