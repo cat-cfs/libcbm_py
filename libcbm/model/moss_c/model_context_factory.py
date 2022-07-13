@@ -112,9 +112,9 @@ def create_from_csv(
     )
     parameters = initialize_dynamics_parameter(input_data)
     return ModelContext(
-        input_data.inventory,
+        dataframe.from_pandas(input_data.inventory),
         parameters,
-        input_data.merch_volume,
-        input_data.disturbance_matrix,
+        dataframe.from_pandas(input_data.merch_volume),
+        dataframe.from_pandas(input_data.disturbance_matrix),
         backend_type,
     )
