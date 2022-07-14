@@ -10,6 +10,15 @@ from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
 
 
+class _numepxr_local_dict_wrap:
+    def __init__(self, col_idx: dict[str, int], arr: np.ndarray):
+        self._arr = arr
+        self._col_idx = col_idx
+
+    def __getitem__(self, key: str) -> np.ndarray:
+        return self._arr[:, self._col_idx[key]]
+
+
 def get_numpy_pointer(
     data: np.ndarray, dtype=ctypes.c_double
 ) -> ctypes.pointer:
@@ -57,7 +66,9 @@ def get_numpy_pointer(
 
 class NumpyDataFrameFrameBackend(DataFrame):
     def __init__(self, data: dict[str, np.ndarray]) -> None:
-        self._data = data
+        self._data: np.ndarray = np.column_stack(data.values())
+        self._columns = list(data.keys())
+        self._col_idx = {col: i for i, col in enumerate(self._columns)}
         self._n_rows: int = None
         self._n_cols: int = len(data)
         for k, v in self._data.items():
@@ -70,22 +81,33 @@ class NumpyDataFrameFrameBackend(DataFrame):
                     raise ValueError("uneven array lengths")
 
     def __getitem__(self, col_name: str) -> Series:
-        return NumpySeriesBackend(col_name, self._data[col_name])
+        return NumpySeriesBackend(
+            col_name, self._data[:, self._col_idx[col_name]]
+        )
 
     def filter(self, arg: Series) -> DataFrame:
         _filter = arg.to_numpy()
         return NumpyDataFrameFrameBackend(
-            {k: v[_filter] for k, v in self._data.items()},
+            {
+                col: self._data[_filter, col_idx]
+                for col, col_idx in self._col_idx.items()
+            },
         )
 
     def take(self, indices: Series) -> DataFrame:
-        _idx = indices.to_numpy()
+        row_idx = indices.to_numpy()
         return NumpyDataFrameFrameBackend(
-            {k: v[_idx] for k, v in self._data.items()},
+            {
+                col: self.data[row_idx, col_idx]
+                for col, col_idx in self._col_idx.items()
+            },
         )
 
     def at(self, index: int) -> dict:
-        return {k: v[index] for k, v in self._data.items()}
+        return {
+            col: self._data[index, col_idx]
+            for col, col_idx in self._col_idx.items()
+        }
 
     def assign(
         self, col_name: str, value: Union[Series, Any], indices: Series = None
@@ -97,9 +119,9 @@ class NumpyDataFrameFrameBackend(DataFrame):
             assign_value = value
         if indices is not None:
             _idx = indices.to_numpy()
-            self._data[col_name][_idx] = assign_value
+            self._data[_idx, self._col_idx[col_name]] = assign_value
         else:
-            self._data[col_name][:] = assign_value
+            self._data[:, self._col_idx[col_name]] = assign_value
 
     @property
     def n_rows(self) -> int:
@@ -111,7 +133,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     @property
     def columns(self) -> list[str]:
-        return list(self._data.keys())
+        return list(self.columns)
 
     @property
     def backend_type(self) -> BackendType:
@@ -119,64 +141,72 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     def copy(self) -> DataFrame:
         return NumpyDataFrameFrameBackend(
-            {k: v.copy() for k, v in self._data.items()}
+            {
+                col: self._data[:, col_idx].copy()
+                for col, col_idx in self._col_idx.items()
+            }
         )
 
     def multiply(self, series: Series) -> DataFrame:
         rh = series.to_numpy()
-        result = {k: v * rh for k, v in self._data.items()}
+        result = {
+            col: self._data[:, col_idx] * rh
+            for col, col_idx in self._col_idx.items()
+        }
         return NumpyDataFrameFrameBackend(result)
 
     def add_column(self, series: Series, index: int) -> None:
-        if series.name in self._data:
+
+        if series.name in self.columns:
             raise ValueError(
                 f"{series.name} already present in this Dataframe"
             )
-        data = series.to_numpy()
-        if data.shape[0] != self.n_rows:
+        insert_data = series.to_numpy()
+        if insert_data.shape[0] != self.n_rows:
             raise ValueError(
                 "specified series does not have the same length as the "
                 "number of rows in this DataFrame"
             )
-        if index == self.n_cols:
-            self._data[series.name] = series.to_numpy()
-        elif index >= 0:
-            new_data = {}
-            for i, (k, v) in enumerate(self._data.items()):
-                if i == index:
-                    new_data[series.name] = series.to_numpy()
-                else:
-                    new_data[k] = v
-            self._data = new_data
-        else:
-            raise ValueError("index out of range")
-        self._df.insert(index, series.name, series.to_numpy())
+        self._data = np.insert(self._data, index, insert_data, axis=1)
+        self._columns.insert(index, series.name)
+        self._col_idx = {col: i for i, col in enumerate(self._columns)}
+        self._n_cols: int = len(self._columns)
 
     def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        return np.ascontiguousarray(np.column_stack(list(self._data.values())))
+        if not self._data.flags["C_CONTIGUOUS"]:
+            self._data = np.ascontiguousarray(self._data)
+        return self._data
 
     def to_pandas(self) -> pd.DataFrame:
-        return pd.DataFrame(self._data)
+        return pd.DataFrame(columns=self.columns, data=self._data)
 
     def zero(self):
         for v in self._data:
-            v[:] = 0
+            v[:, :] = 0
 
     def map(self, arg: Union[dict, Callable]) -> DataFrame:
         out_data = {}
-        for k, v in self._data.items():
-            out_data[k] = NumpySeriesBackend(k, v).map(arg).to_numpy()
+        for col_name, col_idx in self._col_idx:
+            out_data[col_name] = (
+                pd.Series(self._data[:, col_idx]).map(arg).to_numpy()
+            )
         return NumpyDataFrameFrameBackend(out_data)
 
     def evaluate_filter(self, expression: str) -> Series:
+        local_dict = _numepxr_local_dict_wrap(self._col_idx, self._data)
         return NumpySeriesBackend(
-            None, numexpr.evaluate(expression, self._data)
+            None, numexpr.evaluate(expression, local_dict)
         )
 
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
-        index_array = np.argsort(self._data[by], kind="mergesort")
+        index_array = np.argsort(
+            self._data[:, self._col_idx[by]], kind="mergesort"
+        )
         return NumpyDataFrameFrameBackend(
-            {k: v[index_array] for k, v in self._data.items()}
+            {
+                col_name: self._data[index_array, col_idx]
+                for col_name, col_idx in self._col_idx
+            }
         )
 
 
