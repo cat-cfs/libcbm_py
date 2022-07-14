@@ -18,19 +18,19 @@ class DataFrame(ABC):
     presents a limited interface for internal usage by libcbm
     """
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __getitem__(self, col_name: str) -> Series:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def filter(self, arg: Series) -> "DataFrame":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def take(self, indices: Series) -> "DataFrame":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def at(self, index: int) -> dict:
         """
         get the row at the specified 0 based sequential index as a row
@@ -38,38 +38,38 @@ class DataFrame(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def assign(
         self, col_name: str, value: Union[Series, Any], indices: Series = None
     ):
         pass
 
     @property
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def n_rows(self) -> int:
         pass
 
     @property
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def n_cols(self) -> int:
         pass
 
     @property
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def columns(self) -> list[str]:
         pass
 
     @property
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def backend_type(self) -> BackendType:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def copy(self) -> "DataFrame":
         """produce a new in-memory copy of this dataframe"""
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def multiply(self, series: Series) -> "DataFrame":
         """
         Multiply this dataframe elementwise by the specified series along the
@@ -78,26 +78,26 @@ class DataFrame(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def add_column(self, series: Series, index: int) -> None:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def to_pandas(self) -> pd.DataFrame:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def zero(self):
         """
         Set all values in this dataframe to zero
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def map(self, arg: Union[dict, Callable]) -> "DataFrame":
         """Apply the specified mapping arg on every element of this dataframe
         to project a new dataframe with updated values. The results has the
