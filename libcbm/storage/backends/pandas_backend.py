@@ -73,8 +73,8 @@ class PandasDataFrameBackend(DataFrame):
     def add_column(self, series: Series, index: int) -> None:
         self._df.insert(index, series.name, series.to_numpy())
 
-    def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        if not self._df.values.flags["C_CONTIGUOUS"]:
+    def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
+        if make_c_contiguous and not self._df.values.flags["C_CONTIGUOUS"]:
             self._df = pd.DataFrame(
                 index=self._df.index,
                 columns=list(self._df.columns),

@@ -172,8 +172,8 @@ class NumpyDataFrameFrameBackend(DataFrame):
         self._col_idx = {col: i for i, col in enumerate(self._columns)}
         self._n_cols: int = len(self._columns)
 
-    def to_c_contiguous_numpy_array(self) -> np.ndarray:
-        if not self._data.flags["C_CONTIGUOUS"]:
+    def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
+        if make_c_contiguous and not self._data.flags["C_CONTIGUOUS"]:
             self._data = np.ascontiguousarray(self._data)
         return self._data
 

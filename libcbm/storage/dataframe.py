@@ -83,7 +83,7 @@ class DataFrame(ABC):
         pass
 
     @abstractmethod
-    def to_c_contiguous_numpy_array(self) -> np.ndarray:
+    def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -105,11 +105,11 @@ class DataFrame(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def evaluate_filter(self, expression: str) -> Series:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
         pass
 
