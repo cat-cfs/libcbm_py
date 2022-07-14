@@ -71,7 +71,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
         self._col_idx = {col: i for i, col in enumerate(self._columns)}
         self._n_rows: int = None
         self._n_cols: int = len(data)
-        for k, v in self._data.items():
+        for k, v in data.items():
             if v.ndim != 1:
                 raise ValueError(f"specified array '{k}' has ndim {v.ndim}")
             if self._n_rows is None:
@@ -133,7 +133,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     @property
     def columns(self) -> list[str]:
-        return list(self.columns)
+        return list(self._columns)
 
     @property
     def backend_type(self) -> BackendType:
