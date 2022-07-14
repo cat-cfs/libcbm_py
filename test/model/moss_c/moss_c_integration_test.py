@@ -3,7 +3,6 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from libcbm.model.moss_c import model_context
 from libcbm.model.moss_c import model_context_factory
 from libcbm.model.moss_c import model
 from libcbm.model.moss_c.pools import ECOSYSTEM_POOLS
