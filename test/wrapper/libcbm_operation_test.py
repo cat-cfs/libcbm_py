@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 from libcbm.wrapper import libcbm_operation
+from libcbm.storage import dataframe
 from test.wrapper import pool_flux_helpers
 
 
@@ -25,13 +26,15 @@ class LibCBMOperationTest(unittest.TestCase):
         )
 
         pools_orig = np.ones(shape=(4, len(pool_dict)))
-        pools_out = pools_orig.copy()
+        pools_out = dataframe.from_numpy(
+            {name: pools_orig[:, idx] for name, idx in pool_dict.items()}
+        )
         op.set_matrix_index(np.array([0, 1, 2, 0], dtype=np.uint64))
         libcbm_operation.compute(dll, pools_out, [op])
 
         self.assertTrue(
             (
-                pools_out
+                pools_out.to_c_contiguous_numpy_array()
                 == np.array(
                     [
                         [1.0, 3.0, 1.0],

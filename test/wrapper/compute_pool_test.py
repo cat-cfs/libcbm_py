@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from test.wrapper import pool_flux_helpers
+from libcbm.storage import dataframe
 
 
 class ComputePoolTests(unittest.TestCase):
@@ -195,7 +196,9 @@ class ComputePoolTests(unittest.TestCase):
         )
         n_stands = 10
         pools_array = np.ones(shape=(n_stands, len(pools)))
-        pools_test = pools_array.copy()
+        pools_test = dataframe.from_numpy(
+            {name: pools_array[:, idx] for name, idx in pools.items()}
+        )
 
         matrices = [
             [pools["a"], pools["a"], np.array([1.0, 1.0, 1.0])],
@@ -230,5 +233,10 @@ class ComputePoolTests(unittest.TestCase):
             pools_expected[k, :] = np.matmul(pools_expected[k, :], mat)
 
         self.assertTrue(
-            np.allclose(pools_expected, pools_test, rtol=1e-12, atol=1e-15)
+            np.allclose(
+                pools_expected,
+                pools_test.to_c_contiguous_numpy_array(),
+                rtol=1e-12,
+                atol=1e-15,
+            )
         )

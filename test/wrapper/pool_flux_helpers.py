@@ -5,6 +5,7 @@ import scipy.sparse
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
+from libcbm.storage import dataframe
 
 
 def load_dll(config):
@@ -94,10 +95,12 @@ def compute_pools(pools, ops, op_indices):
             [to_coordinate(x) for x in op],
             np.ascontiguousarray(op_indices[:, i]),
         )
+    pools_df = dataframe.from_numpy(
+        {str(x): pools[:, x] for x in range(pools.shape[1])}
+    )
+    dll.compute_pools(op_ids, pools_df)
 
-    dll.compute_pools(op_ids, pools)
-
-    return pools
+    return pools_df.to_c_contiguous_numpy_array()
 
 
 def create_flux_indicator(pools_by_name, process_id, sources, sinks):
@@ -120,8 +123,13 @@ def append_flux_indicator(collection, flux_indicator):
 
 
 def compute_flux(
-    pools, poolnames, mats, op_indices, op_processes, flux_indicators
-):
+    pools: np.ndarray,
+    poolnames: list,
+    mats: list[np.ndarray],
+    op_indices: np.ndarray,
+    op_processes: list,
+    flux_indicators: list,
+) -> tuple[np.ndarray, np.ndarray]:
     """Runs the libcbm compute_flux method for testing purposes
 
     Args:
@@ -164,5 +172,15 @@ def compute_flux(
             np.ascontiguousarray(op_indices[:, i]),
         )
 
-    dll.compute_flux(op_ids, op_processes, pools, flux)
-    return pools, flux
+    pools_df = dataframe.from_numpy(
+        {name: pools[:, idx] for idx, name in enumerate(poolnames)}
+    )
+
+    flux_df = dataframe.from_numpy(
+        {f"flux{idx}": flux[:, idx] for idx, _ in enumerate(flux_indicators)}
+    )
+    dll.compute_flux(op_ids, op_processes, pools_df, flux_df)
+    return (
+        pools_df.to_c_contiguous_numpy_array(),
+        flux_df.to_c_contiguous_numpy_array(),
+    )
