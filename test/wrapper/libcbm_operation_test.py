@@ -34,7 +34,7 @@ class LibCBMOperationTest(unittest.TestCase):
 
         self.assertTrue(
             (
-                pools_out.to_c_contiguous_numpy_array()
+                pools_out.to_numpy()
                 == np.array(
                     [
                         [1.0, 3.0, 1.0],

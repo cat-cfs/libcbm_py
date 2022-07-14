@@ -100,7 +100,7 @@ def compute_pools(pools, ops, op_indices):
     )
     dll.compute_pools(op_ids, pools_df)
 
-    return pools_df.to_c_contiguous_numpy_array()
+    return pools_df.to_numpy()
 
 
 def create_flux_indicator(pools_by_name, process_id, sources, sinks):
@@ -181,6 +181,6 @@ def compute_flux(
     )
     dll.compute_flux(op_ids, op_processes, pools_df, flux_df)
     return (
-        pools_df.to_c_contiguous_numpy_array(),
-        flux_df.to_c_contiguous_numpy_array(),
+        pools_df.to_numpy(),
+        flux_df.to_numpy(),
     )

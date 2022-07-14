@@ -235,7 +235,7 @@ class ComputePoolTests(unittest.TestCase):
         self.assertTrue(
             np.allclose(
                 pools_expected,
-                pools_test.to_c_contiguous_numpy_array(),
+                pools_test.to_numpy(),
                 rtol=1e-12,
                 atol=1e-15,
             )

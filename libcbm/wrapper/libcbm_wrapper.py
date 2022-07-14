@@ -215,7 +215,7 @@ class LibCBMWrapper:
 
         """
         n_ops = len(ops)
-        nd_pools = pools.to_c_contiguous_numpy_array()
+        nd_pools = pools.to_numpy()
         pool_mat = LibCBM_Matrix(nd_pools)
         ops_p = ctypes.cast(
             (ctypes.c_size_t * n_ops)(*ops), ctypes.POINTER(ctypes.c_size_t)
@@ -278,10 +278,10 @@ class LibCBMWrapper:
         n_ops = len(ops)
         if len(op_processes) != n_ops:
             raise ValueError("ops and op_processes must be of equal length")
-        nd_pools = pools.to_c_contiguous_numpy_array()
+        nd_pools = pools.to_numpy()
         pools_mat = LibCBM_Matrix(nd_pools)
 
-        nd_flux = flux.to_c_contiguous_numpy_array()
+        nd_flux = flux.to_numpy()
         flux_mat = LibCBM_Matrix(nd_flux)
 
         ops_p = ctypes.cast(

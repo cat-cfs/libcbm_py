@@ -467,7 +467,7 @@ def spinup(
             n_stands=model_context.n_stands,
             spinup_state=spinup_vars["spinup_state"].to_numpy(),
             dist_type=model_context.state["disturbance_type"].to_numpy(),
-            pools=model_context.pools.to_c_contiguous_numpy_array(),
+            pools=model_context.pools.to_numpy(),
             last_rotation_slow=spinup_vars["last_rotation_slow"].to_numpy(),
             this_rotation_slow=spinup_vars["this_rotation_slow"].to_numpy(),
             rotation_num=spinup_vars["rotation_num"].to_numpy(),
