@@ -16,8 +16,7 @@ class PandasDataFrameBackend(DataFrame):
         self._df = df
 
     def __getitem__(self, col_name: str) -> Series:
-        data = self._df[col_name]
-        return PandasSeriesBackend(col_name, data)
+        return PandasSeriesBackend(col_name, parent_df=self._df)
 
     def filter(self, arg: Series) -> DataFrame:
         return PandasDataFrameBackend(
@@ -112,9 +111,23 @@ class PandasSeriesBackend(Series):
     presents a limited interface for internal usage by libcbm.
     """
 
-    def __init__(self, name: str, series: pd.Series):
+    def __init__(
+        self,
+        name: str,
+        series: pd.Series = None,
+        parent_df: pd.DataFrame = None,
+    ):
         self._name = name
+        if not ((series is None) ^ (parent_df is None)):
+            raise ValueError("one of series, or parent_df must be specified")
         self._series = series
+        self._parent_df = parent_df
+
+    def _get_series(self) -> pd.Series:
+        if self._series is not None:
+            return self._series
+        else:
+            return self._parent_df[self._name]
 
     @property
     def name(self) -> str:
@@ -125,7 +138,7 @@ class PandasSeriesBackend(Series):
         self._name = value
 
     def copy(self):
-        return PandasSeriesBackend(self._name, self._series.copy())
+        return PandasSeriesBackend(self._name, self._get_series().copy())
 
     def filter(self, arg: "Series") -> "Series":
         """
@@ -133,7 +146,8 @@ class PandasSeriesBackend(Series):
         corresponding to the true values in the specified arg
         """
         return PandasSeriesBackend(
-            self._name, self._series[arg.to_numpy()].reset_index(drop=True)
+            self._name,
+            self._get_series().loc[arg.to_numpy()].reset_index(drop=True),
         )
 
     def take(self, indices: "Series") -> "Series":
@@ -141,72 +155,128 @@ class PandasSeriesBackend(Series):
         (returns a copy)"""
         return PandasSeriesBackend(
             self._name,
-            self._series.iloc[indices.to_numpy()].reset_index(drop=True),
+            self._get_series().iloc[indices.to_numpy()].reset_index(drop=True),
         )
 
     def as_type(self, type_name: str) -> "Series":
-        return PandasSeriesBackend(self._name, self._series.astype(type_name))
+        return PandasSeriesBackend(
+            self._name, self._get_series().astype(type_name)
+        )
 
-    def assign(self, indices: "Series", value: Union["Series", Any]):
+    def assign(
+        self,
+        indices: "Series",
+        value: Union["Series", Any],
+        allow_type_change=False,
+    ):
+        assignment_value = None
         if isinstance(value, Series):
-            self._series[indices.to_numpy()] = value.to_numpy()
+            assignment_value = value.to_numpy()
         else:
-            self._series[indices.to_numpy()] = value
+            assignment_value = value
 
-    def assign_all(self, value: Union["Series", Any]):
+        dtype_original = self._get_series().dtype
+        if self._series is not None:
+            self._series.iloc[indices.to_numpy()] = assignment_value
+            if (
+                not allow_type_change
+                and dtype_original != self._get_series().dtype
+            ):
+                self._series = self._series.astype(dtype_original)
+        elif self._parent_df is not None:
+            self._parent_df.iloc[
+                indices.to_numpy(),
+                self._parent_df.columns.get_loc(self.name),
+            ] = assignment_value
+            if (
+                not allow_type_change
+                and dtype_original != self._get_series().dtype
+            ):
+                self._parent_df[self.name] = self._parent_df[self.name].astype(
+                    dtype_original
+                )
+        else:
+            raise ValueError("internal series not defined")
+
+    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
         """
         set all values in this series to the specified value
         """
+        assignment_value = None
         if isinstance(value, Series):
-            self._series[:] = value.to_numpy()
+            assignment_value = value.to_numpy()
         else:
-            self._series[:] = value
+            assignment_value = value
+        dtype_original = self._get_series().dtype
+        if self._series is not None:
+            self._series.loc[:] = value
+            if (
+                not allow_type_change
+                and dtype_original != self._get_series().dtype
+            ):
+                self._series = self._series.astype(dtype_original)
+        elif self._parent_df is not None:
+            self._parent_df.iloc[
+                :,
+                self._parent_df.columns.get_loc(self.name),
+            ] = assignment_value
+            if (
+                not allow_type_change
+                and dtype_original != self._get_series().dtype
+            ):
+                self._parent_df[self.name] = self._parent_df[self.name].astype(
+                    dtype_original
+                )
+        else:
+            raise ValueError("internal series not defined")
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
-        return PandasSeriesBackend(self._name, self._series.map(arg))
+        return PandasSeriesBackend(self._name, self._get_series().map(arg))
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
-        return self._series.iloc[idx]
+        return self._get_series().iloc[idx]
 
     def any(self) -> bool:
         """
         return True if at least one value in this series is
         non-zero
         """
-        return self._series.any()
+        return self._get_series().any()
 
     def all(self) -> bool:
         """
         return True if all values in this series are non-zero
         """
-        return self._series.all()
+        return self._get_series().all()
 
     def unique(self) -> "Series":
         return PandasSeriesBackend(
-            self._name, pd.Series(name=self._name, data=self._series.unique())
+            self._name,
+            pd.Series(name=self._name, data=self._get_series().unique()),
         )
 
     def to_numpy(self) -> np.ndarray:
-        return self._series.values
+        return self._get_series().values
 
     def to_list(self) -> list:
-        return self._series.to_list()
+        return self._get_series().to_list()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
-        if str(self._series.dtype) == "int32":
+        _dtype = str(self._get_series().dtype)
+        if _dtype == "int32":
             ptr_type = ctypes.c_int32
-        elif str(self._series.dtype) == "float64":
+        elif _dtype == "float64":
             ptr_type = ctypes.c_double
         else:
-            raise ValueError(
-                f"series type not supported {str(self._series.dtype)}"
-            )
-        return numpy_backend.get_numpy_pointer(self._series.values, ptr_type)
+            raise ValueError(f"series type not supported {_dtype}")
+        return numpy_backend.get_numpy_pointer(
+            self._get_series().values, ptr_type
+        )
 
     @property
     def data(self) -> pd.Series:
-        return self._series
+        return self._get_series()
 
     def less(self, other: "Series") -> "Series":
         """
@@ -216,24 +286,24 @@ class PandasSeriesBackend(Series):
                 series
         """
         return PandasSeriesBackend(
-            self._name, (self._series < other.to_numpy())
+            self._name, (self._get_series() < other.to_numpy())
         )
 
     def sum(self) -> Union[int, float]:
-        return self._series.sum()
+        return self._get_series().sum()
 
     def cumsum(self) -> "PandasSeriesBackend":
-        return PandasSeriesBackend(self.name, self._series.cumsum())
+        return PandasSeriesBackend(self.name, self._get_series().cumsum())
 
     def max(self) -> Union[int, float]:
-        return self._series.max()
+        return self._get_series().max()
 
     def min(self) -> Union[int, float]:
-        return self._series.min()
+        return self._get_series().min()
 
     @property
     def length(self) -> int:
-        return self._series.size
+        return self._get_series().size
 
     @property
     def backend_type(self) -> BackendType:
@@ -241,96 +311,96 @@ class PandasSeriesBackend(Series):
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series * self._get_operand(other))
+            self._name, (self._get_series() * self._get_operand(other))
         )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) * self._series)
+            self._name, (self._get_operand(other) * self._get_series())
         )
 
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series / self._get_operand(other))
+            self._name, (self._get_series() / self._get_operand(other))
         )
 
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) / self._series)
+            self._name, (self._get_operand(other) / self._get_series())
         )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series + self._get_operand(other))
+            self._name, (self._get_series() + self._get_operand(other))
         )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) + self._series)
+            self._name, (self._get_operand(other) + self._get_series())
         )
 
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series - self._get_operand(other))
+            self._name, (self._get_series() - self._get_operand(other))
         )
 
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) - self._series)
+            self._name, (self._get_operand(other) - self._get_series())
         )
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series >= self._get_operand(other))
+            self._name, (self._get_series() >= self._get_operand(other))
         )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series > self._get_operand(other))
+            self._name, (self._get_series() > self._get_operand(other))
         )
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series <= self._get_operand(other))
+            self._name, (self._get_series() <= self._get_operand(other))
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series < self._get_operand(other))
+            self._name, (self._get_series() < self._get_operand(other))
         )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series == self._get_operand(other))
+            self._name, (self._get_series() == self._get_operand(other))
         )
 
     def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series != self._get_operand(other))
+            self._name, (self._get_series() != self._get_operand(other))
         )
 
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series & self._get_operand(other))
+            self._name, (self._get_series() & self._get_operand(other))
         )
 
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._series | self._get_operand(other))
+            self._name, (self._get_series() | self._get_operand(other))
         )
 
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) & self._series)
+            self._name, (self._get_operand(other) & self._get_series())
         )
 
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) | self._series)
+            self._name, (self._get_operand(other) | self._get_series())
         )
 
     def __invert__(self) -> "Series":
-        return PandasSeriesBackend(self._name, ~self._series)
+        return PandasSeriesBackend(self._name, ~self._get_series())
 
 
 def concat_data_frame(
@@ -342,23 +412,23 @@ def concat_data_frame(
 
 
 def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
-    pd.concat([s._series for s in series])
+    pd.concat([s._get_series() for s in series])
 
 
 def logical_and(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, s1._series & s2._series)
+    return PandasSeriesBackend(None, s1._get_series() & s2._get_series())
 
 
 def logical_not(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, ~(series._series))
+    return PandasSeriesBackend(None, ~(series._get_series()))
 
 
 def logical_or(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, s1._series | s2._series)
+    return PandasSeriesBackend(None, s1._get_series() | s2._get_series())
 
 
 def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
@@ -368,12 +438,14 @@ def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
 
 
 def is_null(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, pd.Series(pd.isnull(series._series)))
+    return PandasSeriesBackend(
+        None, pd.Series(pd.isnull(series._get_series()))
+    )
 
 
 def indices_nonzero(series: PandasSeriesBackend) -> PandasSeriesBackend:
     return PandasSeriesBackend(
-        None, pd.Series(series._series.to_numpy().nonzero()[0])
+        None, pd.Series(series._get_series().to_numpy().nonzero()[0])
     )
 
 
@@ -393,7 +465,7 @@ def from_series_list(
     series_list: list[PandasSeriesBackend],
 ) -> PandasDataFrameBackend:
     return PandasDataFrameBackend(
-        pd.DataFrame({s.name: s._series for s in series_list})
+        pd.DataFrame({s.name: s._get_series() for s in series_list})
     )
 
 
@@ -401,7 +473,7 @@ def from_series_dict(
     data: dict[str, PandasSeriesBackend],
 ) -> DataFrame:
     return PandasDataFrameBackend(
-        pd.DataFrame({k: v._series for k, v in data.items()})
+        pd.DataFrame({k: v._get_series() for k, v in data.items()})
     )
 
 
