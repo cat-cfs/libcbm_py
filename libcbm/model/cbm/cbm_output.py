@@ -126,7 +126,7 @@ class CBMOutput:
             else cbm_vars.pools.multiply(cbm_vars.inventory["area"])
         )
         self._pools = _concat_timestep_results(
-            timestep, self._pools, timestep_pools
+            timestep, self._pools, timestep_pools, self._backend_type
         )
 
         if cbm_vars.flux is not None and cbm_vars.flux.n_rows > 0:
@@ -136,7 +136,7 @@ class CBMOutput:
                 else cbm_vars.flux.multiply(cbm_vars.inventory["area"])
             )
             self._flux = _concat_timestep_results(
-                timestep, self._flux, timestep_flux
+                timestep, self._flux, timestep_flux, self._backend_type
             )
 
         timestep_state = cbm_vars.state.copy()
@@ -157,11 +157,11 @@ class CBMOutput:
             )
 
         self._state = _concat_timestep_results(
-            timestep, self._state, timestep_state
+            timestep, self._state, timestep_state, self._backend_type
         )
 
         self._parameters = _concat_timestep_results(
-            timestep, self._parameters, timestep_params
+            timestep, self._parameters, timestep_params, self._backend_type
         )
 
         if self._classifier_map is None:
@@ -172,7 +172,10 @@ class CBMOutput:
             timestep_classifiers = cbm_vars.classifiers.copy()
             timestep_classifiers.map(self._classifier_map)
             self._classifiers = _concat_timestep_results(
-                timestep, self._classifiers, timestep_classifiers
+                timestep,
+                self._classifiers,
+                timestep_classifiers,
+                self._backend_type,
             )
         self._area = _concat_timestep_results(
             timestep,
@@ -180,6 +183,7 @@ class CBMOutput:
             dataframe.from_series_list(
                 [cbm_vars.inventory["area"]],
                 nrows=cbm_vars.inventory.n_rows,
-                back_end=cbm_vars.inventory.backend_type,
+                back_end=self._backend_type,
             ),
+            self._backend_type,
         )
