@@ -49,11 +49,16 @@ class Series(ABC):
         pass
 
     @abstractmethod
-    def assign(self, indices: "Series", value: Union["Series", Any]):
+    def assign(
+        self,
+        indices: "Series",
+        value: Union["Series", Any],
+        allow_type_change=False,
+    ):
         pass
 
     @abstractmethod
-    def assign_all(self, value: Union["Series", Any]):
+    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
         """
         set all values in this series to the specified value
         """
@@ -254,7 +259,7 @@ def range(
 
 def from_pandas(series: pd.Series, name: str = None) -> Series:
     return get_backend(BackendType.pandas).PandasSeriesBackend(
-        name if name else series.name, series
+        name if name else series.name, series=series
     )
 
 
