@@ -449,12 +449,16 @@ def concat_data_frame(
     cols = []
     for df in dfs:
         if not cols:
-            cols = list(df._data.keys())
-        elif cols != list(df._data.keys()):
+            cols = list(df.columns)
+        elif cols != list(df.columns):
             raise ValueError("cols do not match")
 
-    for name in cols:
-        new_data[name] = np.concatenate([df._data[name] for df in dfs])
+    new_data: dict[str, np.ndarray] = {}
+    for col in cols:
+        new_data[col] = np.concatenate(
+            [df._data[:, df._col_idx[col]] for df in dfs]
+        )
+
     return NumpyDataFrameFrameBackend(new_data)
 
 
