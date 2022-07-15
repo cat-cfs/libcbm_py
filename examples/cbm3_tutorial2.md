@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.13.7
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -30,7 +30,7 @@ Import the required packages from libcbm
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
 ```
 
@@ -48,10 +48,10 @@ Initialize and validate the inventory in the sit dataset
 classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 ```
 
-Create storage CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
+Create storage for CBM simulation results.
 
 ```python
-in_memory_cbm_output = InMemoryCBMOutput(
+cbm_output = CBMOutput(
     classifier_map=sit.classifier_value_names,
     disturbance_type_map=sit.disturbance_name_map)
 ```
@@ -69,18 +69,18 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers          = classifiers,
         inventory            = inventory,
         pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = in_memory_cbm_output.append_simulation_result
+        reporting_func       = cbm_output.append_simulation_result
     )
 ```
 
 ```python
-results.classifiers
+cbm_output.classifiers.to_pandas()
 ```
 
 ## Pool Results
 
 ```python
-pi = results.classifiers.merge(results.pools, left_on=["identifier", "timestep"], right_on=["identifier", "timestep"])
+pi = cbm_output.classifiers.to_pandas().merge(cbm_output.pools.to_pandas(), left_on=["identifier", "timestep"], right_on=["identifier", "timestep"])
 ```
 
 ```python
@@ -112,7 +112,7 @@ annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,160),yli
 ## State Variable Results
 
 ```python
-si = results.state
+si = cbm_output.state.to_pandas()
 ```
 
 ```python
@@ -120,7 +120,7 @@ si.head()
 ```
 
 ```python
-state_variables = ['timestep','last_disturbance_type', 'time_since_last_disturbance', 'time_since_land_class_change',
+state_variables = ['timestep', 'time_since_last_disturbance', 'time_since_land_class_change',
  'growth_enabled', 'enabled', 'land_class', 'age', 'growth_multiplier', 'regeneration_delay']
 si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ```
@@ -128,7 +128,7 @@ si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ## Flux Indicators
 
 ```python
-fi = results.flux
+fi = cbm_output.flux.to_pandas()
 ```
 
 ```python
@@ -199,13 +199,17 @@ sit.sit_data.disturbance_types
 ```
 
 ```python
+sit.sit_data.disturbance_events
+```
+
+```python
+sit.sit_data.transition_rules
+```
+
+```python
 sit.sit_data.yield_table
 ```
 
 ```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
-```
-
-```python
-
 ```
