@@ -116,7 +116,7 @@ class DataFrame(ABC):
 
 def concat_data_frame(
     data: list[DataFrame], backend_type: BackendType = None
-) -> Union[DataFrame, Series]:
+) -> DataFrame:
     data = [d for d in data if d is not None]
     if not data:
         return None
