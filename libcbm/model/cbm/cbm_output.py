@@ -36,12 +36,17 @@ def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
 
 
 def _concat_timestep_results(
-    timestep: int, running_result: DataFrame, timestep_result: DataFrame
+    timestep: int,
+    running_result: DataFrame,
+    timestep_result: DataFrame,
+    backend_type: BackendType,
 ) -> DataFrame:
 
     _add_timestep_series(timestep, timestep_result)
 
-    return dataframe.concat_data_frame([running_result, timestep_result])
+    return dataframe.concat_data_frame(
+        [running_result, timestep_result], backend_type
+    )
 
 
 class CBMOutput:
@@ -51,6 +56,7 @@ class CBMOutput:
         classifier_map: dict[int, str] = None,
         disturbance_type_map: dict[int, str] = None,
         backend_type: BackendType = BackendType.numpy,
+        backend_params: dict = None,
     ):
         """Create storage and a function for complete simulation results.  The
         function return value can be passed to :py:func:`simulate` to track
@@ -70,17 +76,48 @@ class CBMOutput:
                 subsituting the internally defined disturbance type id with
                 names or other ids in the parameters and state tables.  If set
                 to none no substitution will occur.
+            backend_type (BackendType, optional): the storage backend for the
+                output, one of the values of
+                :py:class:`libcbm.storage.backends.BackendType`. Defaults to
+                `BackendType.numpy` meaning simulation results will be stored
+                in memory.
+            backend_params (dict): may be required depending on the specified
+                backend_type, but not required by default. Defaults to None
         """
         self._density = density
         self._disturbance_type_map = disturbance_type_map
         self._classifier_map = classifier_map
         self._backend_type = backend_type
-        self.pools: DataFrame = None
-        self.flux: DataFrame = None
-        self.state: DataFrame = None
-        self.classifiers: DataFrame = None
-        self.parameters: DataFrame = None
-        self.area: DataFrame = None
+        self._pools: DataFrame = None
+        self._flux: DataFrame = None
+        self._state: DataFrame = None
+        self._classifiers: DataFrame = None
+        self._parameters: DataFrame = None
+        self._area: DataFrame = None
+
+    @property
+    def pools(self) -> DataFrame:
+        return self._pools
+
+    @property
+    def flux(self) -> DataFrame:
+        return self._flux
+
+    @property
+    def state(self) -> DataFrame:
+        return self._state
+
+    @property
+    def classifiers(self) -> DataFrame:
+        return self._classifiers
+
+    @property
+    def parameters(self) -> DataFrame:
+        return self._parameters
+
+    @property
+    def area(self) -> DataFrame:
+        return self._area
 
     def append_simulation_result(self, timestep: int, cbm_vars: CBMVariables):
         timestep_pools = (
@@ -88,8 +125,8 @@ class CBMOutput:
             if self._density
             else cbm_vars.pools.multiply(cbm_vars.inventory["area"])
         )
-        self.pools = _concat_timestep_results(
-            timestep, self.pools, timestep_pools
+        self._pools = _concat_timestep_results(
+            timestep, self._pools, timestep_pools
         )
 
         if cbm_vars.flux is not None and cbm_vars.flux.n_rows > 0:
@@ -98,8 +135,8 @@ class CBMOutput:
                 if self._density
                 else cbm_vars.flux.multiply(cbm_vars.inventory["area"])
             )
-            self.flux = _concat_timestep_results(
-                timestep, self.flux, timestep_flux
+            self._flux = _concat_timestep_results(
+                timestep, self._flux, timestep_flux
             )
 
         timestep_state = cbm_vars.state.copy()
@@ -119,27 +156,27 @@ class CBMOutput:
                 allow_type_change=True,
             )
 
-        self.state = _concat_timestep_results(
-            timestep, self.state, timestep_state
+        self._state = _concat_timestep_results(
+            timestep, self._state, timestep_state
         )
 
-        self.parameters = _concat_timestep_results(
-            timestep, self.parameters, timestep_params
+        self._parameters = _concat_timestep_results(
+            timestep, self._parameters, timestep_params
         )
 
         if self._classifier_map is None:
-            self.classifiers = _concat_timestep_results(
-                timestep, self.classifiers, cbm_vars.classifiers.copy()
+            self._classifiers = _concat_timestep_results(
+                timestep, self._classifiers, cbm_vars.classifiers.copy()
             )
         else:
             timestep_classifiers = cbm_vars.classifiers.copy()
             timestep_classifiers.map(self._classifier_map)
-            self.classifiers = _concat_timestep_results(
-                timestep, self.classifiers, timestep_classifiers
+            self._classifiers = _concat_timestep_results(
+                timestep, self._classifiers, timestep_classifiers
             )
-        self.area = _concat_timestep_results(
+        self._area = _concat_timestep_results(
             timestep,
-            self.area,
+            self._area,
             dataframe.from_series_list(
                 [cbm_vars.inventory["area"]],
                 nrows=cbm_vars.inventory.n_rows,
