@@ -4,7 +4,7 @@ from libcbm.storage import series
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
-from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 
 
 def test_integration():
@@ -72,9 +72,9 @@ def test_integration():
     n_stands = inv.n_rows
     with cbm_factory.initialize_cbm() as cbm:
 
-        spinup_results = InMemoryCBMOutput(density=True)
+        spinup_results = CBMOutput(density=True)
 
-        cbm_results = InMemoryCBMOutput(
+        cbm_results = CBMOutput(
             classifier_map=cbm_factory.get_classifier_map(),
             disturbance_type_map=cbm_factory.get_disturbance_type_map(),
         )

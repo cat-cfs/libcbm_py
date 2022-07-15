@@ -4,7 +4,7 @@ from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_age_class_parser
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 
 
 class SITIntegrationTest(unittest.TestCase):
@@ -49,7 +49,7 @@ class SITIntegrationTest(unittest.TestCase):
         sit = sit_cbm_factory.initialize_sit(sit_data, config)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            in_memory_cbm_output = InMemoryCBMOutput()
+            in_memory_cbm_output = CBMOutput()
             cbm_simulator.simulate(
                 cbm,
                 n_steps=1,

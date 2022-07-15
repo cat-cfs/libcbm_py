@@ -2,6 +2,7 @@ from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import series
+from libcbm.storage.backends import BackendType
 
 
 def _get_disturbance_type_map_func(disturbance_type_map):
@@ -43,12 +44,13 @@ def _concat_timestep_results(
     return dataframe.concat_data_frame([running_result, timestep_result])
 
 
-class InMemoryCBMOutput:
+class CBMOutput:
     def __init__(
         self,
         density: bool = False,
         classifier_map: dict[int, str] = None,
         disturbance_type_map: dict[int, str] = None,
+        backend_type: BackendType = BackendType.numpy,
     ):
         """Create storage and a function for complete simulation results.  The
         function return value can be passed to :py:func:`simulate` to track
@@ -72,6 +74,7 @@ class InMemoryCBMOutput:
         self._density = density
         self._disturbance_type_map = disturbance_type_map
         self._classifier_map = classifier_map
+        self._backend_type = backend_type
         self.pools: DataFrame = None
         self.flux: DataFrame = None
         self.state: DataFrame = None
@@ -107,11 +110,13 @@ class InMemoryCBMOutput:
                 self._disturbance_type_map
             )
             timestep_state["last_disturbance_type"].assign_all(
-                timestep_state["last_disturbance_type"].map(dist_map_func)
+                timestep_state["last_disturbance_type"].map(dist_map_func),
+                allow_type_change=True,
             )
 
             timestep_params["disturbance_type"].assign_all(
-                timestep_params["disturbance_type"].map(dist_map_func)
+                timestep_params["disturbance_type"].map(dist_map_func),
+                allow_type_change=True,
             )
 
         self.state = _concat_timestep_results(

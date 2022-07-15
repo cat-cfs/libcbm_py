@@ -8,7 +8,7 @@ from unittest.mock import patch
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit.sit_cbm_factory import EventSort
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.cbm_output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
 
 
@@ -23,7 +23,7 @@ class SITCBMFactoryTest(unittest.TestCase):
         sit = sit_cbm_factory.load_sit(config_path)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            in_memory_output = InMemoryCBMOutput()
+            in_memory_output = CBMOutput()
 
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
@@ -59,7 +59,7 @@ class SITCBMFactoryTest(unittest.TestCase):
         sit = sit_cbm_factory.load_sit(config_path)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            in_memory_cbm_output = InMemoryCBMOutput()
+            in_memory_cbm_output = CBMOutput()
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
             )
