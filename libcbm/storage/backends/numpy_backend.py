@@ -66,7 +66,7 @@ def get_numpy_pointer(
 
 class NumpyDataFrameFrameBackend(DataFrame):
     def __init__(self, data: dict[str, np.ndarray]) -> None:
-        self._data: np.ndarray = np.column_stack(data.values())
+        self._data: np.ndarray = np.column_stack(list(data.values()))
         self._columns = list(data.keys())
         self._col_idx = {col: i for i, col in enumerate(self._columns)}
         self._n_rows: int = None
@@ -249,16 +249,25 @@ class NumpySeriesBackend(Series):
     def as_type(self, type_name: str) -> "Series":
         return NumpySeriesBackend(self._name, self._data.astype(type_name))
 
-    def assign(self, indices: "Series", value: Union["Series", Any]):
+    def assign(
+        self,
+        indices: "Series",
+        value: Union["Series", Any],
+        allow_type_change=False,
+    ):
+        if allow_type_change:
+            raise ValueError("numpy backend does not support type conversion")
         if isinstance(value, Series):
             self._data[indices.to_numpy()] = value.to_numpy()
         else:
             self._data[indices.to_numpy()] = value
 
-    def assign_all(self, value: Union["Series", Any]):
+    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
         """
         set all values in this series to the specified value
         """
+        if allow_type_change:
+            raise ValueError("numpy backend does not support type conversion")
         if isinstance(value, Series):
             self._data[:] = value.to_numpy()
         else:
