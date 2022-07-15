@@ -24,6 +24,10 @@ class SIT:
         self._sit_identifier_mapping = sit_identifier_mapping
 
     @property
+    def config(self) -> dict:
+        return self._config
+
+    @property
     def defaults(self) -> SITCBMDefaults:
         return self._defaults
 
