@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -203,7 +203,7 @@ with model_definition.create_model(pool_def, flux_indicators) as model:
     output_processor = model.create_output_processor()
     n_stands = 10
     model_vars = model.allocate_model_vars(n_stands)
-    model_vars.pools[:, pool_def["Input"]] = 1.0
+    model_vars.pools["Input"].assign(1.0)
 
     stand_age = np.full(n_stands, 0)
 
@@ -219,7 +219,7 @@ with model_definition.create_model(pool_def, flux_indicators) as model:
             disturbance_types = np.full(n_stands, disturbance_type_ids["none"])
 
         # reset flux at start of every time step
-        model_vars.flux[:] = 0.0
+        model_vars.flux.zero()
 
         # prepare the matrix operations
         operations = [
@@ -238,7 +238,7 @@ with model_definition.create_model(pool_def, flux_indicators) as model:
         ]
 
         # enabled can be used to disable(0)/enable(1) dynamics per index
-        enabled=np.full(n_stands, 1)
+        enabled=None# np.full(n_stands, 1)
 
         model.compute(model_vars, operations, op_processes, enabled)
         for op in operations:
@@ -255,14 +255,14 @@ output_processor.pools.columns
 ```
 
 ```python
-output_processor.pools[
+output_processor.pools.to_pandas()[
     ['timestep','WoodyBiomass', 'Foliage', 'SlowDOM',
      'MediumDOM', 'FastDOM']
 ].groupby("timestep").sum().plot(figsize=(15,10))
 ```
 
 ```python
-output_processor.flux[
+output_processor.flux.to_pandas()[
     ['timestep', 'NPP', 'DecayEmissions', 'DisturbanceEmissions',
      'HarvestProduction']
 ].groupby("timestep").sum().plot(figsize=(15,10))
