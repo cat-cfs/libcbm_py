@@ -6,9 +6,9 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: Python 3
     language: python
     name: python3
 ---
@@ -30,7 +30,7 @@ Import the required packages from libcbm
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
 ```
 
@@ -54,12 +54,8 @@ Initialize an instance of the CBM model
 Create storage and a function for storing CBM simulation results.  This particular implementation appends timestep results for each step into a running DataFrame which is stored in memory.
 
 ```python
-classifier_config = sit_cbm_factory.get_classifiers(
-    sit.sit_data.classifiers, sit.sit_data.classifier_values)
-in_memory_cbm_output = InMemoryCBMOutput(
-    classifier_map={
-        x["id"]: x["value"]
-        for x in classifier_config["classifier_values"]})
+cbm_output = CBMOutput(
+    classifier_map=sit.classifier_names)
 ```
 
 ## Simulation
@@ -75,7 +71,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers          = classifiers,
         inventory            = inventory,
         pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = in_memory_cbm_output.append_simulation_result
+        reporting_func       = cbm_output.append_simulation_result
     )
 ```
 
