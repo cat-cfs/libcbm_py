@@ -216,9 +216,7 @@ class CBM:
         #    state_variables.land_class at CBM startup, and it can potentially
         #    contradict the value of inventory.land_class. libcbm does not
         #    attempt to throw an error if this situation is detected.
-        cbm_vars.state["land_class"].assign(
-            cbm_vars.inventory["land_class"]
-        )
+        cbm_vars.state["land_class"].assign(cbm_vars.inventory["land_class"])
 
         self.model_functions.initialize_land_state(
             cbm_vars.inventory, cbm_vars.pools, cbm_vars.state
@@ -299,7 +297,10 @@ class CBM:
         # allocate space for computing the Carbon flows
         disturbance_op = self.compute_functions.allocate_op(n_stands)
 
-        if not isinstance(disturbance_type, Series):
+        if (
+            not isinstance(disturbance_type, Series)
+            and disturbance_type is not None
+        ):
             # set the disturbance type for all records
             parameters = dataframe.from_series_list(
                 [
@@ -363,7 +364,7 @@ class CBM:
         if density:
             return df
         else:
-            return df.multiply(cbm_vars.inventory.area, axis=0)
+            return df.multiply(cbm_vars.inventory["area"])
 
     def step_disturbance(self, cbm_vars: CBMVariables) -> CBMVariables:
         """Compute disturbance dynamics and compute disturbance flux on the
