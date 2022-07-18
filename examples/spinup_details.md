@@ -111,5 +111,6 @@ spinup_results.flux.to_pandas()[["identifier", "timestep", "DisturbanceCO2Produc
 
 ```python
 # examine the state variables for stand identifer 1
-spinup_results.state.to_pandas()[spinup_results.state.identifier==1].set_index("timestep").head()
+state = spinup_results.state.to_pandas()
+state[state.identifier==1].set_index("timestep").head()
 ```
