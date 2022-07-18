@@ -13,7 +13,6 @@ from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
 import pandas as pd
-from libcbm.storage.backends import BackendType
 
 
 def _safe_map(series: Series, map: Union[dict, Callable]):
@@ -203,8 +202,6 @@ class StandCBMFactory:
     def prepare_inventory(
         self,
         inventory_df: DataFrame,
-        backend_type: BackendType = BackendType.numpy,
-        backend_params: dict = None,
     ) -> Tuple[DataFrame, DataFrame]:
         """Prepare inventory, classifiers pd.DataFrames compatible with
         :py:func:`libcbm.model.cbm.cbm_simulator.simulate` using the provided
