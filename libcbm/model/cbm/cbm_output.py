@@ -166,7 +166,10 @@ class CBMOutput:
 
         if self._classifier_map is None:
             self._classifiers = _concat_timestep_results(
-                timestep, self._classifiers, cbm_vars.classifiers.copy()
+                timestep,
+                self._classifiers,
+                cbm_vars.classifiers.copy(),
+                self._backend_type,
             )
         else:
             timestep_classifiers = cbm_vars.classifiers.copy()
