@@ -164,11 +164,13 @@ class EventProcessorTest(unittest.TestCase):
         )
         disturbance_type_id = 11
         cbm_vars = event_processor.apply_rule_based_event(
-            target=pd.DataFrame(
-                {
-                    "disturbed_index": pd.Series([1, 2]),
-                    "area_proportions": pd.Series([1.0, 1.0]),
-                }
+            target=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "disturbed_index": pd.Series([1, 2]),
+                        "area_proportions": pd.Series([1.0, 1.0]),
+                    }
+                )
             ),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars,
