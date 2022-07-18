@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -18,8 +18,10 @@ import pandas as pd
 import numpy as np
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
+from libcbm.storage import dataframe
+
 ```
 
 ```python
@@ -47,7 +49,7 @@ cbm_factory = StandCBMFactory(classifiers, merch_volumes)
 
 n_steps = 10
 
-inventory = pd.DataFrame(
+inventory = dataframe.from_pandas(pd.DataFrame(
     columns=[
         "c1", "c2", "admin_boundary", "eco_boundary", "age", "area",
         "delay", "land_class", "afforestation_pre_type",
@@ -56,21 +58,20 @@ inventory = pd.DataFrame(
         ["c1_v1", "c2_v1", "British Columbia", "Pacific Maritime", 15, 1.0,
          0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"],
         ["c1_v1", "c2_v1", "British Columbia", "Pacific Maritime", 0, 1.0,
-         0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]])
+         0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]]))
 
-n_stands = len(inventory.index)
+n_stands = inventory.n_rows
 
 # the following spinup parameters can be specified here directly.
 # If they are not specified, they will be pulled from the
 # cbm_defaults database on a per-Spatial Unit basis
 # these values can be mixes of either scalar, or of the same length
 # as inventory.shape[0]
-spinup_params = cbm_variables.initialize_spinup_parameters(
-    n_stands=n_stands,
+spinup_params = dataframe.from_pandas(pd.DataFrame(dict(
     return_interval=np.array([150, 160], dtype=np.int32),
-    min_rotations=5,
-    max_rotations=10,
-    mean_annual_temp=10)
+    min_rotations=np.array([5, 5], dtype=np.int32),
+    max_rotations=np.array([10, 10], dtype=np.int32),
+    mean_annual_temp=np.array([10, 10], dtype="float"),)))
 
 
 csets, inv = cbm_factory.prepare_inventory(inventory)
@@ -79,8 +80,8 @@ with cbm_factory.initialize_cbm() as cbm:
 
     # can specify a function to gather results from spinup
     # this will incur a performance penalty
-    spinup_results = InMemoryCBMOutput(density=True)
-    cbm_results = InMemoryCBMOutput(
+    spinup_results = CBMOutput(density=True)
+    cbm_results = CBMOutput(
         classifier_map=cbm_factory.get_classifier_map(),
         disturbance_type_map={1: "fires"})
     cbm_simulator.simulate(
@@ -101,14 +102,14 @@ spinup_results.__dict__.keys()
 ```
 
 ```python
-spinup_results.pools[["identifier", "timestep", "BelowGroundSlowSoil"]].pivot(index="timestep", columns="identifier").plot()
+spinup_results.pools.to_pandas()[["identifier", "timestep", "BelowGroundSlowSoil"]].pivot(index="timestep", columns="identifier").plot()
 ```
 
 ```python
-spinup_results.flux[["identifier", "timestep", "DisturbanceCO2Production"]].pivot(index="timestep", columns="identifier").plot()
+spinup_results.flux.to_pandas()[["identifier", "timestep", "DisturbanceCO2Production"]].pivot(index="timestep", columns="identifier").plot()
 ```
 
 ```python
 # examine the state variables for stand identifer 1
-spinup_results.state[spinup_results.state.identifier==1].set_index("timestep").head()
+spinup_results.state.to_pandas()[spinup_results.state.identifier==1].set_index("timestep").head()
 ```
