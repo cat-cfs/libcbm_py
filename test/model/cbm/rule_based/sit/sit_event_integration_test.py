@@ -46,7 +46,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state["age"].assign_all(np.array([99, 100, 98, 100]))
+        cbm_vars.state["age"].assign(np.array([99, 100, 98, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -114,7 +114,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state["age"].assign_all(np.array([99, 100, 98, 100]))
+        cbm_vars.state["age"].assign(np.array([99, 100, 98, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -191,7 +191,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since age sort is set, the oldest values of the eligible records
         # will be disturbed
-        cbm_vars.state["age"].assign_all(np.array([100, 99, 98, 97, 96]))
+        cbm_vars.state["age"].assign(np.array([100, 99, 98, 97, 96]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -263,7 +263,7 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # since the sort is by age, the first record will be fully disturbed
         # and the second will be split into 1 and 4 hectare stands.
-        cbm_vars.state["age"].assign_all(np.array([99, 100]))
+        cbm_vars.state["age"].assign(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(sit) as sit_rule_based_processor:
             cbm_vars_result = sit_rule_based_processor.dist_func(
@@ -328,8 +328,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         cbm_vars = helpers.setup_cbm_vars(sit)
 
         # 1 tonnes C/ha * 10 ha total = 10 tonnes C
-        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
-        cbm_vars.state["age"].assign_all(np.array([99, 100]))
+        cbm_vars.pools["SoftwoodMerch"].assign(1.0)
+        cbm_vars.state["age"].assign(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -391,8 +391,8 @@ class SITEventIntegrationTest(unittest.TestCase):
 
         # 1 tonnes C/ha * (3+4+2) ha total = 9 tonnes C available for event,
         # with target = 10, therefore the expected shortfall is 1
-        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
-        cbm_vars.state["age"].assign_all(np.array([99, 100, 98]))
+        cbm_vars.pools["SoftwoodMerch"].assign(1.0)
+        cbm_vars.state["age"].assign(np.array([99, 100, 98]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -454,8 +454,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
-        cbm_vars.pools["SoftwoodMerch"].assign_all(1.0)
-        cbm_vars.state["age"].assign_all(np.array([99, 100]))
+        cbm_vars.pools["SoftwoodMerch"].assign(1.0)
+        cbm_vars.state["age"].assign(np.array([99, 100]))
 
         with helpers.get_rule_based_processor(
             sit,
@@ -543,8 +543,8 @@ class SITEventIntegrationTest(unittest.TestCase):
         )
         cbm_vars = helpers.setup_cbm_vars(sit)
 
-        cbm_vars.pools["HardwoodMerch"].assign_all(1.0)
-        cbm_vars.state["age"].assign_all(np.array([50]))
+        cbm_vars.pools["HardwoodMerch"].assign(1.0)
+        cbm_vars.state["age"].assign(np.array([50]))
 
         with helpers.get_rule_based_processor(
             sit,

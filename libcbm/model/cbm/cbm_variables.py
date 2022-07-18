@@ -78,7 +78,7 @@ def _initialize_pools(
     # By convention the libcbm CBM implementation uses an input pool at
     # index 0 whose value is always 1.0.
     # TODO: move this into the lower level code, since it is a model behaviour
-    pools[pool_codes[0]].assign_all(1.0)
+    pools[pool_codes[0]].assign(1.0)
 
     return pools
 

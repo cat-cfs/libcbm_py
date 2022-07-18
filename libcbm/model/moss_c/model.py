@@ -461,7 +461,7 @@ def spinup(
             last_rotation_slow=spinup_vars["last_rotation_slow"],
             this_rotation_slow=spinup_vars["this_rotation_slow"],
         )
-        spinup_vars["spinup_state"].assign_all(state)
+        spinup_vars["spinup_state"].assign(state)
 
         all_finished = update_spinup_variables(
             n_stands=model_context.n_stands,
@@ -481,7 +481,7 @@ def spinup(
         )
         if all_finished:
             # re-enable everything for subsequent processes
-            model_context.state["enabled"].assign_all(1)
+            model_context.state["enabled"].assign(1)
             break
         step(
             model_context,
@@ -503,7 +503,7 @@ def step(
     include_flux: bool = True,
 ) -> None:
     n_stands = model_context.state["age"].length
-    model_context.state["merch_vol"].assign_all(
+    model_context.state["merch_vol"].assign(
         model_context.merch_vol_lookup.get_merch_vol(
             model_context.state["age"],
             model_context.parameters["merch_volume_id"],
@@ -563,7 +563,7 @@ def step(
         & (model_context.state["enabled"] != 0)
     )
     model_context.state["age"].assign(
-        age_increment_indices,
         model_context.state["age"].take(age_increment_indices) + 1,
+        age_increment_indices,
     )
-    model_context.state["age"].assign(age_zero_indices, 0)
+    model_context.state["age"].assign(0, age_zero_indices)

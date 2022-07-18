@@ -219,7 +219,7 @@ class TransitionRuleProcessor(object):
 
             # set the area for the split portion according to the current
             # group member proportion
-            inventory["area"].assign_all(inventory["area"] * proportion)
+            inventory["area"].assign(inventory["area"] * proportion)
 
             # if the current proportion is the remainder of 100 minus the
             # group's percentage sums, then this split portion will not be
@@ -236,7 +236,7 @@ class TransitionRuleProcessor(object):
                 )
                 # update the split classifiers with the transitioned value
                 for classifier_name, value_id in transition_classifier_ids:
-                    classifiers[classifier_name].assign_all(value_id)
+                    classifiers[classifier_name].assign(value_id)
 
                 state["regeneration_delay"].assign(
                     int(tr_group["regeneration_delay"].at(i_proportion)),

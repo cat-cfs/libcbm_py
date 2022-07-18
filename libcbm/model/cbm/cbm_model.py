@@ -216,7 +216,7 @@ class CBM:
         #    state_variables.land_class at CBM startup, and it can potentially
         #    contradict the value of inventory.land_class. libcbm does not
         #    attempt to throw an error if this situation is detected.
-        cbm_vars.state["land_class"].assign_all(
+        cbm_vars.state["land_class"].assign(
             cbm_vars.inventory["land_class"]
         )
 

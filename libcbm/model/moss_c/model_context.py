@@ -103,7 +103,7 @@ class ModelContext:
         pools = dataframe.numeric_dataframe(
             Pool.__members__.keys(), self.n_stands, self._backend_type
         )
-        pools[Pool.Input.name].assign_all(1.0)
+        pools[Pool.Input.name].assign(1.0)
         return pools
 
     def initialize_flux(self) -> DataFrame:

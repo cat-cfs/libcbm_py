@@ -112,7 +112,7 @@ def apply_rule_based_event(
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
     cbm_vars.parameters["disturbance_type"].assign(
-        target_index, disturbance_type_id
+        disturbance_type_id, target_index
     )
 
     if split_inventory.n_rows > 0:
@@ -127,7 +127,7 @@ def apply_rule_based_event(
         )
 
         # set the split inventory as the remaining undisturbed area
-        split_inventory["area"].assign_all(
+        split_inventory["area"].assign(
             split_inventory["area"]
             * (1.0 - target_area_proportions.filter(splits)),
         )
