@@ -58,13 +58,6 @@ class Series(ABC):
         pass
 
     @abstractmethod
-    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
-        """
-        set all values in this series to the specified value
-        """
-        pass
-
-    @abstractmethod
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         pass
 
