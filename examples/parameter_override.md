@@ -6,9 +6,9 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
-    display_name: Python 3 (ipykernel)
+    display_name: Python 3
     language: python
     name: python3
 ---
@@ -25,7 +25,7 @@ import numpy as np
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm import cbm_defaults
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
 ```
 
@@ -42,7 +42,7 @@ def run_cbm_random():
     classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 
     # get the default CBM parameters: this is a dictionary of name/dataframe pairs
-    default_parameters = sit.defaults.get_parameters_factory()()
+    default_parameters = sit.defaults.get_parameters_factory(sit.sit_data.disturbance_types)()
 
     def random_parameter_factory():
         # update the default parameters table "turnover_parameters"
@@ -59,7 +59,7 @@ def run_cbm_random():
     # use the above random parameter factory as the source for CBM parameters
     with sit_cbm_factory.initialize_cbm(sit, parameters_factory=random_parameter_factory) as cbm:
 
-        in_memory_cbm_output = InMemoryCBMOutput()
+        cbm_output = CBMOutput()
         rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
 
         cbm_simulator.simulate(
@@ -68,7 +68,7 @@ def run_cbm_random():
             classifiers          = classifiers,
             inventory            = inventory,
             pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-            reporting_func       = in_memory_cbm_output.append_simulation_result
+            reporting_func       = cbm_output.append_simulation_result
         )
         # return a single pool value to illustrate the effect of the randomly drawn parameter
         return results.pools[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()
