@@ -167,8 +167,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
         return pd.DataFrame(columns=self.columns, data=self._data)
 
     def zero(self):
-        for v in self._data:
-            v[:, :] = 0
+        self._data[:, :] = 0
 
     def map(self, arg: Union[dict, Callable]) -> DataFrame:
         out_data = {}
