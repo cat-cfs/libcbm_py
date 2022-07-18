@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.13.7
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -24,7 +24,7 @@ import pandas as pd
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
 ```
 
@@ -146,7 +146,7 @@ class DynamicHarvestProcessor:
 ## Simulation
 
 ```python
-in_memory_cbm_output = InMemoryCBMOutput()
+cbm_output = CBMOutput()
 with sit_cbm_factory.initialize_cbm(sit) as cbm:
 
     dynamic_harvest_processor = DynamicHarvestProcessor(
@@ -159,7 +159,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers       = classifiers,
         inventory         = inventory,
         pre_dynamics_func = dynamic_harvest_processor.pre_dynamics_func,
-        reporting_func    = in_memory_cbm_output.append_simulation_result
+        reporting_func    = cbm_output.append_simulation_result
     )
 ```
 
@@ -182,12 +182,12 @@ display(dynamic_processor_stats)
 
 ## Summary
 
-The base harvest, based on the CBM tutorial2 SIT_events dataset resulted in a disturbance production of less than 5000 tonnes C for all timesteps. The dynamic processor made up the difference of 5000 - base production, and the result was that for all time steps the 5000 tC target was met exactly.
+The base harvest, based on the CBM tutorial2 SIT_events dataset resulted in a disturbance production of less than 5000 tonnes C for all timesteps. The dynamic processor made up the difference of 4800 - base production, and the result was that for all time steps the 4800 tC target was met exactly.
 
 ```python
 flux_results = pd.DataFrame({
-    "timestep": results.flux.timestep,
-    "flux_production_total": results.flux[[
+    "timestep": cbm_output.flux.to_pandas().timestep,
+    "flux_production_total": cbm_output.flux.to_pandas()[[
         'DisturbanceSoftProduction',
         'DisturbanceHardProduction',
         'DisturbanceDOMProduction']].sum(axis=1)}).groupby("timestep").sum()
