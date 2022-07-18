@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -22,8 +22,9 @@ import cProfile
 ```python
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
-from libcbm.model.cbm.output import InMemoryCBMOutput
+from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
+from libcbm.storage import dataframe
 ```
 
 ```python
@@ -52,7 +53,7 @@ def run_cbm():
 
     n_steps = 50
     n_stands = 1000
-    inventory = pd.DataFrame(
+    inventory = dataframe.from_pandas(pd.DataFrame(
         index=list(range(0, n_stands)),
         columns=[
             "c1", "c2", "admin_boundary", "eco_boundary", "age", "area",
@@ -60,15 +61,15 @@ def run_cbm():
             "historic_disturbance_type", "last_pass_disturbance_type"],
         data=[
             ["c1_v1", "c2_v1", "Ontario", "Mixedwood Plains", 15, 1.0,
-             0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]])
+             0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]]))
 
-    n_stands = len(inventory.index)
+    n_stands = inventory.n_rows
 
     csets, inv = cbm_factory.prepare_inventory(inventory)
 
     with cbm_factory.initialize_cbm() as cbm:
 
-        in_memory_cbm_output = InMemoryCBMOutput(
+        cbm_output = CBMOutput(
             classifier_map=cbm_factory.get_classifier_map(),
             disturbance_type_map={1: "fires"})
         cbm_simulator.simulate(
@@ -77,12 +78,16 @@ def run_cbm():
             classifiers=csets,
             inventory=inv,
             pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
-            reporting_func=in_memory_cbm_output.append_simulation_result
+            reporting_func=cbm_output.append_simulation_result
         )
 ```
 
 ```python
 cProfile.run('run_cbm()')
+```
+
+```python
+
 ```
 
 ```python
