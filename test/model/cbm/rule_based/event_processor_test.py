@@ -214,7 +214,7 @@ class EventProcessorTest(unittest.TestCase):
                 pd.DataFrame({"classifier1": [1, 2, 3, 4]})
             ),
             inventory=dataframe.from_pandas(
-                pd.DataFrame({"area": [1, 2, 3, 4]})
+                pd.DataFrame({"area": [1, 2, 3, 4]}, dtype="float64")
             ),
             state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
