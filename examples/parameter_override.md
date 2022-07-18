@@ -8,7 +8,7 @@ jupyter:
       format_version: '1.3'
       jupytext_version: 1.14.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -42,7 +42,7 @@ def run_cbm_random():
     classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 
     # get the default CBM parameters: this is a dictionary of name/dataframe pairs
-    default_parameters = sit.defaults.get_parameters_factory(sit.sit_data.disturbance_types)()
+    default_parameters = sit.get_parameters_factory()()
 
     def random_parameter_factory():
         # update the default parameters table "turnover_parameters"
@@ -71,7 +71,7 @@ def run_cbm_random():
             reporting_func       = cbm_output.append_simulation_result
         )
         # return a single pool value to illustrate the effect of the randomly drawn parameter
-        return results.pools[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()
+        return cbm_output.pools.to_pandas()[["timestep", "SoftwoodStemSnag"]].groupby("timestep").sum()
 ```
 
 ```python
