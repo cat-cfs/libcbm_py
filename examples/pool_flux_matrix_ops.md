@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.0
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -30,6 +30,7 @@ import scipy.sparse
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
+from libcbm.storage import dataframe
 ```
 
 ```python
@@ -83,10 +84,13 @@ def ComputePools(pools, ops, op_indices):
         #In LibCBM matrices are stored in a sparse format, so 0 values can be omitted from the parameter
         dll.set_op(op_id, [to_coordinate(x) for x in op], 
                   np.ascontiguousarray(op_indices[:,i]))
-        
-    dll.compute_pools(op_ids, pools)
+    pools_df = dataframe.from_numpy(
+        {str(x): pools[:, x] for x in range(pools.shape[1])}
+    )
+
+    dll.compute_pools(op_ids, pools_df)
     
-    return pools
+    return pools_df.to_numpy()
         
 ```
 
@@ -315,8 +319,15 @@ def ComputeFlux(pools, poolnames, ops, op_indices, op_processes, flux_indicators
         dll.set_op(op_id, [to_coordinate(x) for x in op], 
                   np.ascontiguousarray(op_indices[:,i]))
         
-    dll.compute_flux(op_ids, op_processes, pools, flux)
-    return pools, flux
+    pools_df = dataframe.from_numpy(
+        {str(x): pools[:, x] for x in range(pools.shape[1])}
+    )
+
+    flux_df = dataframe.from_numpy(
+        {f"flux{idx}": flux[:, idx] for idx, _ in enumerate(flux_indicators)}
+    )
+    dll.compute_flux(op_ids, op_processes, pools_df, flux_df)
+    return pools_df.to_numpy(), flux_df.to_numpy()
 
 ```
 
