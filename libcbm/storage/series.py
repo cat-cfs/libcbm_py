@@ -51,8 +51,8 @@ class Series(ABC):
     @abstractmethod
     def assign(
         self,
-        indices: "Series",
         value: Union["Series", Any],
+        indices: "Series",
         allow_type_change=False,
     ):
         pass

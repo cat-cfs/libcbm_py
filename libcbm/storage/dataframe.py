@@ -7,7 +7,6 @@ from libcbm.storage.backends import BackendType
 from libcbm.storage import backends
 from libcbm.storage.series import Series
 from libcbm.storage.series import SeriesDef
-from typing import Any
 from abc import ABC
 from abc import abstractmethod
 
@@ -36,12 +35,6 @@ class DataFrame(ABC):
         get the row at the specified 0 based sequential index as a row
         dictionary
         """
-        pass
-
-    @abstractmethod  # pragma: no cover
-    def assign(
-        self, col_name: str, value: Union[Series, Any], indices: Series = None
-    ):
         pass
 
     @property

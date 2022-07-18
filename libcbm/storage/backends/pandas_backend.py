@@ -31,21 +31,6 @@ class PandasDataFrameBackend(DataFrame):
     def at(self, index: int) -> dict:
         return self._df.iloc[index].to_dict()
 
-    def assign(
-        self, col_name: str, value: Union[Series, Any], indices: Series = None
-    ):
-        assign_value = None
-        if isinstance(value, Series):
-            assign_value = value.to_numpy()
-        else:
-            assign_value = value
-        if indices is not None:
-            self._df.iloc[
-                indices.to_numpy(), self._df.columns.get_loc(col_name)
-            ] = assign_value
-        else:
-            self._df.iloc[:, self._df.columns.get_loc(col_name)] = assign_value
-
     @property
     def n_rows(self) -> int:
         return len(self._df.index)
@@ -165,8 +150,8 @@ class PandasSeriesBackend(Series):
 
     def assign(
         self,
-        indices: "Series",
         value: Union["Series", Any],
+        indices: "Series" = None,
         allow_type_change=False,
     ):
         assignment_value = None
@@ -177,49 +162,26 @@ class PandasSeriesBackend(Series):
 
         dtype_original = self._get_series().dtype
         if self._series is not None:
-            self._series.iloc[indices.to_numpy()] = assignment_value
+            if indices is not None:
+                self._series.iloc[indices.to_numpy()] = assignment_value
+            else:
+                self._series.iloc[:] = assignment_value
             if (
                 not allow_type_change
                 and dtype_original != self._get_series().dtype
             ):
                 self._series = self._series.astype(dtype_original)
         elif self._parent_df is not None:
-            self._parent_df.iloc[
-                indices.to_numpy(),
-                self._parent_df.columns.get_loc(self.name),
-            ] = assignment_value
-            if (
-                not allow_type_change
-                and dtype_original != self._get_series().dtype
-            ):
-                self._parent_df[self.name] = self._parent_df[self.name].astype(
-                    dtype_original
-                )
-        else:
-            raise ValueError("internal series not defined")
-
-    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
-        """
-        set all values in this series to the specified value
-        """
-        assignment_value = None
-        if isinstance(value, Series):
-            assignment_value = value.to_numpy()
-        else:
-            assignment_value = value
-        dtype_original = self._get_series().dtype
-        if self._series is not None:
-            self._series.loc[:] = value
-            if (
-                not allow_type_change
-                and dtype_original != self._get_series().dtype
-            ):
-                self._series = self._series.astype(dtype_original)
-        elif self._parent_df is not None:
-            self._parent_df.iloc[
-                :,
-                self._parent_df.columns.get_loc(self.name),
-            ] = assignment_value
+            if indices is not None:
+                self._parent_df.iloc[
+                    indices.to_numpy(),
+                    self._parent_df.columns.get_loc(self.name),
+                ] = assignment_value
+            else:
+                self._parent_df.iloc[
+                    :,
+                    self._parent_df.columns.get_loc(self.name),
+                ] = assignment_value
             if (
                 not allow_type_change
                 and dtype_original != self._get_series().dtype

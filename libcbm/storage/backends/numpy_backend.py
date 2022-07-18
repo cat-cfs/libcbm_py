@@ -109,20 +109,6 @@ class NumpyDataFrameFrameBackend(DataFrame):
             for col, col_idx in self._col_idx.items()
         }
 
-    def assign(
-        self, col_name: str, value: Union[Series, Any], indices: Series = None
-    ):
-        assign_value = None
-        if isinstance(value, Series):
-            assign_value = value.to_numpy()
-        else:
-            assign_value = value
-        if indices is not None:
-            _idx = indices.to_numpy()
-            self._data[_idx, self._col_idx[col_name]] = assign_value
-        else:
-            self._data[:, self._col_idx[col_name]] = assign_value
-
     @property
     def n_rows(self) -> int:
         return self._n_rows
@@ -251,27 +237,22 @@ class NumpySeriesBackend(Series):
 
     def assign(
         self,
-        indices: "Series",
         value: Union["Series", Any],
+        indices: "Series" = None,
         allow_type_change=False,
     ):
         if allow_type_change:
             raise ValueError("numpy backend does not support type conversion")
         if isinstance(value, Series):
-            self._data[indices.to_numpy()] = value.to_numpy()
+            if indices is not None:
+                self._data[indices.to_numpy()] = value.to_numpy()
+            else:
+                self._data[:] = value
         else:
-            self._data[indices.to_numpy()] = value
-
-    def assign_all(self, value: Union["Series", Any], allow_type_change=False):
-        """
-        set all values in this series to the specified value
-        """
-        if allow_type_change:
-            raise ValueError("numpy backend does not support type conversion")
-        if isinstance(value, Series):
-            self._data[:] = value.to_numpy()
-        else:
-            self._data[:] = value
+            if indices is not None:
+                self._data[indices.to_numpy()] = value
+            else:
+                self._data[:] = value
 
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         return NumpySeriesBackend(
