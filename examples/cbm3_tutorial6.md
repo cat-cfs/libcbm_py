@@ -6,9 +6,9 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.0
+      jupytext_version: 1.13.7
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -75,14 +75,10 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
     )
 ```
 
-```python
-inventory
-```
-
 ## Pool Results
 
 ```python
-pi = results.pools.merge(results.classifiers)
+pi = cbm_output.pools.to_pandas().merge(cbm_output.classifiers.to_pandas())
 ```
 
 ```python
@@ -114,7 +110,7 @@ annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10))
 ## State Variable Results
 
 ```python
-si = results.state
+si = cbm_output.state.to_pandas()
 ```
 
 ```python
@@ -130,7 +126,7 @@ si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ## Flux Indicators
 
 ```python
-fi = results.flux
+fi = cbm_output.flux.to_pandas()
 ```
 
 ```python
