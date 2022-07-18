@@ -238,13 +238,12 @@ class TransitionRuleProcessor(object):
                 for classifier_name, value_id in transition_classifier_ids:
                     classifiers[classifier_name].assign_all(value_id)
 
-                state.assign(
-                    "regeneration_delay",
+                state["regeneration_delay"].assign(
                     int(tr_group["regeneration_delay"].at(i_proportion)),
                 )
 
-                parameters.assign(
-                    "reset_age", int(tr_group["reset_age"].at(i_proportion))
+                parameters["reset_age"].assign(
+                    int(tr_group["reset_age"].at(i_proportion))
                 )
 
             classifier_split = dataframe.concat_data_frame(
@@ -272,24 +271,22 @@ class TransitionRuleProcessor(object):
         )
 
         for classifier_name, value_id in transition_classifier_ids:
-            classifiers.assign(classifier_name, value_id, eligible_idx)
+            classifiers[classifier_name].assign(value_id, eligible_idx)
 
         if proportions[0] < 1.0:
 
-            inventory.assign(
-                "area",
+            inventory["area"].assign(
                 cbm_vars.inventory["area"].take(eligible_idx) * proportions[0],
                 eligible_idx,
             )
 
-        state.assign(
-            "regeneration_delay",
+        state["regeneration_delay"].assign(
             int(tr_group["regeneration_delay"].at(0)),
             eligible_idx,
         )
 
-        parameters.assign(
-            "reset_age", int(tr_group["reset_age"].at(0)), eligible_idx
+        parameters["reset_age"].assign(
+            int(tr_group["reset_age"].at(0)), eligible_idx
         )
 
         if len(proportions) > 1:

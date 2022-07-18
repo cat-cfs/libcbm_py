@@ -118,8 +118,7 @@ def apply_rule_based_event(
     if split_inventory.n_rows > 0:
         # reduce the area of the disturbed inventory by the disturbance area
         # proportion
-        cbm_vars.inventory.assign(
-            "area",
+        cbm_vars.inventory["area"].assign(
             (
                 cbm_vars.inventory["area"].take(split_index)
                 * target_area_proportions.filter(splits)
@@ -128,8 +127,7 @@ def apply_rule_based_event(
         )
 
         # set the split inventory as the remaining undisturbed area
-        split_inventory.assign(
-            "area",
+        split_inventory["area"].assign_all(
             split_inventory["area"]
             * (1.0 - target_area_proportions.filter(splits)),
         )
@@ -156,7 +154,7 @@ def apply_rule_based_event(
         )
 
         new_params = cbm_vars.parameters.take(split_index)
-        new_params.assign("disturbance_type", 0)
+        new_params["disturbance_type"].assign(0)
         parameters = dataframe.concat_data_frame(
             [cbm_vars.parameters, new_params]
         )
