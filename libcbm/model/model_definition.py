@@ -7,6 +7,7 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
 from libcbm.storage.series import Series
+from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.backends import BackendType
 
@@ -17,13 +18,19 @@ class ModelVars:
         size: int,
         pool_names: list[str],
         flux_names: list[str],
-        backend_type: BackendType = None,
+        backend_type: BackendType = BackendType.numpy,
     ):
         self.pools = dataframe.numeric_dataframe(
-            pool_names, size, 0, backend_type
+            pool_names,
+            size,
+            backend_type,
+            0,
         )
         self.flux = dataframe.numeric_dataframe(
-            flux_names, size, 0, backend_type
+            flux_names,
+            size,
+            backend_type,
+            0,
         )
 
 
@@ -111,11 +118,21 @@ class ModelOutputProcessor:
 
     def append_results(self, t: int, model_vars: ModelVars):
         pools_t = model_vars.pools.copy()
-        pools_t.add_column(Series("timestep", t, "int"), 0)
+        pools_t.add_column(
+            series.allocate(
+                "timestep", pools_t.n_rows, t, "int32", pools_t.backend_type
+            ),
+            0,
+        )
         self.pools = dataframe.concat_data_frame([self.pools, pools_t])
 
         flux_t = model_vars.flux.copy()
-        flux_t.add_column(Series("timestep", t, "int"), 0)
+        flux_t.add_column(
+            series.allocate(
+                "timestep", pools_t.n_rows, t, "int32", pools_t.backend_type
+            ),
+            0,
+        )
         self.flux = dataframe.concat_data_frame([self.flux, flux_t])
 
 
