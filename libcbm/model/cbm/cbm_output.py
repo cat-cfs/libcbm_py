@@ -174,7 +174,8 @@ class CBMOutput:
         else:
             timestep_classifiers = cbm_vars.classifiers.copy()
             timestep_classifiers = timestep_classifiers.map(
-                self._classifier_map)
+                self._classifier_map
+            )
             self._classifiers = _concat_timestep_results(
                 timestep,
                 self._classifiers,
