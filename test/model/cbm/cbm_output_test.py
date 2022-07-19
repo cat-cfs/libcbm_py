@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas import testing as pd_testing
 from unittest.mock import patch
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.cbm_output import CBMOutput
@@ -8,14 +9,14 @@ from libcbm.storage.dataframe import from_pandas
 
 def _make_test_data() -> CBMVariables:
     return CBMVariables(
-        pools=from_pandas(pd.DataFrame({"p1": [1, 2, 3]})),
-        flux=from_pandas(pd.DataFrame({"f1": [1, 2, 3]})),
+        pools=from_pandas(pd.DataFrame({"p1": [1.0, 2.0, 3.0]})),
+        flux=from_pandas(pd.DataFrame({"f1": [1.0, 2.0, 3.0]})),
         classifiers=from_pandas(
             pd.DataFrame({"c1": [1, 1, 1], "c2": [2, 2, 2]})
         ),
         state=from_pandas(pd.DataFrame({"s1": [1, 1, 1]})),
         inventory=from_pandas(
-            pd.DataFrame({"i1": [1, 2, 3], "area": [1, 2, 3]})
+            pd.DataFrame({"i1": [1, 2, 3], "area": [1.0, 2.0, 3.0]})
         ),
         parameters=from_pandas(pd.DataFrame({"p1": [-1, -1, -1]})),
     )
@@ -31,7 +32,7 @@ def test_construction(series, dataframe):
         backend_type=BackendType.pandas,
     )
 
-    assert cbm_output.density == True
+    assert cbm_output.density is True
     assert cbm_output.disturbance_type_map == {2: "b"}
     assert cbm_output.classifier_map == {1: "a"}
     assert cbm_output.backend_type == BackendType.pandas
@@ -52,16 +53,29 @@ def test_append_simulation_result_density_false():
     )
 
     cbm_output.append_simulation_result(timestep=1, cbm_vars=_make_test_data())
-    assert cbm_output.pools.to_pandas().equals(
+    pd_testing.assert_frame_equal(
+        cbm_output.pools.to_pandas(),
         pd.DataFrame(
-            {"identifier": [1, 2, 3], "timestep": [1, 1, 1], "p1": [1, 4, 9]}
-        )
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "p1": [1.0, 4.0, 9.0],
+            }
+        ),
     )
-    assert cbm_output.flux.to_pandas().equals(
+
+    pd_testing.assert_frame_equal(
+        cbm_output.flux.to_pandas(),
         pd.DataFrame(
-            {"identifier": [1, 2, 3], "timestep": [1, 1, 1], "f1": [1, 4, 9]}
-        )
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "f1": [1.0, 4.0, 9.0],
+            }
+        ),
     )
+
+
 
 
 def test_append_simulation_result_no_mapping():
