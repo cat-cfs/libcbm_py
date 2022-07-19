@@ -22,7 +22,7 @@ def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
             1,
             dataframe.n_rows + 1,
             1,
-            "int",
+            "int64",
             dataframe.backend_type,
         ),
         0,
