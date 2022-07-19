@@ -18,7 +18,12 @@ def _get_disturbance_type_map_func(disturbance_type_map):
 def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
     dataframe.add_column(
         series.range(
-            "identifier", 0, dataframe.n_rows, 1, "int", dataframe.backend_type
+            "identifier",
+            1,
+            dataframe.n_rows + 1,
+            1,
+            "int",
+            dataframe.backend_type,
         ),
         0,
     )
@@ -56,7 +61,6 @@ class CBMOutput:
         classifier_map: dict[int, str] = None,
         disturbance_type_map: dict[int, str] = None,
         backend_type: BackendType = BackendType.numpy,
-        backend_params: dict = None,
     ):
         """Create storage and a function for complete simulation results.  The
         function return value can be passed to :py:func:`simulate` to track
@@ -94,6 +98,22 @@ class CBMOutput:
         self._classifiers: DataFrame = None
         self._parameters: DataFrame = None
         self._area: DataFrame = None
+
+    @property
+    def density(self) -> bool:
+        return self._density
+
+    @property
+    def disturbance_type_map(self) -> dict[int, str]:
+        return self._disturbance_type_map
+
+    @property
+    def classifier_map(self) -> dict[int, str]:
+        return self._classifier_map
+
+    @property
+    def backend_type(self) -> BackendType:
+        return self._backend_type
 
     @property
     def pools(self) -> DataFrame:
