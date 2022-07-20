@@ -16,21 +16,21 @@ class Series(ABC):
     presents a limited interface for internal usage by libcbm.
     """
 
-    @property
+    @property  # pragma: no cover
     @abstractmethod
     def name(self) -> str:
         pass
 
-    @name.setter
+    @name.setter  # pragma: no cover
     @abstractmethod
     def name(self, value) -> str:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def copy(self) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
@@ -38,17 +38,17 @@ class Series(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def take(self, indices: "Series") -> "Series":
         """return the elements of this series at the specified indices
         (returns a copy)"""
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def as_type(self, type_name: str) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def assign(
         self,
         value: Union["Series", Any],
@@ -57,16 +57,16 @@ class Series(ABC):
     ):
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def any(self) -> bool:
         """
         return True if at least one value in this series is
@@ -74,30 +74,30 @@ class Series(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def all(self) -> bool:
         """
         return True if all values in this series are non-zero
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def unique(self) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def to_numpy(self) -> np.ndarray:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def to_list(self) -> list:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def to_numpy_ptr(self) -> ctypes.pointer:
         pass
 
-    @staticmethod
+    @staticmethod  # pragma: no cover
     def _get_operand(
         op: Union[int, float, "Series"]
     ) -> Union[int, float, np.ndarray, pd.DataFrame]:
@@ -105,12 +105,12 @@ class Series(ABC):
             return op.data
         return op
 
-    @property
+    @property  # pragma: no cover
     @abstractmethod
     def data(self) -> Union[np.ndarray, pd.Series]:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def less(self, other: "Series") -> "Series":
         """
         returns a boolean series with:
@@ -120,105 +120,105 @@ class Series(ABC):
         """
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def sum(self) -> Union[int, float]:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def cumsum(self) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def max(self) -> Union[int, float]:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def min(self) -> Union[int, float]:
         pass
 
-    @property
+    @property  # pragma: no cover
     @abstractmethod
     def length(self) -> int:
         pass
 
-    @property
+    @property  # pragma: no cover
     @abstractmethod
     def backend_type(self) -> BackendType:
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
         pass
 
-    @abstractmethod
+    @abstractmethod  # pragma: no cover
     def __invert__(self) -> "Series":
         pass
 
