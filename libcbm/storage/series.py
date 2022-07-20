@@ -261,6 +261,17 @@ def from_numpy(name: str, data: np.ndarray) -> Series:
 
 
 def from_list(name: str, data: list) -> Series:
+    """
+    method to allocate a numpy-backed series from a python list, intended
+    primarily for unit and integration testing purposes
+
+    Args:
+        name (str): name of the series
+        data (list): series data
+
+    Returns:
+        Series: a series
+    """
     return get_backend(BackendType.numpy).NumpySeriesBackend(
         name, np.array(data)
     )
