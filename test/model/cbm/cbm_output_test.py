@@ -1,5 +1,5 @@
 import pandas as pd
-from pandas import testing as pd_testing
+from pandas.testing import assert_frame_equal
 from unittest.mock import patch
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.cbm_output import CBMOutput
@@ -14,11 +14,17 @@ def _make_test_data() -> CBMVariables:
         classifiers=from_pandas(
             pd.DataFrame({"c1": [1, 1, 1], "c2": [2, 2, 2]})
         ),
-        state=from_pandas(pd.DataFrame({"s1": [1, 1, 1]})),
+        state=from_pandas(
+            pd.DataFrame(
+                {"s1": [1, 1, 1], "last_disturbance_type": [-1, 1, -1]}
+            )
+        ),
         inventory=from_pandas(
             pd.DataFrame({"i1": [1, 2, 3], "area": [1.0, 2.0, 3.0]})
         ),
-        parameters=from_pandas(pd.DataFrame({"p1": [-1, -1, -1]})),
+        parameters=from_pandas(
+            pd.DataFrame({"p1": [-1, -1, -1], "disturbance_type": [1, 2, -1]})
+        ),
     )
 
 
@@ -47,13 +53,13 @@ def test_construction(series, dataframe):
 def test_append_simulation_result_density_false():
     cbm_output = CBMOutput(
         density=False,
-        classifier_map=None,
+        classifier_map={1: "a", 2: "b"},
         disturbance_type_map=None,
         backend_type=BackendType.pandas,
     )
 
     cbm_output.append_simulation_result(timestep=1, cbm_vars=_make_test_data())
-    pd_testing.assert_frame_equal(
+    assert_frame_equal(
         cbm_output.pools.to_pandas(),
         pd.DataFrame(
             {
@@ -64,7 +70,7 @@ def test_append_simulation_result_density_false():
         ),
     )
 
-    pd_testing.assert_frame_equal(
+    assert_frame_equal(
         cbm_output.flux.to_pandas(),
         pd.DataFrame(
             {
@@ -75,7 +81,52 @@ def test_append_simulation_result_density_false():
         ),
     )
 
+    assert_frame_equal(
+        cbm_output.classifiers.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "c1": ["a", "a", "a"],
+                "c2": ["b", "b", "b"],
+            }
+        ),
+    )
 
+    assert_frame_equal(
+        cbm_output.state.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "s1": [1, 1, 1],
+                "last_disturbance_type": [-1, 1, -1],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.area.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "area": [1.0, 2.0, 3.0],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.parameters.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "p1": [-1, -1, -1],
+                "disturbance_type": [1, 2, -1],
+            }
+        ),
+    )
 
 
 def test_append_simulation_result_no_mapping():
@@ -87,29 +138,148 @@ def test_append_simulation_result_no_mapping():
     )
 
     cbm_output.append_simulation_result(timestep=1, cbm_vars=_make_test_data())
-    assert cbm_output.pools.to_pandas().equals(
+    assert_frame_equal(
+        cbm_output.pools.to_pandas(),
         pd.DataFrame(
-            {"identifier": [1, 2, 3], "timestep": [1, 1, 1], "p1": [1, 2, 3]}
-        )
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "p1": [1.0, 2.0, 3.0],
+            }
+        ),
     )
-    assert cbm_output.flux.to_pandas().equals(
+    assert_frame_equal(
+        cbm_output.flux.to_pandas(),
         pd.DataFrame(
-            {"identifier": [1, 2, 3], "timestep": [1, 1, 1], "f1": [1, 2, 3]}
-        )
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "f1": [1.0, 2.0, 3.0],
+            }
+        ),
     )
 
-    # flux=from_pandas(pd.DataFrame({"f1": [1, 2, 3]})),
-    # classifiers=from_pandas(
-    #    pd.DataFrame({"c1": [1, 1, 1], "c2": [2, 2, 2]})
-    # ),
-    # state=from_pandas(pd.DataFrame({"s1": [1, 1, 1]})),
-    # inventory=from_pandas(
-    #    pd.DataFrame({"i1": [1, 2, 3], "area": [1, 2, 3]})
-    # ),
-    # parameters=from_pandas(pd.DataFrame({"p1": [-1, -1, -1]})),
+    assert_frame_equal(
+        cbm_output.classifiers.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "c1": [1, 1, 1],
+                "c2": [2, 2, 2],
+            }
+        ),
+    )
 
-    # assert cbm_output.pools.to_pandas() = test_data.pools
+    assert_frame_equal(
+        cbm_output.state.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "s1": [1, 1, 1],
+                "last_disturbance_type": [-1, 1, -1],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.area.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "area": [1.0, 2.0, 3.0],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.parameters.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3],
+                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "p1": [-1, -1, -1],
+                "disturbance_type": [1, 2, -1],
+            }
+        ),
+    )
 
 
-def test_append_simulation_result_with_mapping():
-    pass
+def test_append_simulation_result_with_mapping_multiple_append():
+    cbm_output = CBMOutput(
+        density=True,
+        classifier_map={1: "c1", 2: "c2"},
+        disturbance_type_map={0: "d0", 1: "d1", 2: "d2"},
+        backend_type=BackendType.pandas,
+    )
+    cbm_output.append_simulation_result(timestep=1, cbm_vars=_make_test_data())
+    cbm_output.append_simulation_result(timestep=2, cbm_vars=_make_test_data())
+    assert_frame_equal(
+        cbm_output.pools.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "p1": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
+            }
+        ),
+    )
+    assert_frame_equal(
+        cbm_output.flux.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "f1": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.classifiers.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "c1": ["c1", "c1", "c1", "c1", "c1", "c1"],
+                "c2": ["c2", "c2", "c2", "c2", "c2", "c2"],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.state.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "s1": [1, 1, 1, 1, 1, 1],
+                "last_disturbance_type": [-1, "d1", -1, -1, "d1", -1],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.area.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "area": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
+            }
+        ),
+    )
+
+    assert_frame_equal(
+        cbm_output.parameters.to_pandas(),
+        pd.DataFrame(
+            {
+                "identifier": [1, 2, 3, 1, 2, 3],
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "p1": [-1, -1, -1, -1, -1, -1],
+                "disturbance_type": ["d1", "d2", -1, "d1", "d2", -1],
+            }
+        ),
+    )
