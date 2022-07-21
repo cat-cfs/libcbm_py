@@ -59,7 +59,7 @@ class LibCBMWrapper:
         self,
         op_id: int,
         matrices: list[np.ndarray],
-        matrix_index: list[int],
+        matrix_index: np.ndarray,
         init: int = 0,
     ):
         """Assigns values to an allocated block of matrices.
@@ -156,7 +156,60 @@ class LibCBMWrapper:
         init: int = 0,
     ):
         """Assigns the specified values associated with repeating coordinates
-        to an allocated block of matrices.
+        to an allocated block of matrices.  Note the full set of coordinates
+        are not required, and this layout is efficient for sparse
+        coordinate-values.
+
+        The parameter init first initializes any value not specified in the
+        value/coordinates with the init value, this defaults to zero.
+
+        Example Data Layout::
+
+            coordinates = [
+                [0, 1],
+                [0, 2],
+                [1, 2]
+            ]
+
+            values = [
+                [0.20, 0.40, 0.10],
+                [0.23, 0.42, 0.73],
+                [0.12, 0.99, 0.13]
+            ]
+
+            matrix_index = [0, 1, 1, 2, 0]
+
+        Result of example (dense matrix form):
+
+            stand0_matrix = [
+                [0.00, 0.20, 0.40],
+                [0.00, 0.00, 0.10],
+                [0.00, 0.00, 0.00],
+            ]
+
+            stand1_matrix = [
+                [0.00, 0.23, 0.42],
+                [0.00, 0.00, 0.73],
+                [0.00, 0.00, 0.00],
+            ]
+
+            stand2_matrix = [
+                [0.00, 0.23, 0.42],
+                [0.00, 0.00, 0.73],
+                [0.00, 0.00, 0.00],
+            ]
+
+            stand3_matrix = [
+                [0.00, 0.12, 0.99],
+                [0.00, 0.00, 0.13],
+                [0.00, 0.00, 0.00],
+            ]
+
+            stand4_matrix = [
+                [0.00, 0.20, 0.40],
+                [0.00, 0.00, 0.10],
+                [0.00, 0.00, 0.00],
+            ]
 
         Args:
             op_id (int): The id for an allocated block of matrices
@@ -235,8 +288,8 @@ class LibCBMWrapper:
 
     def compute_flux(
         self,
-        ops: np.ndarray,
-        op_processes: np.ndarray,
+        ops: list,
+        op_processes: list,
         pools: DataFrame,
         flux: DataFrame,
         enabled: Series = None,
@@ -248,20 +301,20 @@ class LibCBMWrapper:
         flux_indicators configuration passed to the LibCBM initialize method.
 
         Args:
-            ops (ndarray): list of matrix block ids as allocated by the
+            ops (list): list of matrix block ids as allocated by the
                 allocate_op function.
-            op_processes (ndarray): list of integers of length n_ops.
+            op_processes (list): list of integers of length n_ops.
                 Ids referencing flux indicator process_id definition in the
                 Initialize method.
-            pools (numpy.ndarray or pandas.DataFrame): matrix of shape
+            pools (DataFrame): dataframe containing matrix of shape
                 n_stands by n_pools. The values in this matrix are updated by
                 this function.
-            flux (ndarray or pandas.DataFrame): matrix of shape n_stands
+            flux (DataFrame): dataframe containing matrix of shape n_stands
                 by n_flux_indicators. The values in this matrix are updated
                 by this function according to the definition of flux
                 indicators in the configuration and the flows that occur in
                 the specified operations.
-            enabled (ndarray, optional): optional int vector of length
+            enabled (Series, optional): optional int or bool vector of length
                 n_stands. If specified, enables or disables flows for each
                 stand, based on the value at each stand index. A value of 0
                 indicates a disabled stand index, and any other value is an
