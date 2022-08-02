@@ -1,6 +1,5 @@
 from typing import Any
 from typing import Union
-from typing import Callable
 import pandas as pd
 import numpy as np
 import ctypes
@@ -192,7 +191,7 @@ class PandasSeriesBackend(Series):
         else:
             raise ValueError("internal series not defined")
 
-    def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
+    def map(self, arg: dict) -> "Series":
         return PandasSeriesBackend(self._name, self._get_series().map(arg))
 
     def at(self, idx: int) -> Any:
