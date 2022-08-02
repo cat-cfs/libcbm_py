@@ -290,20 +290,27 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     def map(self, arg: dict) -> DataFrame:
         out_data = {}
-        for col_name, col_idx in self._col_idx:
-            out_data[col_name] = (
-                pd.Series(self._data_matrix.flatten())
-                .map(arg)
-                .to_numpy()
-                .reshape((self.n_rows, self.n_cols))
-            )
+        return NumpyDataFrameFrameBackend(
+            pd.Series(self._data_matrix.flatten())
+            .map(arg)
+            .to_numpy()
+            .reshape((self.n_rows, self.n_cols)),
+            self.columns,
+        )
         return NumpyDataFrameFrameBackend(out_data)
 
     def evaluate_filter(self, expression: str) -> Series:
-        local_dict = _numepxr_local_dict_wrap(self._col_idx, self._data)
-        return NumpySeriesBackend(
-            None, numexpr.evaluate(expression, local_dict)
-        )
+        if self._storage_format == StorageFormat.uniform_matrix:
+            local_dict = _numepxr_local_dict_wrap(
+                self._col_idx, self._data_matrix
+            )
+            return NumpySeriesBackend(
+                None, numexpr.evaluate(expression, local_dict)
+            )
+        else:
+            return NumpySeriesBackend(
+                None, numexpr.evaluate(expression, self._data_cols)
+            )
 
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
         index_array = np.argsort(
