@@ -2,10 +2,11 @@ from enum import Enum
 import ctypes
 import numpy as np
 import pandas as pd
+import numba
+from numba.typed import Dict as NumbaDict
 import numexpr
 from typing import Any
 from typing import Union
-from typing import Callable
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
@@ -23,6 +24,35 @@ class _numepxr_local_dict_wrap:
 
     def __getitem__(self, key: str) -> np.ndarray:
         return self._arr[:, self._col_idx[key]]
+
+
+@numba.njit
+def _map_1D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
+
+    for i in range(a.shape[0]):
+        out[i] = d[a[i]]
+
+
+@numba.njit
+def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
+
+    for i in range(a.shape[0]):
+        for j in range(a.shape[1]):
+            out[i, j] = d[a[i, j]]
+
+
+def _map(a: np.ndarray, d: dict) -> np.ndarray:
+    nb_d = NumbaDict()
+    for k, v in d.items():
+        nb_d[k] = v
+    out = np.empty_like(a, dtype=str(numba.typeof(nb_d).value_type))
+    if a.ndim == 1:
+        _map_1D_nb(a, out, nb_d)
+    elif a.ndim == 2:
+        _map_2D_nb(a, out, nb_d)
+    else:
+        raise ValueError("ndim=1 or ndim=2 supported")
+    return out
 
 
 def mult_along_axis(A: np.ndarray, B: np.ndarray, axis: int) -> np.ndarray:
@@ -289,15 +319,15 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 self._data_cols[col][:] = 0
 
     def map(self, arg: dict) -> DataFrame:
-        out_data = {}
-        return NumpyDataFrameFrameBackend(
-            pd.Series(self._data_matrix.flatten())
-            .map(arg)
-            .to_numpy()
-            .reshape((self.n_rows, self.n_cols)),
-            self.columns,
-        )
-        return NumpyDataFrameFrameBackend(out_data)
+
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                _map(self._data_matrix, arg), self.columns
+            )
+        else:
+            return NumpyDataFrameFrameBackend(
+                {col: _map(self._data_cols[col], arg) for col in self.columns}
+            )
 
     def evaluate_filter(self, expression: str) -> Series:
         if self._storage_format == StorageFormat.uniform_matrix:
@@ -382,10 +412,8 @@ class NumpySeriesBackend(Series):
             else:
                 self._data[:] = value
 
-    def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
-        return NumpySeriesBackend(
-            self._name, pd.Series(self._data).map(arg).to_numpy()
-        )
+    def map(self, arg: dict) -> "Series":
+        return NumpySeriesBackend(self._name, _map(self._data, arg))
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
