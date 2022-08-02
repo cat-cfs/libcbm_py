@@ -19,15 +19,18 @@ class Series(ABC):
     @property  # pragma: no cover
     @abstractmethod
     def name(self) -> str:
+        """get the series name"""
         pass
 
     @name.setter  # pragma: no cover
     @abstractmethod
-    def name(self, value) -> str:
+    def name(self, value: str) -> str:
+        """assign the series name"""
         pass
 
     @abstractmethod  # pragma: no cover
     def copy(self) -> "Series":
+        """create a copy of this series"""
         pass
 
     @abstractmethod  # pragma: no cover
@@ -40,25 +43,45 @@ class Series(ABC):
 
     @abstractmethod  # pragma: no cover
     def take(self, indices: "Series") -> "Series":
-        """return the elements of this series at the specified indices
-        (returns a copy)"""
+        """
+        Return the elements of this series at the specified indices
+        (returns a copy)
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def as_type(self, type_name: str) -> "Series":
+        """
+        Return a copied series with all elements converted to the specified
+        type.  A ValueError is raised if it is not possible to convert any
+        element
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def assign(
         self,
         value: Union["Series", Any],
-        indices: "Series",
+        indices: "Series" = None,
         allow_type_change=False,
     ):
+        """
+        Assign a single value, or a Series to a subset or to the entirety of
+        this series
+
+        Args:
+            value (Union[Series, Any]): assignment value
+            indices (Series, optional): The indices of assignment.
+                If unspecified all indicies are assigned. Defaults to None.
+            allow_type_change (bool, optional): If set to true, the underlying
+                storage type may be changed by this operation, and if False
+                (default) any assignement that would result in a type change
+                will result in a ValueError. Defaults to False.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
-    def map(self, arg: Union[dict, Callable[[int, Any], Any]]) -> "Series":
+    def map(self, arg: dict) -> "Series":
         pass
 
     @abstractmethod  # pragma: no cover
