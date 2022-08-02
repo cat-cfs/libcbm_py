@@ -91,10 +91,12 @@ class DataFrame(ABC):
         pass
 
     @abstractmethod  # pragma: no cover
-    def map(self, arg: Union[dict, Callable]) -> "DataFrame":
-        """Apply the specified mapping arg on every element of this dataframe
-        to project a new dataframe with updated values. The results has the
-        same number of rows, columns and same column names
+    def map(self, arg: dict) -> "DataFrame":
+        """Apply the specified mapping dictionary on every element of this
+        dataframe to project a new dataframe with updated values. The results
+        has the same number of rows, columns and same column names.  If any
+        value in this dataframe is not present in the supplied dictionary an
+        error will be raised.
         """
         pass
 
