@@ -17,7 +17,6 @@ def test_series():
         # copy
         assert s.copy().to_list() == s_base.to_list()
 
-
         # filter
         assert s.filter(
             series.from_list("", [True] * 50 + [False] * 50)
@@ -41,6 +40,8 @@ def test_series():
         ]
 
         assert s.as_type("str").to_list() == [str(x) for x in range(0, 100)]
+        with pytest.raises(ValueError):
+            series.from_list("", ["abc"]).as_type("int")
 
         # assign
         s_assigned = s.copy()
@@ -51,6 +52,20 @@ def test_series():
             series.from_list("", [99, 98, 97]), series.from_list("", [0, 1, 2])
         )
         assert s_assigned.to_list() == [99, 98, 97] + list(range(3, 100))
+        # confirm error is raised when type change is tried but not permitted
+        with pytest.raises(ValueError):
+            s_assigned.assign("A")
 
         # map
-        s.map()
+        s_mapped1 = s.map({x: f"value_{str(x)}" for x in range(0, 100)})
+        assert s_mapped1.to_list() == [
+            f"value_{str(x)}" for x in range(0, 100)
+        ]
+        # confirm that if the map arg is a dictionary, and any element in the
+        # series is not present in that dictionary an error is raised.  This
+        # may be built into pandas eventually as well
+        # https://github.com/pandas-dev/pandas/issues/14210
+        with pytest.raises(ValueError):
+            s.map({999: 2})
+        s_mapped2 = s.map(lambda x: x - 1)
+        assert s_mapped2.to_list() == list(range(-1, 99))

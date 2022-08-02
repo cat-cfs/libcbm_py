@@ -8,7 +8,10 @@ from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 
 
 TEST_CONFIG = {
-    "pools": [{"id": 1, "index": 0, "name": "pool_1"}, {"id": 2, "index": 1, "name": "pool_2"}],
+    "pools": [
+        {"id": 1, "index": 0, "name": "pool_1"},
+        {"id": 2, "index": 1, "name": "pool_2"},
+    ],
     "flux_indicators": [
         {
             "id": 1,
