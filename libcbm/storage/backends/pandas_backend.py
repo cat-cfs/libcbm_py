@@ -72,7 +72,7 @@ class PandasDataFrameBackend(DataFrame):
     def zero(self):
         self._df.iloc[:] = 0
 
-    def map(self, arg: Union[dict, Callable]) -> DataFrame:
+    def map(self, arg: dict) -> DataFrame:
         cols = list(self._df.columns)
         output = pd.DataFrame(
             index=self._df.index,
