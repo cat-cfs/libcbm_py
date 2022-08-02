@@ -1,3 +1,4 @@
+from enum import Enum
 import ctypes
 import numpy as np
 import pandas as pd
@@ -10,6 +11,11 @@ from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
 
 
+class StorageFormat(Enum):
+    uniform_matrix = 0
+    mixed_columns = 1
+
+
 class _numepxr_local_dict_wrap:
     def __init__(self, col_idx: dict[str, int], arr: np.ndarray):
         self._arr = arr
@@ -17,6 +23,37 @@ class _numepxr_local_dict_wrap:
 
     def __getitem__(self, key: str) -> np.ndarray:
         return self._arr[:, self._col_idx[key]]
+
+
+def mult_along_axis(A: np.ndarray, B: np.ndarray, axis: int) -> np.ndarray:
+    # credit to contributors at
+    # https://stackoverflow.com/questions/30031828/multiply-numpy-ndarray-with-1d-array-along-a-given-axis
+    # ensure we're working with Numpy arrays
+    A = np.array(A)
+    B = np.array(B)
+
+    # shape check
+    if axis >= A.ndim:
+        raise ValueError(f"axis {axis} is >= A.ndim ({A.ndim})")
+    if A.shape[axis] != B.size:
+        raise ValueError(
+            "Length of 'A' along the given axis must be the same as B.size"
+        )
+
+    # np.broadcast_to puts the new axis as the last axis, so
+    # we swap the given axis with the last one, to determine the
+    # corresponding array shape. np.swapaxes only returns a view
+    # of the supplied array, so no data is copied unnecessarily.
+    shape = np.swapaxes(A, A.ndim - 1, axis).shape
+
+    # Broadcast to an array with the shape as above. Again,
+    # no data is copied, we only get a new look at the existing data.
+    B_brc = np.broadcast_to(B, shape)
+
+    # Swap back the axes. As before, this only changes our "point of view".
+    B_brc = np.swapaxes(B_brc, A.ndim - 1, axis)
+
+    return A * B_brc
 
 
 def get_numpy_pointer(
@@ -65,49 +102,94 @@ def get_numpy_pointer(
 
 
 class NumpyDataFrameFrameBackend(DataFrame):
-    def __init__(self, data: dict[str, np.ndarray]) -> None:
-        self._data: np.ndarray = np.column_stack(list(data.values()))
-        self._columns = list(data.keys())
+    def __init__(
+        self,
+        data: Union[np.ndarray, dict[str, np.ndarray]],
+        cols: list[str] = None,
+    ) -> None:
+
+        if isinstance(data, dict):
+            self._from_dict(data)
+        else:
+            self._from_matrix(cols, data)
+
+    def _initialize(self, n_rows: int, columns: list[str]):
+        self._columns = columns
         self._col_idx = {col: i for i, col in enumerate(self._columns)}
-        self._n_rows: int = None
-        self._n_cols: int = len(data)
+        self._n_rows: int = n_rows
+        self._n_cols: int = len(columns)
+
+    def _from_matrix(self, cols: list[str], data: np.ndarray) -> None:
+        self._data_matrix: np.ndarray = data
+        self._storage_format = StorageFormat.uniform_matrix
+        self._initialize(data.shape[0], cols)
+
+    def _from_dict(self, data: dict[str, np.ndarray]) -> None:
+        n_rows = None
         for k, v in data.items():
             if v.ndim != 1:
                 raise ValueError(f"specified array '{k}' has ndim {v.ndim}")
-            if self._n_rows is None:
-                self._n_rows = v.shape[0]
+            if n_rows is None:
+                n_rows = v.shape[0]
             else:
-                if self._n_rows != v.shape[0]:
+                if n_rows != v.shape[0]:
                     raise ValueError("uneven array lengths")
+        self._data_cols: dict[str, np.ndarray] = data
+        _has_uniform_types = len(set(arr.dtype for arr in data.values())) == 1
+        self._storage_format = (
+            StorageFormat.uniform_matrix
+            if _has_uniform_types
+            else StorageFormat.mixed_columns
+        )
+        self._initialize(n_rows, list(data.keys()))
 
     def __getitem__(self, col_name: str) -> Series:
-        return NumpySeriesBackend(
-            col_name, self._data[:, self._col_idx[col_name]]
-        )
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpySeriesBackend(
+                col_name, self._data_matrix[:, self._col_idx[col_name]]
+            )
+        else:
+            return NumpySeriesBackend(col_name, self._data_cols[col_name])
 
     def filter(self, arg: Series) -> DataFrame:
         _filter = arg.to_numpy()
-        return NumpyDataFrameFrameBackend(
-            {
-                col: self._data[_filter, col_idx]
-                for col, col_idx in self._col_idx.items()
-            },
-        )
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                self._data_matrix[_filter, :], self.columns
+            )
+        else:
+            return NumpyDataFrameFrameBackend(
+                {
+                    col: self._data_cols[col][_filter]
+                    for col, _ in self._columns
+                }
+            )
 
     def take(self, indices: Series) -> DataFrame:
         row_idx = indices.to_numpy()
-        return NumpyDataFrameFrameBackend(
-            {
-                col: self.data[row_idx, col_idx]
-                for col, col_idx in self._col_idx.items()
-            },
-        )
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                self._data_matrix[row_idx, :], self._data_cols
+            )
+        else:
+            return NumpyDataFrameFrameBackend(
+                {
+                    col: self._data_cols[col][row_idx]
+                    for col, _ in self._columns
+                }
+            )
 
     def at(self, index: int) -> dict:
-        return {
-            col: self._data[index, col_idx]
-            for col, col_idx in self._col_idx.items()
-        }
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return {
+                col: self._data_matrix[index, col_idx]
+                for col, col_idx in self._col_idx.items()
+            }
+        else:
+            return {
+                col: self._data_cols[index, col_idx]
+                for col, col_idx in self._col_idx.items()
+            }
 
     @property
     def n_rows(self) -> int:
@@ -126,20 +208,32 @@ class NumpyDataFrameFrameBackend(DataFrame):
         return BackendType.numpy
 
     def copy(self) -> DataFrame:
-        return NumpyDataFrameFrameBackend(
-            {
-                col: self._data[:, col_idx].copy()
-                for col, col_idx in self._col_idx.items()
-            }
-        )
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                self._data_matrix.copy(), self.columns
+            )
+        else:
+            return NumpyDataFrameFrameBackend(
+                {
+                    col: self._data_cols[:, col_idx].copy()
+                    for col, col_idx in self._col_idx.items()
+                }
+            )
 
     def multiply(self, series: Series) -> DataFrame:
         rh = series.to_numpy()
-        result = {
-            col: self._data[:, col_idx] * rh
-            for col, col_idx in self._col_idx.items()
-        }
-        return NumpyDataFrameFrameBackend(result)
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                mult_along_axis(self._data_matrix, rh, axis=1), self.columns
+            )
+        else:
+
+            return NumpyDataFrameFrameBackend(
+                {
+                    col: self._data[:, col_idx] * rh
+                    for col, col_idx in self._col_idx.items()
+                }
+            )
 
     def add_column(self, series: Series, index: int) -> None:
 
@@ -153,27 +247,55 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 "specified series does not have the same length as the "
                 "number of rows in this DataFrame"
             )
-        self._data = np.insert(self._data, index, insert_data, axis=1)
+
+        if self._storage_format == StorageFormat.uniform_matrix:
+            if insert_data.dtype != self._data_matrix.dtype:
+                raise ValueError(
+                    f"cannot insert {insert_data.dtype} typed series to "
+                    f"{self._data_matrix.dtype} matrix storage"
+                )
+            self._data_matrix = np.insert(
+                self._data_matrix, index, insert_data, axis=1
+            )
+        else:
+            self._data_cols[series.name] = insert_data
+
         self._columns.insert(index, series.name)
         self._col_idx = {col: i for i, col in enumerate(self._columns)}
         self._n_cols: int = len(self._columns)
 
     def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
+        if self._storage_format != StorageFormat.uniform_matrix:
+            raise ValueError("to_numpy not supported for non-uniform matrix")
         if make_c_contiguous and not self._data.flags["C_CONTIGUOUS"]:
-            self._data = np.ascontiguousarray(self._data)
-        return self._data
+            self._data_matrix = np.ascontiguousarray(self._data)
+        return self._data_matrix
 
     def to_pandas(self) -> pd.DataFrame:
-        return pd.DataFrame(columns=self.columns, data=self._data)
+        return pd.DataFrame(
+            columns=self.columns,
+            data=(
+                self._data_matrix
+                if self._storage_format == StorageFormat.uniform_matrix
+                else self._data_cols
+            ),
+        )
 
     def zero(self):
-        self._data[:, :] = 0
+        if self._storage_format == StorageFormat.uniform_matrix:
+            self._data_matrix[:, :] = 0
+        else:
+            for col in self.columns:
+                self._data_cols[col][:] = 0
 
-    def map(self, arg: Union[dict, Callable]) -> DataFrame:
+    def map(self, arg: dict) -> DataFrame:
         out_data = {}
         for col_name, col_idx in self._col_idx:
             out_data[col_name] = (
-                pd.Series(self._data[:, col_idx]).map(arg).to_numpy()
+                pd.Series(self._data_matrix.flatten())
+                .map(arg)
+                .to_numpy()
+                .reshape((self.n_rows, self.n_cols))
             )
         return NumpyDataFrameFrameBackend(out_data)
 
