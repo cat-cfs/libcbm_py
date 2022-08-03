@@ -198,7 +198,8 @@ class PandasSeriesBackend(Series):
             set().union(arg.keys(), self._get_series().drop_duplicates())
         ) > len(arg.keys()):
             raise KeyError(
-                "values in array not found as keys in specified dictionary")
+                "values in array not found as keys in specified dictionary"
+            )
         return PandasSeriesBackend(self._name, self._get_series().map(arg))
 
     def at(self, idx: int) -> Any:

@@ -132,7 +132,6 @@ class Series(ABC):
     def data(self) -> Union[np.ndarray, pd.Series]:
         pass
 
-
     @abstractmethod  # pragma: no cover
     def sum(self) -> Union[int, float]:
         pass
