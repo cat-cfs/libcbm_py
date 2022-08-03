@@ -246,17 +246,6 @@ class PandasSeriesBackend(Series):
     def data(self) -> pd.Series:
         return self._get_series()
 
-    def less(self, other: "Series") -> "Series":
-        """
-        returns a boolean series with:
-            True - where this series is less than the other series
-            False - where this series is greater than or equal to the other
-                series
-        """
-        return PandasSeriesBackend(
-            self._name, (self._get_series() < other.to_numpy())
-        )
-
     def sum(self) -> Union[int, float]:
         return self._get_series().sum()
 

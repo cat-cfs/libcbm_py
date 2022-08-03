@@ -460,15 +460,6 @@ class NumpySeriesBackend(Series):
     def data(self) -> np.ndarray:
         return self._data
 
-    def less(self, other: "Series") -> "Series":
-        """
-        returns a boolean series with:
-            True - where this series is less than the other series
-            False - where this series is greater than or equal to the other
-                series
-        """
-        return self._data < other.to_numpy()
-
     def sum(self) -> Union[int, float]:
         return self._data.sum()
 
