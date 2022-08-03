@@ -57,15 +57,8 @@ def test_series():
             s_assigned.assign("A")
 
         # map
-        s_mapped1 = s.map({x: f"value_{str(x)}" for x in range(0, 100)})
-        assert s_mapped1.to_list() == [
-            f"value_{str(x)}" for x in range(0, 100)
-        ]
-        # confirm that if the map arg is a dictionary, and any element in the
-        # series is not present in that dictionary an error is raised.  This
-        # may be built into pandas eventually as well
-        # https://github.com/pandas-dev/pandas/issues/14210
-        with pytest.raises(ValueError):
+        s_mapped1 = s.map({x: x + 1 for x in range(0, 100)})
+        assert s_mapped1.to_list() == [x + 1 for x in range(0, 100)]
+
+        with pytest.raises(KeyError):
             s.map({999: 2})
-        s_mapped2 = s.map(lambda x: x - 1)
-        assert s_mapped2.to_list() == list(range(-1, 99))
