@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 from libcbm.storage.backends import BackendType
 from libcbm.storage import series
 from libcbm.storage import dataframe
@@ -62,3 +63,72 @@ def test_series():
 
         with pytest.raises(KeyError):
             s.map({999: 2})
+
+        # at
+        assert s.at(0) == 0
+        assert s.at(99) == 99
+
+        assert s.any()
+        assert not s.all()
+
+        assert s.unique().to_list() == s.to_list()
+
+        assert s.to_list() == list(range(0, 100))
+        assert list(s.to_numpy()) == s.to_list()
+        assert s.to_numpy_ptr()
+
+        assert s.data is not None
+
+        assert s.sum() == sum(range(0, 100))
+        assert s.cumsum() == np.cumsum(range(0, 100))
+
+        assert s.max() == 99
+        assert s.min() == 0
+        assert s.length == 100
+
+        test_operands = [12.34, np.array([-999] * 100)]
+        test_array = np.array(range(0, 100))
+        test_operators = [
+            "__mul__",
+            "__rmul__",
+            "__truediv__",
+            "__rtruediv__",
+            "__add__",
+            "__radd__",
+            "__sub__",
+            "__rsub__",
+            "__ge__",
+            "__gt__",
+            "__le__",
+            "__lt__",
+            "__eq__",
+            "__ne__",
+        ]
+        for op in test_operators:
+            for operand in test_operands:
+                assert (
+                    getattr(s, op)(operand).to_numpy()
+                    == getattr(test_array, op)(operand)
+                ).all()
+
+        bit_operators = [
+            "__and__",
+            "__or__",
+            "__rand__",
+            "__ror__",
+        ]
+
+        bit_operands = [
+            True,
+            False,
+            np.array([True] * 100),
+            np.array([False] * 100),
+        ]
+        for op in bit_operators:
+            for operand in bit_operands:
+                assert (
+                    getattr(s > 50, op)(operand).to_numpy()
+                    == getattr(test_array > 50, op)(operand)
+                ).all()
+
+        assert (~(s < 50) == (test_array >= 50)).all()
