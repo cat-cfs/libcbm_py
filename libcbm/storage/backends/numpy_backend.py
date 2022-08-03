@@ -29,23 +29,27 @@ class _numepxr_local_dict_wrap:
 @numba.njit
 def _map_1D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
-    for i in range(a.shape[0]):
+    for i in np.arange(a.shape[0]):
         out[i] = d[a[i]]
 
 
 @numba.njit
 def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
-    for i in range(a.shape[0]):
-        for j in range(a.shape[1]):
+    for i in np.arange(a.shape[0]):
+        for j in np.arange(a.shape[1]):
             out[i, j] = d[a[i, j]]
 
 
 def _map(a: np.ndarray, d: dict) -> np.ndarray:
-    nb_d = NumbaDict()
+    out_value_type = numba.typeof(next(iter(d.values())))
+    nb_d = NumbaDict.empty(
+        key_type=numba.from_dtype(a.dtype),
+        value_type=out_value_type,
+    )
     for k, v in d.items():
         nb_d[k] = v
-    out = np.empty_like(a, dtype=str(numba.typeof(nb_d).value_type))
+    out = np.empty_like(a, dtype=str(out_value_type))
     if a.ndim == 1:
         _map_1D_nb(a, out, nb_d)
     elif a.ndim == 2:
