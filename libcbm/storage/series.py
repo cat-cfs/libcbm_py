@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from typing import Any
 from typing import Union
-from typing import Callable
 import ctypes
 from libcbm.storage.backends import BackendType
 from libcbm.storage.backends import get_backend
@@ -123,7 +122,7 @@ class Series(ABC):
     @staticmethod  # pragma: no cover
     def _get_operand(
         op: Union[int, float, "Series"]
-    ) -> Union[int, float, np.ndarray, pd.DataFrame]:
+    ) -> Union[int, float, np.ndarray, pd.Series]:
         if isinstance(op, Series):
             return op.data
         return op
@@ -133,15 +132,6 @@ class Series(ABC):
     def data(self) -> Union[np.ndarray, pd.Series]:
         pass
 
-    @abstractmethod  # pragma: no cover
-    def less(self, other: "Series") -> "Series":
-        """
-        returns a boolean series with:
-            True - where this series is less than the other series
-            False - where this series is greater than or equal to the other
-                series
-        """
-        pass
 
     @abstractmethod  # pragma: no cover
     def sum(self) -> Union[int, float]:
