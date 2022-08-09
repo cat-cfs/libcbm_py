@@ -160,27 +160,26 @@ class PandasSeriesBackend(Series):
             assignment_value = value
 
         dtype_original = self._get_series().dtype
+        if indices is not None:
+            _idx = indices.to_numpy()
+        else:
+            _idx = slice(None)
         if self._series is not None:
-            if indices is not None:
-                self._series.iloc[indices.to_numpy()] = assignment_value
-            else:
-                self._series.iloc[:] = assignment_value
+
+            self._series.iloc[_idx] = assignment_value
+
             if (
                 not allow_type_change
                 and dtype_original != self._get_series().dtype
             ):
                 self._series = self._series.astype(dtype_original)
         elif self._parent_df is not None:
-            if indices is not None:
-                self._parent_df.iloc[
-                    indices.to_numpy(),
-                    self._parent_df.columns.get_loc(self.name),
-                ] = assignment_value
-            else:
-                self._parent_df.iloc[
-                    :,
-                    self._parent_df.columns.get_loc(self.name),
-                ] = assignment_value
+
+            self._parent_df.iloc[
+                _idx,
+                self._parent_df.columns.get_loc(self.name),
+            ] = assignment_value
+
             if (
                 not allow_type_change
                 and dtype_original != self._get_series().dtype
