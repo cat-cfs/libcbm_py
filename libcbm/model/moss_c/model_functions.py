@@ -179,7 +179,7 @@ def _advance_spinup_state(
     for i in range(0, n_stands):
         state = spinup_state[i]
         if state == SpinupState.AnnualProcesses:
-            if age[i] >= (return_interval[i] - 1):
+            if age[i] >= (return_interval[i]):
 
                 small_slow_diff = (
                     _small_slow_diff(
