@@ -163,7 +163,7 @@ class StandCBMFactory:
             r["disturbance_type_id"]: r["disturbance_type_name"]
             for r in self.defaults_ref.disturbance_type_ref
         }
-        dist_type_map[0] = None
+        dist_type_map[0] = ""
         return dist_type_map
 
     def get_classifier_map(self) -> dict:

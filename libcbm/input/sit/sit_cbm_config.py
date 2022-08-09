@@ -18,7 +18,7 @@ class SITIdentifierMapping:
         # start with the "null" disturbance type/default disturbance type
         self.default_disturbance_id_map: dict[int, int] = {0: 0}
         self.disturbance_id_map: dict[int, int] = {0: 0}
-        self.disturbance_name_map: dict[int, str] = {0: None}
+        self.disturbance_name_map: dict[int, str] = {0: ""}
 
         self.default_disturbance_id_map.update(
             {
