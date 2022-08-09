@@ -312,20 +312,20 @@ def _initialize_classifiers(
 
 def initialize_spinup_variables(
     cbm_vars: CBMVariables,
-    back_end_type: BackendType,
+    backend_type: BackendType,
     spinup_params: DataFrame = None,
     include_flux: bool = False,
 ) -> CBMVariables:
 
     n_stands = cbm_vars.inventory.n_rows
     if spinup_params is None:
-        spinup_params = initialize_spinup_parameters(n_stands, back_end_type)
+        spinup_params = initialize_spinup_parameters(n_stands, backend_type)
 
     spinup_vars = CBMVariables(
         cbm_vars.pools,
         cbm_vars.flux if include_flux else None,
         cbm_vars.classifiers,
-        _initialize_spinup_state_variables(n_stands, back_end_type),
+        _initialize_spinup_state_variables(n_stands, backend_type),
         cbm_vars.inventory,
         spinup_params,
     )
@@ -338,7 +338,7 @@ def initialize_simulation_variables(
     inventory: DataFrame,
     pool_codes: list[str],
     flux_indicator_codes: list[str],
-    back_end_type: BackendType,
+    backend_type: BackendType,
 ) -> CBMVariables:
     """Packages and initializes the cbm variables (cbm_vars) as an object with
     named properties
@@ -360,12 +360,12 @@ def initialize_simulation_variables(
     """
     n_stands = inventory.n_rows
     cbm_vars = CBMVariables(
-        _initialize_pools(n_stands, pool_codes, back_end_type),
-        _initialize_flux(n_stands, flux_indicator_codes, back_end_type),
-        _initialize_classifiers(classifiers, back_end_type),
-        _initialize_cbm_state_variables(n_stands, back_end_type),
-        _initialize_inventory(inventory, back_end_type),
-        _initialize_cbm_parameters(n_stands, back_end_type),
+        _initialize_pools(n_stands, pool_codes, backend_type),
+        _initialize_flux(n_stands, flux_indicator_codes, backend_type),
+        _initialize_classifiers(classifiers, backend_type),
+        _initialize_cbm_state_variables(n_stands, backend_type),
+        _initialize_inventory(inventory, backend_type),
+        _initialize_cbm_parameters(n_stands, backend_type),
     )
 
     return cbm_vars
