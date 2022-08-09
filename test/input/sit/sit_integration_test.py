@@ -5,10 +5,11 @@ from libcbm.input.sit import sit_reader
 from libcbm.input.sit import sit_age_class_parser
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm.cbm_output import CBMOutput
+from libcbm.storage.backends import BackendType
 
 
 class SITIntegrationTest(unittest.TestCase):
-    def test_integration(self):
+    def test_integration_numpy_backend(self):
 
         config = {
             "mapping_config": {
@@ -49,7 +50,10 @@ class SITIntegrationTest(unittest.TestCase):
         sit = sit_cbm_factory.initialize_sit(sit_data, config)
         classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            in_memory_cbm_output = CBMOutput()
+            in_memory_cbm_output = CBMOutput(
+                classifier_map=sit.classifier_value_names,
+                disturbance_type_map=sit.disturbance_name_map,
+            )
             cbm_simulator.simulate(
                 cbm,
                 n_steps=1,
@@ -57,6 +61,7 @@ class SITIntegrationTest(unittest.TestCase):
                 inventory=inventory,
                 pre_dynamics_func=lambda time_step, cbm_vars: cbm_vars,
                 reporting_func=in_memory_cbm_output.append_simulation_result,
+                backend_type=BackendType.numpy,
             )
             # there should be 2 rows, timestep 0 and timestep 1
             self.assertTrue(in_memory_cbm_output.pools.n_rows == 2)
