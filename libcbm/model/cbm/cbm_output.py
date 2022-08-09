@@ -5,16 +5,6 @@ from libcbm.storage import series
 from libcbm.storage.backends import BackendType
 
 
-def _get_disturbance_type_map_func(disturbance_type_map):
-    def disturbance_type_map_func(dist_id):
-        if dist_id <= 0:
-            return dist_id
-        else:
-            return disturbance_type_map[dist_id]
-
-    return disturbance_type_map_func
-
-
 def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
     dataframe.add_column(
         series.range(
@@ -163,16 +153,15 @@ class CBMOutput:
         timestep_params = cbm_vars.parameters.copy()
         if self._disturbance_type_map:
 
-            dist_map_func = _get_disturbance_type_map_func(
-                self._disturbance_type_map
-            )
             timestep_state["last_disturbance_type"].assign(
-                timestep_state["last_disturbance_type"].map(dist_map_func),
+                timestep_state["last_disturbance_type"].map(
+                    self._disturbance_type_map),
                 allow_type_change=True,
             )
 
             timestep_params["disturbance_type"].assign(
-                timestep_params["disturbance_type"].map(dist_map_func),
+                timestep_params["disturbance_type"].map(
+                    self._disturbance_type_map),
                 allow_type_change=True,
             )
 
