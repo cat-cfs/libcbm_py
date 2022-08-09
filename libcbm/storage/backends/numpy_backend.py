@@ -49,7 +49,10 @@ def _map(a: np.ndarray, d: dict) -> np.ndarray:
     )
     for k, v in d.items():
         nb_d[k] = v
-    out = np.empty_like(a, dtype=str(out_value_type))
+    try:
+        out = np.empty_like(a, dtype=str(out_value_type))
+    except TypeError:
+        out = np.empty_like(a, "str")
     if a.ndim == 1:
         _map_1D_nb(a, out, nb_d)
     elif a.ndim == 2:
@@ -57,37 +60,6 @@ def _map(a: np.ndarray, d: dict) -> np.ndarray:
     else:
         raise ValueError("ndim=1 or ndim=2 supported")
     return out
-
-
-def mult_along_axis(A: np.ndarray, B: np.ndarray, axis: int) -> np.ndarray:
-    # credit to contributors at
-    # https://stackoverflow.com/questions/30031828/multiply-numpy-ndarray-with-1d-array-along-a-given-axis
-    # ensure we're working with Numpy arrays
-    A = np.array(A)
-    B = np.array(B)
-
-    # shape check
-    if axis >= A.ndim:
-        raise ValueError(f"axis {axis} is >= A.ndim ({A.ndim})")
-    if A.shape[axis] != B.size:
-        raise ValueError(
-            "Length of 'A' along the given axis must be the same as B.size"
-        )
-
-    # np.broadcast_to puts the new axis as the last axis, so
-    # we swap the given axis with the last one, to determine the
-    # corresponding array shape. np.swapaxes only returns a view
-    # of the supplied array, so no data is copied unnecessarily.
-    shape = np.swapaxes(A, A.ndim - 1, axis).shape
-
-    # Broadcast to an array with the shape as above. Again,
-    # no data is copied, we only get a new look at the existing data.
-    B_brc = np.broadcast_to(B, shape)
-
-    # Swap back the axes. As before, this only changes our "point of view".
-    B_brc = np.swapaxes(B_brc, A.ndim - 1, axis)
-
-    return A * B_brc
 
 
 def get_numpy_pointer(
@@ -207,7 +179,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
         row_idx = indices.to_numpy()
         if self._storage_format == StorageFormat.uniform_matrix:
             return NumpyDataFrameFrameBackend(
-                self._data_matrix[row_idx, :], self._data_cols
+                self._data_matrix[row_idx, :], self.columns
             )
         else:
             return NumpyDataFrameFrameBackend(
@@ -250,8 +222,8 @@ class NumpyDataFrameFrameBackend(DataFrame):
         else:
             return NumpyDataFrameFrameBackend(
                 {
-                    col: self._data_cols[:, col_idx].copy()
-                    for col, col_idx in self._col_idx.items()
+                    col: self._data_cols[col].copy()
+                    for col in self.columns
                 }
             )
 
@@ -259,10 +231,15 @@ class NumpyDataFrameFrameBackend(DataFrame):
         rh = series.to_numpy()
         if self._storage_format == StorageFormat.uniform_matrix:
             return NumpyDataFrameFrameBackend(
-                mult_along_axis(self._data_matrix, rh, axis=1), self.columns
+                np.column_stack(
+                    [
+                        self._data_matrix[:, idx] * rh
+                        for _, idx in self._col_idx.items()
+                    ]
+                ),
+                cols=self.columns,
             )
         else:
-
             return NumpyDataFrameFrameBackend(
                 {
                     col: self._data[:, col_idx] * rh
@@ -415,7 +392,7 @@ class NumpySeriesBackend(Series):
             if indices is not None:
                 self._data[indices.to_numpy()] = value.to_numpy()
             else:
-                self._data[:] = value
+                self._data[:] = value.to_numpy()
         else:
             if indices is not None:
                 self._data[indices.to_numpy()] = value
