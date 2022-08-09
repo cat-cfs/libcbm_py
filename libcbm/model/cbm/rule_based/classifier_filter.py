@@ -115,7 +115,7 @@ class ClassifierFilter:
         expression_tokens = []
 
         def get_classifier_variable(name: str) -> str:
-            return f"`{name}`"
+            return f"{name}"
 
         for i_classifier, classifier in enumerate(
             self.classifiers_config["classifiers"]
