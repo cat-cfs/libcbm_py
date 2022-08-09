@@ -15,13 +15,13 @@ from libcbm import resources
 import pandas as pd
 
 
-def _safe_map(series: Series, map: Union[dict, Callable]):
+def _apply(series: Series, func: Callable):
     """Helper method to ensure an error is thrown if any value in a
     mapped series is null
 
     Args:
         series (Series): the series to map
-        map (Union[dict, Callable]): the map values or map function
+        func (Callable): map function
 
     Raises:
         ValueError: at least one value in the mapped series was null
@@ -29,12 +29,8 @@ def _safe_map(series: Series, map: Union[dict, Callable]):
     Returns:
         Series: The mapped series
     """
-
-    out_series = series.map(map)
-    null_values = dataframe.is_null(out_series)
-    if null_values.any():
-        missing_entries = list(series.filter(null_values).unique().to_numpy())
-        raise ValueError(f"undefined values detected {missing_entries[:10]}")
+    _map = {x: func(x) for x in series.to_list()}
+    out_series = series.map(_map)
     return out_series
 
 
@@ -178,8 +174,8 @@ class StandCBMFactory:
         classifier_value_name_map = self._classifier_idx[
             "classifier_value_ids"
         ][classifier_name]
-        return _safe_map(
-            classifier_value_name_series, classifier_value_name_map
+        return classifier_value_name_series.map(
+            classifier_value_name_map
         )
 
     def _get_classifier_config(self):
@@ -246,7 +242,7 @@ class StandCBMFactory:
             {
                 "age": inventory_df["age"],
                 "area": inventory_df["area"],
-                "spatial_unit": _safe_map(
+                "spatial_unit": _apply(
                     series.range(
                         "spatial_unit",
                         0,
@@ -260,7 +256,7 @@ class StandCBMFactory:
                         str(inventory_df["eco_boundary"].at(x)),
                     ),
                 ),
-                "afforestation_pre_type_id": _safe_map(
+                "afforestation_pre_type_id": _apply(
                     inventory_df["afforestation_pre_type"],
                     lambda x: (
                         -1
@@ -268,11 +264,11 @@ class StandCBMFactory:
                         else self.defaults_ref.get_afforestation_pre_type_id(x)
                     ),
                 ),
-                "land_class": _safe_map(
+                "land_class": _apply(
                     inventory_df["land_class"],
                     self.defaults_ref.get_land_class_id,
                 ),
-                "historical_disturbance_type": _safe_map(
+                "historical_disturbance_type": _apply(
                     inventory_df["historic_disturbance_type"],
                     lambda x: (
                         -1
@@ -280,7 +276,7 @@ class StandCBMFactory:
                         else self.defaults_ref.get_disturbance_type_id(x)
                     ),
                 ),
-                "last_pass_disturbance_type": _safe_map(
+                "last_pass_disturbance_type": _apply(
                     inventory_df["last_pass_disturbance_type"],
                     lambda x: (
                         -1
