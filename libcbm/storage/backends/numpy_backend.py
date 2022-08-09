@@ -2,8 +2,6 @@ from enum import Enum
 import ctypes
 import numpy as np
 import pandas as pd
-import numba
-from numba.typed import Dict as NumbaDict
 import numexpr
 from typing import Any
 from typing import Union
@@ -26,14 +24,12 @@ class _numepxr_local_dict_wrap:
         return self._arr[:, self._col_idx[key]]
 
 
-@numba.njit
 def _map_1D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
     for i in np.arange(a.shape[0]):
         out[i] = d[a[i]]
 
 
-@numba.njit
 def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
     for i in np.arange(a.shape[0]):
@@ -42,21 +38,14 @@ def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
 
 def _map(a: np.ndarray, d: dict) -> np.ndarray:
-    out_value_type = numba.typeof(next(iter(d.values())))
-    nb_d = NumbaDict.empty(
-        key_type=numba.from_dtype(a.dtype),
-        value_type=out_value_type,
-    )
-    for k, v in d.items():
-        nb_d[k] = v
-    try:
-        out = np.empty_like(a, dtype=str(out_value_type))
-    except TypeError:
-        out = np.empty_like(a, "str")
+    out_value_type = type(next(iter(d.values())))
+
+    out = np.empty_like(a, dtype=out_value_type)
+
     if a.ndim == 1:
-        _map_1D_nb(a, out, nb_d)
+        _map_1D_nb(a, out, d)
     elif a.ndim == 2:
-        _map_2D_nb(a, out, nb_d)
+        _map_2D_nb(a, out, d)
     else:
         raise ValueError("ndim=1 or ndim=2 supported")
     return out
@@ -158,11 +147,9 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     def __getitem__(self, col_name: str) -> Series:
         if self._storage_format == StorageFormat.uniform_matrix:
-            return NumpySeriesBackend(
-                col_name, self._data_matrix[:, self._col_idx[col_name]]
-            )
+            return NumpySeriesBackend(col_name, parent_df=self)
         else:
-            return NumpySeriesBackend(col_name, self._data_cols[col_name])
+            return NumpySeriesBackend(col_name, parent_df=self)
 
     def filter(self, arg: Series) -> DataFrame:
         _filter = arg.to_numpy()
@@ -221,10 +208,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
         else:
             return NumpyDataFrameFrameBackend(
-                {
-                    col: self._data_cols[col].copy()
-                    for col in self.columns
-                }
+                {col: self._data_cols[col].copy() for col in self.columns}
             )
 
     def multiply(self, series: Series) -> DataFrame:
@@ -347,9 +331,30 @@ class NumpySeriesBackend(Series):
     presents a limited interface for internal usage by libcbm.
     """
 
-    def __init__(self, name: str, data: np.ndarray):
+    def __init__(
+        self,
+        name: str,
+        data: np.ndarray = None,
+        parent_df: NumpyDataFrameFrameBackend = None,
+    ):
+
+        if not ((data is None) ^ (parent_df is None)):
+            raise ValueError("one of data, or parent_df must be specified")
+
         self._name = name
         self._data = data
+        self._parent_df = parent_df
+
+    def _get_data(self) -> np.ndarray:
+        if self._data is not None:
+            return self._data
+        else:
+            if self._parent_df._storage_format == StorageFormat.uniform_matrix:
+                return self._parent_df._data_matrix[
+                    :, self._parent_df._col_idx[self.name]
+                ]
+            else:
+                return self._parent_df._data_cols[self.name]
 
     @property
     def name(self) -> str:
@@ -360,25 +365,27 @@ class NumpySeriesBackend(Series):
         self._name = value
 
     def copy(self):
-        return NumpySeriesBackend(self._name, self._data.copy())
+        return NumpySeriesBackend(self._name, self._get_data().copy())
 
     def filter(self, arg: "Series") -> "Series":
         """
         Return a new series of the elements
         corresponding to the true values in the specified arg
         """
-        return NumpySeriesBackend(self._name, self._data[arg.to_numpy()])
+        return NumpySeriesBackend(self._name, self._get_data()[arg.to_numpy()])
 
     def take(self, indices: "Series") -> "Series":
         """return the elements of this series at the specified indices
         (returns a copy)"""
         return NumpySeriesBackend(
             self._name,
-            self._data[indices.to_numpy()],
+            self._get_data()[indices.to_numpy()],
         )
 
     def as_type(self, type_name: str) -> "Series":
-        return NumpySeriesBackend(self._name, self._data.astype(type_name))
+        return NumpySeriesBackend(
+            self._name, self._get_data().astype(type_name)
+        )
 
     def assign(
         self,
@@ -386,78 +393,125 @@ class NumpySeriesBackend(Series):
         indices: "Series" = None,
         allow_type_change=False,
     ):
-        if allow_type_change:
-            raise ValueError("numpy backend does not support type conversion")
+
+        assignment_value = None
         if isinstance(value, Series):
-            if indices is not None:
-                self._data[indices.to_numpy()] = value.to_numpy()
-            else:
-                self._data[:] = value.to_numpy()
+            assignment_value = value.to_numpy()
         else:
+            assignment_value = np.array(value)
+
+        dtype_original = self._get_data().dtype
+
+        if self._data is not None:
             if indices is not None:
-                self._data[indices.to_numpy()] = value
+                self._data[indices.to_numpy()] = assignment_value
             else:
-                self._data[:] = value
+                self._data = np.full(self._data.shape, assignment_value)
+
+        elif self._parent_df is not None:
+            if indices is not None:
+                _idx = indices.to_numpy()
+            else:
+                _idx = slice(None)
+
+            if self._parent_df._storage_format == StorageFormat.uniform_matrix:
+                if (
+                    assignment_value.dtype
+                    != self._parent_df._data_matrix.dtype
+                ):
+                    if not allow_type_change:
+                        raise ValueError("type change not allowed")
+                    self._parent_df._data_cols = {
+                        col: self._parent_df._data_matrix[
+                            _idx,
+                            self._parent_df._col_idx[col],
+                        ]
+                        for col in self._parent_df.columns
+                    }
+                    self._parent_df._storage_format = (
+                        StorageFormat.mixed_columns
+                    )
+                else:
+                    self._parent_df._data_matrix[
+                        _idx,
+                        self._parent_df._col_idx[self.name],
+                    ] = assignment_value
+            else:
+                if indices is not None:
+                    self._parent_df._data_cols[self.name][
+                        _idx
+                    ] = assignment_value
+                else:
+                    self._parent_df._data_cols[self.name] = np.full(
+                        self._parent_df.n_rows, assignment_value
+                    )
+
+        else:
+            raise ValueError("internal series not defined")
+
+        if not allow_type_change and dtype_original != self._get_data().dtype:
+            raise ValueError("type change not allowed")
+
 
     def map(self, arg: dict) -> "Series":
-        return NumpySeriesBackend(self._name, _map(self._data, arg))
+        return NumpySeriesBackend(self._name, _map(self._get_data(), arg))
 
     def at(self, idx: int) -> Any:
         """Gets the value at the specified sequential index"""
-        return self._data[idx]
+        return self._get_data()[idx]
 
     def any(self) -> bool:
         """
         return True if at least one value in this series is
         non-zero
         """
-        return self._data.any()
+        return self._get_data().any()
 
     def all(self) -> bool:
         """
         return True if all values in this series are non-zero
         """
-        return self._data.all()
+        return self._get_data().all()
 
     def unique(self) -> "Series":
-        return NumpySeriesBackend(self._name, np.unique(self._data))
+        return NumpySeriesBackend(self._name, np.unique(self._get_data()))
 
     def to_numpy(self) -> np.ndarray:
-        return self._data
+        return self._get_data()
 
     def to_list(self) -> list:
         return self._data.tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
-        if str(self._data.dtype) == "int32":
+        if str(self._get_data().dtype) == "int32":
             ptr_type = ctypes.c_int32
-        elif str(self._data.dtype) == "float64":
+        elif str(self._get_data().dtype) == "float64":
             ptr_type = ctypes.c_double
         else:
             raise ValueError(
-                f"series type not supported {str(self._data.dtype)}"
+                f"series type not supported {str(self._get_data().dtype)}"
             )
-        return get_numpy_pointer(self._data, ptr_type)
+        return get_numpy_pointer(self._get_data(), ptr_type)
 
     @property
     def data(self) -> np.ndarray:
-        return self._data
+        return self._get_data()
 
     def sum(self) -> Union[int, float]:
-        return self._data.sum()
+        return self._get_data().sum()
 
     def cumsum(self) -> "NumpySeriesBackend":
-        return NumpySeriesBackend(self.name, self._data.cumsum())
+        return NumpySeriesBackend(self.name, self._get_data().cumsum())
 
     def max(self) -> Union[int, float]:
-        return self._data.max()
+        return self._get_data().max()
 
     def min(self) -> Union[int, float]:
-        return self._data.min()
+        return self._get_data().min()
 
     @property
     def length(self) -> int:
-        return self._data.size
+        return self._get_data().size
 
     @property
     def backend_type(self) -> BackendType:
@@ -465,7 +519,7 @@ class NumpySeriesBackend(Series):
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data * self._get_operand(other))
+            self._name, (self._get_data() * self._get_operand(other))
         )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
@@ -475,86 +529,86 @@ class NumpySeriesBackend(Series):
 
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data / self._get_operand(other))
+            self._name, (self._get_data() / self._get_operand(other))
         )
 
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._get_operand(other) / self._data)
+            self._name, (self._get_operand(other) / self._get_data())
         )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data + self._get_operand(other))
+            self._name, (self._get_data() + self._get_operand(other))
         )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._get_operand(other) + self._data)
+            self._name, (self._get_operand(other) + self._get_data())
         )
 
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data - self._get_operand(other))
+            self._name, (self._get_data() - self._get_operand(other))
         )
 
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._get_operand(other) - self._data)
+            self._name, (self._get_operand(other) - self._get_data())
         )
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data >= self._get_operand(other))
+            self._name, (self._get_data() >= self._get_operand(other))
         )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data > self._get_operand(other))
+            self._name, (self._get_data() > self._get_operand(other))
         )
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data <= self._get_operand(other))
+            self._name, (self._get_data() <= self._get_operand(other))
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data < self._get_operand(other))
+            self._name, (self._get_data() < self._get_operand(other))
         )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data == self._get_operand(other))
+            self._name, (self._get_data() == self._get_operand(other))
         )
 
     def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data != self._get_operand(other))
+            self._name, (self._get_data() != self._get_operand(other))
         )
 
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data & self._get_operand(other))
+            self._name, (self._get_data() & self._get_operand(other))
         )
 
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._data | self._get_operand(other))
+            self._name, (self._get_data() | self._get_operand(other))
         )
 
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._get_operand(other) & self._data)
+            self._name, (self._get_operand(other) & self._get_data())
         )
 
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
         return NumpySeriesBackend(
-            self._name, (self._get_operand(other) | self._data)
+            self._name, (self._get_operand(other) | self._get_data())
         )
 
     def __invert__(self) -> "Series":
-        return NumpySeriesBackend(self._name, ~self._data)
+        return NumpySeriesBackend(self._name, ~self._get_data())
 
 
 def concat_data_frame(
@@ -595,23 +649,29 @@ def concat_data_frame(
 
 
 def concat_series(series: list[NumpySeriesBackend]) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.concatenate([s._data for s in series]))
+    return NumpySeriesBackend(
+        None, np.concatenate([s._get_data() for s in series])
+    )
 
 
 def logical_and(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.logical_and(s1._data, s2._data))
+    return NumpySeriesBackend(
+        None, np.logical_and(s1._get_data(), s2._get_data())
+    )
 
 
 def logical_not(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.logical_not(series._data))
+    return NumpySeriesBackend(None, np.logical_not(series._get_data()))
 
 
 def logical_or(
     s1: NumpySeriesBackend, s2: NumpySeriesBackend
 ) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.logical_or(s1._data, s2._data))
+    return NumpySeriesBackend(
+        None, np.logical_or(s1._get_data(), s2._get_data())
+    )
 
 
 def make_boolean_series(init: bool, size: int) -> NumpySeriesBackend:
@@ -621,11 +681,11 @@ def make_boolean_series(init: bool, size: int) -> NumpySeriesBackend:
 
 
 def is_null(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, pd.isnull(series._data))
+    return NumpySeriesBackend(None, pd.isnull(series._get_data()))
 
 
 def indices_nonzero(series: NumpySeriesBackend) -> NumpySeriesBackend:
-    return NumpySeriesBackend(None, np.nonzero(series._data)[0])
+    return NumpySeriesBackend(None, np.nonzero(series._get_data())[0])
 
 
 def numeric_dataframe(
@@ -641,14 +701,16 @@ def numeric_dataframe(
 def from_series_list(
     series_list: list[NumpySeriesBackend],
 ) -> NumpyDataFrameFrameBackend:
-    return NumpyDataFrameFrameBackend({s.name: s._data for s in series_list})
+    return NumpyDataFrameFrameBackend(
+        {s.name: s._get_data() for s in series_list}
+    )
 
 
 def from_series_dict(
     data: dict[str, NumpySeriesBackend],
 ) -> DataFrame:
     return NumpySeriesBackend(
-        pd.DataFrame({k: v._data for k, v in data.items()})
+        pd.DataFrame({k: v._get_data() for k, v in data.items()})
     )
 
 
