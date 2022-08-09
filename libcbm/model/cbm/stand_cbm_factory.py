@@ -1,4 +1,3 @@
-from typing import Union
 from typing import Callable
 from typing import ContextManager
 from typing import Tuple
@@ -160,10 +159,12 @@ class StandCBMFactory:
         )
 
     def get_disturbance_type_map(self) -> dict:
-        return {
+        dist_type_map = {
             r["disturbance_type_id"]: r["disturbance_type_name"]
             for r in self.defaults_ref.disturbance_type_ref
         }
+        dist_type_map[0] = None
+        return dist_type_map
 
     def get_classifier_map(self) -> dict:
         return self._classifier_idx["classifier_value_names"].copy()
