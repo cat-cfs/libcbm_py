@@ -186,9 +186,7 @@ class CBMOutput:
 
             timestep_classifiers = cbm_vars.classifiers.copy()
             timestep_classifiers = timestep_classifiers.map(
-                # using dict.__getitem__ ensures an error is raised
-                # if an item is not in the map
-                lambda x: self.classifier_map[x]
+                self.classifier_map
             )
             self._classifiers = _concat_timestep_results(
                 timestep,
