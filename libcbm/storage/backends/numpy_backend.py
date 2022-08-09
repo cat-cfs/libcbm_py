@@ -452,7 +452,6 @@ class NumpySeriesBackend(Series):
         if not allow_type_change and dtype_original != self._get_data().dtype:
             raise ValueError("type change not allowed")
 
-
     def map(self, arg: dict) -> "Series":
         return NumpySeriesBackend(self._name, _map(self._get_data(), arg))
 
