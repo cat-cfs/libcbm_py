@@ -211,7 +211,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
     cbm_output = CBMOutput(
         density=True,
         classifier_map={1: "c1", 2: "c2"},
-        disturbance_type_map={0: "d0", 1: "d1", 2: "d2"},
+        disturbance_type_map={-1: "-1", 0: "d0", 1: "d1", 2: "d2"},
         backend_type=BackendType.pandas,
     )
     cbm_output.append_simulation_result(timestep=1, cbm_vars=_make_test_data())
@@ -256,7 +256,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
                 "identifier": [1, 2, 3, 1, 2, 3],
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "s1": [1, 1, 1, 1, 1, 1],
-                "last_disturbance_type": [-1, "d1", -1, -1, "d1", -1],
+                "last_disturbance_type": ["-1", "d1", "-1", "-1", "d1", "-1"],
             }
         ),
     )
@@ -279,7 +279,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
                 "identifier": [1, 2, 3, 1, 2, 3],
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "p1": [-1, -1, -1, -1, -1, -1],
-                "disturbance_type": ["d1", "d2", -1, "d1", "d2", -1],
+                "disturbance_type": ["d1", "d2", "-1", "d1", "d2", "-1"],
             }
         ),
     )
