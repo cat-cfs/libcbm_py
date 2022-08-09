@@ -158,12 +158,15 @@ class SITCBMFactoryTest(unittest.TestCase):
         )
 
         self.assertTrue(
-            sit.default_disturbance_id_map == {1: "default_a", 2: "default_b"}
+            sit.default_disturbance_id_map
+            == {0: 0, 1: "default_a", 2: "default_b"}
         )
 
-        self.assertTrue(sit.disturbance_id_map == {1: "DISTID1", 2: "DISTID2"})
+        self.assertTrue(
+            sit.disturbance_id_map == {0: 0, 1: "DISTID1", 2: "DISTID2"}
+        )
 
-        self.assertTrue(sit.disturbance_name_map == {1: "a", 2: "b"})
+        self.assertTrue(sit.disturbance_name_map == {0: "", 1: "a", 2: "b"})
 
     def test_integration_with_different_event_sort_modes(self):
         """tests full CBM integration with rule based disturbances and
