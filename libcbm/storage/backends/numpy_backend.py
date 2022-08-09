@@ -155,6 +155,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     def _from_matrix(self, cols: list[str], data: np.ndarray) -> None:
         self._data_matrix: np.ndarray = data
+        self._data_cols: dict[str, np.ndarray] = None
         self._storage_format = StorageFormat.uniform_matrix
         self._initialize(data.shape[0], cols)
 
@@ -168,13 +169,19 @@ class NumpyDataFrameFrameBackend(DataFrame):
             else:
                 if n_rows != v.shape[0]:
                     raise ValueError("uneven array lengths")
-        self._data_cols: dict[str, np.ndarray] = data
+
         _has_uniform_types = len(set(arr.dtype for arr in data.values())) == 1
-        self._storage_format = (
-            StorageFormat.uniform_matrix
-            if _has_uniform_types
-            else StorageFormat.mixed_columns
-        )
+        if _has_uniform_types:
+            self._storage_format = StorageFormat.uniform_matrix
+            self._data_matrix: np.ndarray = np.column_stack(
+                list(data.values())
+            )
+            self._data_cols: dict[str, np.ndarray] = None
+        else:
+            self._storage_format = StorageFormat.mixed_columns
+            self._data_matrix: np.ndarray = None
+            self._data_cols: dict[str, np.ndarray] = data
+
         self._initialize(n_rows, list(data.keys()))
 
     def __getitem__(self, col_name: str) -> Series:
@@ -195,7 +202,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             return NumpyDataFrameFrameBackend(
                 {
                     col: self._data_cols[col][_filter]
-                    for col, _ in self._columns
+                    for col in self._columns
                 }
             )
 
@@ -209,7 +216,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             return NumpyDataFrameFrameBackend(
                 {
                     col: self._data_cols[col][row_idx]
-                    for col, _ in self._columns
+                    for col in self._columns
                 }
             )
 
@@ -283,14 +290,19 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
 
         if self._storage_format == StorageFormat.uniform_matrix:
-            if insert_data.dtype != self._data_matrix.dtype:
-                raise ValueError(
-                    f"cannot insert {insert_data.dtype} typed series to "
-                    f"{self._data_matrix.dtype} matrix storage"
+            if insert_data.dtype == self._data_matrix.dtype:
+                self._data_matrix = np.insert(
+                    self._data_matrix, index, insert_data, axis=1
                 )
-            self._data_matrix = np.insert(
-                self._data_matrix, index, insert_data, axis=1
-            )
+            else:
+                self._storage_format = StorageFormat.mixed_columns
+                self._data_cols = {
+                    col: self._data_matrix[:, idx]
+                    for col, idx in self._col_idx.items()
+                }
+                self._data_cols[series.name] = series.to_numpy()
+                self._data_matrix = None
+
         else:
             self._data_cols[series.name] = insert_data
 
@@ -301,8 +313,8 @@ class NumpyDataFrameFrameBackend(DataFrame):
     def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
         if self._storage_format != StorageFormat.uniform_matrix:
             raise ValueError("to_numpy not supported for non-uniform matrix")
-        if make_c_contiguous and not self._data.flags["C_CONTIGUOUS"]:
-            self._data_matrix = np.ascontiguousarray(self._data)
+        if make_c_contiguous and not self._data_matrix.flags["C_CONTIGUOUS"]:
+            self._data_matrix = np.ascontiguousarray(self._data_matrix)
         return self._data_matrix
 
     def to_pandas(self) -> pd.DataFrame:
@@ -582,16 +594,33 @@ def concat_data_frame(
     for df in dfs:
         if not cols:
             cols = list(df.columns)
-        elif cols != list(df.columns):
+        elif cols != df.columns:
             raise ValueError("cols do not match")
 
-    new_data: dict[str, np.ndarray] = {}
-    for col in cols:
-        new_data[col] = np.concatenate(
-            [df._data[:, df._col_idx[col]] for df in dfs]
-        )
+    storage_format_set = set([x._storage_format for x in dfs])
 
-    return NumpyDataFrameFrameBackend(new_data)
+    if (
+        len(storage_format_set) == 1
+        and StorageFormat.uniform_matrix in storage_format_set
+    ):
+        # case 1, all incoming df's are uniform_matrix
+        matrix_data = np.concatenate(
+            [df._data_matrix for df in dfs], axis=0, casting="no"
+        )
+        return NumpyDataFrameFrameBackend(matrix_data, cols)
+    else:
+        # case 2, all incoming df's are mixed_columns, or a mix of
+        # mixed_columns, uniform_matrix
+        new_data: dict[str, np.ndarray] = {}
+
+        for col in cols:
+            concat_list = []
+            for df in dfs:
+                ser = df[col]
+                concat_list.append(ser.to_numpy())
+            new_data[col] = np.concatenate(concat_list, casting="no")
+
+        return NumpyDataFrameFrameBackend(new_data)
 
 
 def concat_series(series: list[NumpySeriesBackend]) -> NumpySeriesBackend:
