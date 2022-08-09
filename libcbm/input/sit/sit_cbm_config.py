@@ -15,18 +15,31 @@ class SITIdentifierMapping:
             ),
         )
 
-        self.default_disturbance_id_map = {
-            row.sit_disturbance_type_id: row.default_disturbance_type_id
-            for _, row in sit_disturbance_types.iterrows()
-        }
-        self.disturbance_id_map = {
-            row.sit_disturbance_type_id: row.id
-            for _, row in sit_disturbance_types.iterrows()
-        }
-        self.disturbance_name_map = {
-            row.sit_disturbance_type_id: row["name"]
-            for _, row in sit_disturbance_types.iterrows()
-        }
+        # start with the "null" disturbance type/default disturbance type
+        self.default_disturbance_id_map: dict[int, int] = {0: 0}
+        self.disturbance_id_map: dict[int, int] = {0: 0}
+        self.disturbance_name_map: dict[int, str] = {0: None}
+
+        self.default_disturbance_id_map.update(
+            {
+                row.sit_disturbance_type_id: row.default_disturbance_type_id
+                for _, row in sit_disturbance_types.iterrows()
+            }
+        )
+
+        self.disturbance_id_map.update(
+            {
+                row.sit_disturbance_type_id: row.id
+                for _, row in sit_disturbance_types.iterrows()
+            }
+        )
+
+        self.disturbance_name_map.update(
+            {
+                row.sit_disturbance_type_id: row["name"]
+                for _, row in sit_disturbance_types.iterrows()
+            }
+        )
 
         classifiers_config = get_classifiers(
             sit_data.classifiers, sit_data.classifier_values
