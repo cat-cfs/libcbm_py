@@ -174,9 +174,7 @@ class StandCBMFactory:
         classifier_value_name_map = self._classifier_idx[
             "classifier_value_ids"
         ][classifier_name]
-        return classifier_value_name_series.map(
-            classifier_value_name_map
-        )
+        return classifier_value_name_series.map(classifier_value_name_map)
 
     def _get_classifier_config(self):
         classifiers_list = []

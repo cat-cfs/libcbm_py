@@ -200,10 +200,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
         else:
             return NumpyDataFrameFrameBackend(
-                {
-                    col: self._data_cols[col][_filter]
-                    for col in self._columns
-                }
+                {col: self._data_cols[col][_filter] for col in self._columns}
             )
 
     def take(self, indices: Series) -> DataFrame:
@@ -214,10 +211,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
         else:
             return NumpyDataFrameFrameBackend(
-                {
-                    col: self._data_cols[col][row_idx]
-                    for col in self._columns
-                }
+                {col: self._data_cols[col][row_idx] for col in self._columns}
             )
 
     def at(self, index: int) -> dict:

@@ -155,13 +155,15 @@ class CBMOutput:
 
             timestep_state["last_disturbance_type"].assign(
                 timestep_state["last_disturbance_type"].map(
-                    self._disturbance_type_map),
+                    self._disturbance_type_map
+                ),
                 allow_type_change=True,
             )
 
             timestep_params["disturbance_type"].assign(
                 timestep_params["disturbance_type"].map(
-                    self._disturbance_type_map),
+                    self._disturbance_type_map
+                ),
                 allow_type_change=True,
             )
 
