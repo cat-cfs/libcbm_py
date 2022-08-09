@@ -102,6 +102,14 @@ class StandCBMFactory:
             self._dll_path = dll_path
 
         self._classifiers = classifiers
+        non_identifiers = []
+        for c in classifiers.keys():
+            if not c.isidentifier():
+                non_identifiers.append(c)
+        if non_identifiers:
+            raise ValueError(
+                "The following classifier names are not valid python "
+                f"identifiers: {non_identifiers}")
         self._merch_volumes = merch_volumes
         self._locale = locale
         self.defaults_ref = CBMDefaultsReference(self._db_path, self._locale)
