@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from typing import Union
-from typing import Callable
 from libcbm.storage.backends import BackendType
 from libcbm.storage import backends
 from libcbm.storage.series import Series
