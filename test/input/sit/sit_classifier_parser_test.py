@@ -138,6 +138,7 @@ class SITClassifierParserTest(unittest.TestCase):
 
         (
             classifiers,
+            original_classifier_labels,
             classifier_values,
             classifier_aggregates,
         ) = sit_classifier_parser.parse(sit_classifiers_table)
@@ -145,6 +146,9 @@ class SITClassifierParserTest(unittest.TestCase):
         self.assertTrue(list(classifiers.id) == [1, 2])
         self.assertTrue(
             list(classifiers.name) == ["classifier1", "classifier2"]
+        )
+        self.assertTrue(
+            original_classifier_labels == ["classifier1", "classifier2"]
         )
 
         self.assertTrue(list(classifier_values.classifier_id) == [1, 1, 2])
@@ -182,8 +186,41 @@ class SITClassifierParserTest(unittest.TestCase):
             }
         )
 
+    def test_classifier_names_made_into_valid_identifiers(self):
+
+        sit_classifiers_table = pd.DataFrame(
+            data=[
+                ("1", "_CLASSIFIER", "1classifier 1", np.nan, np.nan),
+                (1, "a", "a", np.nan, np.nan),
+                (1, "b", "b", np.nan, np.nan),
+                (1, "agg1", "agg1", "a", "b"),
+                (1, "agg2", "agg2", "a", "b"),
+                (2, "_CLASSIFIER", "classifier&#$ 2", np.nan, np.nan),
+                (2, "a", "a", np.nan, np.nan),
+                (2, "agg1", "agg1", "a", np.nan),
+            ]
+        )
+
+        (
+            classifiers,
+            original_classifier_labels,
+            _,
+            _,
+        ) = sit_classifier_parser.parse(sit_classifiers_table)
+
+        self.assertTrue(list(classifiers.id) == [1, 2])
+        self.assertTrue(
+            list(classifiers.name) == ["_1classifier_1", "classifier____2"]
+        )
+        self.assertTrue(
+            original_classifier_labels == ["1classifier 1", "classifier&#$ 2"]
+        )
+
     def test_expected_result_with_numeric_values(self):
-        """checks that numeric values are converted to strings"""
+        """
+        checks that numeric values are converted to valid python
+        identifiers
+        """
 
         sit_classifiers_table = pd.DataFrame(
             data=[
@@ -198,10 +235,15 @@ class SITClassifierParserTest(unittest.TestCase):
             ]
         )
 
-        classifiers, _, _ = sit_classifier_parser.parse(sit_classifiers_table)
-
+        (
+            classifiers,
+            original_classifier_labels,
+            _,
+            _,
+        ) = sit_classifier_parser.parse(sit_classifiers_table)
+        self.assertTrue(original_classifier_labels == ["999", "700"])
         self.assertTrue(list(classifiers.id) == [1, 2])
-        self.assertTrue(list(classifiers.name) == ["999", "700"])
+        self.assertTrue(list(classifiers.name) == ["_999", "_700"])
 
     def test_expected_result_with_classifier_id_out_of_order(self):
         """checks that numeric values are converted to strings"""
@@ -219,6 +261,8 @@ class SITClassifierParserTest(unittest.TestCase):
             ]
         )
 
-        classifiers, _, _ = sit_classifier_parser.parse(sit_classifiers_table)
+        classifiers, _, _, _ = sit_classifier_parser.parse(
+            sit_classifiers_table
+        )
 
         self.assertTrue(list(classifiers.id) == [1, 2])
