@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import numpy as np
 from libcbm.input.sit.sit_cbm_defaults import SITCBMDefaults
+from libcbm.input.sit import sit_format
 from typing import Callable
 
 
@@ -85,7 +86,9 @@ class SITMapping:
                 )
             species_map[user_species] = species_id
 
-        species_classifier = self.config["species"]["species_classifier"]
+        species_classifier = sit_format.adjust_classifier_name(
+            self.config["species"]["species_classifier"]
+        )
         species_value_filter = (
             merged_classifiers["name_classifier"] == species_classifier
         )
@@ -161,7 +164,9 @@ class SITMapping:
             )
             for x in self.config["spatial_units"]["spu_mapping"]
         }
-        spu_classifier = self.config["spatial_units"]["spu_classifier"]
+        spu_classifier = sit_format.adjust_classifier_name(
+            self.config["spatial_units"]["spu_classifier"]
+        )
         spu_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == spu_classifier
         ]
@@ -214,7 +219,9 @@ class SITMapping:
             for x in self.config["spatial_units"]["eco_mapping"]
         }
 
-        admin_classifier = self.config["spatial_units"]["admin_classifier"]
+        admin_classifier = sit_format.adjust_classifier_name(
+            self.config["spatial_units"]["admin_classifier"]
+        )
         admin_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == admin_classifier
         ]
@@ -234,7 +241,9 @@ class SITMapping:
                 }
             ).iterrows()
         }
-        eco_classifier = self.config["spatial_units"]["eco_classifier"]
+        eco_classifier = sit_format.adjust_classifier_name(
+            self.config["spatial_units"]["eco_classifier"]
+        )
         eco_values = merged_classifiers.loc[
             merged_classifiers["name_classifier"] == eco_classifier
         ]
@@ -366,7 +375,9 @@ class SITMapping:
         )
 
         non_forest_classifier = None
-        species_classifier = self.config["species"]["species_classifier"]
+        species_classifier = sit_format.adjust_classifier_name(
+            self.config["species"]["species_classifier"]
+        )
         if non_forest_in_species:
             default_species = {
                 x["species_name"] for x in self.sit_cbm_defaults.get_species()
@@ -393,9 +404,9 @@ class SITMapping:
             and len(self.config["nonforest"]) > 0
         ):
 
-            non_forest_classifier = self.config["nonforest"][
-                "nonforest_classifier"
-            ]
+            non_forest_classifier = sit_format.adjust_classifier_name(
+                self.config["nonforest"]["nonforest_classifier"]
+            )
             if non_forest_classifier == species_classifier:
                 raise ValueError(
                     "single classifier may not be used as both non-forest "
