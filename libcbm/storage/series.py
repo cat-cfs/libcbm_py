@@ -81,6 +81,13 @@ class Series(ABC):
 
     @abstractmethod  # pragma: no cover
     def map(self, arg: dict) -> "Series":
+        """
+        Map the values in this series using the specified dictionary.
+        The value of the returned series is the dictionary value corresponding
+        to the dictionary key found in the input series.  If any element in
+        this series is not defined in the specified dictionary, a ValueError
+        is raised.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
@@ -105,24 +112,46 @@ class Series(ABC):
 
     @abstractmethod  # pragma: no cover
     def unique(self) -> "Series":
+        """
+        Get the distinct values in this series, as a new series
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def to_numpy(self) -> np.ndarray:
+        """
+        Get the series values as a numpy array. This is a reference to the
+        underlying memory where possible, and a copy where not::
+
+          * pandas backend: reference
+          * numpy backend (mixed column types): reference
+          * numpy backend (2d matrix storage): copy
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def to_list(self) -> list:
+        """
+        returns a copy of the values in this series as a list
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def to_numpy_ptr(self) -> ctypes.pointer:
+        """
+        Get a ctypes pointer to this series underlying numpy
+        array.  In the case of numpy backend 2d matrix storage,
+        a pointer to a copy of the series value is returned.
+        """
         pass
 
     @staticmethod  # pragma: no cover
     def _get_operand(
         op: Union[int, float, "Series"]
     ) -> Union[int, float, np.ndarray, pd.Series]:
+        """
+        helper method to unpack series operator operands
+        """
         if isinstance(op, Series):
             return op.data
         return op
@@ -130,32 +159,54 @@ class Series(ABC):
     @property  # pragma: no cover
     @abstractmethod
     def data(self) -> Union[np.ndarray, pd.Series]:
+        """
+        get a reference to the underlying storage.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def sum(self) -> Union[int, float]:
+        """
+        get the sum of the series
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def cumsum(self) -> "Series":
+        """
+        Compute the cumulative sums of the series.
+        Return value is of equal length as this series.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def max(self) -> Union[int, float]:
+        """
+        Return the maximum value in the series
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def min(self) -> Union[int, float]:
+        """
+        Return the minimum value in the series
+        """
         pass
 
     @property  # pragma: no cover
     @abstractmethod
     def length(self) -> int:
+        """
+        Return the number of elements in this series
+        """
         pass
 
     @property  # pragma: no cover
     @abstractmethod
     def backend_type(self) -> BackendType:
+        """
+        gets the BackendType of this series
+        """
         pass
 
     @abstractmethod  # pragma: no cover
