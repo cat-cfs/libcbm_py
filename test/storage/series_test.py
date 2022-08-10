@@ -10,6 +10,7 @@ def test_series():
     for backend in BackendType:
         s = dataframe.convert_series_backend(s_base.copy(), backend)
 
+        assert s.backend_type == backend
         # name
         assert s.name == "series_name"
         s.name = f"{backend}_series"
