@@ -71,7 +71,7 @@ class ClassifierFilterTest(unittest.TestCase):
         )
         self.assertTrue(
             result.expression
-            == "(`c1` == 1) & (((`c3` >= 5) & (`c3` <= 8)) | (`c3` == 10))"
+            == "(c1 == 1) & (((c3 >= 5) & (c3 <= 8)) | (c3 == 10))"
         )
 
     def test_create_classifiers_filter_expected_value(self):
@@ -122,7 +122,7 @@ class ClassifierFilterTest(unittest.TestCase):
             classifier_set, classifier_values
         )
         self.assertTrue(
-            result.expression == "(`c1` == 1) & ((`c3` == 5) | (`c3` == 7))"
+            result.expression == "(c1 == 1) & ((c3 == 5) | (c3 == 7))"
         )
         self.assertTrue(result.data["c1"].to_list() == [1, 2, 1, 1, 1])
         self.assertTrue(result.data["c2"].to_list() == [3, 3, 4, 4, 4])
