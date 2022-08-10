@@ -22,6 +22,7 @@ class SITData:
     def __init__(
         self,
         classifiers: pd.DataFrame,
+        original_classifier_labels: list[str],
         classifier_values: pd.DataFrame,
         classifier_aggregates: pd.DataFrame,
         disturbance_types: pd.DataFrame,
@@ -34,6 +35,7 @@ class SITData:
         disturbance_eligibilities: pd.DataFrame = None,
     ):
         self.classifiers = classifiers
+        self.original_classifier_labels = original_classifier_labels
         self.classifier_values = classifier_values
         self.classifier_aggregates = classifier_aggregates
         self.disturbance_types = disturbance_types
@@ -197,6 +199,7 @@ def parse(
 
     (
         classifiers,
+        original_classifier_labels,
         classifier_values,
         classifier_aggregates,
     ) = sit_classifier_parser.parse(sit_classifiers)
@@ -255,6 +258,7 @@ def parse(
         transition_rules = None
     return SITData(
         classifiers,
+        original_classifier_labels,
         classifier_values,
         classifier_aggregates,
         disturbance_types,
