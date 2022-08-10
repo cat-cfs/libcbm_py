@@ -1,6 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+import re
+import pandas as pd
 
 
 def get_tr_classifier_set_postfix() -> str:
@@ -10,6 +12,31 @@ def get_tr_classifier_set_postfix() -> str:
     classifiers to solve that issue.
     """
     return "_tr"
+
+
+def adjust_classifier_name(classifier_name: str) -> str:
+    if classifier_name.isidentifier():
+        return classifier_name
+    else:
+        return re.sub(r"\W|^(?=\d)", "_", classifier_name)
+
+
+def adjust_classifier_names(classifier_names: pd.Series) -> pd.Series:
+    """Make each of the classifier names in the specified series valid python
+    identifiers
+
+    Args:
+        classifier_names (pd.Series): the unadjusted classifier names from the
+            SIT format.
+
+    Returns:
+        pd.Series: adjusted series of classifier names
+    """
+    classifier_name_list = [str(c) for c in classifier_names]
+    adjusted_name_list = []
+    for c in classifier_name_list:
+        adjusted_name_list.append(adjust_classifier_name(c))
+    return pd.Series(adjusted_name_list)
 
 
 def get_classifier_format(n_columns: int) -> list[dict]:
