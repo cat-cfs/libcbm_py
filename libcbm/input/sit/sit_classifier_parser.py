@@ -24,10 +24,12 @@ def get_wildcard_keyword() -> str:
 
 
 def _adjust_classifier_names(classifier_names: pd.Series) -> pd.Series:
-    """Make each of the classifier names in the specified series valid python identifiers
+    """Make each of the classifier names in the specified series valid python
+    identifiers
 
     Args:
-        classifier_names (pd.Series): the unadjusted classifier names from the SIT format.
+        classifier_names (pd.Series): the unadjusted classifier names from the
+            SIT format.
 
     Returns:
         pd.Series: adjusted series of classifier names
@@ -38,7 +40,7 @@ def _adjust_classifier_names(classifier_names: pd.Series) -> pd.Series:
         if c.isidentifier():
             adjusted_name_list.append(c)
         else:
-            adjusted_name_list.append(re.sub("\W|^(?=\d)", "_", c))
+            adjusted_name_list.append(re.sub(r"\W|^(?=\d)", "_", c))
 
 
 def parse(
