@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import re
 import pandas as pd
 from typing import Tuple
 from libcbm.input.sit import sit_format
@@ -22,9 +23,27 @@ def get_wildcard_keyword() -> str:
     return "?"
 
 
+def _adjust_classifier_names(classifier_names: pd.Series) -> pd.Series:
+    """Make each of the classifier names in the specified series valid python identifiers
+
+    Args:
+        classifier_names (pd.Series): the unadjusted classifier names from the SIT format.
+
+    Returns:
+        pd.Series: adjusted series of classifier names
+    """
+    classifier_name_list = [str(c) for c in classifier_names]
+    adjusted_name_list = []
+    for c in classifier_name_list:
+        if c.isidentifier():
+            adjusted_name_list.append(c)
+        else:
+            adjusted_name_list.append(re.sub("\W|^(?=\d)", "_", c))
+
+
 def parse(
     classifiers_table: pd.DataFrame,
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, list[str], pd.DataFrame, pd.DataFrame]:
     """parse SIT_Classifiers formatted data.
 
     Args:
@@ -89,7 +108,13 @@ def parse(
     Returns:
         tuple:
 
-            - classifiers - a validated table of classifiers
+            - classifiers - a validated table of classifiers.  Classifier
+                names may be adjusted so they are valid python identifiers.
+                This entails actions such as replacing spaces with underscore
+                "_".  For the list of original, unadjusted classifier names,
+                see the 2nd item in the returned tuple.
+            - original_classifier_labels - the labels as they appear in the
+                SIT input data.
             - classifier_values - a validated table of classifier values
             - aggregate_values - a dictionary describing aggregate values
 
@@ -102,11 +127,15 @@ def parse(
     )
 
     classifiers = unpacked.loc[unpacked["name"] == get_classifier_keyword()]
+    original_classifier_labels = classifiers["description"].tolist()
+    adjusted_classifier_names = _adjust_classifier_names(
+        classifiers["description"]
+    )
     classifiers = pd.DataFrame(
         data={
-            "id": classifiers.id,
+            "id": classifiers["id"],
             # for classifiers, the 3rd column is used for the name
-            "name": classifiers.description,
+            "name": adjusted_classifier_names,
         },
         columns=["id", "name"],
     )
@@ -218,4 +247,9 @@ def parse(
                 f"were found: {missing_aggregate_values}."
             )
 
-    return classifiers, classifier_values, aggregate_values
+    return (
+        classifiers,
+        original_classifier_labels,
+        classifier_values,
+        aggregate_values,
+    )
