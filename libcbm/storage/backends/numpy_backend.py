@@ -146,10 +146,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
         self._initialize(n_rows, list(data.keys()))
 
     def __getitem__(self, col_name: str) -> Series:
-        if self._storage_format == StorageFormat.uniform_matrix:
-            return NumpySeriesBackend(col_name, parent_df=self)
-        else:
-            return NumpySeriesBackend(col_name, parent_df=self)
+        return NumpySeriesBackend(col_name, parent_df=self)
 
     def filter(self, arg: Series) -> DataFrame:
         _filter = arg.to_numpy()
@@ -314,15 +311,28 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
 
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
-        index_array = np.argsort(
-            self._data[:, self._col_idx[by]], kind="mergesort"
+        sort_col = (
+            self._data_matrix[:, self._col_idx[by]]
+            if self._storage_format == StorageFormat.uniform_matrix
+            else self._data_cols[by]
         )
-        return NumpyDataFrameFrameBackend(
-            {
-                col_name: self._data[index_array, col_idx]
-                for col_name, col_idx in self._col_idx
-            }
-        )
+        index_array = np.argsort(sort_col, kind="mergesort")
+
+        if not ascending:
+            index_array_slice = slice(None, None, -1)
+            index_array = index_array[index_array_slice]
+
+        if self._storage_format == StorageFormat.uniform_matrix:
+            return NumpyDataFrameFrameBackend(
+                self._data_matrix[index_array, :], cols=self.columns
+            )
+        else:
+            return NumpyDataFrameFrameBackend(
+                {
+                    col_name: self._data_cols[col_name][index_array]
+                    for col_name in self.columns
+                }
+            )
 
 
 class NumpySeriesBackend(Series):
@@ -345,14 +355,39 @@ class NumpySeriesBackend(Series):
         self._data = data
         self._parent_df = parent_df
 
-    def _get_data(self) -> np.ndarray:
+    def _get_dtype(self) -> str:
+        if self._data is not None:
+            return str(self._data.dtype)
+        else:
+            if self._parent_df._storage_format == StorageFormat.uniform_matrix:
+                return str(self._parent_df._data_matrix.dtype)
+            else:
+                return str(self._parent_df._data_cols[self.name].dtype)
+
+    def _get_data(self, reference_required=False) -> np.ndarray:
         if self._data is not None:
             return self._data
         else:
             if self._parent_df._storage_format == StorageFormat.uniform_matrix:
-                return self._parent_df._data_matrix[
-                    :, self._parent_df._col_idx[self.name]
-                ]
+                if reference_required:
+                    self._parent_df._data_cols = {
+                        col: np.ascontiguousarray(
+                            self._parent_df._data_matrix[
+                                :,
+                                self._parent_df._col_idx[col],
+                            ]
+                        )
+                        for col in self._parent_df.columns
+                    }
+                    self._parent_df._data_matrix = None
+                    self._parent_df._storage_format = (
+                        StorageFormat.mixed_columns
+                    )
+                    return self._parent_df._data_cols[self.name]
+                else:
+                    return self._parent_df._data_matrix[
+                        :, self._parent_df._col_idx[self.name]
+                    ]
             else:
                 return self._parent_df._data_cols[self.name]
 
@@ -428,6 +463,7 @@ class NumpySeriesBackend(Series):
                         ]
                         for col in self._parent_df.columns
                     }
+                    self._parent_df._data_matrix = None
                     self._parent_df._storage_format = (
                         StorageFormat.mixed_columns
                     )
@@ -476,21 +512,22 @@ class NumpySeriesBackend(Series):
         return NumpySeriesBackend(self._name, np.unique(self._get_data()))
 
     def to_numpy(self) -> np.ndarray:
-        return self._get_data()
+        return self._get_data(reference_required=True)
 
     def to_list(self) -> list:
         return self._data.tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
-        if str(self._get_data().dtype) == "int32":
+        dtype = self._get_dtype()
+        if dtype == "int32":
             ptr_type = ctypes.c_int32
-        elif str(self._get_data().dtype) == "float64":
+        elif dtype == "float64":
             ptr_type = ctypes.c_double
         else:
-            raise ValueError(
-                f"series type not supported {str(self._get_data().dtype)}"
-            )
-        return get_numpy_pointer(self._get_data(), ptr_type)
+            raise ValueError(f"series type not supported {dtype}")
+        return get_numpy_pointer(
+            self._get_data(reference_required=True), ptr_type
+        )
 
     @property
     def data(self) -> np.ndarray:
