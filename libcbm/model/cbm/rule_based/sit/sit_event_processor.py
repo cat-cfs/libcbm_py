@@ -150,7 +150,7 @@ class SITEventProcessor:
     def process_events(
         self,
         time_step: int,
-        sit_events: DataFrame,
+        sit_events: pd.DataFrame,
         cbm_vars: CBMVariables,
         sit_eligibilities: pd.DataFrame = None,
     ) -> Tuple[CBMVariables, pd.DataFrame]:
@@ -180,6 +180,8 @@ class SITEventProcessor:
 
         """
 
+        if sit_events is None:
+            return cbm_vars, None
         time_step_events = sit_events[sit_events.time_step == time_step].copy()
 
         stats_rows = []
