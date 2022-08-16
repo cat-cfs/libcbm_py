@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.4.1
+      format_version: '1.3'
+      jupytext_version: 1.14.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -21,7 +21,7 @@ from types import SimpleNamespace
 
 ```python
 from libcbm import resources
-from libcbm.model.moss_c import model_context
+from libcbm.model.moss_c import model_context_factory
 from libcbm.model.moss_c import model
 ```
 
@@ -49,7 +49,7 @@ test_data_dir = os.path.join(
 Assembling the moss c [model context]()
 
 ```python
-ctx = model_context.create_from_csv(test_data_dir)
+ctx = model_context_factory.create_from_csv(test_data_dir)
 ```
 
 Run the model spinup routine.  The model context will be altered in-place by the spinup process.
@@ -61,27 +61,30 @@ spinup_debug = model.spinup(ctx, enable_debugging=True)
 ```
 
 ```python
-spinup_debug.spinup_vars
+spinup_vars = spinup_debug.spinup_vars.to_pandas().copy()
 ```
 
 ```python
-spinup_debug.spinup_vars.set_index("t").plot(figsize=(10,10))
+display(spinup_vars)
 ```
 
 ```python
-spinup_debug.model_state
-ms = spinup_debug.model_state.copy()
-ms.set_index("t").drop(columns=[]).plot(figsize=(15,10))
+spinup_vars.set_index("t").plot(figsize=(10,10))
 ```
 
 ```python
-p = spinup_debug.pools.copy()
+model_state = spinup_debug.state.to_pandas().copy()
+model_state.set_index("t").drop(columns=[]).plot(figsize=(15,10))
+```
+
+```python
+p = spinup_debug.pools.to_pandas().copy()
 p["total_slow"] = p[["FeatherMossSlow", "SphagnumMossSlow"]].sum(axis=1)
 p.drop(columns=["Input","CO2","CH4","CO"]).set_index("t").plot(figsize=(15,10))
 ```
 
 ```python
-spinup_debug.pools
+display(p)
 ```
 ```python
 

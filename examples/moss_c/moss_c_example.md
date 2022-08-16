@@ -5,10 +5,10 @@ jupyter:
     text_representation:
       extension: .md
       format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.4.1
+      format_version: '1.3'
+      jupytext_version: 1.14.0
   kernelspec:
-    display_name: Python 3
+    display_name: Python 3 (ipykernel)
     language: python
     name: python3
 ---
@@ -22,7 +22,7 @@ from types import SimpleNamespace
 
 ```python
 from libcbm import resources
-from libcbm.model.moss_c import model_context
+from libcbm.model.moss_c import model_context_factory
 from libcbm.model.moss_c import model
 from libcbm.model.moss_c import pools
 ```
@@ -34,7 +34,7 @@ data_dir = os.path.join(
 ```
 
 ```python
-ctx = model_context.create_from_csv(data_dir)
+ctx = model_context_factory.create_from_csv(data_dir)
 ```
 
 ```python
@@ -47,25 +47,25 @@ flux_by_timestep = pd.DataFrame()
 ```
 
 ```python
-pools_0 = ctx.get_pools_df()
+pools_0 = ctx.pools.to_pandas().copy()
 pools_0.insert(0, "t", 0)
-pools_by_timestep = pools_by_timestep.append(pools_0)
+pools_by_timestep = pd.concat([pools_by_timestep,pools_0])
 
 for t in range(1,100):
     if t == 20:
         # disturb everything to demonstrate how this works
-        ctx.state.disturbance_type[:] = 1
+        ctx.state["disturbance_type"].assign(1)
     else: 
-        ctx.state.disturbance_type[:] = 0
+        ctx.state["disturbance_type"].assign(0)
     model.step(ctx)
     
-    pools_t = ctx.get_pools_df()
+    pools_t = ctx.pools.to_pandas().copy()
     pools_t.insert(0, "t", t)
-    pools_by_timestep = pools_by_timestep.append(pools_t)
+    pools_by_timestep = pd.concat([pools_by_timestep, pools_t])
     
-    flux_t = ctx.flux.copy()
+    flux_t = ctx.flux.to_pandas().copy()
     flux_t.insert(0, "t", t)
-    flux_by_timestep = flux_by_timestep.append(flux_t)
+    flux_by_timestep = pd.concat([flux_by_timestep, flux_t])
     
 ```
 
