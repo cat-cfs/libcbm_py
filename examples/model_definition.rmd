@@ -199,7 +199,7 @@ with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
     n_stands = 20000
     vars = model$allocate_model_vars(n_stands)
 
-    vars$pools[, 1] = 1.0
+    vars$pools["Input"]$assign(1.0)
 
     stand_age = rep(0, n_stands)
 
@@ -208,10 +208,10 @@ with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
         print(t)
         # add some simplistic disturbance scheduling
         disturbance_types = sample( c(0,1,2), n_stands, replace=TRUE, prob=c(0.995, 0.003, 0.002) )
-
+    
         # reset flux at start of every time step
-        vars$flux[,] = 0.0
-
+        vars$flux$zero()
+    
         # prepare the matrix operations
         operations = list(
             get_disturbance_matrix(model, disturbance_types),
@@ -219,7 +219,7 @@ with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
             get_mortality_matrix(model, n_stands),
             get_decay_matrix(model, n_stands)
         )
-
+    
         # associate each above operation with a flux indicator category
         op_processes = list(
             processes["Disturbance"],
@@ -227,12 +227,12 @@ with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
             processes["GrowthAndMortality"],
             processes["Decay"]
         )
-
+    
         # enabled array can be used to disable(0)/enable(1)
         # dynamics per index
-        enabled = matrix(rep(1, n_stands))
-
-        model$compute(vars, operations, op_processes, enabled)
+        vars$enabled$assign(rep(1, n_stands))
+    
+        model$compute(vars, operations, op_processes)
         for(op in operations){
             op$dispose()
         }
