@@ -71,17 +71,21 @@ def run_cbm():
 
         cbm_output = CBMOutput(
             classifier_map=cbm_factory.get_classifier_map(),
-            disturbance_type_map={1: "fires"})
+            disturbance_type_map={0: "null", 1: "fires"})
         cbm_simulator.simulate(
             cbm,
             n_steps=n_steps,
             classifiers=csets,
             inventory=inv,
             pre_dynamics_func=lambda t, cbm_vars: cbm_vars,
-            reporting_func=cbm_output.append_simulation_result
+            reporting_func=cbm_output.append_simulation_result,
         )
 ```
 
 ```python
 cProfile.run('run_cbm()')
+```
+
+```python
+
 ```

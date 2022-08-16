@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.7
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -56,6 +56,15 @@ cbm_output = CBMOutput(
     disturbance_type_map=sit.disturbance_name_map)
 ```
 
+```python
+sit.disturbance_name_map
+```
+
+```python
+from libcbm.storage.backends import BackendType
+
+```
+
 ## Simulation
 
 ```python
@@ -69,7 +78,8 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         classifiers          = classifiers,
         inventory            = inventory,
         pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = cbm_output.append_simulation_result
+        reporting_func       = cbm_output.append_simulation_result,
+        backend_type = BackendType.numpy
     )
 ```
 

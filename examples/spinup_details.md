@@ -83,7 +83,7 @@ with cbm_factory.initialize_cbm() as cbm:
     spinup_results = CBMOutput(density=True)
     cbm_results = CBMOutput(
         classifier_map=cbm_factory.get_classifier_map(),
-        disturbance_type_map={1: "fires"})
+        disturbance_type_map={0: "none", 1: "fires"})
     cbm_simulator.simulate(
         cbm,
         n_steps=n_steps,
@@ -113,4 +113,8 @@ spinup_results.flux.to_pandas()[["identifier", "timestep", "DisturbanceCO2Produc
 # examine the state variables for stand identifer 1
 state = spinup_results.state.to_pandas()
 state[state.identifier==1].set_index("timestep").head()
+```
+
+```python
+
 ```
