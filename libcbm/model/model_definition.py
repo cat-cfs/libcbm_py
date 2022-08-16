@@ -6,7 +6,6 @@ from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-from libcbm.storage.series import Series
 from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.backends import BackendType
@@ -33,6 +32,10 @@ class ModelVars:
             0,
         )
 
+        self.enabled = series.allocate(
+            "enabled", size, 1, "int32", backend_type
+        )
+
 
 class ModelHandle:
     def __init__(
@@ -47,7 +50,7 @@ class ModelHandle:
 
     def allocate_model_vars(self, n: int):
         return ModelVars(
-            n,
+            int(n),
             list(self.pools.keys()),
             [x["name"] for x in self.flux_indicators],
         )
@@ -92,7 +95,6 @@ class ModelHandle:
         model_vars: ModelVars,
         operations: list[libcbm_operation.Operation],
         op_processes: list[int],
-        enabled: Series,
     ) -> None:
 
         libcbm_operation.compute(
@@ -101,12 +103,10 @@ class ModelHandle:
             operations=operations,
             op_processes=[int(o) for o in op_processes],
             flux=model_vars.flux,
-            enabled=enabled.astype(int) if enabled is not None else None,
+            enabled=model_vars.enabled,
         )
 
-    def create_output_processor(
-        self, type="in_memory"
-    ) -> "ModelOutputProcessor":
+    def create_output_processor(self) -> "ModelOutputProcessor":
         return ModelOutputProcessor(self)
 
 
