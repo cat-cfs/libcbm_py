@@ -238,9 +238,9 @@ with model_definition.create_model(pool_def, flux_indicators) as model:
         ]
 
         # enabled can be used to disable(0)/enable(1) dynamics per index
-        enabled=None# np.full(n_stands, 1)
+        model_vars.enabled.assign(np.full(n_stands, 1))
 
-        model.compute(model_vars, operations, op_processes, enabled)
+        model.compute(model_vars, operations, op_processes)
         for op in operations:
             op.dispose()
         output_processor.append_results(t, model_vars)
