@@ -131,7 +131,9 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 if n_rows != v.shape[0]:
                     raise ValueError("uneven array lengths")
 
-        _has_uniform_types = len(set(arr.dtype for arr in data.values())) == 1
+        _has_uniform_types = (
+            len(set(arr.dtype for arr in data.values())) == 1
+        )
         if _has_uniform_types:
             self._storage_format = StorageFormat.uniform_matrix
             self._data_matrix: np.ndarray = np.column_stack(
@@ -441,7 +443,13 @@ class NumpySeriesBackend(Series):
             if indices is not None:
                 self._data[indices.to_numpy()] = assignment_value
             else:
-                self._data = np.full(self._data.shape, assignment_value)
+                self._data = np.full(
+                    self._data.shape,
+                    assignment_value,
+                    dtype=(
+                        self._data.dtype if not allow_type_change else None
+                    ),
+                )
 
         elif self._parent_df is not None:
             if indices is not None:
