@@ -22,10 +22,19 @@ class DataFrame(ABC):
 
     @abstractmethod  # pragma: no cover
     def filter(self, arg: Series) -> "DataFrame":
+        """
+        filter this dataframe with a boolean series of length n_rows.
+        Rows corresponding to true in the specified series are returned
+        as a new dataframe.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def take(self, indices: Series) -> "DataFrame":
+        """
+        Create a new dataframe where the new dataframe's rows are the
+        row indicies in the indicies argument.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
@@ -39,26 +48,40 @@ class DataFrame(ABC):
     @property
     @abstractmethod  # pragma: no cover
     def n_rows(self) -> int:
+        """
+        return the number of rows in this dataframe
+        """
         pass
 
     @property
     @abstractmethod  # pragma: no cover
     def n_cols(self) -> int:
+        """
+        return the number of columns in this dataframe
+        """
         pass
 
     @property
     @abstractmethod  # pragma: no cover
     def columns(self) -> list[str]:
+        """
+        get the list of column names
+        """
         pass
 
     @property
     @abstractmethod  # pragma: no cover
     def backend_type(self) -> BackendType:
+        """
+        get the backend storage type
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def copy(self) -> "DataFrame":
-        """produce a new in-memory copy of this dataframe"""
+        """
+        produce a new in-memory copy of this dataframe
+        """
         pass
 
     @abstractmethod  # pragma: no cover
@@ -72,14 +95,26 @@ class DataFrame(ABC):
 
     @abstractmethod  # pragma: no cover
     def add_column(self, series: Series, index: int) -> None:
+        """
+        Add a column to the dataframe based on the provided named series.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
+        """
+        Return a reference to the data stored in the dataframe
+        as a numpy array if possible. Intended to be used with
+        uniformly-typed, numeric dataframes only, and unintended
+        effects, or errors may be raised if this is not the case.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
     def to_pandas(self) -> pd.DataFrame:
+        """
+        return the data in this dataframe as a pandas array.
+        """
         pass
 
     @abstractmethod  # pragma: no cover
