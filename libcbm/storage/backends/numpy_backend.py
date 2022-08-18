@@ -131,9 +131,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 if n_rows != v.shape[0]:
                     raise ValueError("uneven array lengths")
 
-        _has_uniform_types = (
-            len(set(arr.dtype for arr in data.values())) == 1
-        )
+        _has_uniform_types = len(set(arr.dtype for arr in data.values())) == 1
         if _has_uniform_types:
             self._storage_format = StorageFormat.uniform_matrix
             self._data_matrix: np.ndarray = np.column_stack(
@@ -179,10 +177,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 for col, col_idx in self._col_idx.items()
             }
         else:
-            return {
-                col: self._data_cols[index, col_idx]
-                for col, col_idx in self._col_idx.items()
-            }
+            return {col: self._data_cols[col][index] for col in self.columns}
 
     @property
     def n_rows(self) -> int:
@@ -523,7 +518,7 @@ class NumpySeriesBackend(Series):
         return self._get_data(reference_required=True)
 
     def to_list(self) -> list:
-        return self._data.tolist()
+        return self._get_data().tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
         dtype = self._get_dtype()
