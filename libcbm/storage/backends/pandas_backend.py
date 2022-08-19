@@ -76,7 +76,7 @@ class PandasDataFrameBackend(DataFrame):
         output = pd.DataFrame(
             index=self._df.index,
             columns=cols,
-            data={col: self._df[col].map(arg) for col in cols},
+            data={col: self[col].map(arg)._get_series() for col in cols},
         )
         return PandasDataFrameBackend(output)
 
