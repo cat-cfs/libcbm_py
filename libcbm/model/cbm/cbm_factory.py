@@ -6,7 +6,7 @@
 import json
 import pandas as pd
 from typing import Callable
-from typing import ContextManager
+from typing import Iterator
 from contextlib import contextmanager
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
@@ -40,7 +40,7 @@ def create(
     cbm_parameters_factory: Callable[[], dict],
     merch_volume_to_biomass_factory: Callable[[], dict],
     classifiers_factory: Callable[[], dict],
-) -> ContextManager[CBM]:
+) -> Iterator[CBM]:
     """Create and initialize an instance of the CBM model
 
     Args:

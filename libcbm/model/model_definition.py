@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from typing import ContextManager
+from typing import Iterator
 from contextlib import contextmanager
 from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
@@ -139,7 +139,7 @@ class ModelOutputProcessor:
 @contextmanager
 def create_model(
     pools: dict[str, int], flux_indicators: list[dict]
-) -> ContextManager[ModelHandle]:
+) -> Iterator[ModelHandle]:
 
     libcbm_config = {
         "pools": [

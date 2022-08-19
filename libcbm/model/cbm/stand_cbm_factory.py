@@ -1,5 +1,5 @@
 from typing import Callable
-from typing import ContextManager
+from typing import Iterator
 from typing import Tuple
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm import cbm_defaults
@@ -299,7 +299,7 @@ class StandCBMFactory:
         )
         return classifiers, inventory
 
-    def initialize_cbm(self) -> ContextManager[CBM]:
+    def initialize_cbm(self) -> Iterator[CBM]:
         return cbm_factory.create(
             dll_path=self._dll_path,
             dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
