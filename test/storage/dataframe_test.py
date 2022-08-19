@@ -1,7 +1,8 @@
 import pytest
+import numpy as np
+import pandas as pd
 from libcbm.storage import dataframe
 from libcbm.storage import series
-import pandas as pd
 from libcbm.storage.backends import BackendType
 
 
@@ -29,6 +30,8 @@ def test_dataframe_mixed_types():
         assert filtered.at(0) == {"A": 1, "B": 1.1, "C": "c1"}
         assert filtered.at(1) == {"A": 3, "B": 3.3, "C": "c3"}
 
+        with pytest.raises(IndexError):
+            data.take(series.from_list("", [100]))
         taken = data.take(series.from_list("", [0, 2, 0, 0]))
         assert taken.n_rows == 4
         for i in [0, 2, 3]:
@@ -78,4 +81,35 @@ def test_dataframe_mixed_types():
 
 
 def test_dataframe_uniform_matrix():
-    pass
+
+    for backend_type in BackendType:
+        data = dataframe.numeric_dataframe(
+            cols=["A", "B", "C"], nrows=3, back_end=backend_type, init=2.0
+        )
+
+        for c in ["A", "B", "C"]:
+            assert data[c].to_list() == [2.0, 2.0, 2.0]
+
+        filtered = data.filter(series.from_list("", [True, False, True]))
+        assert filtered.n_rows == 2
+        assert (filtered.to_numpy() == np.full((2, 3), 2.0)).all()
+        with pytest.raises(IndexError):
+            data.take(series.from_list("", [100]))
+
+        assert (
+            data.take(series.from_list("", [0, 1, 2, 0, 1, 2])).to_numpy()
+            == np.full((6, 3), 2.0)
+        ).all()
+
+        assert data.n_rows == 3
+        assert data.n_cols == 3
+        assert data.columns == ["A", "B", "C"]
+        assert data.backend_type == backend_type
+
+        data_copy = data.copy()
+        assert data_copy.to_pandas().equals(data.to_pandas())
+
+        assert (data.map({2.0: 10.0}).to_numpy() == np.full((3,3), 10.0)).all()
+
+        with pytest.raises(KeyError):
+            data.map({0: 0})
