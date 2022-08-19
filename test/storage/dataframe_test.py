@@ -1,3 +1,4 @@
+import pytest
 from libcbm.storage import dataframe
 from libcbm.storage import series
 import pandas as pd
@@ -46,6 +47,34 @@ def test_dataframe_mixed_types():
         assert data.to_pandas().equals(test_data.to_pandas())
         data_copy.zero()
         assert data_copy["new_series"].to_list() == [0, 0, 0]
+
+        map_data = dataframe.from_pandas(
+            pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        )
+        mapped_data = map_data.map({x: 6 - x for x in range(0, 7)})
+        assert mapped_data.to_pandas().equals(
+            pd.DataFrame({"a": [5, 4, 3], "b": [2, 1, 0]})
+        )
+        with pytest.raises(KeyError):
+            map_data.map({0: 0})
+
+        filter_series = data.evaluate_filter("B > 2")
+        assert filter_series.to_list() == [False, True, True]
+
+        assert (
+            data.sort_values(by="A", ascending=False)
+            .to_pandas()
+            .reset_index(drop=True)
+            .equals(
+                pd.DataFrame(
+                    data={
+                        "A": [3, 2, 1],
+                        "B": [3.3, 2.2, 1.1],
+                        "C": ["c3", "c2", "c1"],
+                    }
+                )
+            )
+        )
 
 
 def test_dataframe_uniform_matrix():
