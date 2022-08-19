@@ -109,7 +109,9 @@ def test_dataframe_uniform_matrix():
         data_copy = data.copy()
         assert data_copy.to_pandas().equals(data.to_pandas())
 
-        assert (data.map({2.0: 10.0}).to_numpy() == np.full((3,3), 10.0)).all()
+        assert (
+            data.map({2.0: 10.0}).to_numpy() == np.full((3, 3), 10.0)
+        ).all()
 
         with pytest.raises(KeyError):
             data.map({0: 0})
