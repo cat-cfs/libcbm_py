@@ -89,7 +89,8 @@ class SITCBMFactoryTest(unittest.TestCase):
 
         sit_mapping = Mock()
         sit_mapping.sit_cbm_defaults.default_disturbance_id_lookup = {
-            "default_a_name": 5, "default_b_name": 6
+            "default_a_name": 5,
+            "default_b_name": 6,
         }
         sit_mapping.get_default_disturbance_type_id.side_effect = (
             lambda x: x.map({"a": 5, "b": 6})
@@ -160,10 +161,7 @@ class SITCBMFactoryTest(unittest.TestCase):
             == set(sit.classifier_value_names.values())
         )
 
-        self.assertTrue(
-            sit.default_disturbance_id_map
-            == {0: 0, 1: 5, 2: 6}
-        )
+        self.assertTrue(sit.default_disturbance_id_map == {0: 0, 1: 5, 2: 6})
 
         self.assertTrue(
             sit.default_disturbance_name_map
