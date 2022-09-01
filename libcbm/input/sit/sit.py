@@ -48,6 +48,14 @@ class SIT:
         return self._sit_identifier_mapping.default_disturbance_id_map.copy()
 
     @property
+    def default_disturbance_name_map(self) -> dict[int, str]:
+        """
+        Get map of sid disturbance type id to the default disturbance
+        type name defined in cbm defaults database
+        """
+        return self._sit_identifier_mapping.default_disturbance_name_map.copy()
+
+    @property
     def disturbance_id_map(self) -> dict[int, str]:
         """
         Get a map of the sit_disturbances 1 based sequential row id to the
