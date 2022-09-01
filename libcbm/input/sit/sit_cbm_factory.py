@@ -9,6 +9,7 @@ from typing import Tuple
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
+
 from enum import Enum
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm.cbm_model import CBM
@@ -27,7 +28,11 @@ from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
 from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import series
+from libcbm.storage.series import Series
 from libcbm.storage import dataframe
+
+DEFAULT_RNG: np.random.Generator = np.random.default_rng()
 
 
 class EventSort(Enum):
@@ -290,14 +295,18 @@ def initialize_cbm(
         yield cbm
 
 
+def default_random_func(len: int) -> Series:
+    return series.from_numpy("", DEFAULT_RNG.random(len))
+
+
 def create_sit_rule_based_processor(
     sit: SIT,
     cbm: CBM,
-    random_func=np.random.rand,
-    reset_parameters=True,
-    sit_events=None,
-    sit_disturbance_eligibilities=None,
-    sit_transition_rules=None,
+    random_func: Callable[[int], Series] = None,
+    reset_parameters: bool = True,
+    sit_events: pd.DataFrame = None,
+    sit_disturbance_eligibilities: pd.DataFrame = None,
+    sit_transition_rules: pd.DataFrame = None,
     event_sort: EventSort = EventSort.disturbance_type,
 ):
     """initializes a class for processing SIT rule based disturbances.
@@ -305,9 +314,9 @@ def create_sit_rule_based_processor(
     Args:
         sit (SIT): sit instance
         cbm (CBM): initialized instance of the CBM model
-        random_func (func, optional): A function of a single integer that
+        random_func (Callable optional): A function of a single integer that
             returns a numeric 1d array whose length is the integer argument.
-            Defaults to np.random.rand.
+            Defaults to a numpy implementation.
         reset_parameters (bool): if set to true,
             cbm_vars.parameters.disturbance_type and
             cbm_vars.parameters.reset_age will be reset prior to computing
@@ -344,6 +353,8 @@ def create_sit_rule_based_processor(
             disturbances
     """
 
+    if not random_func:
+        random_func = default_random_func
     separate_eligibilities = sit_disturbance_eligibilities is not None
     disturbance_events = None
     disturbance_eligibilities = None
