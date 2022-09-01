@@ -14,12 +14,26 @@ class SITIdentifierMapping:
                 sit_disturbance_types.name
             ),
         )
-
         # start with the "null" disturbance type/default disturbance type
+        self.default_disturbance_name_map: dict[int, str] = {0: ""}
         self.default_disturbance_id_map: dict[int, int] = {0: 0}
         self.disturbance_id_map: dict[int, int] = {0: 0}
         self.disturbance_name_map: dict[int, str] = {0: ""}
 
+        default_dist_type_lookup = (
+            sit_mapping.sit_cbm_defaults.default_disturbance_id_lookup
+        )
+        default_name_lookup = {
+            int(v): k for k, v in default_dist_type_lookup.items()
+        }
+        self.default_disturbance_name_map.update(
+            {
+                row.sit_disturbance_type_id: default_name_lookup[
+                    int(row.default_disturbance_type_id)
+                ]
+                for _, row in sit_disturbance_types.iterrows()
+            }
+        )
         self.default_disturbance_id_map.update(
             {
                 row.sit_disturbance_type_id: row.default_disturbance_type_id
