@@ -369,7 +369,8 @@ def concat_data_frame(
 
 
 def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
-    pd.concat([s._get_series() for s in series])
+    return PandasSeriesBackend(
+        None, pd.concat([s._get_series() for s in series]))
 
 
 def logical_and(
