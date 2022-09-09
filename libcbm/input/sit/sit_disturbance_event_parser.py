@@ -16,7 +16,7 @@ def get_sort_types():
         1: "PROPORTION_OF_EVERY_RECORD",
         2: "MERCHCSORT_TOTAL",
         3: "SORT_BY_SW_AGE",
-        5: "SVOID ",
+        5: "SVOID",
         6: "RANDOMSORT",
         7: "TOTALSTEMSNAG",
         8: "SWSTEMSNAG",

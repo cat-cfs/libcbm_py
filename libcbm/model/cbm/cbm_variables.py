@@ -256,7 +256,7 @@ def initialize_inventory(inventory):
     Returns:
         pandas.DataFrame: dataframe containing the inventory data.
     """
-    return pd.DataFrame({
+    data = {
         "age": inventory.age.to_numpy(dtype=np.int32),
         "area": inventory.area.to_numpy(dtype=np.float64),
         "spatial_unit": inventory.spatial_unit.to_numpy(dtype=np.int32),
@@ -267,7 +267,11 @@ def initialize_inventory(inventory):
             inventory.historical_disturbance_type.to_numpy(dtype=np.int32),
         "last_pass_disturbance_type":
             inventory.last_pass_disturbance_type.to_numpy(dtype=np.int32),
-        "delay": inventory.delay.to_numpy(dtype=np.int32)})
+        "delay": inventory.delay.to_numpy(dtype=np.int32)
+    }
+    if "spatial_reference" in inventory.columns:
+        data["spatial_reference"] = inventory.spatial_reference 
+    return pd.DataFrame(data)
 
 
 def initialize_classifiers(classifiers):

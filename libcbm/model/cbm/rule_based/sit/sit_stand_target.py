@@ -78,7 +78,6 @@ def create_sit_event_target_factory(rule_target, sit_event_row,
 def create_sit_event_target(rule_target, sit_event_row,
                             cbm_vars, disturbance_production_func,
                             eligible, random_generator):
-
     sort = sit_event_row["sort_type"]
     target_type = sit_event_row["target_type"]
     target = sit_event_row["target"]

@@ -158,8 +158,8 @@ class SITEventProcessor():
             process_event_result = self._process_event(
                 eligible, sit_event, cbm_vars, expression)
             stats = process_event_result.rule_target_result.statistics
-            stats["sit_event_index"] = event_index
-            stats_rows.append(stats)
-
-        stats_df = pd.DataFrame(stats_rows)
+            if stats is not None:
+                stats["sit_event_index"] = event_index
+                stats_rows.append(stats)
+        stats_df = pd.DataFrame(stats_rows) if stats is not None else None
         return cbm_vars, stats_df
