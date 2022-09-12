@@ -6,10 +6,10 @@ from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-
+from typing import List, Dict
 
 @contextmanager
-def create_model(pools: list[dict], flux_indicators: list[dict]):
+def create_model(pools: List[Dict], flux_indicators: List[Dict]):
 
     libcbm_config = {
         "pools": [
@@ -45,8 +45,8 @@ class ModelHandle():
     def __init__(
         self,
         wrapper: LibCBMWrapper,
-        pools: list[dict],
-        flux_indicators: list[dict]
+        pools: List[Dict],
+        flux_indicators: List[Dict]
     ):
         self.wrapper = wrapper
         self.pools = pools
@@ -55,19 +55,19 @@ class ModelHandle():
     def allocate_model_vars(self, n: int):
         return ModelVars(n, len(self.pools), len(self.flux_indicators))
 
-    def _matrix_rc(self, value: list):
+    def _matrix_rc(self, value: List):
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
             value)
 
-    def _matrix_list(self, value: list):
+    def _matrix_list(self, value: List):
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.MatrixList,
             value)
 
-    def create_operation(self, matrices: list, fmt: str):
+    def create_operation(self, matrices: List, fmt: str):
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
@@ -91,8 +91,8 @@ class ModelHandle():
     def compute(
         self,
         model_vars: ModelVars,
-        operations: list[libcbm_operation.Operation],
-        op_processes: list[int],
+        operations: List[libcbm_operation.Operation],
+        op_processes: List[int],
         enabled: np.ndarray
     ):
         model_vars.pools = np.ascontiguousarray(model_vars.pools)
@@ -103,7 +103,7 @@ class ModelHandle():
             operations=operations,
             op_processes=[int(o) for o in op_processes],
             flux=model_vars.flux,
-            enabled=enabled.astype(int) if enabled is not None else None)
+            enabled=enabled.astype(np.int32) if enabled is not None else None)
 
     def create_output_processor(self, type="in_memory"):
         return ModelOutputProcessor(self)
@@ -122,7 +122,11 @@ class ModelOutputProcessor():
             data=model_vars.pools.copy())
         pools_t.insert(0, "timestep", t)
         pools_t.reset_index(inplace=True)
-        self.pools = self.pools.append(pools_t)
+        ####################################################
+        # dataframe append method scehduled for deprecation
+        # self.pools = self.pools.append(pools_t)
+        self.pools = pd.concat([self.pools, pools_t])
+        ####################################################
         self.pools.reset_index(inplace=True, drop=True)
 
         flux_t = pd.DataFrame(
@@ -133,5 +137,9 @@ class ModelOutputProcessor():
         )
         flux_t.insert(0, "timestep", t)
         flux_t.reset_index(inplace=True)
-        self.flux = self.flux.append(flux_t)
+        ####################################################
+        # dataframe append method scehduled for deprecation
+        #self.flux = self.flux.append(flux_t)
+        self.flux = pd.concat([self.flux, flux_t])
+        ####################################################
         self.flux.reset_index(inplace=True, drop=True)

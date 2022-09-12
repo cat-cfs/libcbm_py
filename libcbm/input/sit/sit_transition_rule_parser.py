@@ -118,6 +118,8 @@ def parse(transition_rules, classifiers, classifier_values,
     # error
     group_cols = list(classifiers.name) + \
         ["min_age", "max_age", "disturbance_type"]
+    if "spatial_reference" in transitions.columns: 
+        group_cols += ["spatial_reference"]    
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
     invalid_grouped = grouped[
         grouped.percent > (100 + GROUPED_PERCENT_ERR_MAX)]

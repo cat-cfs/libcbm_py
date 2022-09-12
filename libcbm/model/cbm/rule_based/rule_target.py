@@ -166,7 +166,7 @@ def sorted_disturbance_target(target_var, sort_var, target, eligible):
             })])
 
     result = result.reset_index(drop=True)
-
+    
     stats = {
         "total_eligible_value": disturbed["target_var"].sum(),
         "total_achieved": target - remaining_target,
