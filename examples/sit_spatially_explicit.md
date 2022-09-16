@@ -28,6 +28,8 @@ import pandas as pd
 ```python
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.model.cbm import cbm_simulator
+from libcbm.model.cbm.cbm_output import CBMOutput
+from libcbm.storage.backends import BackendType
 from libcbm import resources
 ```
 
@@ -53,7 +55,7 @@ Create storage and a function for storing CBM simulation results.  This particul
 
 
 ```python
-results, reporting_func = cbm_simulator.create_in_memory_reporting_func(
+cbm_output = CBMOutput(
     classifier_map=sit.classifier_value_names,
     disturbance_type_map=sit.disturbance_name_map)
 ```
@@ -67,14 +69,19 @@ At this point the environment is ready to simulate growth and disturbance in eac
 with sit_cbm_factory.initialize_cbm(sit) as cbm:
     # Apply rule based disturbance events and transition rules based on the SIT input
     rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+    
+    def pre_dynamics_func(t, cbm_vars):
+        print(t)
+        return rule_based_processor.pre_dynamics_func(t, cbm_vars)
     # The following line of code spins up the CBM inventory and runs it through 200 timesteps.
     cbm_simulator.simulate(
         cbm,
         n_steps              = 200,
         classifiers          = classifiers,
         inventory            = inventory,
-        pre_dynamics_func    = rule_based_processor.pre_dynamics_func,
-        reporting_func       = reporting_func
+        pre_dynamics_func    = pre_dynamics_func,
+        reporting_func       = cbm_output.append_simulation_result,
+        #backend_type = BackendType.numpy
     )
 ```
 
@@ -82,7 +89,7 @@ Dump table of classifier values.
 
 
 ```python
-results.classifiers
+cbm_output.classifiers.to_pandas()
 ```
 ## Results
 
@@ -90,7 +97,7 @@ results.classifiers
 
 
 ```python
-pi = results.classifiers.merge(results.pools, left_on=["identifier", "timestep"], right_on=["identifier", "timestep"])
+pi = cbm_output.classifiers.to_pandas().merge(cbm_output.pools.to_pandas(), left_on=["identifier", "timestep"], right_on=["identifier", "timestep"])
 ```
 
 
@@ -116,14 +123,14 @@ annual_carbon_stocks = pd.DataFrame(
         "DOM": pi[dom_pools].sum(axis=1),
         "Total Ecosystem": pi[biomass_pools+dom_pools].sum(axis=1)})
 
-annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,160),ylim=(0,5.4e6))
+annual_carbon_stocks.groupby("Year").sum().plot(figsize=(10,10),xlim=(0,200),ylim=(0,5.4e6))
 
 ```
 ### State Variables
 
 
 ```python
-si = results.state
+si = cbm_output.state.to_pandas()
 si.head()
 ```
 ```python
@@ -135,7 +142,7 @@ si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 
 
 ```python
-fi = results.flux
+fi = cbm_output.flux.to_pandas()
 fi.head()
 ```
 ```python
@@ -203,8 +210,4 @@ sit.sit_data.yield_table
 ```
 ```python
 print(json.dumps(sit.config, indent=4, sort_keys=True))
-```
-
-```python
-
 ```
