@@ -204,8 +204,8 @@ class SITEventProcessor:
             )
             cbm_vars = process_event_result.cbm_vars
             stats = process_event_result.rule_target_result.statistics
-            stats["sit_event_index"] = event_index
-            stats_rows.append(stats)
-
-        stats_df = pd.DataFrame(stats_rows)
+            if stats is not None:
+                stats["sit_event_index"] = event_index
+                stats_rows.append(stats)
+        stats_df = pd.DataFrame(stats_rows) if stats_rows else None
         return cbm_vars, stats_df

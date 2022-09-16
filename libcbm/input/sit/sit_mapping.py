@@ -527,7 +527,16 @@ class SITMapping:
                 default data
         """
         disturbance_type_map = {}
-        for item in self.config["disturbance_types"]:
+        
+        items = self.config["disturbance_types"]
+        ########################################################################
+        # Depracate this eventually? 
+        # This extra code accommodates both flavours of config file structure.
+        if "disturbance_type_mapping" in items:
+            items = items["disturbance_type_mapping"]
+        ########################################################################
+
+        for item in items:
             user_dist_type = item["user_dist_type"]
             default_dist_type = item["default_dist_type"]
             if user_dist_type in disturbance_type_map:

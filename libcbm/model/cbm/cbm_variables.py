@@ -299,6 +299,8 @@ def _initialize_inventory(
         inventory["last_pass_disturbance_type"].as_type("int32"),
         inventory["delay"].as_type("int32"),
     ]
+    if "spatial_reference" in inventory.columns:
+        data.append(inventory["spatial_reference"])
     return dataframe.from_series_list(data, inventory.n_rows, back_end)
 
 

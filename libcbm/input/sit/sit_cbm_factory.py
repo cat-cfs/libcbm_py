@@ -91,41 +91,40 @@ def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
             data=classifiers_data, columns=list(sit_data.classifiers.name)
         )
     )
+    data = {
+        "age": sit_data.inventory.age,
+        "spatial_unit": sit_mapping.get_spatial_unit(
+            sit_data.inventory,
+            sit_data.classifiers,
+            sit_data.classifier_values,
+        ),
+        "afforestation_pre_type_id": (
+            sit_mapping.get_nonforest_cover_ids(
+                sit_data.inventory,
+                sit_data.classifiers,
+                sit_data.classifier_values,
+            )
+        ),
+        "area": sit_data.inventory.area,
+        "delay": sit_data.inventory.delay,
+        "land_class": sit_mapping.get_land_class_id(
+            sit_data.inventory.land_class
+        ),
+        "historical_disturbance_type": (
+            sit_mapping.get_sit_disturbance_type_id(
+                sit_data.inventory.historical_disturbance_type
+            )
+        ),
+        "last_pass_disturbance_type": (
+            sit_mapping.get_sit_disturbance_type_id(
+                sit_data.inventory.last_pass_disturbance_type
+            )
+        ),
+    }
+    if "spatial_reference" in sit_data.inventory.columns:
+        data["spatial_reference"] = sit_data.inventory.spatial_reference
+    inventory_result = dataframe.from_pandas(pd.DataFrame(data))
 
-    inventory_result = dataframe.from_pandas(
-        pd.DataFrame(
-            data={
-                "age": sit_data.inventory.age,
-                "spatial_unit": sit_mapping.get_spatial_unit(
-                    sit_data.inventory,
-                    sit_data.classifiers,
-                    sit_data.classifier_values,
-                ),
-                "afforestation_pre_type_id": (
-                    sit_mapping.get_nonforest_cover_ids(
-                        sit_data.inventory,
-                        sit_data.classifiers,
-                        sit_data.classifier_values,
-                    )
-                ),
-                "area": sit_data.inventory.area,
-                "delay": sit_data.inventory.delay,
-                "land_class": sit_mapping.get_land_class_id(
-                    sit_data.inventory.land_class
-                ),
-                "historical_disturbance_type": (
-                    sit_mapping.get_sit_disturbance_type_id(
-                        sit_data.inventory.historical_disturbance_type
-                    )
-                ),
-                "last_pass_disturbance_type": (
-                    sit_mapping.get_sit_disturbance_type_id(
-                        sit_data.inventory.last_pass_disturbance_type
-                    )
-                ),
-            }
-        )
-    )
     return classifiers_result, inventory_result
 
 

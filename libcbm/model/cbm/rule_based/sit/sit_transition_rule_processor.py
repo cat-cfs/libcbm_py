@@ -62,6 +62,8 @@ def sit_transition_rule_iterator(
         "max_age",
         "disturbance_type_id",
     ]
+    if "spatial_reference" in sit_transitions:
+        group_cols += ["spatial_reference"]
 
     # group transition rules by their filter criteria
     # (classifier set, age range, disturbance type)
