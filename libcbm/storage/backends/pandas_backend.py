@@ -3,7 +3,7 @@ from typing import Union
 import pandas as pd
 import numpy as np
 import ctypes
-
+import numexpr
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
@@ -81,7 +81,7 @@ class PandasDataFrameBackend(DataFrame):
         return PandasDataFrameBackend(output)
 
     def evaluate_filter(self, expression: str) -> Series:
-        return PandasSeriesBackend(None, self._df.eval(expression))
+        return PandasSeriesBackend(None, pd.Series(numexpr.evaluate(expression, self._df)))
 
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
         return PandasDataFrameBackend(
