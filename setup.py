@@ -39,7 +39,7 @@ for mac_os_ver in ["macosx_10_12_x86_64", "macosx_10_15_x86_64"]:
 test_resources = []
 for x in ["cbm3_tutorial2", "cbm3_tutorial2_eligibilities", "cbm3_tutorial6",
           "sit_rule_based_events", "moss_c_test_case",
-          "moss_c_multiple_stands"]:
+          "moss_c_multiple_stands", "sit_spatially_explicit"]:
     test_resources.append(os.path.join(resources_dir, "test", x, "*.csv"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.xlsx"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.json"))
