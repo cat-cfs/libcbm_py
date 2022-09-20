@@ -58,7 +58,7 @@ class RuleFilterTest(unittest.TestCase):
         self.assertTrue(result.to_list() == [False, False, False, True])
 
     def test_error_on_invalid_expression_evaluate_filter(self):
-        with self.assertRaises(pd.core.computation.ops.UndefinedVariableError):
+        with self.assertRaises(KeyError):
             rule_filter.evaluate_filters(
                 rule_filter.create_filter(
                     "(A < 5) | (C > 6)",  # note upper vs lower case below
