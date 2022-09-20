@@ -52,54 +52,6 @@ class TransitionRuleConstants:
         return self._classifier_value_postfix
 
 
-def sit_rule_based_processor_factory(
-    cbm: CBM,
-    random_func: Callable[[int], Series],
-    classifiers_config: dict[str, list],
-    classifier_aggregates: pd.DataFrame,
-    sit_events: pd.DataFrame,
-    sit_transitions: pd.DataFrame,
-    tr_constants: TransitionRuleConstants,
-    sit_disturbance_eligibilities: pd.DataFrame,
-    reset_parameters: bool,
-):
-
-    classifier_filter = ClassifierFilter(
-        classifiers_config=classifiers_config,
-        classifier_aggregates=classifier_aggregates,
-    )
-
-    state_filter_func = (
-        sit_transition_rule_processor.create_state_variable_filter
-    )
-
-    tr_processor = SITTransitionRuleProcessor(
-        TransitionRuleProcessor(
-            classifier_filter_builder=classifier_filter,
-            state_variable_filter_func=state_filter_func,
-            classifiers_config=classifiers_config,
-            grouped_percent_err_max=tr_constants.group_error_max,
-            wildcard=tr_constants.wildcard,
-            transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
-        )
-    )
-
-    event_processor = SITEventProcessor(
-        cbm=cbm,
-        classifier_filter_builder=classifier_filter,
-        random_generator=random_func,
-    )
-
-    return SITRuleBasedProcessor(
-        event_processor,
-        tr_processor,
-        sit_events,
-        sit_transitions,
-        sit_disturbance_eligibilities,
-        reset_parameters,
-    )
-
-
 class SITRuleBasedProcessor:
     def __init__(
         self,
@@ -146,3 +98,51 @@ class SITRuleBasedProcessor:
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
         return cbm_vars
+
+
+def sit_rule_based_processor_factory(
+    cbm: CBM,
+    random_func: Callable[[int], Series],
+    classifiers_config: dict[str, list],
+    classifier_aggregates: pd.DataFrame,
+    sit_events: pd.DataFrame,
+    sit_transitions: pd.DataFrame,
+    tr_constants: TransitionRuleConstants,
+    sit_disturbance_eligibilities: pd.DataFrame,
+    reset_parameters: bool,
+) -> SITRuleBasedProcessor:
+
+    classifier_filter = ClassifierFilter(
+        classifiers_config=classifiers_config,
+        classifier_aggregates=classifier_aggregates,
+    )
+
+    state_filter_func = (
+        sit_transition_rule_processor.create_state_variable_filter
+    )
+
+    tr_processor = SITTransitionRuleProcessor(
+        TransitionRuleProcessor(
+            classifier_filter_builder=classifier_filter,
+            state_variable_filter_func=state_filter_func,
+            classifiers_config=classifiers_config,
+            grouped_percent_err_max=tr_constants.group_error_max,
+            wildcard=tr_constants.wildcard,
+            transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
+        )
+    )
+
+    event_processor = SITEventProcessor(
+        cbm=cbm,
+        classifier_filter_builder=classifier_filter,
+        random_generator=random_func,
+    )
+
+    return SITRuleBasedProcessor(
+        event_processor,
+        tr_processor,
+        sit_events,
+        sit_transitions,
+        sit_disturbance_eligibilities,
+        reset_parameters,
+    )
