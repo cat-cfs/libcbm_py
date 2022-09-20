@@ -81,7 +81,9 @@ class PandasDataFrameBackend(DataFrame):
         return PandasDataFrameBackend(output)
 
     def evaluate_filter(self, expression: str) -> Series:
-        return PandasSeriesBackend(None, pd.Series(numexpr.evaluate(expression, self._df)))
+        return PandasSeriesBackend(
+            None, pd.Series(numexpr.evaluate(expression, self._df))
+        )
 
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
         return PandasDataFrameBackend(
@@ -370,7 +372,8 @@ def concat_data_frame(
 
 def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
     return PandasSeriesBackend(
-        None, pd.concat([s._get_series() for s in series]))
+        None, pd.concat([s._get_series() for s in series])
+    )
 
 
 def logical_and(
