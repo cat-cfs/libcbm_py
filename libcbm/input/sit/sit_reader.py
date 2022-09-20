@@ -4,6 +4,8 @@
 
 # Built-in modules #
 import os
+from typing import Iterable
+from typing import Union
 
 # Third party modules #
 import pandas as pd
@@ -27,12 +29,13 @@ class SITData:
         classifier_aggregates: pd.DataFrame,
         disturbance_types: pd.DataFrame,
         age_classes: pd.DataFrame,
-        inventory: pd.DataFrame,
+        inventory: Union[pd.DataFrame, Iterable[pd.DataFrame]],
         yield_table: pd.DataFrame,
         disturbance_events: pd.DataFrame,
         transition_rules: pd.DataFrame,
         separate_eligibilities: bool = True,
         disturbance_eligibilities: pd.DataFrame = None,
+        chunked_inventory: bool = False
     ):
         self.classifiers = classifiers
         self.original_classifier_labels = original_classifier_labels
@@ -141,16 +144,33 @@ def read(config: dict, config_dir: str) -> SITData:
     return sit_data
 
 
+def _inventory_parse_iterator(
+    inventory_chunks: Iterable[pd.DataFrame],
+    classifiers: pd.DataFrame,
+    classifier_values: pd.DataFrame,
+    disturbance_types: pd.DataFrame,
+    age_classes: pd.DataFrame
+) -> Iterable[pd.DataFrame]:
+    for sit_inventory in inventory_chunks:
+        yield sit_inventory_parser.parse(
+                sit_inventory,
+                classifiers,
+                classifier_values,
+                disturbance_types,
+                age_classes,
+            )
+
+
 def parse(
     sit_classifiers: pd.DataFrame,
     sit_disturbance_types: pd.DataFrame,
     sit_age_classes: pd.DataFrame,
-    sit_inventory: pd.DataFrame,
+    sit_inventory: Union[pd.DataFrame, Iterable[pd.DataFrame]],
     sit_yield: pd.DataFrame,
     sit_events: pd.DataFrame = None,
     sit_transitions: pd.DataFrame = None,
     sit_eligibilities: pd.DataFrame = None,
-) -> pd.DataFrame:
+) -> SITData:
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
     containing the validated result.
@@ -194,7 +214,7 @@ def parse(
             disturbance eligibilities. Defaults to None.
 
     Returns:
-        object: an object containing parsed and validated SIT dataset
+        SITData: an object containing parsed and validated SIT dataset
     """
 
     (
@@ -208,13 +228,25 @@ def parse(
         sit_disturbance_types
     )
     age_classes = sit_age_class_parser.parse(sit_age_classes)
-    inventory = sit_inventory_parser.parse(
-        sit_inventory,
-        classifiers,
-        classifier_values,
-        disturbance_types,
-        age_classes,
-    )
+
+    if isinstance(sit_inventory, pd.DataFrame):
+        is_chunked_inventory = False
+        inventory = sit_inventory_parser.parse(
+            sit_inventory,
+            classifiers,
+            classifier_values,
+            disturbance_types,
+            age_classes,
+        )
+    else:
+        is_chunked_inventory = False
+        return _inventory_parse_iterator(
+            sit_inventory,
+            classifiers,
+            classifier_values,
+            disturbance_types,
+            age_classes,)
+
     yield_table = sit_yield_parser.parse(
         sit_yield, classifiers, classifier_values, age_classes
     )
@@ -269,4 +301,5 @@ def parse(
         transition_rules,
         separate_eligibilities,
         disturbance_eligibilities,
+        is_chunked_inventory
     )
