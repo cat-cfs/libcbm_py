@@ -4,6 +4,7 @@ from enum import Enum
 class BackendType(Enum):
     numpy = 1
     pandas = 2
+    dask = 3
 
 
 # pyarrow = 3
