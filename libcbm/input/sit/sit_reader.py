@@ -35,7 +35,7 @@ class SITData:
         transition_rules: pd.DataFrame,
         separate_eligibilities: bool = True,
         disturbance_eligibilities: pd.DataFrame = None,
-        chunked_inventory: bool = False
+        chunked_inventory: bool = False,
     ):
         self.classifiers = classifiers
         self.original_classifier_labels = original_classifier_labels
@@ -49,6 +49,7 @@ class SITData:
         self.separate_eligibilities = separate_eligibilities
         self.disturbance_eligibilities = disturbance_eligibilities
         self.transition_rules = transition_rules
+        self.chunked_inventory = chunked_inventory
 
 
 def load_table(config: dict, config_dir: str) -> pd.DataFrame:
@@ -149,16 +150,16 @@ def _inventory_parse_iterator(
     classifiers: pd.DataFrame,
     classifier_values: pd.DataFrame,
     disturbance_types: pd.DataFrame,
-    age_classes: pd.DataFrame
+    age_classes: pd.DataFrame,
 ) -> Iterable[pd.DataFrame]:
     for sit_inventory in inventory_chunks:
         yield sit_inventory_parser.parse(
-                sit_inventory,
-                classifiers,
-                classifier_values,
-                disturbance_types,
-                age_classes,
-            )
+            sit_inventory,
+            classifiers,
+            classifier_values,
+            disturbance_types,
+            age_classes,
+        )
 
 
 def parse(
@@ -245,7 +246,8 @@ def parse(
             classifiers,
             classifier_values,
             disturbance_types,
-            age_classes,)
+            age_classes,
+        )
 
     yield_table = sit_yield_parser.parse(
         sit_yield, classifiers, classifier_values, age_classes
@@ -301,5 +303,5 @@ def parse(
         transition_rules,
         separate_eligibilities,
         disturbance_eligibilities,
-        is_chunked_inventory
+        is_chunked_inventory,
     )
