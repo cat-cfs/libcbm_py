@@ -31,6 +31,7 @@ from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import series
 from libcbm.storage.series import Series
 from libcbm.storage import dataframe
+from libcbm.storage.backends import BackendType
 
 DEFAULT_RNG: np.random.Generator = np.random.default_rng()
 
@@ -51,7 +52,40 @@ class EventSort(Enum):
     natural_order = 3
 
 
-def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
+def initialize_inventory(
+    sit: SIT, backend_type: BackendType
+) -> Tuple[DataFrame, DataFrame]:
+    if not sit.sit_data.chunked_inventory:
+        pd_classifiers, pd_inventory = _initialize_inventory(
+            sit.sit_mapping,
+            sit.sit_data.classifiers,
+            sit.sit_data.classifier_values,
+            sit.sit_data.inventory,
+        )
+        if backend_type == BackendType.pandas:
+            return (
+                dataframe.from_pandas(pd_classifiers),
+                dataframe.from_pandas(pd_inventory)
+            )
+        elif backend_type == backend_type.numpy:
+            raise NotImplementedError()
+    else:
+        for inventory in sit.sit_data.inventory:
+            classifiers_chunk, inventory_chunk = _initialize_inventory(
+                sit.sit_mapping,
+                sit.sit_data.classifiers,
+                sit.sit_data.classifier_values,
+                sit.sit_data.inventory,
+            )
+            # TODO: initialize dask backend
+
+
+def _initialize_inventory(
+    sit_mapping: SITMapping,
+    sit_classifiers: pd.DataFrame,
+    sit_classifier_values: pd.DataFrame,
+    sit_inventory: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Converts SIT inventory data input for CBM
 
     Args:
@@ -60,11 +94,9 @@ def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
     Returns:
         tuple: classifiers, inventory pandas.DataFrame pair for CBM use
     """
-    sit_data = sit.sit_data
-    sit_mapping = sit.sit_mapping
 
     classifier_config = sit_cbm_config.get_classifiers(
-        sit_data.classifiers, sit_data.classifier_values
+        sit_classifiers, sit_classifier_values
     )
     classifier_ids = [
         (x["id"], x["name"]) for x in classifier_config["classifiers"]
@@ -80,50 +112,49 @@ def initialize_inventory(sit: SIT) -> Tuple[DataFrame, DataFrame]:
 
     classifiers_data = np.column_stack(
         [
-            sit_data.inventory[name].map(classifier_value_id_lookups[name])
-            for name in list(sit_data.classifiers.name)
+            sit_inventory[name].map(classifier_value_id_lookups[name])
+            for name in list(sit_classifiers["name"])
         ]
     )
 
     classifiers_data = np.ascontiguousarray(classifiers_data)
-    classifiers_result = dataframe.from_pandas(
-        pd.DataFrame(
-            data=classifiers_data, columns=list(sit_data.classifiers.name)
-        )
+    classifiers_result = pd.DataFrame(
+        data=classifiers_data, columns=list(sit_classifiers["name"])
     )
+
     data = {
-        "age": sit_data.inventory.age,
+        "age": sit_inventory["age"],
         "spatial_unit": sit_mapping.get_spatial_unit(
-            sit_data.inventory,
-            sit_data.classifiers,
-            sit_data.classifier_values,
+            sit_inventory,
+            sit_classifiers,
+            sit_classifier_values,
         ),
         "afforestation_pre_type_id": (
             sit_mapping.get_nonforest_cover_ids(
-                sit_data.inventory,
-                sit_data.classifiers,
-                sit_data.classifier_values,
+                sit_inventory,
+                sit_classifiers,
+                sit_classifier_values,
             )
         ),
-        "area": sit_data.inventory.area,
-        "delay": sit_data.inventory.delay,
+        "area": sit_inventory["area"],
+        "delay": sit_inventory["delay"],
         "land_class": sit_mapping.get_land_class_id(
-            sit_data.inventory.land_class
+            sit_inventory["land_class"]
         ),
         "historical_disturbance_type": (
             sit_mapping.get_sit_disturbance_type_id(
-                sit_data.inventory.historical_disturbance_type
+                sit_inventory["historical_disturbance_type"]
             )
         ),
         "last_pass_disturbance_type": (
             sit_mapping.get_sit_disturbance_type_id(
-                sit_data.inventory.last_pass_disturbance_type
+                sit_inventory["last_pass_disturbance_type"]
             )
         ),
     }
-    if "spatial_reference" in sit_data.inventory.columns:
-        data["spatial_reference"] = sit_data.inventory.spatial_reference
-    inventory_result = dataframe.from_pandas(pd.DataFrame(data))
+    if "spatial_reference" in sit_inventory.columns:
+        data["spatial_reference"] = sit_inventory["spatial_reference"]
+    inventory_result = pd.DataFrame(data)
 
     return classifiers_result, inventory_result
 
