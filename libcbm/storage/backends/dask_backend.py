@@ -78,23 +78,24 @@ class DaskSeriesBackend(Series):
 
     @property  # pragma: no cover
     def name(self) -> str:
-        pass
+        return self._name
 
     @name.setter  # pragma: no cover
     def name(self, value: str) -> str:
         pass
 
     def copy(self) -> "Series":
-        pass
+        return DaskSeriesBackend(self._name, self._data.copy())
 
     def filter(self, arg: "Series") -> "Series":
-        pass
+        idx = da.flatnonzero(arg.data)
+        return DaskSeriesBackend(self._name, da.take(self._data, idx))
 
     def take(self, indices: "Series") -> "Series":
-        pass
+        return DaskSeriesBackend(self._name, da.take(self._data, indices.data))
 
     def as_type(self, type_name: str) -> "Series":
-        pass
+        return self._data.astype(type_name)
 
     def assign(
         self,
@@ -130,7 +131,7 @@ class DaskSeriesBackend(Series):
         pass
 
     @property  # pragma: no cover
-    def data(self) -> Union[np.ndarray, pd.Series]:
+    def data(self) -> Union[np.ndarray, pd.Series, da.Array]:
         pass
 
     def sum(self) -> Union[int, float]:
