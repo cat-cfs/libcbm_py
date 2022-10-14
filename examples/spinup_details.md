@@ -82,7 +82,7 @@ with cbm_factory.initialize_cbm() as cbm:
         cbm_simulator.create_in_memory_reporting_func(density=True)
     cbm_results, cbm_reporting_func = \
         cbm_simulator.create_in_memory_reporting_func(
-            classifier_map=cbm_factory.get_classifier_map(),
+            classifier_map=cbm_factory.classifier_value_names,
             disturbance_type_map={1: "fires"})
     cbm_simulator.simulate(
         cbm,

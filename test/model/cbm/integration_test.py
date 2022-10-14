@@ -49,8 +49,8 @@ def test_integration():
             cbm_simulator.create_in_memory_reporting_func(density=True)
         cbm_results, cbm_reporting_func = \
             cbm_simulator.create_in_memory_reporting_func(
-                classifier_map=cbm_factory.get_classifier_map(),
-                disturbance_type_map=cbm_factory.get_disturbance_type_map())
+                classifier_map=cbm_factory.classifier_value_names,
+                disturbance_type_map=cbm_factory.disturbance_types)
         cbm_simulator.simulate(
             cbm,
             n_steps=n_steps,

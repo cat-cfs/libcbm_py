@@ -16,7 +16,7 @@ jupyter:
 ```python
 import pandas as pd
 import numpy as np
-import cProfile 
+import cProfile
 ```
 
 ```python
@@ -69,7 +69,7 @@ def run_cbm():
 
         cbm_results, cbm_reporting_func = \
             cbm_simulator.create_in_memory_reporting_func(
-                classifier_map=cbm_factory.get_classifier_map(),
+                classifier_map=cbm_factory.classifier_value_names,
                 disturbance_type_map={1: "fires"})
         cbm_simulator.simulate(
             cbm,
