@@ -182,9 +182,8 @@ def get_classifier_indexes(classifier_config):
             * "classifier_value_ids": nested dictionary of classifier name
               (outer key) to classifier value name (inner key) to classifier
               value id.
-            * "classifier_value_names": nested dictionary of classifier name
-              (outer key) to classifier value id (inner key) to classifier
-              value name
+            * "classifier_value_names": dictionary of classifier value id to
+              classifier value name
     """
     indexes = dict(
         classifier_names={},
