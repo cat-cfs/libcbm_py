@@ -70,7 +70,7 @@ def run_cbm():
     with cbm_factory.initialize_cbm() as cbm:
 
         cbm_output = CBMOutput(
-            classifier_map=cbm_factory.get_classifier_map(),
+            classifier_map=cbm_factory.classifier_value_names,
             disturbance_type_map={0: "null", 1: "fires"})
         cbm_simulator.simulate(
             cbm,

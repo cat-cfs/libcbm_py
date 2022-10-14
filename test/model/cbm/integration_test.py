@@ -75,8 +75,8 @@ def test_integration():
         spinup_results = CBMOutput(density=True)
 
         cbm_results = CBMOutput(
-            classifier_map=cbm_factory.get_classifier_map(),
-            disturbance_type_map=cbm_factory.get_disturbance_type_map(),
+            classifier_map=cbm_factory.classifier_value_names,
+            disturbance_type_map=cbm_factory.disturbance_types,
         )
 
         cbm_simulator.simulate(

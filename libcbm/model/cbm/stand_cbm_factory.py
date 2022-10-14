@@ -121,6 +121,11 @@ class StandCBMFactory:
         )
         self.merch_vol_factory = self.merch_volumes_factory()
 
+        self._disturbance_type_map = {
+            r["disturbance_type_id"]: r["disturbance_type_name"]
+            for r in self.defaults_ref.disturbance_type_ref}
+        self._disturbance_type_map[0] = ""
+
     def _has_undefined_classifier_values(self, classifier_set):
         """returns true if any non-wildcard value in the classifier_set does
         not correspond to a value in self._classifiers.
@@ -167,16 +172,33 @@ class StandCBMFactory:
             db_path=self._db_path, merch_volume_curves=merch_volume_list
         )
 
-    def get_disturbance_type_map(self) -> dict:
-        dist_type_map = {
-            r["disturbance_type_id"]: r["disturbance_type_name"]
-            for r in self.defaults_ref.disturbance_type_ref
-        }
-        dist_type_map[0] = ""
-        return dist_type_map
+    @property
+    def disturbance_types(self):
+        """dictionary of disturbance type id to disturbance type name"""
+        return self._disturbance_type_map
 
-    def get_classifier_map(self) -> dict:
-        return self._classifier_idx["classifier_value_names"].copy()
+    @property
+    def classifier_names(self):
+        """dictionary of classifier id to classifier name"""
+        return self._classifier_idx["classifier_names"]
+
+    @property
+    def classifier_ids(self):
+        """dictionary of classifier name to classifier id"""
+        return self._classifier_idx["classifier_ids"]
+
+    @property
+    def classifier_value_ids(self):
+        """
+        nested dictionary of classifier name (outer key) to classifier value
+        name (inner key) to classifier value id.
+        """
+        return self._classifier_idx["classifier_value_ids"]
+
+    @property
+    def classifier_value_names(self):
+        """dictionary of classifier value id to classifier value name"""
+        self._classifier_idx["classifier_value_names"]
 
     def _get_classifier_value_ids(
         self, classifier_name: str, classifier_value_name_series: Series

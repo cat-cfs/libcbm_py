@@ -82,7 +82,7 @@ with cbm_factory.initialize_cbm() as cbm:
     # this will incur a performance penalty
     spinup_results = CBMOutput(density=True)
     cbm_results = CBMOutput(
-        classifier_map=cbm_factory.get_classifier_map(),
+        classifier_map=cbm_factory.classifier_value_names,
         disturbance_type_map={0: "none", 1: "fires"})
     cbm_simulator.simulate(
         cbm,
