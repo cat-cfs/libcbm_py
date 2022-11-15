@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.13.7
+      jupytext_version: 1.14.0
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -55,7 +55,7 @@ Create storage and a function for storing CBM simulation results.  This particul
 
 ```python
 cbm_output = CBMOutput(
-    classifier_map=sit.classifier_names)
+    classifier_map=sit.classifier_value_names)
 ```
 
 ## Simulation
