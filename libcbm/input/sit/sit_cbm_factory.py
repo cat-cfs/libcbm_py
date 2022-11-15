@@ -53,7 +53,7 @@ class EventSort(Enum):
 
 
 def initialize_inventory(
-    sit: SIT, backend_type: BackendType
+    sit: SIT, backend_type: BackendType = BackendType.pandas
 ) -> Tuple[DataFrame, DataFrame]:
     if not sit.sit_data.chunked_inventory:
         pd_classifiers, pd_inventory = _initialize_inventory(
