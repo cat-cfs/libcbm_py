@@ -10,7 +10,6 @@ from dask import array as da
 
 
 class DaskDataFrameBackend(DataFrame):
-
     def __init__(self, data: dict[str, da.Array]):
         self._data = data
 
@@ -71,7 +70,6 @@ class DaskDataFrameBackend(DataFrame):
 
 
 class DaskSeriesBackend(Series):
-
     def __init__(self, name: str, data: da.Array):
         self._name = name
         self._data = data
@@ -274,6 +272,7 @@ def from_series_dict(
 
 def allocate(name: str, len: int, init: Any, dtype: str) -> DaskSeriesBackend:
     pass
+
 
 def range(
     name: str,

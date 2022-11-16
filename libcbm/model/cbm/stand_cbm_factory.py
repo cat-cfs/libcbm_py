@@ -123,7 +123,8 @@ class StandCBMFactory:
 
         self._disturbance_type_map = {
             r["disturbance_type_id"]: r["disturbance_type_name"]
-            for r in self.defaults_ref.disturbance_type_ref}
+            for r in self.defaults_ref.disturbance_type_ref
+        }
         self._disturbance_type_map[0] = ""
 
     def _has_undefined_classifier_values(self, classifier_set):
