@@ -3,8 +3,6 @@ from typing import Iterator
 from contextlib import contextmanager
 from libcbm.model.cbm_exn.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn.cbm_variables import SpinupInput
-from libcbm.model.cbm_exn import cbm_exn_spinup
-from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model import model_definition
 from libcbm.wrapper.libcbm_operation import Operation
 from libcbm.wrapper import libcbm_operation
@@ -27,10 +25,8 @@ class CBMEXNModel:
         self._model_handle = model_handle
         self._pool_config = pool_config
         self._flux_config = flux_config
-        self._spinup_func = (
-            cbm_exn_spinup.spinup if not spinup_func else spinup_func
-        )
-        self._step_func = cbm_exn_step.step if not step_func else step_func
+        self._spinup_func = spinup_func
+        self._step_func = step_func
         self._parameters = model_parameters
 
     @property
@@ -67,16 +63,60 @@ class CBMEXNModel:
 def initialize(
     pool_config: list[str],
     flux_config: list[dict],
-    spinup_func: Callable[[CBMEXNModel, SpinupInput], CBMVariables] = None,
-    step_func: Callable[[CBMEXNModel, CBMVariables], CBMVariables] = None,
+    spinup_func: Callable[[CBMEXNModel, SpinupInput], CBMVariables],
+    step_func: Callable[[CBMEXNModel, CBMVariables], CBMVariables],
 ) -> Iterator[CBMEXNModel]:
     """Initialize a CBMEXNModel for spinup or stepping
 
     Args:
-        pool_config (list[str]): _description_
-        flux_config (list[dict]): _description_
-        spinup_func (Callable[[CBMEXNModel, SpinupInput], CBMVariables], optional): _description_. Defaults to None.
-        step_func (Callable[[CBMEXNModel, CBMVariables], CBMVariables], optional): _description_. Defaults to None.
+        pool_config (list[str]): list of string pool identifiers.
+        flux_config (list[dict]): list of flux indicator dictionary
+            structures.
+        spinup_func (func): A function that spins up CBM carbon
+            pools, and initialized CBM model state.
+        step_func (func): A function that advances CBM
+            carbon pools, and CBM model state by one timestep.
+
+    Example Pools::
+
+        ["Input", "Merchantable", "OtherC"]
+
+    Example Flux indicators::
+
+        [
+            {
+                "name": "NPP",
+                "process": "Growth",
+                "source_pools": [
+                    "Input",
+                ],
+                "sink_pools": [
+                    "Merchantable",
+                    "Foliage",
+                    "Other",
+                    "FineRoot",
+                    "CoarseRoot"
+                ]
+            },
+            {
+                "name": "DOMEmissions",
+                "process": "Decay",
+                "source_pools": [
+                    "AboveGroundVeryFast",
+                    "BelowGroundVeryFast",
+                    "AboveGroundFast",
+                    "BelowGroundFast",
+                    "MediumSoil",
+                    "AboveGroundSlow",
+                    "BelowGroundSlow",
+                    "StemSnag",
+                    "BranchSnag",
+                ],
+                "sink_pools": [
+                    "CO2"
+                ]
+            }
+        ]
 
     Yields:
         Iterator[CBMEXNModel]: instance of CBMEXNModel

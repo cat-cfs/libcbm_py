@@ -15,6 +15,6 @@ def spinup(
     model: CBMEXNModel,
     input: SpinupInput,
     reporting_func: Callable[[int, SpinupVariables], None] = None,
-    include_flux: bool = False
+    include_flux: bool = False,
 ) -> CBMVariables:
     pass
