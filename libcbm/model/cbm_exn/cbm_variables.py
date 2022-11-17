@@ -30,3 +30,20 @@ class SpinupInput:
     @property
     def spinup_increments(self):
         pass
+
+
+class SpinupVariables:
+    def __init__(self):
+        pass
+
+    @property
+    def pools(self):
+        pass
+
+    @property
+    def flux(self):
+        pass
+
+    @property
+    def spinup_state(self):
+        pass
