@@ -38,7 +38,10 @@ def step_annual_process(
     op_process_ids = [cbm_exn_matrix_ops.OpProcesses.growth] * 5 + [
         cbm_exn_matrix_ops.OpProcesses.decay
     ] * 3
-    return model.compute(cbm_vars, ops, op_process_ids)
+    model.compute(cbm_vars, ops, op_process_ids)
+    for op in ops:
+        op.dispose()
+    return cbm_vars
 
 
 def start_step(
@@ -55,6 +58,8 @@ def end_step(
 
 def step(model: CBMEXNModel, cbm_vars: CBMVariables) -> CBMVariables:
     parameters = CBMEXNParameters(model.parameters)
+    cbm_vars = start_step(cbm_vars)
     cbm_vars = step_disturbance(model, cbm_vars, parameters)
     cbm_vars = step_annual_process(model, cbm_vars, parameters)
+    cbm_vars = end_step(cbm_vars)
     return cbm_vars
