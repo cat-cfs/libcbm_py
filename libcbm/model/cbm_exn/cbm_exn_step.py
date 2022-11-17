@@ -58,8 +58,8 @@ def end_step(
 
 def step(model: CBMEXNModel, cbm_vars: CBMVariables) -> CBMVariables:
     parameters = CBMEXNParameters(model.parameters)
-    cbm_vars = start_step(cbm_vars)
+    cbm_vars = start_step(cbm_vars, parameters)
     cbm_vars = step_disturbance(model, cbm_vars, parameters)
     cbm_vars = step_annual_process(model, cbm_vars, parameters)
-    cbm_vars = end_step(cbm_vars)
+    cbm_vars = end_step(cbm_vars, parameters)
     return cbm_vars
