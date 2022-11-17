@@ -1,4 +1,3 @@
-
 class CBMEXNParameters:
     def __init__(self, parameters: dict):
         self._parameters = parameters
