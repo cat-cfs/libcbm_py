@@ -6,6 +6,8 @@ from libcbm.model.cbm_exn.cbm_variables import SpinupInput
 from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model import model_definition
+from libcbm.wrapper.libcbm_operation import Operation
+from libcbm.wrapper import libcbm_operation
 
 
 class CBMEXNModel:
@@ -41,8 +43,24 @@ class CBMEXNModel:
     def step(self, cbm_vars: CBMVariables) -> CBMVariables:
         return self._step_func(self, cbm_vars)
 
-    def create_operation(self, matrices: list, fmt: str):
+    def create_operation(self, matrices: list, fmt: str) -> Operation:
         return self._model_handle.create_operation(matrices, fmt)
+
+    def compute(
+        self,
+        cbm_vars: CBMVariables,
+        operations: list[Operation],
+        op_process_ids: list[int],
+    ):
+        libcbm_operation.compute(
+            dll=self._model_handle.wrapper,
+            pools=cbm_vars.pools,
+            operations=operations,
+            op_processes=[int(x) for x in op_process_ids],
+            flux=cbm_vars.flux,
+            enabled=cbm_vars.state["enabled"],
+        )
+        self._model_handle.compute()
 
 
 @contextmanager
@@ -52,7 +70,7 @@ def initialize(
     spinup_func: Callable[[CBMEXNModel, SpinupInput], CBMVariables] = None,
     step_func: Callable[[CBMEXNModel, CBMVariables], CBMVariables] = None,
 ) -> Iterator[CBMEXNModel]:
-    """_summary_
+    """Initialize a CBMEXNModel for spinup or stepping
 
     Args:
         pool_config (list[str]): _description_
@@ -61,7 +79,7 @@ def initialize(
         step_func (Callable[[CBMEXNModel, CBMVariables], CBMVariables], optional): _description_. Defaults to None.
 
     Yields:
-        Iterator[CBMEXNModel]: _description_
+        Iterator[CBMEXNModel]: instance of CBMEXNModel
     """
     pools = None
     flux = None
