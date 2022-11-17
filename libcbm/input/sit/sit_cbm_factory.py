@@ -65,7 +65,7 @@ def initialize_inventory(
         if backend_type == BackendType.pandas:
             return (
                 dataframe.from_pandas(pd_classifiers),
-                dataframe.from_pandas(pd_inventory)
+                dataframe.from_pandas(pd_inventory),
             )
         elif backend_type == backend_type.numpy:
             raise NotImplementedError()
