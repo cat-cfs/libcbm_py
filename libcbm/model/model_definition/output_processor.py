@@ -39,5 +39,5 @@ class ModelOutputProcessor:
                     [self._results[name], results_t]
                 )
 
-    def get_results(self, name: str) -> DataFrame:
-        return self._results[name]
+    def get_results(self) -> dict[str, DataFrame]:
+        return {k: v for k, v in self._results.items()}
