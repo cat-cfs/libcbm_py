@@ -9,6 +9,7 @@ class ModelOutputProcessor:
     stores results by timestep using the libcbm.storage.dataframe.DataFrame
     abstraction
     """
+
     def __init__(
         self,
         output_dataframe_converter: Callable[[DataFrame], DataFrame] = None,
