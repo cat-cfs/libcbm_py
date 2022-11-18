@@ -8,33 +8,10 @@ from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
 from libcbm.storage import series
 from libcbm.storage import dataframe
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
-
-
-class ModelVars:
-    def __init__(
-        self,
-        size: int,
-        pool_names: list[str],
-        flux_names: list[str],
-        backend_type: BackendType = BackendType.numpy,
-    ):
-        self.pools = dataframe.numeric_dataframe(
-            pool_names,
-            size,
-            backend_type,
-            0,
-        )
-        self.flux = dataframe.numeric_dataframe(
-            flux_names,
-            size,
-            backend_type,
-            0,
-        )
-
-        self.enabled = series.allocate(
-            "enabled", size, 1, "int32", backend_type
-        )
+from libcbm.model.model_definition import cbm_variables
 
 
 class ModelHandle:
@@ -48,12 +25,11 @@ class ModelHandle:
         self.pools = pools
         self.flux_indicators = flux_indicators
 
-    def allocate_model_vars(self, n: int):
-        return ModelVars(
-            int(n),
-            list(self.pools.keys()),
-            [x["name"] for x in self.flux_indicators],
-        )
+    def allocate_pools(self, n: int) -> DataFrame:
+        pool_names = list(self.pools.keys())
+
+    def allocate_flux(self, n: int) -> DataFrame:
+        flux_names = [x["name"] for x in self.flux_indicators]
 
     def _matrix_rc(self, value: list) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
@@ -92,52 +68,25 @@ class ModelHandle:
 
     def compute(
         self,
-        model_vars: ModelVars,
+        pools: DataFrame,
+        flux: DataFrame,
+        enabled: Series,
         operations: list[libcbm_operation.Operation],
         op_processes: list[int],
     ) -> None:
 
         libcbm_operation.compute(
             dll=self.wrapper,
-            pools=model_vars.pools,
+            pools=pools,
             operations=operations,
             op_processes=[int(o) for o in op_processes],
-            flux=model_vars.flux,
-            enabled=model_vars.enabled,
+            flux=flux,
+            enabled=enabled,
         )
-
-    def create_output_processor(self) -> "ModelOutputProcessor":
-        return ModelOutputProcessor(self)
-
-
-class ModelOutputProcessor:
-    def __init__(self, model_handle: ModelHandle):
-        self.model_handle = model_handle
-        self.pools = None
-        self.flux = None
-
-    def append_results(self, t: int, model_vars: ModelVars):
-        pools_t = model_vars.pools.copy()
-        pools_t.add_column(
-            series.allocate(
-                "timestep", pools_t.n_rows, t, "int32", pools_t.backend_type
-            ),
-            0,
-        )
-        self.pools = dataframe.concat_data_frame([self.pools, pools_t])
-
-        flux_t = model_vars.flux.copy()
-        flux_t.add_column(
-            series.allocate(
-                "timestep", pools_t.n_rows, t, "int32", pools_t.backend_type
-            ),
-            0,
-        )
-        self.flux = dataframe.concat_data_frame([self.flux, flux_t])
 
 
 @contextmanager
-def create_model(
+def create_model_handle(
     pools: dict[str, int], flux_indicators: list[dict]
 ) -> Iterator[ModelHandle]:
 

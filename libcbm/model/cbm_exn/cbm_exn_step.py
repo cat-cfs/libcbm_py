@@ -1,11 +1,11 @@
-from libcbm.model.cbm_exn.model import CBMEXNModel
-from libcbm.model.cbm_exn.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn import cbm_exn_matrix_ops
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
 def step_disturbance(
-    model: CBMEXNModel,
+    model: CBMModel,
     cbm_vars: CBMVariables,
     parameters: CBMEXNParameters = None,
 ) -> CBMVariables:
@@ -18,7 +18,7 @@ def step_disturbance(
 
 
 def step_annual_process(
-    model: CBMEXNModel,
+    model: CBMModel,
     cbm_vars: CBMVariables,
     parameters: CBMEXNParameters = None,
 ) -> CBMVariables:
@@ -56,7 +56,7 @@ def end_step(
     pass
 
 
-def step(model: CBMEXNModel, cbm_vars: CBMVariables) -> CBMVariables:
+def step(model: CBMModel, cbm_vars: CBMVariables) -> CBMVariables:
     parameters = CBMEXNParameters(model.parameters)
     cbm_vars = start_step(cbm_vars, parameters)
     cbm_vars = step_disturbance(model, cbm_vars, parameters)

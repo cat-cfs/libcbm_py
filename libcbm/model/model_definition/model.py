@@ -1,26 +1,26 @@
 from typing import Callable
 from typing import Iterator
 from contextlib import contextmanager
-from libcbm.model.cbm_exn.cbm_variables import CBMVariables
-from libcbm.model.cbm_exn.cbm_variables import SpinupInput
+from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.cbm_variables import SpinupInput
 from libcbm.model import model_definition
 from libcbm.wrapper.libcbm_operation import Operation
 from libcbm.wrapper import libcbm_operation
 
 
-class CBMEXNModel:
+class CBMModel:
+    """
+    An abstraction of a Carbon budget model
+    """
+
     def __init__(
         self,
         model_handle: model_definition.ModelHandle,
         pool_config: list[str],
         flux_config: list[dict],
         model_parameters: dict,
-        spinup_func: Callable[
-            ["CBMEXNModel", SpinupInput], CBMVariables
-        ] = None,
-        step_func: Callable[
-            ["CBMEXNModel", CBMVariables], CBMVariables
-        ] = None,
+        spinup_func: Callable[["CBMModel", SpinupInput], CBMVariables] = None,
+        step_func: Callable[["CBMModel", CBMVariables], CBMVariables] = None,
     ):
         self._model_handle = model_handle
         self._pool_config = pool_config
@@ -63,10 +63,10 @@ class CBMEXNModel:
 def initialize(
     pool_config: list[str],
     flux_config: list[dict],
-    spinup_func: Callable[[CBMEXNModel, SpinupInput], CBMVariables],
-    step_func: Callable[[CBMEXNModel, CBMVariables], CBMVariables],
-) -> Iterator[CBMEXNModel]:
-    """Initialize a CBMEXNModel for spinup or stepping
+    spinup_func: Callable[[CBMModel, SpinupInput], CBMVariables],
+    step_func: Callable[[CBMModel, CBMVariables], CBMVariables],
+) -> Iterator[CBMModel]:
+    """Initialize a CBMModel for spinup or stepping
 
     Args:
         pool_config (list[str]): list of string pool identifiers.
@@ -124,6 +124,6 @@ def initialize(
     pools = None
     flux = None
     with model_definition.create_model(pools, flux) as model_handle:
-        yield CBMEXNModel(
+        yield CBMModel(
             model_handle, pool_config, flux_config, spinup_func, step_func
         )
