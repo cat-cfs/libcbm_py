@@ -3,9 +3,9 @@ from typing import Iterator
 from contextlib import contextmanager
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.model_definition.cbm_variables import SpinupInput
-from libcbm.model import model_definition
+from libcbm.model.model_definition import model_handle
+from libcbm.model.model_definition.model_handle import ModelHandle
 from libcbm.wrapper.libcbm_operation import Operation
-from libcbm.wrapper import libcbm_operation
 
 
 class CBMModel:
@@ -15,7 +15,7 @@ class CBMModel:
 
     def __init__(
         self,
-        model_handle: model_definition.ModelHandle,
+        model_handle: ModelHandle,
         pool_config: list[str],
         flux_config: list[dict],
         model_parameters: dict,
@@ -48,15 +48,13 @@ class CBMModel:
         operations: list[Operation],
         op_process_ids: list[int],
     ):
-        libcbm_operation.compute(
-            dll=self._model_handle.wrapper,
-            pools=cbm_vars.pools,
-            operations=operations,
+        self._model_handle.compute(
+            cbm_vars.pools,
+            cbm_vars.flux,
+            cbm_vars.state["enabled"],
+            operations,
             op_processes=[int(x) for x in op_process_ids],
-            flux=cbm_vars.flux,
-            enabled=cbm_vars.state["enabled"],
         )
-        self._model_handle.compute()
 
 
 @contextmanager
@@ -123,7 +121,7 @@ def initialize(
     """
     pools = None
     flux = None
-    with model_definition.create_model(pools, flux) as model_handle:
+    with model_handle.create_model_handle(pools, flux) as _model_handle:
         yield CBMModel(
-            model_handle, pool_config, flux_config, spinup_func, step_func
+            _model_handle, pool_config, flux_config, spinup_func, step_func
         )
