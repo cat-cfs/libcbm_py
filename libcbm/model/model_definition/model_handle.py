@@ -6,12 +6,10 @@ from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
-from libcbm.model.model_definition import cbm_variables
 
 
 class ModelHandle:
@@ -25,11 +23,17 @@ class ModelHandle:
         self.pools = pools
         self.flux_indicators = flux_indicators
 
-    def allocate_pools(self, n: int) -> DataFrame:
+    def allocate_pools(
+        self, n: int, backend_type: BackendType = BackendType.numpy
+    ) -> DataFrame:
         pool_names = list(self.pools.keys())
+        return dataframe.numeric_dataframe(pool_names, n, backend_type)
 
-    def allocate_flux(self, n: int) -> DataFrame:
+    def allocate_flux(
+        self, n: int, backend_type: BackendType = BackendType.numpy
+    ) -> DataFrame:
         flux_names = [x["name"] for x in self.flux_indicators]
+        return dataframe.numeric_dataframe(flux_names, n, backend_type)
 
     def _matrix_rc(self, value: list) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
