@@ -1,49 +1,23 @@
+from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import dataframe
+import pandas as pd
+
+
 class CBMVariables:
-    def __init__(self):
-        pass
+    def __init__(self, data: dict[str, DataFrame]):
+        self._data = data
 
-    @property
-    def pools(self):
-        pass
+    def __getitem__(self, name: str) -> DataFrame:
+        return self._data[name]
 
-    @property
-    def flux(self):
-        pass
+    def get_collection(self) -> dict[str, DataFrame]:
+        return {k: v for k, v in self._data.items()}
 
-    @property
-    def state(self):
-        pass
+    @staticmethod
+    def from_pandas(frames: dict[str, pd.DataFrame]) -> "CBMVariables":
+        return CBMVariables(
+            {k: dataframe.from_pandas(v) for k, v in frames.items()}
+        )
 
-    @property
-    def parameters(self):
-        pass
-
-
-class SpinupInput:
-    def __init__(self):
-        pass
-
-    @property
-    def spinup_parameters(self):
-        pass
-
-    @property
-    def spinup_increments(self):
-        pass
-
-
-class SpinupVariables:
-    def __init__(self):
-        pass
-
-    @property
-    def pools(self):
-        pass
-
-    @property
-    def flux(self):
-        pass
-
-    @property
-    def spinup_state(self):
-        pass
+    def to_pandas(self) -> dict[str, pd.DataFrame]:
+        return {k: v.to_pandas() for k, v in self._data.items()}
