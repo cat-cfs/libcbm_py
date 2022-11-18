@@ -10,6 +10,9 @@ class CBMVariables:
     def __getitem__(self, name: str) -> DataFrame:
         return self._data[name]
 
+    def __contains__(self, name: str) -> bool:
+        return name in self._data
+
     def get_collection(self) -> dict[str, DataFrame]:
         return {k: v for k, v in self._data.items()}
 
