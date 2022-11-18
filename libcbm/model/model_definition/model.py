@@ -2,7 +2,6 @@ from typing import Callable
 from typing import Iterator
 from contextlib import contextmanager
 from libcbm.model.model_definition.cbm_variables import CBMVariables
-from libcbm.model.model_definition.cbm_variables import SpinupInput
 from libcbm.model.model_definition import model_handle
 from libcbm.model.model_definition.model_handle import ModelHandle
 from libcbm.wrapper.libcbm_operation import Operation
@@ -19,7 +18,7 @@ class CBMModel:
         pool_config: list[str],
         flux_config: list[dict],
         model_parameters: dict,
-        spinup_func: Callable[["CBMModel", SpinupInput], CBMVariables] = None,
+        spinup_func: Callable[["CBMModel", CBMVariables], CBMVariables] = None,
         step_func: Callable[["CBMModel", CBMVariables], CBMVariables] = None,
     ):
         self._model_handle = model_handle
@@ -33,7 +32,7 @@ class CBMModel:
     def parameters(self) -> dict:
         return self._parameters
 
-    def spinup(self, spinup_input: SpinupInput) -> CBMVariables:
+    def spinup(self, spinup_input: CBMVariables) -> CBMVariables:
         return self._spinup_func(spinup_input)
 
     def step(self, cbm_vars: CBMVariables) -> CBMVariables:
@@ -61,7 +60,8 @@ class CBMModel:
 def initialize(
     pool_config: list[str],
     flux_config: list[dict],
-    spinup_func: Callable[[CBMModel, SpinupInput], CBMVariables],
+    model_parameters: dict,
+    spinup_func: Callable[[CBMModel, CBMVariables], CBMVariables],
     step_func: Callable[[CBMModel, CBMVariables], CBMVariables],
 ) -> Iterator[CBMModel]:
     """Initialize a CBMModel for spinup or stepping
@@ -70,6 +70,8 @@ def initialize(
         pool_config (list[str]): list of string pool identifiers.
         flux_config (list[dict]): list of flux indicator dictionary
             structures.
+        model_parameters (dict): a dictionary of abitrary model
+            parameters used by the specified spinup or step functions
         spinup_func (func): A function that spins up CBM carbon
             pools, and initialized CBM model state.
         step_func (func): A function that advances CBM
@@ -117,11 +119,16 @@ def initialize(
         ]
 
     Yields:
-        Iterator[CBMEXNModel]: instance of CBMEXNModel
+        Iterator[CBMModel]: instance of CBMModel
     """
     pools = None
     flux = None
     with model_handle.create_model_handle(pools, flux) as _model_handle:
         yield CBMModel(
-            _model_handle, pool_config, flux_config, spinup_func, step_func
+            _model_handle,
+            pool_config,
+            flux_config,
+            model_parameters,
+            spinup_func,
+            step_func,
         )
