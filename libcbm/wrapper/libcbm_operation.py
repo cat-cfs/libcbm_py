@@ -98,7 +98,7 @@ class Operation:
     def get_op_id(self) -> int:
         return self.__op_id
 
-    def set_matrix_index(self, matrix_index: np.ndarray):
+    def set_op(self, matrix_index: np.ndarray):
         if not matrix_index.dtype == np.uintp:
             matrix_index = matrix_index.astype(np.uintp)
         if self.format == OperationFormat.MatrixList:

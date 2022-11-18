@@ -518,7 +518,7 @@ def step(
         libcbm_operation.OperationFormat.RepeatingCoordinates,
         annual_process_matrix,
     )
-    annual_process_matrices.set_matrix_index(
+    annual_process_matrices.set_op(
         np.array(list(range(0, n_stands)), dtype=np.uintp)
     )
     disturbance_matrices = libcbm_operation.Operation(
@@ -526,7 +526,7 @@ def step(
         libcbm_operation.OperationFormat.MatrixList,
         model_context.disturbance_matrices.dm_list,
     )
-    disturbance_matrices.set_matrix_index(
+    disturbance_matrices.set_op(
         model_context.state["disturbance_type"].to_numpy()
     )
 
