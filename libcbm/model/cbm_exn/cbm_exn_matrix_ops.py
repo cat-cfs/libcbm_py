@@ -16,6 +16,22 @@ class OpProcesses(IntEnum):
     disturbance = 3
 
 
+class SpinupMatrixOps:
+    def __init__(self, model: CBMModel, parameters: CBMEXNParameters):
+        self._model = model
+        self._parameters = parameters
+
+    def _net_growth_multiple_age(
+        self, spinup_increments: CBMVariables
+    ) -> Operation:
+        pass
+
+    def get_spinup_matrix_ops(
+        self, cbm_vars: CBMVariables
+    ) -> dict[str, Operation]:
+        pass
+
+
 def disturbance(
     model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> Operation:
@@ -61,6 +77,7 @@ def slow_decay(
 def slow_mixing(
     model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> Operation:
+
     rate: float = parameters.get_slow_mixing_rate()
     op = model.create_operation(
         matrices=[
@@ -70,4 +87,4 @@ def slow_mixing(
         fmt="repeating_coordinates",
     )
     # create a single matrix shared by all stands to compute slow mixing
-    op.set_matrix_index(np.zeros(cbm_vars.pools.nrows))
+    op.set_op(np.zeros(cbm_vars["pools"].n_rows))
