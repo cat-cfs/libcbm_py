@@ -16,8 +16,8 @@ import numpy as np
 from libcbm.model.moss_c.pools import Pool
 from libcbm.model.moss_c.pools import ANNUAL_PROCESSES
 from libcbm.model.moss_c.pools import DISTURBANCE_PROCESS
-from libcbm.model.moss_c import model_functions
-from libcbm.model.moss_c.model_functions import SpinupState
+from libcbm.model.model_definition.spinup_engine import SpinupState
+from libcbm.model.model_definition import spinup_engine
 from libcbm.model.moss_c.model_context import ModelContext
 from libcbm.wrapper import libcbm_operation
 from libcbm.storage.dataframe import DataFrame
@@ -451,7 +451,7 @@ def spinup(
     iteration = 0
     while True:
 
-        state = model_functions.advance_spinup_state(
+        state = spinup_engine.advance_spinup_state(
             spinup_state=spinup_vars["spinup_state"],
             age=model_context.state["age"],
             final_age=model_context.parameters["age"],
