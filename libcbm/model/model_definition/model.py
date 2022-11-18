@@ -48,9 +48,9 @@ class CBMModel:
         op_process_ids: list[int],
     ):
         self._model_handle.compute(
-            cbm_vars.pools,
-            cbm_vars.flux,
-            cbm_vars.state["enabled"],
+            cbm_vars["pools"],
+            cbm_vars["flux"] if "flux" in cbm_vars else None,
+            cbm_vars["state"]["enabled"],
             operations,
             op_processes=[int(x) for x in op_process_ids],
         )
