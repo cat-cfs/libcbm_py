@@ -31,6 +31,7 @@ def spinup(
 
     spinup_vars = prepare_spinup_vars(input, include_flux)
     n_stands = spinup_vars["pools"].n_rows
+    t: int = 0
     while True:
         n_finished = advance_spinup_state(spinup_vars)
         if n_finished == n_stands:
@@ -53,3 +54,8 @@ def spinup(
             + [cbm_exn_matrix_ops.OpProcesses.decay] * 3
         )
         model.compute(spinup_vars, ops, op_process_ids)
+        t += 1
+        if reporting_func:
+            reporting_func(t, spinup_vars)
+
+    return init_cbm_vars(spinup_vars)
