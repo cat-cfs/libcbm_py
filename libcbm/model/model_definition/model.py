@@ -30,16 +30,46 @@ class CBMModel:
 
     @property
     def parameters(self) -> dict:
+        """arbitrary model parameters stored as a dictionary"""
         return self._parameters
 
     def spinup(self, spinup_input: CBMVariables) -> CBMVariables:
+        """Initialize the Carbon pools for the specified input
+        Args:
+            spinup_input (CBMVariables): collection of dataframe
+                inputs specifying spinup input
+
+        Returns:
+            CBMVariables: initialized CBM input for stepping
+        """
         return self._spinup_func(spinup_input)
 
     def step(self, cbm_vars: CBMVariables) -> CBMVariables:
+        """Advance the specified cbm model state/variables by 1 step
+
+        Args:
+            cbm_vars (CBMVariables): CBM variables and state (pools/flux etc)
+
+        Returns:
+            CBMVariables: The CBM variables, advanced by 1 step
+        """
         return self._step_func(self, cbm_vars)
 
-    def create_operation(self, matrices: list, fmt: str) -> Operation:
-        return self._model_handle.create_operation(matrices, fmt)
+    def create_operation(
+        self, matrices: list, fmt: str, process_id: int
+    ) -> Operation:
+        """Create a set of matrix operations for C dynamics along the row axis
+        of cbm_vars. The relationship of matrices to stands is 1:m
+
+        Args:
+            matrices (list): a list of matrix information
+            fmt (str): one of "repeating_coordinates" or "matrix_list"
+            process_id (int): the process_id for flux indicator categorization
+
+        Returns:
+            Operation: an `Operation` object
+        """
+        return self._model_handle.create_operation(matrices, fmt, process_id)
 
     def compute(
         self,
@@ -47,6 +77,15 @@ class CBMModel:
         operations: list[Operation],
         op_process_ids: list[int],
     ):
+        """Compute a batch of C dynamics
+
+        Args:
+            cbm_vars (CBMVariables): _description_
+            operations (list[Operation]): a list of Operation objects as
+                allocated by `create_operation`
+            op_process_ids (list[int]): list of integers
+        """
+
         self._model_handle.compute(
             cbm_vars["pools"],
             cbm_vars["flux"] if "flux" in cbm_vars else None,
