@@ -3,14 +3,7 @@ from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn import cbm_exn_matrix_ops
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
-
-
-def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
-    pass
-
-
-def advance_spinup_state(cbm_vars: CBMVariables) -> int:
-    pass
+from libcbm.model.cbm_exn import cbm_exn_land_state
 
 
 def prepare_spinup_vars(
@@ -33,7 +26,7 @@ def spinup(
     n_stands = spinup_vars["pools"].n_rows
     t: int = 0
     while True:
-        n_finished = advance_spinup_state(spinup_vars)
+        n_finished = cbm_exn_land_state.advance_spinup_state(spinup_vars)
         if n_finished == n_stands:
             break
 
@@ -54,8 +47,9 @@ def spinup(
             + [cbm_exn_matrix_ops.OpProcesses.decay] * 3
         )
         model.compute(spinup_vars, ops, op_process_ids)
+        spinup_vars = cbm_exn_land_state.end_spinup_step(spinup_vars)
         t += 1
         if reporting_func:
             reporting_func(t, spinup_vars)
 
-    return init_cbm_vars(spinup_vars)
+    return cbm_exn_land_state.init_cbm_vars(spinup_vars)
