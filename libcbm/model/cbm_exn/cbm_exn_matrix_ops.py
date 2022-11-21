@@ -85,6 +85,7 @@ def slow_mixing(
             ["AboveGroundSlowSoil", "AboveGroundSlowSoil", 1 - rate],
         ],
         fmt="repeating_coordinates",
+        process_id=OpProcesses.decay,
     )
     # create a single matrix shared by all stands to compute slow mixing
     op.set_op(np.zeros(cbm_vars["pools"].n_rows))
