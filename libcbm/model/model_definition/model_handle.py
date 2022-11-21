@@ -13,6 +13,10 @@ from libcbm.storage.backends import BackendType
 
 
 class ModelHandle:
+    """
+    layer for simplifying the python interface to libcbm matrix processing
+    """
+
     def __init__(
         self,
         wrapper: LibCBMWrapper,
@@ -35,27 +39,35 @@ class ModelHandle:
         flux_names = [x["name"] for x in self.flux_indicators]
         return dataframe.numeric_dataframe(flux_names, n, backend_type)
 
-    def _matrix_rc(self, value: list) -> libcbm_operation.Operation:
+    def _matrix_rc(
+        self, value: list, process_id: int
+    ) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
             value,
+            process_id,
         )
 
-    def _matrix_list(self, value: list) -> libcbm_operation.Operation:
+    def _matrix_list(
+        self, value: list, process_id: int
+    ) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
-            self.wrapper, libcbm_operation.OperationFormat.MatrixList, value
+            self.wrapper,
+            libcbm_operation.OperationFormat.MatrixList,
+            value,
+            process_id,
         )
 
     def create_operation(
-        self, matrices: list, fmt: str
+        self, matrices: list, fmt: str, process_id: int
     ) -> libcbm_operation.Operation:
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
                 for row in matrices
             ]
-            return self._matrix_rc(pool_id_mat)
+            return self._matrix_rc(pool_id_mat, process_id)
         elif fmt == "matrix_list":
             mat_list = []
             for mat in matrices:
@@ -66,7 +78,7 @@ class ModelHandle:
                     np_mat[i_entry, 1] = self.pools[entry[1]]
                     np_mat[i_entry, 2] = entry[2]
                 mat_list.append(np_mat)
-            return self._matrix_list(mat_list)
+            return self._matrix_list(mat_list, process_id)
         else:
             raise ValueError("unknown format")
 
@@ -76,14 +88,13 @@ class ModelHandle:
         flux: DataFrame,
         enabled: Series,
         operations: list[libcbm_operation.Operation],
-        op_processes: list[int],
     ) -> None:
 
         libcbm_operation.compute(
             dll=self.wrapper,
             pools=pools,
             operations=operations,
-            op_processes=[int(o) for o in op_processes],
+            op_processes=[o.op_process_id for o in operations],
             flux=flux,
             enabled=enabled,
         )
