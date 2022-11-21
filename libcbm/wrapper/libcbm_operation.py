@@ -42,13 +42,15 @@ def _promote_scalar(value, size, dtype):
 
 
 class Operation:
-    def __init__(self, dll: str, format: OperationFormat, data: list):
+    def __init__(
+        self, dll: str, format: OperationFormat, data: list, op_process_id: int
+    ):
         self.format = format
         self.__dll = dll
         self.__op_id = None
         self.__matrix_list_p = None
         self.__matrix_list_len = None
-
+        self._op_process_id = op_process_id
         self.__repeating_matrix_coords = None
         self.__repeating_matrix_values = None
         if self.format == OperationFormat.MatrixList:
@@ -89,6 +91,10 @@ class Operation:
         if self.__op_id is not None:
             self.__dll.free_op(self.__op_id)
         self.__op_id = self.__dll.allocate_op(size)
+
+    @property
+    def op_process_id(self):
+        return self._op_process_id
 
     def dispose(self):
         if self.__op_id is not None and self.__dll is not None:
