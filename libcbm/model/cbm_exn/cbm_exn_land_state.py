@@ -3,11 +3,13 @@ from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.model_definition import spinup_engine
 from libcbm.model.cbm_exn import cbm_exn_variables
+from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 import numpy as np
 from libcbm.storage import series
 
 
 def advance_spinup_state(spinup_vars: CBMVariables) -> CBMVariables:
+    # TODO, validate this input
     spinup_state = spinup_engine.advance_spinup_state(
         spinup_state=spinup_vars["state"]["spinup_state"],
         age=spinup_vars["state"]["age"],
@@ -36,21 +38,23 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
 
     cbm_vars["state"]["area"].assign(spinup_vars["state"]["area"])
     cbm_vars["state"]["spatial_unit_id"].assign(spinup_vars["state"]["area"])
-    cbm_vars["state"]["land_class_id"].assign(
-        spinup_vars["state"]["land_class_id"]
-    )
+
     cbm_vars["state"]["age"].assign(spinup_vars["state"]["age"])
     cbm_vars["state"]["species"].assign(spinup_vars["state"]["species"])
     cbm_vars["state"]["time_since_last_disturbance"].assign(
-        spinup_vars["state"]["time_since_last_disturbance"]
+        spinup_vars["state"]["age"] + spinup_vars["state"]["delay"]
     )
-    cbm_vars["state"]["time_since_land_use_change"].assign(
-        spinup_vars["state"]["time_since_land_use_change"]
-    )
-    cbm_vars["state"]["last_disturbance_type_id"].assign(
-        spinup_vars["state"]["last_disturbance_type_id"]
-    )
+
+    # TODO implement land use change routines for the following 3 variables:
+    cbm_vars["state"]["time_since_land_use_change"].assign(-1)
+    cbm_vars["state"]["land_class_d"].assign(-1)
+    # TODO take the enabled value from the state, and secondly assign it based on
+    # deforestation/afforestation status if necessary
     cbm_vars["state"]["enabled"].assign(spinup_vars["state"]["enabled"])
+
+    cbm_vars["state"]["last_disturbance_type_id"].assign(
+        spinup_vars["spinup_parameters"]["last_pass_disturbance_type_id"]
+    )
 
     return cbm_vars
 
@@ -85,3 +89,14 @@ def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
     spinup_vars["state"]["delay_step"].assign(
         spinup_vars["state"]["delay_step"].take(delay_idx) + 1, delay_idx
     )
+
+def start_step(
+    cbm_vars: CBMVariables, parameters: CBMEXNParameters
+) -> CBMVariables:
+    pass
+
+
+def end_step(
+    cbm_vars: CBMVariables, parameters: CBMEXNParameters
+) -> CBMVariables:
+    pass
