@@ -2,7 +2,7 @@ from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn import cbm_exn_matrix_ops
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
-
+from libcbm.model.cbm_exn import cbm_exn_land_state
 
 def step_disturbance(
     model: CBMModel,
@@ -44,22 +44,10 @@ def step_annual_process(
     return cbm_vars
 
 
-def start_step(
-    cbm_vars: CBMVariables, parameters: CBMEXNParameters
-) -> CBMVariables:
-    pass
-
-
-def end_step(
-    cbm_vars: CBMVariables, parameters: CBMEXNParameters
-) -> CBMVariables:
-    pass
-
-
 def step(model: CBMModel, cbm_vars: CBMVariables) -> CBMVariables:
     parameters = CBMEXNParameters(model.parameters)
-    cbm_vars = start_step(cbm_vars, parameters)
+    cbm_vars = cbm_exn_land_state.start_step(cbm_vars, parameters)
     cbm_vars = step_disturbance(model, cbm_vars, parameters)
     cbm_vars = step_annual_process(model, cbm_vars, parameters)
-    cbm_vars = end_step(cbm_vars, parameters)
+    cbm_vars = cbm_exn_land_state.end_step(cbm_vars, parameters)
     return cbm_vars
