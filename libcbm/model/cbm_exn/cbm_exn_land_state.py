@@ -48,8 +48,8 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
     # TODO implement land use change routines for the following 3 variables:
     cbm_vars["state"]["time_since_land_use_change"].assign(-1)
     cbm_vars["state"]["land_class_d"].assign(-1)
-    # TODO take the enabled value from the state, and secondly assign it based on
-    # deforestation/afforestation status if necessary
+    # TODO take the enabled value from the state, and secondly assign it based
+    # on deforestation/afforestation status if necessary
     cbm_vars["state"]["enabled"].assign(spinup_vars["state"]["enabled"])
 
     cbm_vars["state"]["last_disturbance_type_id"].assign(
@@ -90,13 +90,43 @@ def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
         spinup_vars["state"]["delay_step"].take(delay_idx) + 1, delay_idx
     )
 
+
 def start_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
-    pass
+    idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
+    disturbed_idx = idx.filter(cbm_vars["state"]["disturbance_type"] > 0)
+
+    # currently only considering age-resetting disturbances
+    cbm_vars["state"]["age"].assign(0, disturbed_idx)
+
+    cbm_vars["state"]["last_disturbance_type"].assign(
+        cbm_vars["state"]["disturbance_type"].take(disturbed_idx),
+        disturbed_idx
+    )
+    cbm_vars["state"]["time_since_last_disturbance"].assign(0, disturbed_idx)
+
+    # TODO implement land use change routines for the following 3 variables:
+    cbm_vars["state"]["time_since_land_use_change"].assign(-1)
+    cbm_vars["state"]["land_class_d"].assign(-1)
+    # TODO assign enabled/disturbance based
+    # on deforestation/afforestation status if necessary
+    # cbm_vars["state"]["enabled"].assign(...)
 
 
 def end_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
-    pass
+    idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
+    enabled_idx = idx.filter(cbm_vars["state"]["enabled"] > 0)
+    cbm_vars["state"]["age"].assign(
+        cbm_vars["state"]["age"].take(enabled_idx) + 1,
+        enabled_idx
+    )
+    cbm_vars["state"]["time_since_last_disturbance"].assign(
+        cbm_vars["state"]["time_since_last_disturbance"].take(enabled_idx) + 1,
+        enabled_idx
+    )
+
+    # TODO increment time_since_land_use_change where the values are >= 0
+    # cbm_vars["state"]["time_since_land_use_change"].assign(-1)
