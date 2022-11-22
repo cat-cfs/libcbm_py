@@ -33,6 +33,14 @@ class CBMModel:
         """arbitrary model parameters stored as a dictionary"""
         return self._parameters
 
+    @property
+    def pool_names(self) -> list[str]:
+        return self._pool_config.copy()
+
+    @property
+    def flux_names(self) -> list[str]:
+        return [f["name"] for f in self._flux_config]
+
     def spinup(self, spinup_input: CBMVariables) -> CBMVariables:
         """Initialize the Carbon pools for the specified input
         Args:
