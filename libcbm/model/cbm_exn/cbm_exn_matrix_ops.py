@@ -126,15 +126,72 @@ def _disturbance(
 
 
 def _net_growth(
-    model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
+    model: CBMModel,
+    merch_inc: np.ndarray,
+    other_inc: np.ndarray,
+    foliage_inc: np.ndarray,
+    coarse_root_inc: np.ndarray,
+    fine_root_inc: np.ndarray,
 ) -> Operation:
-    pass
+    op = model.create_operation(
+        matrices=[
+            ["Input", "Merch", merch_inc],
+            ["Input", "Other", other_inc],
+            ["Input", "Foliage", foliage_inc],
+            ["Input", "CoarseRoots", coarse_root_inc],
+            ["Input", "FineRoots", fine_root_inc],
+        ]
+    )
+    return op
 
 
 def _overmature_decline(
-    model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
+    model: CBMModel,
+    merch_loss: np.ndarray,
+    other_loss: np.ndarray,
+    foliage_loss: np.ndarray,
+    coarse_root_loss: np.ndarray,
+    fine_root_loss: np.ndarray,
+    turnover_rates: dict[str, np.ndarray],
 ) -> Operation:
-    pass
+
+    op = model.create_operation(
+        matrices=[
+            ["Merch", "StemSnag", merch_loss],
+            [
+                "Other",
+                "BranchSnag",
+                other_loss * turnover_rates["OtherToBranchSnagSplit"],
+            ],
+            [
+                "Other",
+                "AboveGroundFastSoil",
+                other_loss * (1 - turnover_rates["OtherToBranchSnagSplit"]),
+            ],
+            ["Foliage", "AboveGroundVeryFastSoil", foliage_loss],
+            [
+                "CoarseRoots",
+                "AboveGroundFastSoil",
+                coarse_root_loss * turnover_rates["CoarseRootAGSplit"],
+            ],
+            [
+                "CoarseRoots",
+                "BelowGroundFastSoil",
+                coarse_root_loss * (1 - turnover_rates["CoarseRootAGSplit"]),
+            ],
+            [
+                "FineRoots",
+                "AboveGroundVeryFastSoil",
+                fine_root_loss * turnover_rates["FineRootAGSplit"],
+            ],
+            [
+                "FineRoots",
+                "BelowGroundVeryFastSoil",
+                fine_root_loss * (1 - turnover_rates["FineRootAGSplit"]),
+            ],
+        ]
+    )
+    return op
 
 
 def _snag_turnover(model: CBMModel, rates: dict[str, np.ndarray]) -> Operation:
