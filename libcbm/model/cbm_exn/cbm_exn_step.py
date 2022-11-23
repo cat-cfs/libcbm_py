@@ -4,6 +4,7 @@ from libcbm.model.cbm_exn import cbm_exn_matrix_ops
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn import cbm_exn_land_state
 
+
 def step_disturbance(
     model: CBMModel,
     cbm_vars: CBMVariables,

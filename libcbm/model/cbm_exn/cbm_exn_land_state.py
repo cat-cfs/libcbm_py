@@ -102,7 +102,7 @@ def start_step(
 
     cbm_vars["state"]["last_disturbance_type"].assign(
         cbm_vars["state"]["disturbance_type"].take(disturbed_idx),
-        disturbed_idx
+        disturbed_idx,
     )
     cbm_vars["state"]["time_since_last_disturbance"].assign(0, disturbed_idx)
 
@@ -120,12 +120,11 @@ def end_step(
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     enabled_idx = idx.filter(cbm_vars["state"]["enabled"] > 0)
     cbm_vars["state"]["age"].assign(
-        cbm_vars["state"]["age"].take(enabled_idx) + 1,
-        enabled_idx
+        cbm_vars["state"]["age"].take(enabled_idx) + 1, enabled_idx
     )
     cbm_vars["state"]["time_since_last_disturbance"].assign(
         cbm_vars["state"]["time_since_last_disturbance"].take(enabled_idx) + 1,
-        enabled_idx
+        enabled_idx,
     )
 
     # TODO increment time_since_land_use_change where the values are >= 0
