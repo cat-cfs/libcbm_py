@@ -69,6 +69,20 @@ class MatrixOps:
             )
         }
 
+    def disturbance(
+        self, disturbance_type: Series, spuid: Series, species: Series
+    ) -> Operation:
+        pass
+
+    def dom_decay(self, mean_annual_temperature: Series) -> Operation:
+        pass
+
+    def slow_decay(self, mean_annual_temperature: Series) -> Operation:
+        pass
+
+    def slow_mixing(self, size: int) -> Operation:
+        pass
+
     def snag_turnover(self, spuid: Series) -> Operation:
         if not self._snag_turnover_op:
             self._snag_turnover_op = _snag_turnover(
