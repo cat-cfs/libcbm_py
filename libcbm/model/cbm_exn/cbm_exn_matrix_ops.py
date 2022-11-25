@@ -1,9 +1,11 @@
 from enum import IntEnum
 import numpy as np
+from libcbm.storage.dataframe import DataFrame
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_operation import Operation
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
+from libcbm.model.cbm_exn import cbm_exn_functions
 from libcbm.storage.series import Series
 
 
@@ -15,22 +17,6 @@ class OpProcesses(IntEnum):
     growth = 1
     decay = 2
     disturbance = 3
-
-
-class SpinupMatrixOps:
-    def __init__(self, model: CBMModel, parameters: CBMEXNParameters):
-        self._model = model
-        self._parameters = parameters
-
-    def _net_growth_multiple_age(
-        self, spinup_increments: CBMVariables
-    ) -> Operation:
-        pass
-
-    def get_spinup_matrix_ops(
-        self, cbm_vars: CBMVariables
-    ) -> dict[str, Operation]:
-        pass
 
 
 class MatrixOps:
@@ -47,8 +33,8 @@ class MatrixOps:
         self._get_turnover_rates()
         self._biomass_turnover_op: Operation = None
         self._snag_turnover_op: Operation = None
-
         self._slow_mixing_op: Operation = None
+        self._net_growth_op: Operation = None
 
     def _get_turnover_rates(self):
         parameter_names = [
@@ -114,9 +100,22 @@ class MatrixOps:
             self._slow_mixing_op = _slow_mixing(
                 self._model, self._slow_mixing_rate
             )
-            self._biomass_turnover_op.set_op(np.arange(0, n_rows))
+            self._slow_mixing_op.set_op(np.zeros(n_rows, dtype="int"))
         else:
-            self._biomass_turnover_op.update_index(np.arange(0, n_rows))
+            self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
+        return self._slow_mixing_op
+
+    def net_growth(
+        self, cbm_vars: CBMVariables
+    ) -> tuple[Operation, Operation]:
+        if not self._net_growth_op:
+            cbm_exn_functions.prepare_growth_info(cbm_vars)
+            pass
+        else:
+            self._net_growth_op.update_index(
+                np.arange(0, cbm_vars["pools"].n_rows, dtype="int")
+            )
+            return self._net_growth_op
 
 
 def _disturbance(
@@ -127,19 +126,19 @@ def _disturbance(
 
 def _net_growth(
     model: CBMModel,
-    merch_inc: np.ndarray,
-    other_inc: np.ndarray,
-    foliage_inc: np.ndarray,
-    coarse_root_inc: np.ndarray,
-    fine_root_inc: np.ndarray,
+    growth_info: DataFrame,
 ) -> Operation:
     op = model.create_operation(
         matrices=[
-            ["Input", "Merch", merch_inc],
-            ["Input", "Other", other_inc],
-            ["Input", "Foliage", foliage_inc],
-            ["Input", "CoarseRoots", coarse_root_inc],
-            ["Input", "FineRoots", fine_root_inc],
+            ["Input", "Merch", growth_info["merch_inc"].to_numpy()],
+            ["Input", "Other", growth_info["other_inc"].to_numpy()],
+            ["Input", "Foliage", growth_info["foliage_inc"].to_numpy()],
+            [
+                "Input",
+                "CoarseRoots",
+                growth_info["coarse_root_inc"].to_numpy(),
+            ],
+            ["Input", "FineRoots", growth_info["fine_root_inc"].to_numpy()],
         ]
     )
     return op
