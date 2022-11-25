@@ -42,23 +42,23 @@ def compute_root_inc(
     merch_inc: np.ndarray,
     foliage_inc: np.ndarray,
     other_inc: np.ndarray,
-    parameters: CBMEXNParameters
+    parameters: CBMEXNParameters,
 ) -> dict[str, np.ndarray]:
     total_ag_bio_t = (
-        merch
-        + merch_inc
-        + foliage
-        + foliage_inc
-        + other
-        + other_inc
+        merch + merch_inc + foliage + foliage_inc + other + other_inc
     )
 
     # sw=0, hw=1
     species_id_series = pd.Series(species_id)
     sw_hw_map = parameters.get_sw_hw_map()
-    missing_species = set(species_id_series.unique()) - set(sw_hw_map.keys)
+    missing_species = set(species_id_series.unique()).difference(
+        set(sw_hw_map.keys())
+    )
     if missing_species:
-        raise ValueError("the following species ids found in state.species array are not defined in default paramters")
+        raise ValueError(
+            "the following species ids found in state.species"
+            f"array are not defined in default paramters {missing_species}"
+        )
     sw_hw = species_id_series.map(sw_hw_map)
 
     root_parameters = parameters.get_root_parameters()
@@ -82,6 +82,7 @@ def compute_root_inc(
     )
     return {"coarse_root_inc": coarse_root_inc, "fine_root_inc": fine_root_inc}
 
+
 @nb.njit()
 def _overmature_decline_compute(
     merch: np.ndarray,
@@ -101,16 +102,49 @@ def _overmature_decline_compute(
     other_to_branch_snag_prop: np.ndarray,
     other_to_ag_fast_prop: np.ndarray,
     foliage_to_ag_fast_prop: np.ndarray,
+    coarse_root_to_ag_fast_prop: np.ndarray,
     coarse_root_to_bg_fast_prop: np.ndarray,
     fine_root_to_ag_vfast_prop: np.ndarray,
-    fine_root_to_bg_vfast_prop: np.ndarray
+    fine_root_to_bg_vfast_prop: np.ndarray,
 ):
 
     tolerance = -0.0001
     size = merch.shape[0]
     for i in range(size):
-        overmature = (merch_inc + foliage_inc + other_inc + fine_root_inc + coarse_root_inc) < tolerance
-        if overmature and merch_inc < 0:
+        overmature = (
+            merch_inc[i]
+            + foliage_inc[i]
+            + other_inc[i]
+            + fine_root_inc[i]
+            + coarse_root_inc[i]
+        ) < tolerance
+        if overmature and merch_inc[i] < 0:
+            merch_to_stem_snag_prop[i] = -merch_inc[i] / merch[i]
+        if overmature and other_inc[i] < 0:
+            other_to_branch_snag_prop[i] = (
+                -other_inc[i] * other_to_branch_snag_split[i] / other[i]
+            )
+            other_to_ag_fast_prop[i] = (
+                -other_inc[i] * (1 - other_to_branch_snag_split[i]) / other[i]
+            )
+        if overmature and foliage_inc[i] < 0:
+            foliage_to_ag_fast_prop[i] = -foliage_inc[i] / foliage[i]
+        if overmature and coarse_root_inc[i] < 0:
+            coarse_root_to_ag_fast_prop[i] = (
+                -coarse_root_inc[i] * coarse_root_ag_split[i] / coarse_root[i]
+            )
+            coarse_root_to_bg_fast_prop[i] = (
+                -coarse_root_inc[i]
+                * (1 - coarse_root_ag_split[i])
+                / coarse_root[i]
+            )
+        if overmature and fine_root_inc[i] < 0:
+            fine_root_to_ag_vfast_prop[i] = (
+                -fine_root_inc[i] * fine_root_ag_split[i] / fine_root[i]
+            )
+            fine_root_to_bg_vfast_prop[i] = (
+                -fine_root_inc[i] * (1 - fine_root_ag_split[i]) / fine_root[i]
+            )
 
 
 def compute_overmature_decline(
@@ -125,7 +159,7 @@ def compute_overmature_decline(
     other_inc: np.ndarray,
     coarse_root_inc: np.ndarray,
     fine_root_inc: np.ndarray,
-    parameters: CBMEXNParameters
+    parameters: CBMEXNParameters,
 ) -> dict[str, np.ndarray]:
     turnover_parameters = parameters.get_turnover_parameters()[
         [
@@ -151,20 +185,43 @@ def compute_overmature_decline(
     ].to_numpy()
     coarse_root_ag_split = turnover_parameters["CoarseRootAGSplit"].to_numpy()
     fine_root_ag_split = turnover_parameters["FineRootAGSplit"].to_numpy()
-    merch_to_stem_snag_prop = -merch_inc / merch
-
-    other_to_branch_snag_prop = -other_inc        * other_to_branch_snag_split        / merch
-
-    other_to_ag_fast_prop = None
-    foliage_to_ag_fast_prop = None
-    coarse_root_to_bg_fast_prop = None
-    fine_root_to_ag_vfast_prop = None
-    fine_root_to_bg_vfast_pro = None
+    merch_to_stem_snag_prop = np.zeros(spatial_unit_id.shape)
+    other_to_branch_snag_prop = np.zeros(spatial_unit_id.shape)
+    other_to_ag_fast_prop = np.zeros(spatial_unit_id.shape)
+    foliage_to_ag_fast_prop = np.zeros(spatial_unit_id.shape)
+    coarse_root_to_ag_fast_prop = np.zeros(spatial_unit_id.shape)
+    coarse_root_to_bg_fast_prop = np.zeros(spatial_unit_id.shape)
+    fine_root_to_ag_vfast_prop = np.zeros(spatial_unit_id.shape)
+    fine_root_to_bg_vfast_pro = np.zeros(spatial_unit_id.shape)
+    _overmature_decline_compute(
+        merch,
+        foliage,
+        other,
+        coarse_root,
+        fine_root,
+        merch_inc,
+        foliage_inc,
+        other_inc,
+        coarse_root_inc,
+        fine_root_inc,
+        other_to_branch_snag_split,
+        coarse_root_ag_split,
+        fine_root_ag_split,
+        merch_to_stem_snag_prop,
+        other_to_branch_snag_prop,
+        other_to_ag_fast_prop,
+        foliage_to_ag_fast_prop,
+        coarse_root_to_ag_fast_prop,
+        coarse_root_to_bg_fast_prop,
+        fine_root_to_ag_vfast_prop,
+        fine_root_to_bg_vfast_pro,
+    )
     return {
         "merch_to_stem_snag_prop": merch_to_stem_snag_prop,
         "other_to_branch_snag_prop": other_to_branch_snag_prop,
         "other_to_ag_fast_prop": other_to_ag_fast_prop,
         "foliage_to_ag_fast_prop": foliage_to_ag_fast_prop,
+        "coarse_root_to_ag_fast_prop": coarse_root_to_ag_fast_prop,
         "coarse_root_to_bg_fast_prop": coarse_root_to_bg_fast_prop,
         "fine_root_to_ag_vfast_prop": fine_root_to_ag_vfast_prop,
         "fine_root_to_bg_vfast_prop": fine_root_to_bg_vfast_pro,
@@ -175,38 +232,60 @@ def prepare_growth_info(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
 
+    merch = cbm_vars["pools"]["Merch"].to_numpy()
+    foliage = cbm_vars["pools"]["Foliage"].to_numpy()
+    other = cbm_vars["pools"]["Other"].to_numpy()
+    fine_root = cbm_vars["pools"]["FineRoot"].to_numpy()
+    coarse_root = cbm_vars["pools"]["CoarseRoots"].to_numpy()
+    species_id = cbm_vars["state"]["species"].to_numpy()
+    spatial_unit_id = cbm_vars["state"]["spatial_unit_id"].to_numpy()
     merch_inc = np.maximum(
-        cbm_vars["pools"]["Merch"].to_numpy(),
-        -(cbm_vars["parameters"]["merch_inc"].to_numpy())
+        merch,
+        -(cbm_vars["parameters"]["merch_inc"].to_numpy()),
     )
-    root_inc = compute_root_inc(cbm_vars, parameters)
-    overmature_decline = compute_overmature_decline()
+    foliage_inc = np.maximum(
+        foliage,
+        -(cbm_vars["parameters"]["foliage_inc"].to_numpy()),
+    )
+    other_inc = np.maximum(
+        other,
+        -(cbm_vars["parameters"]["other_inc"].to_numpy()),
+    )
+
+    root_inc = compute_root_inc(
+        species_id,
+        merch,
+        foliage,
+        other,
+        coarse_root,
+        fine_root,
+        merch_inc,
+        foliage_inc,
+        other_inc,
+        parameters,
+    )
+    overmature_decline = compute_overmature_decline(
+        spatial_unit_id,
+        merch,
+        foliage,
+        other,
+        coarse_root,
+        fine_root,
+        merch_inc,
+        foliage_inc,
+        other_inc,
+        root_inc["coarse_root_inc"],
+        root_inc["fine_root_inc"],
+        parameters,
+    )
 
     data = {
-        "merch_inc": ,
-        "other_inc": cbm_vars["parameters"]["other_inc"],
-        "foliage_inc": cbm_vars["parameters"]["foliage_inc"],
-        "coarse_root_inc": root_inc["coarse_root_inc"],
-        "fine_root_inc": root_inc["fine_root_inc"],
-        "merch_to_stem_snag_prop": overmature_decline[
-            "merch_to_stem_snag_prop"
-        ],
-        "other_to_branch_snag_prop": overmature_decline[
-            "other_to_branch_snag_prop"
-        ],
-        "other_to_ag_fast_prop": overmature_decline["other_to_ag_fast_prop"],
-        "foliage_to_ag_fast_prop": overmature_decline[
-            "foliage_to_ag_fast_prop"
-        ],
-        "coarse_root_to_bg_fast_prop": overmature_decline[
-            "coarse_root_to_bg_fast_prop"
-        ],
-        "fine_root_to_ag_vfast_prop": overmature_decline[
-            "fine_root_to_ag_vfast_prop"
-        ],
-        "fine_root_to_bg_vfast_prop": overmature_decline[
-            "fine_root_to_bg_vfast_prop"
-        ],
+        "merch_inc": merch_inc,
+        "other_inc": other_inc,
+        "foliage_inc": foliage_inc,
     }
+
+    data.update(root_inc)
+    data.update(overmature_decline)
 
     return data
