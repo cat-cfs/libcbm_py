@@ -280,8 +280,8 @@ def prepare_spinup_growth_info(
     coarse_root_inc = np.zeros_like(merch_inc)
     fine_root = np.zeros_like(merch)
     fine_root_inc = np.zeros_like(merch_inc)
+    overmature_decline = {}
 
-    def append_overmature_decline(overmature_decline: dict[str, np.ndarray], col_idx)
     for col_idx, age in enumerate(unique_ages):
         root_inc = compute_root_inc(
             species_id,
@@ -297,7 +297,7 @@ def prepare_spinup_growth_info(
         )
         coarse_root_inc[:, col_idx] = root_inc["coarse_root_inc"]
         fine_root_inc[:, col_idx] = root_inc["fine_root_inc"]
-        overmature_decline = compute_overmature_decline(
+        col_overmature_decline = compute_overmature_decline(
             spatial_unit_id,
             merch[:, col_idx],
             foliage[:, col_idx],
@@ -311,6 +311,12 @@ def prepare_spinup_growth_info(
             fine_root_inc[:, col_idx],
             parameters
         )
+        if not overmature_decline:
+            for k, v in col_overmature_decline.items():
+                overmature_decline[k] = np.zeros_like(merch_inc)
+
+        for k, v in col_overmature_decline.items():
+            overmature_decline[k][:, col_idx] = col_overmature_decline[k]
         coarse_root[:, col_idx + 1] += root_inc["coarse_root_inc"]
         fine_root[:, col_idx + 1] += root_inc["fine_root_inc"]
 
@@ -322,7 +328,6 @@ def prepare_spinup_growth_info(
 
     data.update(root_inc)
     data.update(overmature_decline)
-
 
 
 def prepare_growth_info(
