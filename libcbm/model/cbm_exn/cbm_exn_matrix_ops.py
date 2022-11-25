@@ -1,6 +1,5 @@
 from enum import IntEnum
 import numpy as np
-from libcbm.storage.dataframe import DataFrame
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_operation import Operation
@@ -35,6 +34,9 @@ class MatrixOps:
         self._snag_turnover_op: Operation = None
         self._slow_mixing_op: Operation = None
         self._net_growth_op: Operation = None
+        self._overmature_decline_op: Operation = None
+        self._spinup_net_growth_op: Operation = None
+        self._spinup_overmature_decline_op: Operation = None
 
     def _get_turnover_rates(self):
         parameter_names = [
@@ -108,14 +110,27 @@ class MatrixOps:
     def net_growth(
         self, cbm_vars: CBMVariables
     ) -> tuple[Operation, Operation]:
-        if not self._net_growth_op:
-            cbm_exn_functions.prepare_growth_info(cbm_vars)
-            pass
-        else:
-            self._net_growth_op.update_index(
-                np.arange(0, cbm_vars["pools"].n_rows, dtype="int")
-            )
-            return self._net_growth_op
+        growth_info = cbm_exn_functions.prepare_growth_info(
+            cbm_vars, self._parameters
+        )
+        self._net_growth_op = _net_growth(self._model, growth_info)
+        self._overmature_decline_op = _overmature_decline(
+            self._model, growth_info
+        )
+        net_growth = self._net_growth_op.set_op(
+            np.arange(0, cbm_vars["pools"].n_rows)
+        )
+        overmature_decline = self._overmature_decline_op.set_op(
+            np.arange(0, cbm_vars["pools"].n_rows)
+        )
+        return net_growth, overmature_decline
+
+    def spinup_net_growth(
+        self, spinup_vars: CBMVariables
+    ) -> tuple[Operation, Operation]:
+        cbm_exn_functions.prepare_spinup_growth_info(
+            spinup_vars, self._parameters
+        )
 
 
 def _disturbance(
@@ -126,19 +141,15 @@ def _disturbance(
 
 def _net_growth(
     model: CBMModel,
-    growth_info: DataFrame,
+    growth_info: dict[str, np.ndarray],
 ) -> Operation:
     op = model.create_operation(
         matrices=[
-            ["Input", "Merch", growth_info["merch_inc"].to_numpy()],
-            ["Input", "Other", growth_info["other_inc"].to_numpy()],
-            ["Input", "Foliage", growth_info["foliage_inc"].to_numpy()],
-            [
-                "Input",
-                "CoarseRoots",
-                growth_info["coarse_root_inc"].to_numpy(),
-            ],
-            ["Input", "FineRoots", growth_info["fine_root_inc"].to_numpy()],
+            ["Input", "Merch", growth_info["merch_inc"] * 0.5],
+            ["Input", "Other", growth_info["other_inc"] * 0.5],
+            ["Input", "Foliage", growth_info["foliage_inc"] * 0.5],
+            ["Input", "CoarseRoots", growth_info["coarse_root_inc"] * 0.5],
+            ["Input", "FineRoots", growth_info["fine_root_inc"] * 0.5],
         ]
     )
     return op
@@ -146,47 +157,42 @@ def _net_growth(
 
 def _overmature_decline(
     model: CBMModel,
-    merch_loss: np.ndarray,
-    other_loss: np.ndarray,
-    foliage_loss: np.ndarray,
-    coarse_root_loss: np.ndarray,
-    fine_root_loss: np.ndarray,
-    turnover_rates: dict[str, np.ndarray],
+    growth_info: dict[str, np.ndarray],
 ) -> Operation:
 
     op = model.create_operation(
         matrices=[
-            ["Merch", "StemSnag", merch_loss],
-            [
-                "Other",
-                "BranchSnag",
-                other_loss * turnover_rates["OtherToBranchSnagSplit"],
-            ],
+            ["Merch", "StemSnag", growth_info["merch_to_stem_snag_prop"]],
+            ["Other", "BranchSnag", growth_info["other_to_branch_snag_prop"]],
             [
                 "Other",
                 "AboveGroundFastSoil",
-                other_loss * (1 - turnover_rates["OtherToBranchSnagSplit"]),
+                growth_info["other_to_ag_fast_prop"],
             ],
-            ["Foliage", "AboveGroundVeryFastSoil", foliage_loss],
+            [
+                "Foliage",
+                "AboveGroundVeryFastSoil",
+                growth_info["foliage_to_ag_fast_prop"],
+            ],
             [
                 "CoarseRoots",
                 "AboveGroundFastSoil",
-                coarse_root_loss * turnover_rates["CoarseRootAGSplit"],
+                growth_info["coarse_root_to_ag_fast_prop"],
             ],
             [
                 "CoarseRoots",
                 "BelowGroundFastSoil",
-                coarse_root_loss * (1 - turnover_rates["CoarseRootAGSplit"]),
+                growth_info["coarse_root_to_bg_fast_prop"],
             ],
             [
                 "FineRoots",
                 "AboveGroundVeryFastSoil",
-                fine_root_loss * turnover_rates["FineRootAGSplit"],
+                growth_info["fine_root_to_ag_vfast_prop"],
             ],
             [
                 "FineRoots",
                 "BelowGroundVeryFastSoil",
-                fine_root_loss * (1 - turnover_rates["FineRootAGSplit"]),
+                growth_info["fine_root_to_bg_vfast_prop"],
             ],
         ]
     )
