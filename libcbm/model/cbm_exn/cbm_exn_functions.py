@@ -228,6 +228,103 @@ def compute_overmature_decline(
     }
 
 
+def prepare_spinup_growth_info(
+    spinup_vars: CBMVariables, parameters: CBMEXNParameters
+) -> dict[str, np.ndarray]:
+    species_id = spinup_vars["parameters"]["species"].to_numpy()
+    spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
+    spinup_incremements = spinup_vars["spinup_incremements"].to_pandas()
+    unique_ages = (
+        spinup_incremements["age"].drop_duplicates().sort_values()
+    )
+    if not unique_ages.diff().eq(1).all():
+        raise ValueError("expected a sequential set of ages")
+    if unique_ages.iloc[0] != 1:
+        raise ValueError("expected a minimum age of 1")
+
+    merch_inc = (
+        spinup_incremements.pivot(
+            index="row_idx", columns="age", values="merch_inc"
+        )
+        .fillna(0)
+        .to_numpy()
+    )
+
+    foliage_inc = (
+        spinup_incremements.pivot(
+            index="row_idx", columns="age", values="foliage_inc"
+        )
+        .fillna(0)
+        .to_numpy()
+    )
+    other_inc = (
+        spinup_incremements.pivot(
+            index="row_idx", columns="age", values="other_inc"
+        )
+        .fillna(0)
+        .to_numpy()
+    )
+    n_rows = merch_inc.shape[0]
+    merch: np.ndarray = np.column_stack(
+        [np.full(n_rows, 0.0), merch_inc.cumsum(axis=1)]
+    )
+    foliage: np.ndarray = np.column_stack(
+        [np.full(n_rows, 0.0), foliage_inc.cumsum(axis=1)]
+    )
+    other: np.ndarray = np.column_stack(
+        [np.full(n_rows, 0.0), other_inc.cumsum(axis=1)]
+    )
+    if ((merch < 0) | (foliage < 0) | (other < 0)).any():
+        raise ValueError("specified increments result in negative pools")
+    coarse_root = np.zeros_like(merch)
+    coarse_root_inc = np.zeros_like(merch_inc)
+    fine_root = np.zeros_like(merch)
+    fine_root_inc = np.zeros_like(merch_inc)
+
+    def append_overmature_decline(overmature_decline: dict[str, np.ndarray], col_idx)
+    for col_idx, age in enumerate(unique_ages):
+        root_inc = compute_root_inc(
+            species_id,
+            merch[:, col_idx],
+            foliage[:, col_idx],
+            other[:, col_idx],
+            coarse_root[:, col_idx],
+            fine_root[:, col_idx],
+            merch_inc[:, col_idx],
+            foliage_inc[:, col_idx],
+            other_inc[:, col_idx],
+            parameters,
+        )
+        coarse_root_inc[:, col_idx] = root_inc["coarse_root_inc"]
+        fine_root_inc[:, col_idx] = root_inc["fine_root_inc"]
+        overmature_decline = compute_overmature_decline(
+            spatial_unit_id,
+            merch[:, col_idx],
+            foliage[:, col_idx],
+            other[:, col_idx],
+            coarse_root[:, col_idx],
+            fine_root[:, col_idx],
+            merch_inc[:, col_idx],
+            foliage_inc[:, col_idx],
+            other_inc[:, col_idx],
+            coarse_root_inc[:, col_idx],
+            fine_root_inc[:, col_idx],
+            parameters
+        )
+        coarse_root[:, col_idx + 1] += root_inc["coarse_root_inc"]
+        fine_root[:, col_idx + 1] += root_inc["fine_root_inc"]
+
+    data = {
+        "merch_inc": merch_inc,
+        "other_inc": other_inc,
+        "foliage_inc": foliage_inc
+    }
+
+    data.update(root_inc)
+    data.update(overmature_decline)
+
+
+
 def prepare_growth_info(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
