@@ -125,12 +125,48 @@ class MatrixOps:
         )
         return net_growth, overmature_decline
 
+    def _spinup_net_growth_idx(self, spinup_vars: CBMVariables) -> np.ndarray:
+        age = spinup_vars["state"]["age"].to_numpy()
+        op_index = (
+            np.arange(0, self._spinup_2d_shape[0]) * self._spinup_2d_shape[1]
+        )
+        op_index = np.where(
+            age >= self._spinup_2d_shape[1],
+            op_index + self._spinup_2d_shape[0] - 1,
+            op_index + age,
+        )
+        return op_index
+
     def spinup_net_growth(
         self, spinup_vars: CBMVariables
     ) -> tuple[Operation, Operation]:
-        cbm_exn_functions.prepare_spinup_growth_info(
-            spinup_vars, self._parameters
-        )
+        if not self._spinup_net_growth_op:
+            spinup_growth_info = cbm_exn_functions.prepare_spinup_growth_info(
+                spinup_vars, self._parameters
+            )
+
+            for k in spinup_growth_info.keys():
+                self._spinup_2d_shape = spinup_growth_info[k].shape
+                spinup_growth_info[k] = spinup_growth_info[k].flatten(
+                    order="C"
+                )
+
+            self._spinup_net_growth_op = self._net_growth_op(
+                spinup_growth_info
+            )
+            self._spinup_overmature_decline_op = self._overmature_decline_op(
+                spinup_growth_info
+            )
+
+            op_index = self._spinup_net_growth_idx(spinup_vars)
+            self._spinup_net_growth_op.set_op(op_index)
+            self._spinup_overmature_decline_op.set_op(op_index)
+        else:
+            op_index = self._spinup_net_growth_idx(spinup_vars)
+            self._spinup_net_growth_op.update_index(op_index)
+            self._spinup_overmature_decline_op.update_index(op_index)
+
+        return [self._spinup_net_growth_op, self._spinup_overmature_decline_op]
 
 
 def _disturbance(
