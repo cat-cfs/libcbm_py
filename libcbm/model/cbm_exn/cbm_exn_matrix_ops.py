@@ -80,8 +80,15 @@ class MatrixOps:
     def slow_decay(self, mean_annual_temperature: Series) -> Operation:
         pass
 
-    def slow_mixing(self, size: int) -> Operation:
-        pass
+    def slow_mixing(self, n_rows: int) -> Operation:
+        if not self._slow_mixing_op:
+            self._slow_mixing_op = _slow_mixing(
+                self._model, self._slow_mixing_rate
+            )
+            self._slow_mixing_op.set_op(np.zeros(n_rows, dtype="int"))
+        else:
+            self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
+        return self._slow_mixing_op
 
     def snag_turnover(self, spuid: Series) -> Operation:
         if not self._snag_turnover_op:
@@ -110,16 +117,6 @@ class MatrixOps:
                 spuid.map(self._turnover_parameter_idx)
             )
         return self._biomass_turnover_op
-
-    def slow_mixing(self, n_rows: int) -> Operation:
-        if not self._slow_mixing_op:
-            self._slow_mixing_op = _slow_mixing(
-                self._model, self._slow_mixing_rate
-            )
-            self._slow_mixing_op.set_op(np.zeros(n_rows, dtype="int"))
-        else:
-            self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
-        return self._slow_mixing_op
 
     def net_growth(
         self, cbm_vars: CBMVariables
