@@ -234,9 +234,7 @@ def prepare_spinup_growth_info(
     species_id = spinup_vars["parameters"]["species"].to_numpy()
     spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
     spinup_incremements = spinup_vars["spinup_incremements"].to_pandas()
-    unique_ages = (
-        spinup_incremements["age"].drop_duplicates().sort_values()
-    )
+    unique_ages = spinup_incremements["age"].drop_duplicates().sort_values()
     if not unique_ages.diff().eq(1).all():
         raise ValueError("expected a sequential set of ages")
     if unique_ages.iloc[0] != 1:
@@ -264,6 +262,15 @@ def prepare_spinup_growth_info(
         .fillna(0)
         .to_numpy()
     )
+
+    # add one additional column for each for the "null" increments,
+    # used when the simulation age exceed the max age in the data
+    merch_inc = np.column_stack([merch_inc, np.zeros(merch_inc.shape[0])])
+    foliage_inc = np.column_stack(
+        [foliage_inc, np.zeros(foliage_inc.shape[0])]
+    )
+    other_inc = np.column_stack([other_inc, np.zeros(other_inc.shape[0])])
+
     n_rows = merch_inc.shape[0]
     merch: np.ndarray = np.column_stack(
         [np.full(n_rows, 0.0), merch_inc.cumsum(axis=1)]
@@ -309,7 +316,7 @@ def prepare_spinup_growth_info(
             other_inc[:, col_idx],
             coarse_root_inc[:, col_idx],
             fine_root_inc[:, col_idx],
-            parameters
+            parameters,
         )
         if not overmature_decline:
             for k, v in col_overmature_decline.items():
@@ -323,11 +330,13 @@ def prepare_spinup_growth_info(
     data = {
         "merch_inc": merch_inc,
         "other_inc": other_inc,
-        "foliage_inc": foliage_inc
+        "foliage_inc": foliage_inc,
     }
 
     data.update(root_inc)
     data.update(overmature_decline)
+
+    return data
 
 
 def prepare_growth_info(
