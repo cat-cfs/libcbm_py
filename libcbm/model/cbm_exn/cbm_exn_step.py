@@ -1,54 +1,50 @@
-from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
-from libcbm.model.cbm_exn import cbm_exn_matrix_ops
-from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
+from libcbm.model.cbm_exn.cbm_exn_matrix_ops import OpProcesses
 from libcbm.model.cbm_exn import cbm_exn_land_state
 
 
 def step_disturbance(
-    model: CBMModel,
+    model: CBMEXNModel,
     cbm_vars: CBMVariables,
-    parameters: CBMEXNParameters = None,
 ) -> CBMVariables:
-    if not parameters:
-        parameters = CBMEXNParameters(model.parameters)
-    disturbance = cbm_exn_matrix_ops.disturbance(model, cbm_vars, parameters)
-    model.compute(
-        cbm_vars, [disturbance], [cbm_exn_matrix_ops.OpProcesses.disturbance]
+    disturbance = model.matrix_ops.disturbance(
+        cbm_vars["parameters"]["disturbance_type"],
+        cbm_vars["state"]["spatial_unit_id"],
+        cbm_vars["state"]["species"],
     )
+    model.compute(cbm_vars, [disturbance], [OpProcesses.disturbance])
 
 
 def step_annual_process(
-    model: CBMModel,
+    model: CBMEXNModel,
     cbm_vars: CBMVariables,
-    parameters: CBMEXNParameters = None,
 ) -> CBMVariables:
-    if not parameters:
-        parameters = CBMEXNParameters(model.parameters)
-    growth_op = cbm_exn_matrix_ops.net_growth(model, cbm_vars, parameters)
+
+    growth_op, overmature_decline = model.matrix_ops.net_growth(cbm_vars)
+    spuid = cbm_vars["state"]["spatial_unit_id"]
+    mean_annual_temp = cbm_vars["parameters"]["mean_annual_temperature"]
     ops = [
         growth_op,
-        cbm_exn_matrix_ops.snag_turnover(model, cbm_vars, parameters),
-        cbm_exn_matrix_ops.biomass_turnover(model, cbm_vars, parameters),
-        cbm_exn_matrix_ops.overmature_decline(model, cbm_vars, parameters),
+        model.matrix_ops.snag_turnover(spuid),
+        model.matrix_ops.biomass_turnover(spuid),
+        overmature_decline,
         growth_op,
-        cbm_exn_matrix_ops.dom_decay(model, cbm_vars, parameters),
-        cbm_exn_matrix_ops.slow_decay(model, cbm_vars, parameters),
-        cbm_exn_matrix_ops.slow_mixing(model, cbm_vars, parameters),
+        model.matrix_ops.dom_decay(mean_annual_temp),
+        model.matrix_ops.slow_decay(mean_annual_temp),
+        model.matrix_ops.slow_mixing(mean_annual_temp),
     ]
-    op_process_ids = [cbm_exn_matrix_ops.OpProcesses.growth] * 5 + [
-        cbm_exn_matrix_ops.OpProcesses.decay
-    ] * 3
+    op_process_ids = [OpProcesses.growth] * 5 + [OpProcesses.decay] * 3
     model.compute(cbm_vars, ops, op_process_ids)
     for op in ops:
         op.dispose()
     return cbm_vars
 
 
-def step(model: CBMModel, cbm_vars: CBMVariables) -> CBMVariables:
-    parameters = CBMEXNParameters(model.parameters)
-    cbm_vars = cbm_exn_land_state.start_step(cbm_vars, parameters)
-    cbm_vars = step_disturbance(model, cbm_vars, parameters)
-    cbm_vars = step_annual_process(model, cbm_vars, parameters)
-    cbm_vars = cbm_exn_land_state.end_step(cbm_vars, parameters)
+def step(model: CBMEXNModel, cbm_vars: CBMVariables) -> CBMVariables:
+
+    cbm_vars = cbm_exn_land_state.start_step(cbm_vars, model.parameters)
+    cbm_vars = step_disturbance(model, cbm_vars)
+    cbm_vars = step_annual_process(model, cbm_vars)
+    cbm_vars = cbm_exn_land_state.end_step(cbm_vars, model.parameters)
     return cbm_vars

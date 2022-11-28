@@ -4,10 +4,13 @@ from contextlib import contextmanager
 import pandas as pd
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
-from libcbm.model.cbm_exn import cbm_exn_spinup
-from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
+from libcbm.model.cbm_exn import cbm_exn_spinup
+from libcbm.model.cbm_exn import cbm_exn_step
+from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
+from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
+from libcbm.wrapper.libcbm_operation import Operation
 
 cbm_vars_type = Union[CBMVariables, dict[str, pd.DataFrame]]
 
@@ -72,6 +75,16 @@ class CBMEXNModel:
         self._cbm_model = cbm_model
         self._pandas_interface = pandas_interface
         self._spinup_reporter = spinup_reporter
+        self._parameters = CBMEXNParameters(cbm_model.parameters)
+        self._matrix_ops = MatrixOps(cbm_model, self._parameters)
+
+    @property
+    def matrix_ops(self) -> MatrixOps:
+        return self._matrix_ops
+
+    @property
+    def parameters(self) -> CBMEXNParameters:
+        return self._parameters
 
     def step(self, cbm_vars: cbm_vars_type) -> cbm_vars_type:
         if self._pandas_interface:
@@ -94,6 +107,19 @@ class CBMEXNModel:
             raise ValueError("spinup reporter not initialized")
         else:
             return self._spinup_reporter.get_output()
+
+    def create_operation(
+        self, matrices: list, fmt: str, process_id: int
+    ) -> Operation:
+        return self._cbm_model.create_operation(matrices, fmt, process_id)
+
+    def compute(
+        self,
+        cbm_vars: CBMVariables,
+        operations: list[Operation],
+        op_process_ids: list[int],
+    ):
+        self._cbm_model.compute(cbm_vars, operations, op_process_ids)
 
 
 @contextmanager
