@@ -75,10 +75,18 @@ class MatrixOps:
         pass
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
-        pass
+        dom_decay_op = _dom_decay(
+            self._model, mean_annual_temperature.to_numpy(), self._parameters
+        )
+        dom_decay_op.set_op(np.arange(0, mean_annual_temperature.length))
+        return dom_decay_op
 
     def slow_decay(self, mean_annual_temperature: Series) -> Operation:
-        pass
+        slow_decay_op = _slow_decay(
+            self._model, mean_annual_temperature.to_numpy(), self._parameters
+        )
+        slow_decay_op.set_op(np.arange(0, mean_annual_temperature.length))
+        return slow_decay_op
 
     def slow_mixing(self, n_rows: int) -> Operation:
         if not self._slow_mixing_op:
@@ -316,15 +324,81 @@ def _biomass_turnover(
 
 
 def _dom_decay(
-    model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
+    model: CBMModel, mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
 ) -> Operation:
-    pass
+
+    dom_pools = [
+        "AboveGroundVeryFast",
+        "BelowGroundVeryFast",
+        "AboveGroundFast",
+        "BelowGroundFast",
+        "MediumSoil",
+        "StemSnag",
+        "BranchSnag",
+    ]
+    dom_pool_flows = {
+        "AboveGroundVeryFast": "AboveGroundSlow",
+        "BelowGroundVeryFast": "BelowGroundSlow",
+        "AboveGroundFast": "AboveGroundSlow",
+        "BelowGroundFast": "BelowGroundSlow",
+        "MediumSoil": "AboveGroundSlow",
+        "StemSnag": "AboveGroundSlow",
+        "BranchSnag": "AboveGroundSlow",
+    }
+    matrix_data = []
+    for dom_pool in dom_pools:
+        decay_parameter = parameters.get_decay_parameter(dom_pool)
+        prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
+        decay_rate = cbm_exn_functions.compute_decay_rate(
+            mean_annual_temp=mean_annual_temp,
+            base_decay_rate=decay_parameter["base_decay_rate"],
+            q10=decay_parameter["q10"],
+            tref=decay_parameter["tref"],
+            max=decay_parameter["max"],
+        )
+        matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
+        matrix_data.append(
+            [
+                dom_pool,
+                dom_pool_flows[dom_pool],
+                decay_rate * (1 - prop_to_atmosphere),
+            ]
+        )
+        matrix_data.append([dom_pool, "CO2", decay_rate * prop_to_atmosphere])
+    op = model.create_operation(
+        matrix_data, "repeating_coordinates", OpProcesses.decay
+    )
+    return op
 
 
 def _slow_decay(
-    model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
+    model: CBMModel, mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
 ) -> Operation:
-    pass
+
+    matrix_data = []
+    for dom_pool in ["AboveGroundSlow", "BelowGroundSlow"]:
+        decay_parameter = parameters.get_decay_parameter(dom_pool)
+        prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
+        decay_rate = cbm_exn_functions.compute_decay_rate(
+            mean_annual_temp=mean_annual_temp,
+            base_decay_rate=decay_parameter["base_decay_rate"],
+            q10=decay_parameter["q10"],
+            tref=decay_parameter["tref"],
+            max=decay_parameter["max"],
+        )
+        matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
+        matrix_data.append(
+            [
+                dom_pool,
+                "CO2",
+                decay_rate * prop_to_atmosphere,
+            ]
+        )
+
+    op = model.create_operation(
+        matrix_data, "repeating_coordinates", OpProcesses.decay
+    )
+    return op
 
 
 def _slow_mixing(model: CBMModel, rate: float) -> Operation:
