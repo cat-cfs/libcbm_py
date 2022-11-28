@@ -1,5 +1,6 @@
 from enum import IntEnum
 import numpy as np
+import pandas as pd
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_operation import Operation
@@ -37,6 +38,8 @@ class MatrixOps:
         self._overmature_decline_op: Operation = None
         self._spinup_net_growth_op: Operation = None
         self._spinup_overmature_decline_op: Operation = None
+        self._disturbance_op: Operation = None
+        self._dm_associations: pd.DataFrame = None
 
     def _get_turnover_rates(self):
         parameter_names = [
@@ -72,7 +75,13 @@ class MatrixOps:
     def disturbance(
         self, disturbance_type: Series, spuid: Series, species: Series
     ) -> Operation:
-        pass
+        if self._disturbance_op is None:
+            self._disturbance_op, self._dm_associations = _disturbance(
+                self._model, self._parameters
+            )
+            self._disturbance_op.set_op()
+        else:
+            pass
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
         dom_decay_op = _dom_decay(
@@ -189,9 +198,47 @@ class MatrixOps:
 
 
 def _disturbance(
-    model: CBMModel, cbm_vars: CBMVariables, parameters: CBMEXNParameters
-) -> Operation:
-    pass
+    model: CBMModel, parameters: CBMEXNParameters
+) -> tuple[Operation, pd.DataFrame]:
+    disturbance_matrices = parameters.get_disturbance_matrices()
+
+    matrix_data = []
+    dmid_index = {}
+    for idx, dmid in enumerate(
+        disturbance_matrices["disturbance_matrix_id"].unique()
+    ):
+        dmid_loc = disturbance_matrices["disturbance_matrix_id"] == dmid
+        dmid_mat_data = []
+        for i, row in disturbance_matrices.loc[dmid_loc].iterrows():
+            dmid_mat_data.append(
+                [row["source"], row["sink"], row["proportion"]]
+            )
+        matrix_data.append(dmid_mat_data)
+        dmid_index[int(dmid)] = idx
+    op = model.create_operation(
+        matrix_data, fmt="matrix_list", process_id=OpProcesses.disturbance
+    )
+    dm_association_rows = []
+    for _, row in parameters.get_disturbance_matrix_associations().iterrows():
+        dm_association_rows.append(
+            [
+                int(row["disturbance_type_id"]),
+                int(row["spatial_unit_id"]),
+                int(row["sw_hw"]),
+                dmid_index[int(row["disturbance_matrix_id"])],
+            ]
+        )
+
+    dm_associations = pd.DataFrame(
+        columns=[
+            "disturbance_type_id",
+            "spatial_unit_id",
+            "sw_hw",
+            "matrix_idx",
+        ],
+        data=dm_association_rows,
+    )
+    return (op, dm_associations)
 
 
 def _net_growth(
@@ -205,7 +252,9 @@ def _net_growth(
             ["Input", "Foliage", growth_info["foliage_inc"] * 0.5],
             ["Input", "CoarseRoots", growth_info["coarse_root_inc"] * 0.5],
             ["Input", "FineRoots", growth_info["fine_root_inc"] * 0.5],
-        ]
+        ],
+        fmt="repeating_coordinates",
+        process_id=OpProcesses.growth,
     )
     return op
 
@@ -249,7 +298,8 @@ def _overmature_decline(
                 "BelowGroundVeryFastSoil",
                 growth_info["fine_root_to_bg_vfast_prop"],
             ],
-        ]
+        ],
+        process_id=OpProcesses.growth,
     )
     return op
 
