@@ -19,3 +19,9 @@ class CBMEXNParameters:
 
     def get_root_parameters(self) -> dict[str, float]:
         pass
+
+    def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
+        pass
+
+    def get_disturbance_matrix():
+        pass
