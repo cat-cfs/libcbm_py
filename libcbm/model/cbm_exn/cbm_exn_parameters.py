@@ -23,5 +23,30 @@ class CBMEXNParameters:
     def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
         pass
 
-    def get_disturbance_matrix():
+    def get_disturbance_matrices() -> pd.DataFrame:
+        """
+        Gets a dataframe with disturbance matrix value information.
+
+        Columns::
+
+         * disturbance_matrix_id
+         * source_pool_id
+         * sink_pool_id
+         * proportion
+
+        """
+        pass
+
+    def get_disturbance_matrix_associations() -> pd.DataFrame:
+        """
+        Gets a dataframe with disturbance matrix assocation information
+
+        Columns::
+
+         * disturbance_type_id
+         * spatial_unit_id
+         * sw_hw
+         * disturbance_matrix_id
+
+        """
         pass
