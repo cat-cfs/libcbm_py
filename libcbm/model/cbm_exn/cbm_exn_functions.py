@@ -5,6 +5,20 @@ from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
+def compute_decay_rate(
+    mean_annual_temp: np.ndarray,
+    base_decay_rate: np.ndarray,
+    q10: np.ndarray,
+    tref: np.ndarray,
+    max: np.ndarray,
+) -> np.ndarray:
+    return np.min(
+        base_decay_rate
+        * np.exp((mean_annual_temp - tref) * np.log(q10) * 0.1),
+        max,
+    )
+
+
 def total_root_bio_hw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ):
