@@ -376,7 +376,7 @@ def main():
             "parameter metadata (species names, disturbance type names) drawn "
             "from the cbm_default database"
         ),
-        type=os.path.abspath,
+        type=str,
     )
     args = parser.parse_args()
     extract(args.db_path, args.output_dir, args.locale_code)
