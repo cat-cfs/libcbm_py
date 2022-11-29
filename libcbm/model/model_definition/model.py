@@ -76,7 +76,6 @@ class CBMModel:
         self,
         cbm_vars: CBMVariables,
         operations: list[Operation],
-        op_process_ids: list[int],
     ):
         """Compute a batch of C dynamics
 
@@ -92,7 +91,6 @@ class CBMModel:
             cbm_vars["flux"] if "flux" in cbm_vars else None,
             cbm_vars["state"]["enabled"],
             operations,
-            op_processes=[int(x) for x in op_process_ids],
         )
 
 
@@ -161,7 +159,7 @@ def initialize(
     Yields:
         Iterator[CBMModel]: instance of CBMModel
     """
-    pools = None
+    pools = {p: i for i, p in enumerate(pool_config)}
     flux = None
     with model_handle.create_model_handle(pools, flux) as _model_handle:
         yield CBMModel(
