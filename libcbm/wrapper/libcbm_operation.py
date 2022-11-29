@@ -133,12 +133,7 @@ class Operation:
             )
 
     def update_index(self, matrix_index: np.ndarray):
-        self._dll.handle.call(
-            "LibCBM_SetOpIndex",
-            self._op_id,
-            matrix_index,
-            matrix_index.shape[0],
-        )
+        self._dll.update_op_index(self._op_id, matrix_index)
 
 
 def compute(

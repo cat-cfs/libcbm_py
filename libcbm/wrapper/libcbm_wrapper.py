@@ -235,6 +235,14 @@ class LibCBMWrapper:
             init,
         )
 
+    def update_op_index(self, op_id: int, matrix_index: np.ndarray):
+        self.handle.call(
+            "LibCBM_SetOpIndex",
+            op_id,
+            matrix_index,
+            matrix_index.shape[0]
+        )
+
     def compute_pools(
         self, ops: list, pools: DataFrame, enabled: Series = None
     ):
