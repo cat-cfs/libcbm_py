@@ -5,9 +5,9 @@ import sqlite3
 from argparse import ArgumentParser
 
 
-def query(db_path, query):
+def query(db_path, query, params=None):
     con = sqlite3.connect(db_path)
-    df = pd.read_sql_query(query, con)
+    df = pd.read_sql_query(query, con, params=params)
     return df
 
 
@@ -378,8 +378,8 @@ def main():
         ),
         type=os.path.abspath,
     )
-    parser.parse_args
-    extract()
+    args = parser.parse_args()
+    extract(args.db_path, args.output_dir, args.locale_code)
 
 
 if __name__ == "__main__":
