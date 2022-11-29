@@ -31,18 +31,6 @@ class SpinupReporter:
         return self._output_processor.get_results()
 
 
-def pool_configuration(path: str) -> list[str]:
-    pass
-
-
-def flux_configuration(path: str) -> list[dict]:
-    pass
-
-
-def model_parameters(path: str) -> dict:
-    pass
-
-
 def spinup_debug_method(
     cbm_model: CBMModel, spinup_input: CBMVariables
 ) -> CBMVariables:
@@ -69,13 +57,14 @@ class CBMEXNModel:
     def __init__(
         self,
         cbm_model: CBMModel,
+        parameters: CBMEXNParameters,
         pandas_interface=True,
         spinup_reporter: SpinupReporter = None,
     ):
         self._cbm_model = cbm_model
         self._pandas_interface = pandas_interface
         self._spinup_reporter = spinup_reporter
-        self._parameters = CBMEXNParameters(cbm_model.parameters)
+        self._parameters = parameters
         self._matrix_ops = MatrixOps(cbm_model, self._parameters)
 
     @property
@@ -127,10 +116,10 @@ def initialize(
     config_path: str, pandas_interface=True, include_spinup_debug=False
 ) -> CBMEXNModel:
 
+    parameters = CBMEXNParameters(config_path)
     with model.initialize(
-        pool_config=pool_configuration(config_path),
-        flux_config=flux_configuration(config_path),
-        model_parameters=model_parameters(config_path),
+        pool_config=parameters.pool_configuration(),
+        flux_config=parameters.flux_configuration(),
         spinup_func=get_spinup_method(include_spinup_debug),
         step_func=cbm_exn_step.step,
     ) as cbm_model:
@@ -141,6 +130,7 @@ def initialize(
 
         yield CBMEXNModel(
             cbm_model,
+            parameters,
             pandas_interface=True,
             spinup_reporter=spinup_reporter,
         )

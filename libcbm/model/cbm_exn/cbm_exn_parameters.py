@@ -5,6 +5,12 @@ class CBMEXNParameters:
     def __init__(self, parameters: dict):
         self._parameters = parameters
 
+    def pool_configuration(self) -> list[str]:
+        pass
+
+    def flux_configuration(self) -> list[dict]:
+        pass
+
     def get_slow_mixing_rate(self) -> float:
         pass
 
