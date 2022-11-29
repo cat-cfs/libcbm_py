@@ -74,6 +74,13 @@ class LibCBM_ctypes:
             ctypes.c_size_t,  # n_matrix_index
             ctypes.c_int,  # init
         )
+        self._dll.LibCBM_SetOpIndex.argtypes = (
+            ctypes.POINTER(LibCBM_Error),  # error structure
+            ctypes.c_void_p,  # handle
+            ctypes.c_size_t,  # op_id
+            ndpointer(ctypes.c_size_t, flags="C_CONTIGUOUS"),  # matrix_index
+            ctypes.c_size_t,  # n_matrix_index
+        )
 
         self._dll.LibCBM_ComputePools.argtypes = (
             ctypes.POINTER(LibCBM_Error),  # error structure
