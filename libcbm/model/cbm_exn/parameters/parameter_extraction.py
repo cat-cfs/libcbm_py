@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import sqlite3
-import argparse
+from argparse import ArgumentParser
 
 
 def query(db_path, query):
@@ -16,7 +16,7 @@ def write_json(data, path):
         json.dump(data, fp, indent=4)
 
 
-def _flux_indicator_config(output_dir: str, db_path: str):
+def _flux_indicator_config(db_path: str, output_dir: str):
     cbm3_pools = query(db_path, "select * from pool")
     cbm3_flux_indicator = query(db_path, "select * from flux_indicator")
     cbm3_flux_indicator_sink = query(
@@ -209,8 +209,166 @@ def _write_pools(output_dir: str):
     write_json(cbm_exn_pools, os.path.join(output_dir, "pools.json"))
 
 
-def extract(db_path: str, output_dir: str):
-    pass
+def _slow_mixing_rate(db_path: str, output_dir: str):
+    query(db_path, "select * from slow_mixing_rate").to_csv(
+        os.path.join(output_dir, "slow_mixing_rate.csv"), index=False
+    )
+
+
+def _decay_parameters(db_path: str, output_dir: str):
+    qry = """
+    select * from pool
+    inner join dom_pool on
+    dom_pool.pool_id = pool.id
+    inner join decay_parameter on
+    decay_parameter.dom_pool_id = dom_pool.id
+    """
+    decay_rates = query(db_path, qry)
+
+    decay_rates = decay_rates[
+        [
+            "code",
+            "base_decay_rate",
+            "reference_temp",
+            "q10",
+            "prop_to_atmosphere",
+            "max_rate",
+        ]
+    ]
+    decay_rates = decay_rates.rename(columns={"code": "pool"})
+    decay_rates["pool"] = decay_rates["pool"].str.replace(
+        "Hardwood", "", regex=False
+    )
+    decay_rates["pool"] = decay_rates["pool"].str.replace(
+        "Softwood", "", regex=False
+    )
+    decay_rates.drop_duplicates().to_csv(
+        os.path.join(output_dir, "decay_parameters.csv"), index=False
+    )
+
+
+def _root_parameters(db_path: str, output_dir: str):
+    root_parameter = query(db_path, "select * from root_parameter")
+    root_parameter["biomass_to_carbon_rate"] = 0.5
+    root_parameter.to_csv(
+        os.path.join(output_dir, "root_parameters.csv"), index=False
+    )
+
+
+def _species(db_path: str, output_dir: str, locale_code: str):
+    qry_txt = """
+        select
+        species.id as species_id,
+        species_tr.name as species_name,
+        species.genus_id as genus_id,
+        genus_tr.name as genus_name,
+        species.forest_type_id as forest_type_id,
+        forest_type_tr.name as forest_type_name
+        from species
+        inner join species_tr on species_tr.species_id = species.id
+        inner join genus on species.genus_id = genus.id
+        inner join genus_tr on genus.id = genus_tr.genus_id
+        inner join forest_type on species.forest_type_id = forest_type.id
+        inner join forest_type_tr on forest_type.id
+         = forest_type_tr.forest_type_id
+        inner join locale on species_tr.locale_id = locale.id
+        where locale.code = ?
+            and genus_tr.locale_id = species_tr.locale_id
+            and forest_type_tr.locale_id = species_tr.locale_id
+        """
+    query(db_path, qry_txt, [locale_code]).to_csv(
+        os.path.join(output_dir, "species.csv"), index=False
+    )
+
+
+def _turnover_parameters(db_path: str, output_dir: str):
+    qry_text = """
+    select spatial_unit.id as spatial_unit_id,
+    turnover_parameter.* from turnover_parameter
+    inner join eco_boundary on
+    eco_boundary.turnover_parameter_id=turnover_parameter.id
+    inner join spatial_unit on spatial_unit.eco_boundary_id = eco_boundary.id
+    """
+    turnover_parameter = query(db_path, qry_text)
+    cbm_exn_turnover = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "spatial_unit_id": turnover_parameter["spatial_unit_id"],
+                    "sw_hw": "sw",
+                    "FoliageFallRate": turnover_parameter["sw_foliage"],
+                    "StemAnnualTurnoverRate": turnover_parameter[
+                        "stem_turnover"
+                    ],
+                    "BranchTurnoverRate": turnover_parameter["sw_branch"],
+                    "CoarseRootTurnProp": turnover_parameter["coarse_root"],
+                    "FineRootTurnProp": turnover_parameter["fine_root"],
+                    "OtherToBranchSnagSplit": turnover_parameter[
+                        "branch_snag_split"
+                    ],
+                    "CoarseRootAGSplit": turnover_parameter["coarse_ag_split"],
+                    "FineRootAGSplit": turnover_parameter["fine_ag_split"],
+                    "StemSnag": turnover_parameter["sw_stem_snag"],
+                    "BranchSnag": turnover_parameter["sw_branch_snag"],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    "spatial_unit_id": turnover_parameter["spatial_unit_id"],
+                    "sw_hw": "hw",
+                    "FoliageFallRate": turnover_parameter["hw_foliage"],
+                    "StemAnnualTurnoverRate": turnover_parameter[
+                        "stem_turnover"
+                    ],
+                    "BranchTurnoverRate": turnover_parameter["hw_branch"],
+                    "CoarseRootTurnProp": turnover_parameter["coarse_root"],
+                    "FineRootTurnProp": turnover_parameter["fine_root"],
+                    "OtherToBranchSnagSplit": turnover_parameter[
+                        "branch_snag_split"
+                    ],
+                    "CoarseRootAGSplit": turnover_parameter["coarse_ag_split"],
+                    "FineRootAGSplit": turnover_parameter["fine_ag_split"],
+                    "StemSnag": turnover_parameter["hw_stem_snag"],
+                    "BranchSnag": turnover_parameter["hw_branch_snag"],
+                }
+            ),
+        ]
+    )
+    cbm_exn_turnover.to_csv(
+        os.path.join(output_dir, "turnover_parameters.csv"), index=False
+    )
+
+
+def extract(db_path: str, output_dir: str, locale_code: str):
+    _write_pools(output_dir)
+    _flux_indicator_config(db_path, output_dir)
+    _disturbance_matrices(db_path, output_dir)
+    _dm_association(db_path, output_dir)
+    _slow_mixing_rate(db_path, output_dir)
+    _decay_parameters(db_path, output_dir)
+    _root_parameters(db_path, output_dir)
+    _species(db_path, output_dir)
+    _turnover_parameters(db_path, output_dir)
+
+
+def main():
+    parser = ArgumentParser(
+        description=(
+            "extract parameters for cbm_exn from a cbm_defaults database"
+        )
+    )
+
+    parser.add_argument(
+        "db_path",
+        help="path to a cbm_defaults sqlite database",
+        type=os.path.abspath,
+    )
+
+    parser.add_argument(
+        "output_dir",
+        help="path to a cbm_defaults sqlite database",
+        type=os.path.abspath,
+    )
 
 
 if __name__ == "__main__":
