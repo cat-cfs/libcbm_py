@@ -1,0 +1,21 @@
+[
+    "Input",
+    "Merch",
+    "Foliage",
+    "Other",
+    "CoarseRoots",
+    "FineRoots",
+    "AboveGroundVeryFast",
+    "BelowGroundVeryFast",
+    "AboveGroundFast",
+    "BelowGroundFast",
+    "MediumSoil",
+    "AboveGroundSlow",
+    "BelowGroundSlowStemSnag",
+    "BranchSnag",
+    "CO2",
+    "CH4",
+    "CO",
+    "NO2",
+    "Products"
+]
