@@ -106,9 +106,8 @@ class CBMEXNModel:
         self,
         cbm_vars: CBMVariables,
         operations: list[Operation],
-        op_process_ids: list[int],
     ):
-        self._cbm_model.compute(cbm_vars, operations, op_process_ids)
+        self._cbm_model.compute(cbm_vars, operations)
 
 
 @contextmanager
