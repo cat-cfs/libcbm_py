@@ -219,9 +219,11 @@ class MatrixOps:
                     order="C"
                 )
 
-            self._spinup_net_growth_op = _net_growth(spinup_growth_info)
+            self._spinup_net_growth_op = _net_growth(
+                self._model, spinup_growth_info
+            )
             self._spinup_overmature_decline_op = _overmature_decline(
-                spinup_growth_info
+                self._model, spinup_growth_info
             )
 
             op_index = self._spinup_net_growth_idx(spinup_vars)
