@@ -347,7 +347,7 @@ def extract(db_path: str, output_dir: str, locale_code: str):
     _slow_mixing_rate(db_path, output_dir)
     _decay_parameters(db_path, output_dir)
     _root_parameters(db_path, output_dir)
-    _species(db_path, output_dir)
+    _species(db_path, output_dir, locale_code)
     _turnover_parameters(db_path, output_dir)
 
 
@@ -366,10 +366,21 @@ def main():
 
     parser.add_argument(
         "output_dir",
-        help="path to a cbm_defaults sqlite database",
+        help="output directory where parameters will be written",
         type=os.path.abspath,
     )
+    parser.add_argument(
+        "locale_code",
+        help=(
+            "locale code eg. 'en-CA' or 'fr-CA'.  Determines the language of "
+            "parameter metadata (species names, disturbance type names) drawn "
+            "from the cbm_default database"
+        ),
+        type=os.path.abspath,
+    )
+    parser.parse_args
+    extract()
 
 
 if __name__ == "__main__":
-    pass
+    main()
