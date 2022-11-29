@@ -79,9 +79,49 @@ class MatrixOps:
             self._disturbance_op, self._dm_associations = _disturbance(
                 self._model, self._parameters
             )
-            self._disturbance_op.set_op()
+            matrix_idx = self._extract_dm_index(
+                disturbance_type, spuid, species
+            )
+
+            self._disturbance_op.set_op(matrix_idx)
         else:
-            pass
+            self._disturbance_op.update_index(
+                self._extract_dm_index(disturbance_type, spuid, species)
+            )
+
+    def _extract_dm_index(
+        self, disturbance_type: Series, spuid: Series, species: Series
+    ):
+        sw_hw = species.map(self._parameters.get_sw_hw_map())
+        matrix_index_merge = pd.DataFrame(
+            {
+                "disturbance_type_id": disturbance_type.to_numpy(),
+                "spatial_unit_id": spuid.to_numpy(),
+                "sw_hw": sw_hw.to_numpy(),
+            }
+        ).merge(
+            self._dm_associations,
+            how="left",
+            left_on=["disturbance_type_id", "spatial_unit_id", "sw_hw"],
+        )
+
+        # check for cases where the merged idx is null and the disturbance
+        # type is >0
+        missing_dmidx_loc = pd.isnull(matrix_index_merge["matrix_idx"]) & (
+            matrix_index_merge["disturbance_type_id"] > 0
+        )
+        if missing_dmidx_loc.any():
+            missing_rows = matrix_index_merge.loc[missing_dmidx_loc]
+            raise ValueError(
+                "no disturbance matrices found for the specified "
+                "disturbance type/spu/hw_sw combinations: "
+                f"{str(missing_rows)}"
+            )
+        matrix_idx = (
+            matrix_index_merge["matrix_idx"].fillna(0).to_numpy(dtype="int32")
+        )
+
+        return matrix_idx
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
         dom_decay_op = _dom_decay(
@@ -179,10 +219,8 @@ class MatrixOps:
                     order="C"
                 )
 
-            self._spinup_net_growth_op = self._net_growth_op(
-                spinup_growth_info
-            )
-            self._spinup_overmature_decline_op = self._overmature_decline_op(
+            self._spinup_net_growth_op = _net_growth(spinup_growth_info)
+            self._spinup_overmature_decline_op = _overmature_decline(
                 spinup_growth_info
             )
 
