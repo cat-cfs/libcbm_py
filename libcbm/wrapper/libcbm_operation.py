@@ -43,16 +43,20 @@ def _promote_scalar(value, size, dtype):
 
 class Operation:
     def __init__(
-        self, dll: str, format: OperationFormat, data: list, op_process_id: int
+        self,
+        dll: LibCBMWrapper,
+        format: OperationFormat,
+        data: list,
+        op_process_id: int,
     ):
         self.format = format
-        self.__dll = dll
-        self.__op_id = None
-        self.__matrix_list_p = None
-        self.__matrix_list_len = None
+        self._dll = dll
+        self._op_id = None
+        self._matrix_list_p = None
+        self._matrix_list_len = None
         self._op_process_id = op_process_id
-        self.__repeating_matrix_coords = None
-        self.__repeating_matrix_values = None
+        self._repeating_matrix_coords = None
+        self._repeating_matrix_values = None
         if self.format == OperationFormat.MatrixList:
             self.__init_matrix_list(data)
         elif self.format == OperationFormat.RepeatingCoordinates:
@@ -66,12 +70,10 @@ class Operation:
 
     def __init_matrix_list(self, data: list):
         self.__matrix_list = data
-        self.__matrix_list_p = (
-            libcbm_wrapper_functions.get_matrix_list_pointer(
-                self.__matrix_list
-            )
+        self._matrix_list_p = libcbm_wrapper_functions.get_matrix_list_pointer(
+            self.__matrix_list
         )
-        self.__matrix_list_len = len(self.__matrix_list)
+        self._matrix_list_len = len(self.__matrix_list)
 
     def __init_repeating(self, data: list):
         value_len = 1
@@ -84,51 +86,59 @@ class Operation:
             [_promote_scalar(x[2], size=value_len, dtype=float) for x in data]
         )
 
-        self.__repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
-        self.__repeating_matrix_values = LibCBM_Matrix(values)
+        self._repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
+        self._repeating_matrix_values = LibCBM_Matrix(values)
 
     def __allocate_op(self, size: int):
-        if self.__op_id is not None:
-            self.__dll.free_op(self.__op_id)
-        self.__op_id = self.__dll.allocate_op(size)
+        if self._op_id is not None:
+            self._dll.free_op(self._op_id)
+        self._op_id = self._dll.allocate_op(size)
 
     @property
     def op_process_id(self):
         return self._op_process_id
 
     def dispose(self):
-        if self.__op_id is not None and self.__dll is not None:
-            self.__dll.free_op(self.__op_id)
-            self.__op_id = None
+        if self._op_id is not None and self._dll is not None:
+            self._dll.free_op(self._op_id)
+            self._op_id = None
 
     def get_op_id(self) -> int:
-        return self.__op_id
+        return self._op_id
 
     def set_op(self, matrix_index: np.ndarray):
         if not matrix_index.dtype == np.uintp:
             matrix_index = matrix_index.astype(np.uintp)
         if self.format == OperationFormat.MatrixList:
             self.__allocate_op(matrix_index.shape[0])
-            self.__dll.handle.call(
+            self._dll.handle.call(
                 "LibCBM_SetOp",
-                self.__op_id,
-                self.__matrix_list_p,
-                self.__matrix_list_len,
+                self._op_id,
+                self._matrix_list_p,
+                self._matrix_list_len,
                 matrix_index,
                 matrix_index.shape[0],
                 1,
             )
         elif self.format == OperationFormat.RepeatingCoordinates:
             self.__allocate_op(matrix_index.shape[0])
-            self.__dll.handle.call(
+            self._dll.handle.call(
                 "LibCBM_SetOp2",
-                self.__op_id,
-                self.__repeating_matrix_coords,
-                self.__repeating_matrix_values,
+                self._op_id,
+                self._repeating_matrix_coords,
+                self._repeating_matrix_values,
                 matrix_index,
                 matrix_index.shape[0],
                 1,
             )
+
+    def update_index(self, matrix_index: np.ndarray):
+        self._dll.handle.call(
+            "LibCBM_SetOpIndex",
+            self._op_id,
+            matrix_index,
+            matrix_index.shape[0],
+        )
 
 
 def compute(
