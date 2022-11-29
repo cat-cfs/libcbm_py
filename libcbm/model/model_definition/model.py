@@ -17,7 +17,6 @@ class CBMModel:
         model_handle: ModelHandle,
         pool_config: list[str],
         flux_config: list[dict],
-        model_parameters: dict,
         spinup_func: Callable[["CBMModel", CBMVariables], CBMVariables] = None,
         step_func: Callable[["CBMModel", CBMVariables], CBMVariables] = None,
     ):
@@ -26,12 +25,6 @@ class CBMModel:
         self._flux_config = flux_config
         self._spinup_func = spinup_func
         self._step_func = step_func
-        self._parameters = model_parameters
-
-    @property
-    def parameters(self) -> dict:
-        """arbitrary model parameters stored as a dictionary"""
-        return self._parameters
 
     @property
     def pool_names(self) -> list[str]:
