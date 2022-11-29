@@ -443,8 +443,8 @@ def _dom_decay(
             mean_annual_temp=mean_annual_temp,
             base_decay_rate=decay_parameter["base_decay_rate"],
             q10=decay_parameter["q10"],
-            tref=decay_parameter["tref"],
-            max=decay_parameter["max"],
+            tref=decay_parameter["reference_temp"],
+            max=decay_parameter["max_rate"],
         )
         matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
         matrix_data.append(
@@ -473,8 +473,8 @@ def _slow_decay(
             mean_annual_temp=mean_annual_temp,
             base_decay_rate=decay_parameter["base_decay_rate"],
             q10=decay_parameter["q10"],
-            tref=decay_parameter["tref"],
-            max=decay_parameter["max"],
+            tref=decay_parameter["reference_temp"],
+            max=decay_parameter["max_rate"],
         )
         matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
         matrix_data.append(
