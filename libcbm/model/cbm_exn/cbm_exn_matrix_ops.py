@@ -28,8 +28,7 @@ class MatrixOps:
         self._turnover_parameter_rates: dict[str, np.ndarray] = None
         self._slow_mixing_rate: float = self._parameters.get_slow_mixing_rate()
 
-        # dictionary of spuid, turnover parameter matrix index
-        self._turnover_parameter_idx: dict[int, int] = None
+        self._turnover_parameter_idx: pd.DataFrame = None
         self._get_turnover_rates()
         self._biomass_turnover_op: Operation = None
         self._snag_turnover_op: Operation = None
@@ -58,19 +57,28 @@ class MatrixOps:
             str(col): self._turnover_parameters[col].to_numpy()
             for col in parameter_names
         }
-        duplicates = self._turnover_parameters["spuid"].duplicated()
+        duplicates = self._turnover_parameters[
+            ["spatial_unit_id", "sw_hw"]
+        ].duplicated()
         if duplicates.any():
-            duplicate_values = self._turnover_parameters["spuid"][duplicates]
+            duplicate_values = self._turnover_parameters[
+                ["spatial_unit_id", "sw_hw"]
+            ][duplicates]
             raise ValueError(
                 "duplicated spuids detected in turnover paramters "
-                f"{duplicate_values}"
+                f"{str(duplicate_values)}"
             )
-        self._turnover_parameter_idx = {
-            int(spuid): int(idx)
-            for idx, spuid in enumerate(
-                self._turnover_parameters["spuid"].to_numpy()
-            )
-        }
+        self._turnover_parameter_idx = pd.DataFrame(
+            {
+                "spatial_unit_id": self._turnover_parameters[
+                    "spatial_unit_id"
+                ],
+                "sw_hw": self._turnover_parameters["sw_hw"],
+                "matrix_idx": np.arange(
+                    0, len(self._turnover_parameters.index)
+                ),
+            }
+        )
 
     def disturbance(
         self, disturbance_type: Series, spuid: Series, species: Series
@@ -147,31 +155,51 @@ class MatrixOps:
             self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
         return self._slow_mixing_op
 
-    def snag_turnover(self, spuid: Series) -> Operation:
+    def _turnover_matrix_index(
+        self, spuid: Series, species: Series
+    ) -> np.ndarray:
+        mat_idx_merge = pd.DataFrame(
+            {
+                "spatial_unit_id": spuid.to_numpy(),
+                "sw_hw": species.map(self._parameters.get_sw_hw_map()),
+            }
+        ).merge(self._turnover_parameter_idx, how="left")
+
+        if mat_idx_merge["matrix_idx"].isnull().any():
+            missing_values = mat_idx_merge[
+                mat_idx_merge["matrix_idx"].isnull()
+            ]
+            raise ValueError(
+                "missing turnover parameter for the following spatial unit, "
+                f"sw_hw values {str(missing_values)}"
+            )
+        return mat_idx_merge["matrix_idx"].to_numpy("int32")
+
+    def snag_turnover(self, spuid: Series, species: Series) -> Operation:
         if not self._snag_turnover_op:
             self._snag_turnover_op = _snag_turnover(
                 self._model, self._turnover_parameter_rates
             )
             self._snag_turnover_op.set_op(
-                spuid.map(self._turnover_parameter_idx)
+                self._turnover_matrix_index(spuid, species)
             )
         else:
             self._snag_turnover_op.update_index(
-                spuid.map(self._turnover_parameter_idx)
+                self._turnover_matrix_index(spuid, species)
             )
         return self._snag_turnover_op
 
-    def biomass_turnover(self, spuid: Series) -> Operation:
+    def biomass_turnover(self, spuid: Series, species: Series) -> Operation:
         if not self._biomass_turnover_op:
             self._biomass_turnover_op = _biomass_turnover(
                 self._model, self._turnover_parameter_rates
             )
             self._biomass_turnover_op.set_op(
-                spuid.map(self._turnover_parameter_idx)
+                self._turnover_matrix_index(spuid, species)
             )
         else:
             self._biomass_turnover_op.update_index(
-                spuid.map(self._turnover_parameter_idx)
+                self._turnover_matrix_index(spuid, species)
             )
         return self._biomass_turnover_op
 
