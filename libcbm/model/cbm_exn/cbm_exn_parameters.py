@@ -2,8 +2,8 @@ import pandas as pd
 
 
 class CBMEXNParameters:
-    def __init__(self, parameters: dict):
-        self._parameters = parameters
+    def __init__(self, path: str):
+        self._path = path
 
     def pool_configuration(self) -> list[str]:
         pass
