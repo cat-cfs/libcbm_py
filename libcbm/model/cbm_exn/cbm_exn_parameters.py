@@ -35,6 +35,8 @@ class CBMEXNParameters:
          * proportion
 
         """
+        # TODO: the 0th matrix should be the identity matrix,
+        # representing no-disturbance
         pass
 
     def get_disturbance_matrix_associations() -> pd.DataFrame:
@@ -49,4 +51,6 @@ class CBMEXNParameters:
          * disturbance_matrix_id
 
         """
+        # TODO: ensure that no row has a value of zero for
+        # disturbance_matrix_id
         pass
