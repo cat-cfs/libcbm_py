@@ -338,8 +338,12 @@ def prepare_spinup_growth_info(
 
         for k, v in col_overmature_decline.items():
             overmature_decline[k][:, col_idx] = col_overmature_decline[k]
-        coarse_root[:, col_idx + 1] += root_inc["coarse_root_inc"]
-        fine_root[:, col_idx + 1] += root_inc["fine_root_inc"]
+        coarse_root[:, col_idx + 1] = (
+            coarse_root[:, col_idx] + root_inc["coarse_root_inc"]
+        )
+        fine_root[:, col_idx + 1] = (
+            fine_root[:, col_idx] + root_inc["fine_root_inc"]
+        )
 
     data = {
         "merch_inc": merch_inc,
