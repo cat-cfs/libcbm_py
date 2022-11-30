@@ -21,6 +21,14 @@ class CBMEXNParameters:
         self._turnover_parameters = pd.read_csv(
             os.path.join(self._path, "turnover_parameters.csv")
         )
+        if not self._turnover_parameters["sw_hw"].isin(["sw", "hw"]).all():
+            raise ValueError(
+                "turnover_parameters.sw_hw values should be one of "
+                "'sw' or 'hw'"
+            )
+        self._turnover_parameters["sw_hw"] = self._turnover_parameters[
+            "sw_hw"
+        ].map({"sw": 0, "hw": 1})
         self._species = pd.read_csv(os.path.join(self._path, "species.csv"))
         self._sw_hw_map = {
             int(row["species_id"]): int(0 if row["forest_type_id"] == 1 else 1)
@@ -40,6 +48,27 @@ class CBMEXNParameters:
             self._decay_param_dict[str(row["pool"])] = {
                 col: float(row[col]) for col in decay_params.columns[1:]
             }
+
+        self._disturbance_matrix_values = pd.read_csv(
+            os.path.join(self._path, "disturbance_matrix_value.csv")
+        )
+        self._disturbance_matrix_associations = pd.read_csv(
+            os.path.join(self._path, "disturbance_matrix_association.csv")
+        )
+        if (
+            not self._disturbance_matrix_associations["sw_hw"]
+            .isin(["sw", "hw"])
+            .all()
+        ):
+            raise ValueError(
+                "disturbance_matrix_associations.sw_hw values should be one "
+                "of sw' or 'hw'"
+            )
+        self._disturbance_matrix_associations[
+            "sw_hw"
+        ] = self._disturbance_matrix_associations["sw_hw"].map(
+            {"sw": 0, "hw": 1}
+        )
 
     def pool_configuration(self) -> list[str]:
         return self._pools
@@ -65,7 +94,7 @@ class CBMEXNParameters:
     def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
         return self._decay_param_dict[dom_pool]
 
-    def get_disturbance_matrices() -> pd.DataFrame:
+    def get_disturbance_matrices(self) -> pd.DataFrame:
         """
         Gets a dataframe with disturbance matrix value information.
 
@@ -77,11 +106,9 @@ class CBMEXNParameters:
          * proportion
 
         """
-        # TODO: the 0th matrix should be the identity matrix,
-        # representing no-disturbance
-        pass
+        return self._disturbance_matrix_values
 
-    def get_disturbance_matrix_associations() -> pd.DataFrame:
+    def get_disturbance_matrix_associations(self) -> pd.DataFrame:
         """
         Gets a dataframe with disturbance matrix assocation information
 
@@ -93,6 +120,4 @@ class CBMEXNParameters:
          * disturbance_matrix_id
 
         """
-        # TODO: ensure that no row has a value of zero for
-        # disturbance_matrix_id
-        pass
+        return self._disturbance_matrix_associations
