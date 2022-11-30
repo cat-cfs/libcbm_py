@@ -24,6 +24,7 @@ def step_annual_process(
     cbm_vars: CBMVariables,
 ) -> CBMVariables:
 
+    cbm_vars["flux"].zero()
     growth_op, overmature_decline = model.matrix_ops.net_growth(cbm_vars)
     spuid = cbm_vars["state"]["spatial_unit_id"]
     species = cbm_vars["state"]["species"]
