@@ -1,5 +1,5 @@
-from typing import Callable
 from typing import Union
+from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
 from libcbm.model.model_definition import model
@@ -31,28 +31,6 @@ class SpinupReporter:
         return self._output_processor.get_results()
 
 
-def spinup_debug_method(
-    cbm_model: CBMModel, spinup_input: CBMVariables
-) -> CBMVariables:
-    return cbm_exn_spinup.spinup(cbm_model, spinup_input, None, False)
-
-
-def get_spinup_method(
-    spinup_reporter: SpinupReporter = None,
-) -> Callable[[CBMModel, cbm_vars_type], cbm_vars_type]:
-    if not spinup_reporter:
-        return lambda cbm_model, spinup_input: cbm_exn_spinup.spinup(
-            cbm_model, spinup_input, None, False
-        )
-    else:
-        return lambda cbm_model, spinup_input: cbm_exn_spinup.spinup(
-            cbm_model,
-            spinup_input,
-            spinup_reporter.append_spinup_output,
-            False,
-        )
-
-
 class CBMEXNModel:
     def __init__(
         self,
@@ -68,6 +46,14 @@ class CBMEXNModel:
         self._matrix_ops = MatrixOps(cbm_model, self._parameters)
 
     @property
+    def pool_names(self) -> list[str]:
+        return self._cbm_model.pool_names
+
+    @property
+    def flux_names(self) -> list[str]:
+        return self._cbm_model.flux_names
+
+    @property
     def matrix_ops(self) -> MatrixOps:
         return self._matrix_ops
 
@@ -77,19 +63,32 @@ class CBMEXNModel:
 
     def step(self, cbm_vars: cbm_vars_type) -> cbm_vars_type:
         if self._pandas_interface:
-            return self._cbm_model.step(
-                CBMVariables.from_pandas(cbm_vars)
+            return cbm_exn_step.step(
+                self, CBMVariables.from_pandas(cbm_vars)
             ).to_pandas()
         else:
-            return self._cbm_model.step(cbm_vars)
+            return cbm_exn_step.step(self, cbm_vars)
 
     def spinup(self, spinup_input: cbm_vars_type) -> cbm_vars_type:
+        reporting_func = (
+            self._spinup_reporter.append_spinup_output
+            if self._spinup_reporter
+            else None
+        )
         if self._pandas_interface:
-            return self._cbm_model.step(
-                CBMVariables.from_pandas(spinup_input)
+            return cbm_exn_spinup.spinup(
+                self,
+                CBMVariables.from_pandas(spinup_input),
+                reporting_func=reporting_func,
+                include_flux=reporting_func is not None,
             ).to_pandas()
         else:
-            return self._cbm_model.spinup(spinup_input)
+            return cbm_exn_spinup.spinup(
+                self,
+                spinup_input,
+                reporting_func=reporting_func,
+                include_flux=reporting_func is not None,
+            )
 
     def get_spinup_output(self) -> cbm_vars_type:
         if not self._spinup_reporter:
@@ -113,14 +112,12 @@ class CBMEXNModel:
 @contextmanager
 def initialize(
     config_path: str, pandas_interface=True, include_spinup_debug=False
-) -> CBMEXNModel:
+) -> Iterator[CBMEXNModel]:
 
     parameters = CBMEXNParameters(config_path)
     with model.initialize(
         pool_config=parameters.pool_configuration(),
         flux_config=parameters.flux_configuration(),
-        spinup_func=get_spinup_method(include_spinup_debug),
-        step_func=cbm_exn_step.step,
     ) as cbm_model:
 
         spinup_reporter = (
@@ -130,6 +127,6 @@ def initialize(
         yield CBMEXNModel(
             cbm_model,
             parameters,
-            pandas_interface=True,
+            pandas_interface=pandas_interface,
             spinup_reporter=spinup_reporter,
         )
