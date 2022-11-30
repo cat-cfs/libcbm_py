@@ -15,7 +15,7 @@ class ModelOutputProcessor:
         output_dataframe_converter: Callable[[DataFrame], DataFrame] = None,
     ):
         self._output_dataframe_converter = output_dataframe_converter
-        self._results: dict[str, DataFrame] = None
+        self._results: dict[str, DataFrame] = {}
 
     def append_results(self, t: int, results: dict[str, DataFrame]):
         for name, df in results.items():
@@ -34,8 +34,10 @@ class ModelOutputProcessor:
                 ),
                 0,
             )
-            if self._results and name in self._results:
-                self._results = dataframe.concat_data_frame(
+            if name not in self._results:
+                self._results[name] = results_t
+            else:
+                self._results[name] = dataframe.concat_data_frame(
                     [self._results[name], results_t]
                 )
 
