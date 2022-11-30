@@ -9,7 +9,7 @@ import numba
 from libcbm.storage import series
 
 
-# @numba.njit()
+@numba.njit()
 def _update_spinup_vars(
     n_stands: int,
     spinup_state: np.ndarray,
@@ -25,14 +25,14 @@ def _update_spinup_vars(
     enabled_count = n_stands
     for i in range(n_stands):
         state = spinup_state[i]
-        if state == SpinupState.LastPassEvent:
+        if state == SpinupState.LastPassEvent.value:
             disturbance_type[i] = last_pass_dist_type[i]
-        elif state == SpinupState.HistoricalEvent:
+        elif state == SpinupState.HistoricalEvent.value:
             disturbance_type[i] = historical_dist_type[i]
             last_rotation_slow[i] = slow_c[i]
             rotation_num[i] += 1
         else:
-            if spinup_state == SpinupState.End:
+            if spinup_state == SpinupState.End.value:
                 enabled[i] = 0
                 enabled_count -= 1
             disturbance_type[i] = 0
