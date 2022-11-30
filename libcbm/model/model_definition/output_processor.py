@@ -34,7 +34,7 @@ class ModelOutputProcessor:
                 ),
                 0,
             )
-            if name in self._results:
+            if self._results and name in self._results:
                 self._results = dataframe.concat_data_frame(
                     [self._results[name], results_t]
                 )
