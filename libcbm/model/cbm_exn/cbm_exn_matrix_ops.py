@@ -96,6 +96,7 @@ class MatrixOps:
             self._disturbance_op.update_index(
                 self._extract_dm_index(disturbance_type, spuid, species)
             )
+        return self._disturbance_op
 
     def _extract_dm_index(
         self, disturbance_type: Series, spuid: Series, species: Series
@@ -111,6 +112,7 @@ class MatrixOps:
             self._dm_associations,
             how="left",
             left_on=["disturbance_type_id", "spatial_unit_id", "sw_hw"],
+            right_on=["disturbance_type_id", "spatial_unit_id", "sw_hw"],
         )
 
         # check for cases where the merged idx is null and the disturbance
@@ -161,7 +163,9 @@ class MatrixOps:
         mat_idx_merge = pd.DataFrame(
             {
                 "spatial_unit_id": spuid.to_numpy(),
-                "sw_hw": species.map(self._parameters.get_sw_hw_map()),
+                "sw_hw": species.map(
+                    self._parameters.get_sw_hw_map()
+                ).to_numpy(),
             }
         ).merge(self._turnover_parameter_idx, how="left")
 
@@ -213,13 +217,13 @@ class MatrixOps:
         self._overmature_decline_op = _overmature_decline(
             self._model, growth_info
         )
-        net_growth = self._net_growth_op.set_op(
+        self._net_growth_op.set_op(
             np.arange(0, cbm_vars["pools"].n_rows)
         )
-        overmature_decline = self._overmature_decline_op.set_op(
+        self._overmature_decline_op.set_op(
             np.arange(0, cbm_vars["pools"].n_rows)
         )
-        return net_growth, overmature_decline
+        return self._net_growth_op, self._overmature_decline_op
 
     def _spinup_net_growth_idx(self, spinup_vars: CBMVariables) -> np.ndarray:
         age = spinup_vars["state"]["age"].to_numpy()
@@ -272,6 +276,7 @@ def _disturbance(
 
     matrix_data = []
     dmid_index = {}
+    matrix_data.append([])  # append the null matrix
     for idx, dmid in enumerate(
         disturbance_matrices["disturbance_matrix_id"].unique()
     ):
@@ -279,10 +284,10 @@ def _disturbance(
         dmid_mat_data = []
         for i, row in disturbance_matrices.loc[dmid_loc].iterrows():
             dmid_mat_data.append(
-                [row["source"], row["sink"], row["proportion"]]
+                [row["source_pool"], row["sink_pool"], row["proportion"]]
             )
         matrix_data.append(dmid_mat_data)
-        dmid_index[int(dmid)] = idx
+        dmid_index[int(dmid)] = idx + 1
     op = model.create_operation(
         matrix_data, fmt="matrix_list", process_id=OpProcesses.disturbance
     )
@@ -367,6 +372,7 @@ def _overmature_decline(
                 growth_info["fine_root_to_bg_vfast_prop"],
             ],
         ],
+        fmt="repeating_coordinates",
         process_id=OpProcesses.growth,
     )
     return op
@@ -395,7 +401,7 @@ def _biomass_turnover(
         matrices=[
             [
                 "Merch",
-                "SoftwoodStemSnag",
+                "StemSnag",
                 rates["StemAnnualTurnoverRate"],
             ],
             [
@@ -405,7 +411,7 @@ def _biomass_turnover(
             ],
             [
                 "Other",
-                "SoftwoodBranchSnag",
+                "BranchSnag",
                 rates["OtherToBranchSnagSplit"] * rates["BranchTurnoverRate"],
             ],
             [
@@ -446,22 +452,22 @@ def _dom_decay(
 ) -> Operation:
 
     dom_pools = [
-        "AboveGroundVeryFast",
-        "BelowGroundVeryFast",
-        "AboveGroundFast",
-        "BelowGroundFast",
+        "AboveGroundVeryFastSoil",
+        "BelowGroundVeryFastSoil",
+        "AboveGroundFastSoil",
+        "BelowGroundFastSoil",
         "MediumSoil",
         "StemSnag",
         "BranchSnag",
     ]
     dom_pool_flows = {
-        "AboveGroundVeryFast": "AboveGroundSlow",
-        "BelowGroundVeryFast": "BelowGroundSlow",
-        "AboveGroundFast": "AboveGroundSlow",
-        "BelowGroundFast": "BelowGroundSlow",
-        "MediumSoil": "AboveGroundSlow",
-        "StemSnag": "AboveGroundSlow",
-        "BranchSnag": "AboveGroundSlow",
+        "AboveGroundVeryFastSoil": "AboveGroundSlowSoil",
+        "BelowGroundVeryFastSoil": "BelowGroundSlowSoil",
+        "AboveGroundFastSoil": "AboveGroundSlowSoil",
+        "BelowGroundFastSoil": "BelowGroundSlowSoil",
+        "MediumSoil": "AboveGroundSlowSoil",
+        "StemSnag": "AboveGroundSlowSoil",
+        "BranchSnag": "AboveGroundSlowSoil",
     }
     matrix_data = []
     for dom_pool in dom_pools:
@@ -494,7 +500,7 @@ def _slow_decay(
 ) -> Operation:
 
     matrix_data = []
-    for dom_pool in ["AboveGroundSlow", "BelowGroundSlow"]:
+    for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
         decay_parameter = parameters.get_decay_parameter(dom_pool)
         prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
         decay_rate = cbm_exn_functions.compute_decay_rate(

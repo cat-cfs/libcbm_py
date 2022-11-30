@@ -133,6 +133,8 @@ class Operation:
             )
 
     def update_index(self, matrix_index: np.ndarray):
+        if not matrix_index.dtype == np.uintp:
+            matrix_index = matrix_index.astype(np.uintp)
         self._dll.update_op_index(self._op_id, matrix_index)
 
 

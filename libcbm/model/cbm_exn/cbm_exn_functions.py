@@ -12,7 +12,7 @@ def compute_decay_rate(
     tref: np.ndarray,
     max: np.ndarray,
 ) -> np.ndarray:
-    return np.min(
+    return np.minimum(
         base_decay_rate
         * np.exp((mean_annual_temp - tref) * np.log(q10) * 0.1),
         max,
@@ -22,9 +22,9 @@ def compute_decay_rate(
 def total_root_bio_hw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ):
-    return root_parameters["rb_hw_a"] * np.power(
+    return root_parameters["hw_a"] * np.power(
         total_ag_bio_t / root_parameters["biomass_to_carbon_rate"],
-        root_parameters["rb_hw_b"],
+        root_parameters["hw_b"],
     )
 
 
@@ -32,7 +32,7 @@ def total_root_bio_sw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ) -> np.ndarray:
     return (
-        root_parameters["rb_sw_a"]
+        root_parameters["sw_a"]
         * total_ag_bio_t
         / root_parameters["biomass_to_carbon_rate"]
     )
@@ -163,6 +163,7 @@ def _overmature_decline_compute(
 
 def compute_overmature_decline(
     spatial_unit_id: np.ndarray,
+    sw_hw: np.ndarray,
     merch: np.ndarray,
     foliage: np.ndarray,
     other: np.ndarray,
@@ -178,17 +179,15 @@ def compute_overmature_decline(
     turnover_parameters = parameters.get_turnover_parameters()[
         [
             "spatial_unit_id",
+            "sw_hw",
             "OtherToBranchSnagSplit",
             "CoarseRootAGSplit",
             "FineRootAGSplit",
         ]
     ].merge(
-        pd.Series(
-            name="spatial_unit_id",
-            data=spatial_unit_id,
-        ),
-        left_on="spatial_unit_id",
-        right_on="spatial_unit_id",
+        pd.DataFrame({"spatial_unit_id": spatial_unit_id, "sw_hw": sw_hw}),
+        left_on=["spatial_unit_id", "sw_hw"],
+        right_on=["spatial_unit_id", "sw_hw"],
     )
 
     if len(turnover_parameters.index) != spatial_unit_id.shape[0]:
@@ -246,10 +245,15 @@ def prepare_spinup_growth_info(
     spinup_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
     species_id = spinup_vars["parameters"]["species"].to_numpy()
+    sw_hw = (
+        spinup_vars["parameters"]["species"]
+        .map(parameters.get_sw_hw_map())
+        .to_numpy()
+    )
     spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
-    spinup_incremements = spinup_vars["spinup_incremements"].to_pandas()
+    spinup_incremements = spinup_vars["increments"].to_pandas()
     unique_ages = spinup_incremements["age"].drop_duplicates().sort_values()
-    if not unique_ages.diff().eq(1).all():
+    if not unique_ages.diff().iloc[1:].eq(1).all():
         raise ValueError("expected a sequential set of ages")
     if unique_ages.iloc[0] != 1:
         raise ValueError("expected a minimum age of 1")
@@ -320,6 +324,7 @@ def prepare_spinup_growth_info(
         fine_root_inc[:, col_idx] = root_inc["fine_root_inc"]
         col_overmature_decline = compute_overmature_decline(
             spatial_unit_id,
+            sw_hw,
             merch[:, col_idx],
             foliage[:, col_idx],
             other[:, col_idx],
@@ -351,7 +356,9 @@ def prepare_spinup_growth_info(
         "foliage_inc": foliage_inc,
     }
 
-    data.update(root_inc)
+    data.update(
+        {"coarse_root_inc": coarse_root_inc, "fine_root_inc": fine_root_inc}
+    )
     data.update(overmature_decline)
 
     return data
@@ -364,7 +371,7 @@ def prepare_growth_info(
     merch = cbm_vars["pools"]["Merch"].to_numpy()
     foliage = cbm_vars["pools"]["Foliage"].to_numpy()
     other = cbm_vars["pools"]["Other"].to_numpy()
-    fine_root = cbm_vars["pools"]["FineRoot"].to_numpy()
+    fine_root = cbm_vars["pools"]["FineRoots"].to_numpy()
     coarse_root = cbm_vars["pools"]["CoarseRoots"].to_numpy()
     species_id = cbm_vars["state"]["species"].to_numpy()
     spatial_unit_id = cbm_vars["state"]["spatial_unit_id"].to_numpy()
@@ -395,6 +402,9 @@ def prepare_growth_info(
     )
     overmature_decline = compute_overmature_decline(
         spatial_unit_id,
+        cbm_vars["state"]["species"]
+        .map(parameters.get_sw_hw_map())
+        .to_numpy(),
         merch,
         foliage,
         other,
