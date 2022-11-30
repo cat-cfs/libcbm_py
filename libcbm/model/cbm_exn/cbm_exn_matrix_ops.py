@@ -230,7 +230,7 @@ class MatrixOps:
         )
         op_index = np.where(
             age >= self._spinup_2d_shape[1],
-            op_index + self._spinup_2d_shape[0] - 1,
+            op_index + self._spinup_2d_shape[1] - 1,
             op_index + age,
         )
         return op_index
