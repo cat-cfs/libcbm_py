@@ -217,9 +217,7 @@ class MatrixOps:
         self._overmature_decline_op = _overmature_decline(
             self._model, growth_info
         )
-        self._net_growth_op.set_op(
-            np.arange(0, cbm_vars["pools"].n_rows)
-        )
+        self._net_growth_op.set_op(np.arange(0, cbm_vars["pools"].n_rows))
         self._overmature_decline_op.set_op(
             np.arange(0, cbm_vars["pools"].n_rows)
         )
