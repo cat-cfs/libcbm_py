@@ -59,10 +59,6 @@ def advance_spinup_state(
         this_rotation_slow=spinup_vars["state"]["this_rotation_slow"],
         enabled=spinup_vars["state"]["enabled"],
     )
-    spinup_vars["state"]["last_rotation_slow"].assign(
-        spinup_vars["pools"]["AboveGroundSlowSoil"]
-        + spinup_vars["pools"]["BelowGroundSlowSoil"]
-    )
 
     disturbance_type = spinup_vars["state"]["disturbance_type"].to_numpy()
     slow_c = (
