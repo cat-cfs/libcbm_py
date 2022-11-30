@@ -97,7 +97,7 @@ def _advance_spinup_state(
                     | (this_rotation_slow[i] > 0)
                     else False
                 )
-                if (rotation_num[i] > (min_rotations[i] & small_slow_diff)) | (
+                if ((rotation_num[i] > min_rotations[i]) & small_slow_diff) | (
                     rotation_num[i] >= max_rotations[i]
                 ):
                     out_state[i] = SpinupState.LastPassEvent
