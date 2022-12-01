@@ -32,7 +32,7 @@ def _update_spinup_vars(
             last_rotation_slow[i] = slow_c[i]
             rotation_num[i] += 1
         else:
-            if spinup_state == SpinupState.End.value:
+            if state == SpinupState.End.value:
                 enabled[i] = 0
                 enabled_count -= 1
             disturbance_type[i] = 0
