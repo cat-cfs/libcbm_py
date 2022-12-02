@@ -27,12 +27,12 @@ def step_annual_process(
     cbm_vars["flux"].zero()
     growth_op, overmature_decline = model.matrix_ops.net_growth(cbm_vars)
     spuid = cbm_vars["state"]["spatial_unit_id"]
-    species = cbm_vars["state"]["species"]
+    sw_hw = cbm_vars["state"]["sw_hw"]
     mean_annual_temp = cbm_vars["parameters"]["mean_annual_temperature"]
     ops = [
         growth_op,
-        model.matrix_ops.snag_turnover(spuid, species),
-        model.matrix_ops.biomass_turnover(spuid, species),
+        model.matrix_ops.snag_turnover(spuid, sw_hw),
+        model.matrix_ops.biomass_turnover(spuid, sw_hw),
         overmature_decline,
         growth_op,
         model.matrix_ops.dom_decay(mean_annual_temp),
