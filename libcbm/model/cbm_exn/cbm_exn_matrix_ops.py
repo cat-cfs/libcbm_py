@@ -1,6 +1,9 @@
 from enum import IntEnum
 import numpy as np
 import pandas as pd
+import numba
+from numba.core import types
+from numba.typed import Dict
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_operation import Operation
@@ -28,7 +31,10 @@ class MatrixOps:
         self._turnover_parameter_rates: dict[str, np.ndarray] = None
         self._slow_mixing_rate: float = self._parameters.get_slow_mixing_rate()
 
-        self._turnover_parameter_idx: pd.DataFrame = None
+        self._turnover_parameter_idx: Dict = Dict.empty(
+            key_type=types.int64,
+            value_type=numba.types.DictType(types.int64, types.int64),
+        )
         self._get_turnover_rates()
         self._biomass_turnover_op: Operation = None
         self._snag_turnover_op: Operation = None
@@ -38,7 +44,7 @@ class MatrixOps:
         self._spinup_net_growth_op: Operation = None
         self._spinup_overmature_decline_op: Operation = None
         self._disturbance_op: Operation = None
-        self._dm_associations: pd.DataFrame = None
+        self._dm_index: Dict = None
 
     def _get_turnover_rates(self):
         parameter_names = [
@@ -68,69 +74,59 @@ class MatrixOps:
                 "duplicated spuids detected in turnover paramters "
                 f"{str(duplicate_values)}"
             )
-        self._turnover_parameter_idx = pd.DataFrame(
-            {
-                "spatial_unit_id": self._turnover_parameters[
-                    "spatial_unit_id"
-                ],
-                "sw_hw": self._turnover_parameters["sw_hw"],
-                "matrix_idx": np.arange(
-                    0, len(self._turnover_parameters.index)
-                ),
-            }
+
+        self._turnover_parameters = self._turnover_parameters.reset_index(
+            drop=True
         )
+        for idx, row in self._turnover_parameters.iterrows():
+            spuid = int(row["spatial_unit_id"])
+            sw_hw = int(row["sw_hw"])
+            if spuid in self._turnover_parameter_idx:
+                self._turnover_parameter_idx[spuid][sw_hw] = int(idx)
+            else:
+                self._turnover_parameter_idx[spuid] = Dict.empty(
+                    key_type=types.int64, value_type=types.int64
+                )
+                self._turnover_parameter_idx[spuid][sw_hw] = int(idx)
 
     def disturbance(
         self, disturbance_type: Series, spuid: Series, species: Series
     ) -> Operation:
         if self._disturbance_op is None:
-            self._disturbance_op, self._dm_associations = _disturbance(
+            self._disturbance_op, self._dm_index = _disturbance(
                 self._model, self._parameters
             )
+            sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
             matrix_idx = self._extract_dm_index(
-                disturbance_type, spuid, species
+                self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw
             )
 
             self._disturbance_op.set_op(matrix_idx)
         else:
+            sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
             self._disturbance_op.update_index(
-                self._extract_dm_index(disturbance_type, spuid, species)
+                self._extract_dm_index(
+                    self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw
+                )
             )
         return self._disturbance_op
 
+    @staticmethod
+    @numba.njit()
     def _extract_dm_index(
-        self, disturbance_type: Series, spuid: Series, species: Series
-    ):
-        sw_hw = species.map(self._parameters.get_sw_hw_map())
-        matrix_index_merge = pd.DataFrame(
-            {
-                "disturbance_type_id": disturbance_type.to_numpy(),
-                "spatial_unit_id": spuid.to_numpy(),
-                "sw_hw": sw_hw.to_numpy(),
-            }
-        ).merge(
-            self._dm_associations,
-            how="left",
-            left_on=["disturbance_type_id", "spatial_unit_id", "sw_hw"],
-            right_on=["disturbance_type_id", "spatial_unit_id", "sw_hw"],
-        )
+        dm_index: Dict,
+        disturbance_type: np.ndarray,
+        spuid: np.ndarray,
+        sw_hw: np.ndarray,
+    ) -> np.ndarray:
 
-        # check for cases where the merged idx is null and the disturbance
-        # type is >0
-        missing_dmidx_loc = pd.isnull(matrix_index_merge["matrix_idx"]) & (
-            matrix_index_merge["disturbance_type_id"] > 0
-        )
-        if missing_dmidx_loc.any():
-            missing_rows = matrix_index_merge.loc[missing_dmidx_loc]
-            raise ValueError(
-                "no disturbance matrices found for the specified "
-                "disturbance type/spu/hw_sw combinations: "
-                f"{str(missing_rows)}"
-            )
-        matrix_idx = (
-            matrix_index_merge["matrix_idx"].fillna(0).to_numpy(dtype="int32")
-        )
-
+        n_rows = disturbance_type.shape[0]
+        matrix_idx = np.zeros(n_rows, dtype="uintp")
+        for i in range(n_rows):
+            if disturbance_type[i] > 0:
+                matrix_idx[i] = dm_index[disturbance_type[i]][spuid[i]][
+                    sw_hw[i]
+                ]
         return matrix_idx
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
@@ -157,27 +153,26 @@ class MatrixOps:
             self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
         return self._slow_mixing_op
 
+    @staticmethod
+    @numba.njit()
+    def _nb_turnover_matrix_idx(
+        turnover_parameter_idx: Dict, spuid: np.ndarray, sw_hw: np.ndarray
+    ) -> np.ndarray:
+        n_rows = spuid.shape[0]
+        matrix_idx = np.zeros(n_rows, dtype="uintp")
+        for i in range(n_rows):
+            matrix_idx[i] = turnover_parameter_idx[int(spuid[i])][
+                int(sw_hw[i])
+            ]
+        return matrix_idx
+
     def _turnover_matrix_index(
         self, spuid: Series, species: Series
     ) -> np.ndarray:
-        mat_idx_merge = pd.DataFrame(
-            {
-                "spatial_unit_id": spuid.to_numpy(),
-                "sw_hw": species.map(
-                    self._parameters.get_sw_hw_map()
-                ).to_numpy(),
-            }
-        ).merge(self._turnover_parameter_idx, how="left")
-
-        if mat_idx_merge["matrix_idx"].isnull().any():
-            missing_values = mat_idx_merge[
-                mat_idx_merge["matrix_idx"].isnull()
-            ]
-            raise ValueError(
-                "missing turnover parameter for the following spatial unit, "
-                f"sw_hw values {str(missing_values)}"
-            )
-        return mat_idx_merge["matrix_idx"].to_numpy("int32")
+        sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
+        return self._nb_turnover_matrix_idx(
+            self._turnover_parameter_idx, spuid.to_numpy(), sw_hw
+        )
 
     def snag_turnover(self, spuid: Series, species: Series) -> Operation:
         if not self._snag_turnover_op:
@@ -269,7 +264,7 @@ class MatrixOps:
 
 def _disturbance(
     model: CBMModel, parameters: CBMEXNParameters
-) -> tuple[Operation, pd.DataFrame]:
+) -> tuple[Operation, Dict]:
     disturbance_matrices = parameters.get_disturbance_matrices()
 
     matrix_data = []
@@ -289,27 +284,44 @@ def _disturbance(
     op = model.create_operation(
         matrix_data, fmt="matrix_list", process_id=OpProcesses.disturbance
     )
-    dm_association_rows = []
-    for _, row in parameters.get_disturbance_matrix_associations().iterrows():
-        dm_association_rows.append(
-            [
-                int(row["disturbance_type_id"]),
-                int(row["spatial_unit_id"]),
-                int(row["sw_hw"]),
-                dmid_index[int(row["disturbance_matrix_id"])],
-            ]
-        )
-
-    dm_associations = pd.DataFrame(
-        columns=[
-            "disturbance_type_id",
-            "spatial_unit_id",
-            "sw_hw",
-            "matrix_idx",
-        ],
-        data=dm_association_rows,
+    _dm_op_index = Dict.empty(
+        key_type=types.int64,
+        value_type=numba.types.DictType(
+            types.int64, numba.types.DictType(types.int64, types.int64)
+        ),
     )
-    return (op, dm_associations)
+    for _, row in parameters.get_disturbance_matrix_associations().iterrows():
+        dist_type = int(row["disturbance_type_id"])
+        spuid = int(row["spatial_unit_id"])
+        sw_hw = int(row["sw_hw"])
+        dm_idx = dmid_index[int(row["disturbance_matrix_id"])]
+        if dist_type not in _dm_op_index:
+            _dm_op_index[dist_type] = Dict.empty(
+                key_type=types.int64,
+                value_type=numba.types.DictType(types.int64, types.int64),
+            )
+            _dm_op_index[dist_type][spuid] = Dict.empty(
+                key_type=types.int64, value_type=types.int64
+            )
+            _dm_op_index[dist_type][spuid][sw_hw] = dm_idx
+        elif spuid not in _dm_op_index[dist_type]:
+            _dm_op_index[dist_type][spuid] = Dict.empty(
+                key_type=types.int64, value_type=types.int64
+            )
+            _dm_op_index[dist_type][spuid][sw_hw] = dm_idx
+        elif sw_hw not in _dm_op_index[dist_type][spuid]:
+            _dm_op_index[dist_type][spuid][sw_hw] = dm_idx
+
+        # _dm_op_index[dist_type] = Dict.empty(
+        #         key_type=types.int64,
+        #         value_type=numba.types.DictType(types.int64, types.int64),
+        #         )
+        # _dm_op_index[dist_type][spuid] = Dict.empty(
+        #     key_type=
+        # )
+        # if spuid in _dm_op_index[dist_type]
+
+    return (op, _dm_op_index)
 
 
 def _net_growth(
