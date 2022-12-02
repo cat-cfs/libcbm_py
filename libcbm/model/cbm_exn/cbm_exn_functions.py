@@ -47,7 +47,7 @@ def fine_root_proportion(
 
 
 def compute_root_inc(
-    species_id: np.ndarray,
+    sw_hw: np.ndarray,
     merch: np.ndarray,
     foliage: np.ndarray,
     other: np.ndarray,
@@ -61,19 +61,6 @@ def compute_root_inc(
     total_ag_bio_t = (
         merch + merch_inc + foliage + foliage_inc + other + other_inc
     )
-
-    # sw=0, hw=1
-    species_id_series = pd.Series(species_id)
-    sw_hw_map = parameters.get_sw_hw_map()
-    missing_species = set(species_id_series.unique()).difference(
-        set(sw_hw_map.keys())
-    )
-    if missing_species:
-        raise ValueError(
-            "the following species ids found in state.species"
-            f"array are not defined in default paramters {missing_species}"
-        )
-    sw_hw = species_id_series.map(sw_hw_map)
 
     root_parameters = parameters.get_root_parameters()
     total_root_bio = np.where(
@@ -244,12 +231,8 @@ def compute_overmature_decline(
 def prepare_spinup_growth_info(
     spinup_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
-    species_id = spinup_vars["parameters"]["species"].to_numpy()
-    sw_hw = (
-        spinup_vars["parameters"]["species"]
-        .map(parameters.get_sw_hw_map())
-        .to_numpy()
-    )
+    sw_hw = spinup_vars["parameters"]["sw_hw"].to_numpy()
+
     spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
     spinup_incremements = spinup_vars["increments"].to_pandas()
     unique_ages = spinup_incremements["age"].drop_duplicates().sort_values()
@@ -309,7 +292,7 @@ def prepare_spinup_growth_info(
 
     for col_idx, age in enumerate(unique_ages):
         root_inc = compute_root_inc(
-            species_id,
+            sw_hw,
             merch[:, col_idx],
             foliage[:, col_idx],
             other[:, col_idx],
@@ -402,9 +385,7 @@ def prepare_growth_info(
     )
     overmature_decline = compute_overmature_decline(
         spatial_unit_id,
-        cbm_vars["state"]["species"]
-        .map(parameters.get_sw_hw_map())
-        .to_numpy(),
+        cbm_vars["state"]["sw_hw"],
         merch,
         foliage,
         other,

@@ -90,23 +90,23 @@ class MatrixOps:
                 self._turnover_parameter_idx[spuid][sw_hw] = int(idx)
 
     def disturbance(
-        self, disturbance_type: Series, spuid: Series, species: Series
+        self, disturbance_type: Series, spuid: Series, sw_hw: Series
     ) -> Operation:
         if self._disturbance_op is None:
             self._disturbance_op, self._dm_index = _disturbance(
                 self._model, self._parameters
             )
-            sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
+
             matrix_idx = self._extract_dm_index(
-                self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw
+                self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw.to_numpy()
             )
 
             self._disturbance_op.set_op(matrix_idx)
         else:
-            sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
+
             self._disturbance_op.update_index(
                 self._extract_dm_index(
-                    self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw
+                    self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw.to_numpy()
                 )
             )
         return self._disturbance_op
@@ -167,9 +167,8 @@ class MatrixOps:
         return matrix_idx
 
     def _turnover_matrix_index(
-        self, spuid: Series, species: Series
+        self, spuid: Series, sw_hw: Series
     ) -> np.ndarray:
-        sw_hw = species.map(self._parameters.get_sw_hw_map()).to_numpy()
         return self._nb_turnover_matrix_idx(
             self._turnover_parameter_idx, spuid.to_numpy(), sw_hw
         )
