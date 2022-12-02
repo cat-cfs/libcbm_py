@@ -126,32 +126,49 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
     return cbm_vars
 
 
+@numba.njit()
+def _end_spinup_step(
+    spinup_state: np.ndarray,
+    disturbance_type: np.ndarray,
+    merch: np.ndarray,
+    foliage: np.ndarray,
+    other: np.ndarray,
+    fine_root: np.ndarray,
+    coarse_root: np.ndarray,
+    age: np.ndarray,
+    delay_step: np.ndarray,
+):
+    n_rows = spinup_state.shape[0]
+    for i in range(n_rows):
+        if disturbance_type[i] > 0:
+            merch[i] = 0
+            foliage[i] = 0
+            other[i] = 0
+            fine_root[i] = 0
+            coarse_root[i] = 0
+            age[i] = 0
+        if (spinup_state[i] == SpinupState.GrowToFinalAge.value) | (
+            spinup_state[i] == SpinupState.AnnualProcesses.value
+        ):
+            age[i] += 1
+        if spinup_state[i] == SpinupState.Delay.value:
+            delay_step[i] += 1
+
+
 def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
-    idx = series.from_numpy("", np.arange(0, spinup_vars["pools"].n_rows))
-    disturbed_idx = idx.filter(spinup_vars["state"]["disturbance_type"] > 0)
 
-    growing_idx = idx.filter(
-        (spinup_vars["state"]["spinup_state"] == SpinupState.GrowToFinalAge)
-        | (spinup_vars["state"]["spinup_state"] == SpinupState.AnnualProcesses)
-    )
-    delay_idx = idx.filter(
-        spinup_vars["state"]["spinup_state"] == SpinupState.Delay
+    _end_spinup_step(
+        spinup_state=spinup_vars["state"]["spinup_state"].to_numpy(),
+        disturbance_type=spinup_vars["state"]["disturbance_type"].to_numpy(),
+        merch=spinup_vars["pools"]["Merch"].to_numpy(),
+        foliage=spinup_vars["pools"]["Foliage"].to_numpy(),
+        other=spinup_vars["pools"]["Other"].to_numpy(),
+        fine_root=spinup_vars["pools"]["FineRoots"].to_numpy(),
+        coarse_root=spinup_vars["pools"]["CoarseRoots"].to_numpy(),
+        age=spinup_vars["state"]["age"].to_numpy(),
+        delay_step=spinup_vars["state"]["delay_step"].to_numpy(),
     )
 
-    spinup_vars["pools"]["Merch"].assign(0, disturbed_idx)
-    spinup_vars["pools"]["Foliage"].assign(0, disturbed_idx)
-    spinup_vars["pools"]["Other"].assign(0, disturbed_idx)
-    spinup_vars["pools"]["FineRoots"].assign(0, disturbed_idx)
-    spinup_vars["pools"]["CoarseRoots"].assign(0, disturbed_idx)
-
-    spinup_vars["state"]["age"].assign(
-        spinup_vars["state"]["age"].take(growing_idx) + 1, growing_idx
-    )
-    spinup_vars["state"]["age"].assign(0, disturbed_idx)
-
-    spinup_vars["state"]["delay_step"].assign(
-        spinup_vars["state"]["delay_step"].take(delay_idx) + 1, delay_idx
-    )
     return spinup_vars
 
 
