@@ -13,6 +13,7 @@ from libcbm.storage import series
 def _update_spinup_vars(
     n_stands: int,
     spinup_state: np.ndarray,
+    out_spinup_state: np.ndarray,
     disturbance_type: np.ndarray,
     slow_c: np.ndarray,
     this_rotation_slow: np.ndarray,
@@ -25,6 +26,7 @@ def _update_spinup_vars(
     enabled_count = n_stands
     for i in range(n_stands):
         state = spinup_state[i]
+        out_spinup_state[i] = state
         if state == SpinupState.LastPassEvent.value:
             disturbance_type[i] = last_pass_dist_type[i]
         elif state == SpinupState.HistoricalEvent.value:
@@ -60,40 +62,30 @@ def advance_spinup_state(
         enabled=spinup_vars["state"]["enabled"],
     )
 
-    disturbance_type = spinup_vars["state"]["disturbance_type"].to_numpy()
-    slow_c = (
-        spinup_vars["pools"]["AboveGroundSlowSoil"]
-        + spinup_vars["pools"]["BelowGroundSlowSoil"]
-    ).to_numpy()
-    this_rotation_slow = spinup_vars["state"]["this_rotation_slow"].to_numpy()
-    last_rotation_slow = spinup_vars["state"]["last_rotation_slow"].to_numpy()
-    rotation_num = spinup_vars["state"]["rotation"].to_numpy()
-    historical_dist_type = spinup_vars["parameters"][
-        "historical_disturbance_type"
-    ].to_numpy()
-    last_pass_dist_type = spinup_vars["parameters"][
-        "last_pass_disturbance_type"
-    ].to_numpy()
-    enabled = spinup_vars["state"]["enabled"].to_numpy()
-
     all_finished = _update_spinup_vars(
-        n_stands,
-        spinup_state,
-        disturbance_type,
-        slow_c,
-        this_rotation_slow,
-        last_rotation_slow,
-        rotation_num,
-        historical_dist_type,
-        last_pass_dist_type,
-        enabled,
+        n_stands=n_stands,
+        spinup_state=spinup_state,
+        out_spinup_state=spinup_vars["state"]["spinup_state"].to_numpy(),
+        disturbance_type=spinup_vars["state"]["disturbance_type"].to_numpy(),
+        slow_c=(
+            spinup_vars["pools"]["AboveGroundSlowSoil"].to_numpy()
+            + spinup_vars["pools"]["BelowGroundSlowSoil"].to_numpy()
+        ),
+        this_rotation_slow=spinup_vars["state"][
+            "this_rotation_slow"
+        ].to_numpy(),
+        last_rotation_slow=spinup_vars["state"][
+            "last_rotation_slow"
+        ].to_numpy(),
+        rotation_num=spinup_vars["state"]["rotation"].to_numpy(),
+        historical_dist_type=spinup_vars["parameters"][
+            "historical_disturbance_type"
+        ].to_numpy(),
+        last_pass_dist_type=spinup_vars["parameters"][
+            "last_pass_disturbance_type"
+        ].to_numpy(),
+        enabled=spinup_vars["state"]["enabled"].to_numpy(),
     )
-    spinup_vars["state"]["disturbance_type"].assign(disturbance_type)
-    spinup_vars["state"]["this_rotation_slow"].assign(this_rotation_slow)
-    spinup_vars["state"]["last_rotation_slow"].assign(last_rotation_slow)
-    spinup_vars["state"]["rotation"].assign(rotation_num)
-    spinup_vars["state"]["enabled"].assign(enabled)
-    spinup_vars["state"]["spinup_state"].assign(spinup_state)
 
     return all_finished, spinup_vars
 
