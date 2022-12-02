@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 from libcbm.model.cbm_exn import cbm_exn_variables
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.cbm_exn import cbm_exn_land_state
+from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
 def prepare_spinup_vars(
@@ -14,6 +15,7 @@ def prepare_spinup_vars(
     pool_names: list[str],
     flux_names: list[str],
     include_flux: bool,
+    parameters: CBMEXNParameters,
 ) -> CBMVariables:
     data = {
         "parameters": spinup_input["parameters"],
@@ -28,6 +30,9 @@ def prepare_spinup_vars(
             spinup_input["parameters"].backend_type,
         ),
     }
+    sw_hw = data["parameters"]["species"].map(parameters.get_sw_hw_map())
+    sw_hw.name = "sw_hw"
+    data["parameters"].add_column(sw_hw, 0)
     data["pools"]["Input"].assign(1.0)
     if include_flux:
         data["flux"] = cbm_exn_variables.init_flux(
@@ -47,16 +52,20 @@ def spinup(
 ) -> CBMVariables:
 
     spinup_vars = prepare_spinup_vars(
-        input, model.pool_names, model.flux_names, include_flux
+        input,
+        model.pool_names,
+        model.flux_names,
+        include_flux,
+        model.parameters,
     )
 
     snag_turnover = model.matrix_ops.snag_turnover(
         spinup_vars["parameters"]["spatial_unit_id"],
-        spinup_vars["parameters"]["species"],
+        spinup_vars["parameters"]["sw_hw"],
     )
     biomass_turnover = model.matrix_ops.biomass_turnover(
         spinup_vars["parameters"]["spatial_unit_id"],
-        spinup_vars["parameters"]["species"],
+        spinup_vars["parameters"]["sw_hw"],
     )
     dom_decay = model.matrix_ops.dom_decay(
         spinup_vars["parameters"]["mean_annual_temperature"]
@@ -81,7 +90,7 @@ def spinup(
         disturbance = model.matrix_ops.disturbance(
             spinup_vars["state"]["disturbance_type"],
             spinup_vars["parameters"]["spatial_unit_id"],
-            spinup_vars["parameters"]["species"],
+            spinup_vars["parameters"]["sw_hw"],
         )
         growth, overmature_decline = model.matrix_ops.spinup_net_growth(
             spinup_vars
