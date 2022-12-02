@@ -115,6 +115,7 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
 
     cbm_vars["state"]["age"].assign(spinup_vars["parameters"]["age"])
     cbm_vars["state"]["species"].assign(spinup_vars["parameters"]["species"])
+    cbm_vars["state"]["sw_hw"].assign(spinup_vars["parameters"]["sw_hw"])
     cbm_vars["state"]["time_since_last_disturbance"].assign(
         spinup_vars["state"]["age"] + spinup_vars["parameters"]["delay"]
     )
