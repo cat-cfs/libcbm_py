@@ -1,6 +1,5 @@
 from enum import IntEnum
 import numpy as np
-import pandas as pd
 import numba
 from numba.core import types
 from numba.typed import Dict
@@ -98,7 +97,10 @@ class MatrixOps:
             )
 
             matrix_idx = self._extract_dm_index(
-                self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw.to_numpy()
+                self._dm_index,
+                disturbance_type.to_numpy(),
+                spuid.to_numpy(),
+                sw_hw.to_numpy(),
             )
 
             self._disturbance_op.set_op(matrix_idx)
@@ -106,7 +108,10 @@ class MatrixOps:
 
             self._disturbance_op.update_index(
                 self._extract_dm_index(
-                    self._dm_index, disturbance_type.to_numpy(), spuid.to_numpy(), sw_hw.to_numpy()
+                    self._dm_index,
+                    disturbance_type.to_numpy(),
+                    spuid.to_numpy(),
+                    sw_hw.to_numpy(),
                 )
             )
         return self._disturbance_op
@@ -170,34 +175,34 @@ class MatrixOps:
         self, spuid: Series, sw_hw: Series
     ) -> np.ndarray:
         return self._nb_turnover_matrix_idx(
-            self._turnover_parameter_idx, spuid.to_numpy(), sw_hw
+            self._turnover_parameter_idx, spuid.to_numpy(), sw_hw.to_numpy()
         )
 
-    def snag_turnover(self, spuid: Series, species: Series) -> Operation:
+    def snag_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._snag_turnover_op:
             self._snag_turnover_op = _snag_turnover(
                 self._model, self._turnover_parameter_rates
             )
             self._snag_turnover_op.set_op(
-                self._turnover_matrix_index(spuid, species)
+                self._turnover_matrix_index(spuid, sw_hw)
             )
         else:
             self._snag_turnover_op.update_index(
-                self._turnover_matrix_index(spuid, species)
+                self._turnover_matrix_index(spuid, sw_hw)
             )
         return self._snag_turnover_op
 
-    def biomass_turnover(self, spuid: Series, species: Series) -> Operation:
+    def biomass_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._biomass_turnover_op:
             self._biomass_turnover_op = _biomass_turnover(
                 self._model, self._turnover_parameter_rates
             )
             self._biomass_turnover_op.set_op(
-                self._turnover_matrix_index(spuid, species)
+                self._turnover_matrix_index(spuid, sw_hw)
             )
         else:
             self._biomass_turnover_op.update_index(
-                self._turnover_matrix_index(spuid, species)
+                self._turnover_matrix_index(spuid, sw_hw)
             )
         return self._biomass_turnover_op
 
