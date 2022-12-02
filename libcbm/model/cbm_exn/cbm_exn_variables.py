@@ -41,6 +41,7 @@ def init_state(n_rows: int, backend_type: BackendType):
             SeriesDef("land_class_id", 0, "int32"),
             SeriesDef("age", 0, "int32"),
             SeriesDef("species", 0, "int32"),
+            SeriesDef("sw_hw", 0, "int32"),
             SeriesDef("time_since_last_disturbance", 0, "int32"),
             SeriesDef("time_since_land_use_change", 0, "int32"),
             SeriesDef("last_disturbance_type", 0, "int32"),
