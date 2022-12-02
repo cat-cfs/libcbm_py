@@ -316,15 +316,6 @@ def _disturbance(
         elif sw_hw not in _dm_op_index[dist_type][spuid]:
             _dm_op_index[dist_type][spuid][sw_hw] = dm_idx
 
-        # _dm_op_index[dist_type] = Dict.empty(
-        #         key_type=types.int64,
-        #         value_type=numba.types.DictType(types.int64, types.int64),
-        #         )
-        # _dm_op_index[dist_type][spuid] = Dict.empty(
-        #     key_type=
-        # )
-        # if spuid in _dm_op_index[dist_type]
-
     return (op, _dm_op_index)
 
 
