@@ -356,7 +356,7 @@ def prepare_growth_info(
     other = cbm_vars["pools"]["Other"].to_numpy()
     fine_root = cbm_vars["pools"]["FineRoots"].to_numpy()
     coarse_root = cbm_vars["pools"]["CoarseRoots"].to_numpy()
-    species_id = cbm_vars["state"]["species"].to_numpy()
+    sw_hw = cbm_vars["state"]["sw_hw"].to_numpy()
     spatial_unit_id = cbm_vars["state"]["spatial_unit_id"].to_numpy()
     merch_inc = np.maximum(
         merch,
@@ -372,7 +372,7 @@ def prepare_growth_info(
     )
 
     root_inc = compute_root_inc(
-        species_id,
+        sw_hw,
         merch,
         foliage,
         other,
@@ -385,7 +385,7 @@ def prepare_growth_info(
     )
     overmature_decline = compute_overmature_decline(
         spatial_unit_id,
-        cbm_vars["state"]["sw_hw"],
+        sw_hw,
         merch,
         foliage,
         other,
