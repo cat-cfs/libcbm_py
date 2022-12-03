@@ -64,9 +64,9 @@ def compute_root_inc(
 
     root_parameters = parameters.get_root_parameters()
     total_root_bio = np.where(
-        sw_hw,
-        total_root_bio_sw(root_parameters, total_ag_bio_t),
+        sw_hw,  # sw=0, hw=1
         total_root_bio_hw(root_parameters, total_ag_bio_t),
+        total_root_bio_sw(root_parameters, total_ag_bio_t),
     )
     fine_root_prop = fine_root_proportion(root_parameters, total_root_bio)
     coarse_root_inc = (
