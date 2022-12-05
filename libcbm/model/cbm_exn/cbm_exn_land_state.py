@@ -49,7 +49,7 @@ def advance_spinup_state(
 
     spinup_state = spinup_engine.advance_spinup_state(
         spinup_state=spinup_vars["state"]["spinup_state"],
-        age=spinup_vars["state"]["age"],
+        age=spinup_vars["state"]["age"] + 1,
         delay_step=spinup_vars["state"]["delay_step"],
         final_age=spinup_vars["parameters"]["age"],
         delay=spinup_vars["parameters"]["delay"],
@@ -140,6 +140,8 @@ def _end_spinup_step(
 ):
     n_rows = spinup_state.shape[0]
     for i in range(n_rows):
+        age[i] += 1
+
         if disturbance_type[i] > 0:
             merch[i] = 0
             foliage[i] = 0
@@ -147,12 +149,10 @@ def _end_spinup_step(
             fine_root[i] = 0
             coarse_root[i] = 0
             age[i] = 0
-        if (spinup_state[i] == SpinupState.GrowToFinalAge.value) | (
-            spinup_state[i] == SpinupState.AnnualProcesses.value
-        ):
-            age[i] += 1
+
         if spinup_state[i] == SpinupState.Delay.value:
             delay_step[i] += 1
+            age[i] = 0
 
 
 def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
