@@ -40,34 +40,36 @@ class ModelHandle:
         return dataframe.numeric_dataframe(flux_names, n, backend_type)
 
     def _matrix_rc(
-        self, value: list, process_id: int
+        self, value: list, process_id: int, init_value: int
     ) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.RepeatingCoordinates,
             value,
             process_id,
+            init_value,
         )
 
     def _matrix_list(
-        self, value: list, process_id: int
+        self, value: list, process_id: int, init_value: int
     ) -> libcbm_operation.Operation:
         return libcbm_operation.Operation(
             self.wrapper,
             libcbm_operation.OperationFormat.MatrixList,
             value,
             process_id,
+            init_value,
         )
 
     def create_operation(
-        self, matrices: list, fmt: str, process_id: int
+        self, matrices: list, fmt: str, process_id: int, init_value: int = 1
     ) -> libcbm_operation.Operation:
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
                 for row in matrices
             ]
-            return self._matrix_rc(pool_id_mat, process_id)
+            return self._matrix_rc(pool_id_mat, process_id, init_value)
         elif fmt == "matrix_list":
             mat_list = []
             for mat in matrices:
@@ -78,7 +80,7 @@ class ModelHandle:
                     np_mat[i_entry, 1] = self.pools[entry[1]]
                     np_mat[i_entry, 2] = entry[2]
                 mat_list.append(np_mat)
-            return self._matrix_list(mat_list, process_id)
+            return self._matrix_list(mat_list, process_id, init_value)
         else:
             raise ValueError("unknown format")
 
