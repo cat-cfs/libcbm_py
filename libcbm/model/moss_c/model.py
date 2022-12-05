@@ -437,7 +437,7 @@ def spinup(
         spinup_debug = SpinupDebug()
     else:
         spinup_debug = None
-
+    n_rows = model_context.inventory.n_rows
     spinup_vars: DataFrame = dataframe.from_series_list(
         [
             SeriesDef("spinup_state", SpinupState.AnnualProcesses, "int"),
@@ -445,7 +445,7 @@ def spinup(
             SeriesDef("last_rotation_slow", 0.0, "float"),
             SeriesDef("this_rotation_slow", 0.0, "float"),
         ],
-        nrows=model_context.inventory.n_rows,
+        nrows=n_rows,
         back_end=model_context.backend_type,
     )
     iteration = 0
@@ -454,12 +454,16 @@ def spinup(
         state = spinup_engine.advance_spinup_state(
             spinup_state=spinup_vars["spinup_state"],
             age=model_context.state["age"],
+            delay_step=series.from_numpy("", np.zeros(n_rows, dtype="int")),
             final_age=model_context.parameters["age"],
+            delay=series.from_numpy("", np.zeros(n_rows, dtype="int")),
             return_interval=model_context.parameters["return_interval"],
             rotation_num=spinup_vars["rotation_num"],
+            min_rotations=series.from_numpy("", np.zeros(n_rows, dtype="int")),
             max_rotations=model_context.parameters["max_rotations"],
             last_rotation_slow=spinup_vars["last_rotation_slow"],
             this_rotation_slow=spinup_vars["this_rotation_slow"],
+            enabled=model_context.state["enabled"]
         )
         spinup_vars["spinup_state"].assign(state)
 
@@ -517,6 +521,7 @@ def step(
         model_context.dll,
         libcbm_operation.OperationFormat.RepeatingCoordinates,
         annual_process_matrix,
+        ANNUAL_PROCESSES
     )
     annual_process_matrices.set_op(
         np.array(list(range(0, n_stands)), dtype=np.uintp)
@@ -525,6 +530,7 @@ def step(
         model_context.dll,
         libcbm_operation.OperationFormat.MatrixList,
         model_context.disturbance_matrices.dm_list,
+        DISTURBANCE_PROCESS
     )
     disturbance_matrices.set_op(
         model_context.state["disturbance_type"].to_numpy()
@@ -536,17 +542,15 @@ def step(
         flux = model_context.flux
 
     if disturbance_before_annual_process:
-        op_processes = [DISTURBANCE_PROCESS, ANNUAL_PROCESSES]
         ops = [disturbance_matrices, annual_process_matrices]
     else:
-        op_processes = [ANNUAL_PROCESSES, DISTURBANCE_PROCESS]
         ops = [annual_process_matrices, disturbance_matrices]
 
     libcbm_operation.compute(
         dll=model_context.dll,
         pools=model_context.pools,
         operations=ops,
-        op_processes=op_processes,
+        op_processes=[o.op_process_id for o in ops],
         flux=flux,
         enabled=model_context.state["enabled"],
     )
