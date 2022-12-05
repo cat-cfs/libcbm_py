@@ -1,18 +1,21 @@
 import numpy as np
 import pandas as pd
-from libcbm.model import model_definition
+from libcbm.model.model_definition import model
+from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.model_definition.output_processor import ModelOutputProcessor
+from libcbm.model.model_definition.cbm_variables import CBMVariables
 
 
 def test_integration():
     pool_def = {
-        "Input": 0,
-        "WoodyBiomass": 1,
-        "Foliage": 2,
-        "SlowDOM": 3,
-        "MediumDOM": 4,
-        "FastDOM": 5,
-        "CO2": 6,
-        "Products": 7,
+        "Input",
+        "WoodyBiomass",
+        "Foliage",
+        "SlowDOM",
+        "MediumDOM",
+        "FastDOM",
+        "CO2",
+        "Products",
     }
 
     processes = {"GrowthAndMortality": 0, "Decay": 1, "Disturbance": 2}
@@ -20,45 +23,45 @@ def test_integration():
     flux_indicators = [
         {
             "name": "NPP",
-            "process_id": processes["GrowthAndMortality"],
-            "source_pools": [pool_def["Input"], pool_def["Foliage"]],
+            "process": processes["GrowthAndMortality"],
+            "source_pools": ["Input", "Foliage"],
             "sink_pools": [
-                pool_def["WoodyBiomass"],
-                pool_def["Foliage"],
-                pool_def["FastDOM"],
+                "WoodyBiomass",
+                "Foliage",
+                "FastDOM",
             ],
         },
         {
             "name": "DecayEmissions",
-            "process_id": processes["Decay"],
+            "process": processes["Decay"],
             "source_pools": [
-                pool_def["SlowDOM"],
-                pool_def["MediumDOM"],
-                pool_def["FastDOM"],
+                "SlowDOM",
+                "MediumDOM",
+                "FastDOM",
             ],
-            "sink_pools": [pool_def["CO2"]],
+            "sink_pools": ["CO2"],
         },
         {
             "name": "DisturbanceEmissions",
-            "process_id": processes["Disturbance"],
+            "process": processes["Disturbance"],
             "source_pools": [
-                pool_def["WoodyBiomass"],
-                pool_def["Foliage"],
-                pool_def["SlowDOM"],
-                pool_def["MediumDOM"],
-                pool_def["FastDOM"],
+                "WoodyBiomass",
+                "Foliage",
+                "SlowDOM",
+                "MediumDOM",
+                "FastDOM",
             ],
-            "sink_pools": [pool_def["CO2"]],
+            "sink_pools": ["CO2"],
         },
         {
             "name": "HarvestProduction",
-            "process_id": processes["Disturbance"],
+            "process": processes["Disturbance"],
             "source_pools": [
-                pool_def["WoodyBiomass"],
-                pool_def["Foliage"],
-                pool_def["MediumDOM"],
+                "WoodyBiomass",
+                "Foliage",
+                "MediumDOM",
             ],
-            "sink_pools": [pool_def["Products"]],
+            "sink_pools": ["Products"],
         },
     ]
 
@@ -66,31 +69,32 @@ def test_integration():
         c = np.power(x / y, k)
         return 1 - np.exp(-c)
 
-    def get_npp_matrix(model, age):
+    def get_npp_matrix(cbm_model: CBMModel, age: np.ndarray):
         # creates NPP flows based on an age passed to the cumulative
         # weibull distribution
         n_stands = age.shape[0]
         npp = weibull_cumulative((age + 1) / 100.0) - weibull_cumulative(
             age / 100.0
         )
-        op = model.create_operation(
+        op = cbm_model.create_operation(
             matrices=[
                 ["Input", "WoodyBiomass", npp],
                 ["Input", "Foliage", npp / 10.0],
             ],
             fmt="repeating_coordinates",
+            process_id=processes["GrowthAndMortality"]
         )
 
-        op.set_matrix_index(np.arange(0, n_stands))
+        op.set_op(np.arange(0, n_stands))
         return op
 
     pd.DataFrame(
         [weibull_cumulative(x, 5, 1) for x in np.arange(0, 2.5, 0.01)]
     ).plot()
 
-    def get_mortality_matrix(model, n_stands):
+    def get_mortality_matrix(cbm_model: CBMModel, n_stands: int):
 
-        op = model.create_operation(
+        op = cbm_model.create_operation(
             matrices=[
                 ["WoodyBiomass", "WoodyBiomass", 1.0],
                 ["WoodyBiomass", "MediumDOM", 0.01],
@@ -98,14 +102,15 @@ def test_integration():
                 ["Foliage", "FastDOM", 0.95],
             ],
             fmt="repeating_coordinates",
+            process_id=processes["GrowthAndMortality"]
         )
         # set every stand to point at the 0th matrix:
         # they all share the same simple mortality matrix
-        op.set_matrix_index(np.full(n_stands, 0))
+        op.set_op(np.full(n_stands, 0))
         return op
 
-    def get_decay_matrix(model, n_stands):
-        op = model.create_operation(
+    def get_decay_matrix(cbm_model: CBMModel, n_stands: int):
+        op = cbm_model.create_operation(
             matrices=[
                 ["SlowDOM", "SlowDOM", 0.99],
                 ["SlowDOM", "CO2", 0.01],
@@ -117,13 +122,16 @@ def test_integration():
                 ["FastDOM", "CO2", 0.10],
             ],
             fmt="repeating_coordinates",
+            process_id=processes["Decay"]
         )
-        op.set_matrix_index(np.full(n_stands, 0))
+        op.set_op(np.full(n_stands, 0))
         return op
 
     disturbance_type_ids = {"none": 0, "fire": 1, "harvest": 2}
 
-    def get_disturbance_matrix(model, disturbance_types):
+    def get_disturbance_matrix(
+        cbm_model: CBMModel, disturbance_types: np.ndarray
+    ):
 
         no_disturbance = []
         fire_matrix = [
@@ -142,19 +150,38 @@ def test_integration():
             ["Foliage", "FastDOM", 1.0],
         ]
 
-        op = model.create_operation(
+        op = cbm_model.create_operation(
             matrices=[no_disturbance, fire_matrix, harvest_matrix],
             fmt="matrix_list",
+            process_id=processes["Disturbance"],
         )
-        op.set_matrix_index(disturbance_types)
+        op.set_op(disturbance_types)
         return op
 
-    with model_definition.create_model(pool_def, flux_indicators) as model:
+    with model.initialize(pool_def, flux_indicators) as model_handle:
 
-        output_processor = model.create_output_processor()
+        output_processor = ModelOutputProcessor()
         n_stands = 2
-        model_vars = model.allocate_model_vars(n_stands)
-        model_vars.pools["Input"].assign(1.0)
+        model_vars = CBMVariables.from_pandas(
+            {
+                "pools": pd.DataFrame(
+                    columns=model_handle.pool_names,
+                    data={
+                        p: np.zeros(n_stands) for p in model_handle.pool_names
+                    },
+                ),
+                "flux": pd.DataFrame(
+                    columns=model_handle.flux_names,
+                    data={
+                        f: np.zeros(n_stands) for f in model_handle.flux_names
+                    },
+                ),
+                "state": pd.DataFrame(
+                    columns=["enabled"], data=np.ones(n_stands, dtype="int")
+                ),
+            }
+        )
+        model_vars["pools"]["Input"].assign(1.0)
 
         stand_age = np.full(n_stands, 0)
 
@@ -176,37 +203,30 @@ def test_integration():
                 )
 
             # reset flux at start of every time step
-            model_vars.flux.zero()
+            model_vars["flux"].zero()
 
             # prepare the matrix operations
             operations = [
-                get_disturbance_matrix(model, disturbance_types),
-                get_npp_matrix(model, stand_age),
-                get_mortality_matrix(model, n_stands),
-                get_decay_matrix(model, n_stands),
-            ]
-
-            # associate each above operation with a flux indicator category
-            op_processes = [
-                processes["Disturbance"],
-                processes["GrowthAndMortality"],
-                processes["GrowthAndMortality"],
-                processes["Decay"],
+                get_disturbance_matrix(model_handle, disturbance_types),
+                get_npp_matrix(model_handle, stand_age),
+                get_mortality_matrix(model_handle, n_stands),
+                get_decay_matrix(model_handle, n_stands),
             ]
 
             # enabled can be used to disable(0)/enable(1) dynamics per index
-            model_vars.enabled.assign(1)
+            model_vars["state"]["enabled"].assign(1)
 
-            model.compute(model_vars, operations, op_processes)
+            model_handle.compute(model_vars, operations)
             for op in operations:
                 op.dispose()
-            output_processor.append_results(t, model_vars)
+            output_processor.append_results(t, model_vars.get_collection())
             stand_age[disturbance_types != 0] = 0
             stand_age += 1
 
-    output_processor.pools.columns
-
-    output_processor.pools.to_pandas()[
+    output_pools = output_processor.get_results()["pools"]
+    output_pools.columns
+    output_flux = output_processor.get_results()["flux"]
+    output_pools.to_pandas()[
         [
             "timestep",
             "WoodyBiomass",
@@ -217,7 +237,7 @@ def test_integration():
         ]
     ].groupby("timestep").sum().plot(figsize=(15, 10))
 
-    output_processor.flux.to_pandas()[
+    output_flux.to_pandas()[
         [
             "timestep",
             "NPP",
