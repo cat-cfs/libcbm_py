@@ -48,6 +48,7 @@ class Operation:
         format: OperationFormat,
         data: list,
         op_process_id: int,
+        init_value: int = 1,
     ):
         self.format = format
         self._dll = dll
@@ -57,6 +58,7 @@ class Operation:
         self._op_process_id = op_process_id
         self._repeating_matrix_coords = None
         self._repeating_matrix_values = None
+        self._init_value = init_value
         if self.format == OperationFormat.MatrixList:
             self.__init_matrix_list(data)
         elif self.format == OperationFormat.RepeatingCoordinates:
@@ -118,7 +120,7 @@ class Operation:
                 self._matrix_list_len,
                 matrix_index,
                 matrix_index.shape[0],
-                1,
+                self._init_value,
             )
         elif self.format == OperationFormat.RepeatingCoordinates:
             self.__allocate_op(matrix_index.shape[0])
@@ -129,7 +131,7 @@ class Operation:
                 self._repeating_matrix_values,
                 matrix_index,
                 matrix_index.shape[0],
-                1,
+                self._init_value,
             )
 
     def update_index(self, matrix_index: np.ndarray):
