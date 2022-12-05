@@ -23,7 +23,7 @@ class LibCBMOperationTest(unittest.TestCase):
                 [pool_dict["b"], pool_dict["b"], np.array([1.0, 1.0, 1.0])],
                 [pool_dict["c"], pool_dict["c"], np.array([1.0, 1.0, 1.0])],
             ],
-            op_process_id=0
+            op_process_id=0,
         )
 
         pools_orig = np.ones(shape=(4, len(pool_dict)))
