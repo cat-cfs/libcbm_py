@@ -109,8 +109,8 @@ def spinup(
         ]
         model.compute(spinup_vars, ops)
         spinup_vars = cbm_exn_land_state.end_spinup_step(spinup_vars)
-        t += 1
         if reporting_func:
             reporting_func(t, spinup_vars)
+        t += 1
 
     return cbm_exn_land_state.init_cbm_vars(model, spinup_vars)
