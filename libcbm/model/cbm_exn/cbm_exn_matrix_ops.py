@@ -273,20 +273,28 @@ def _disturbance(
 
     matrix_data = []
     dmid_index = {}
-    matrix_data.append([])  # append the null matrix
+    # append the null matrix
+    matrix_data.append([[p, p, 1.0] for p in model.pool_names])
     for idx, dmid in enumerate(
         disturbance_matrices["disturbance_matrix_id"].unique()
     ):
+        pool_set = set(model.pool_names)
         dmid_loc = disturbance_matrices["disturbance_matrix_id"] == dmid
         dmid_mat_data = []
         for i, row in disturbance_matrices.loc[dmid_loc].iterrows():
             dmid_mat_data.append(
                 [row["source_pool"], row["sink_pool"], row["proportion"]]
             )
+            pool_set.discard(row["source_pool"])
+        for pool in pool_set:
+            dmid_mat_data.append([pool, pool, 1.0])
         matrix_data.append(dmid_mat_data)
         dmid_index[int(dmid)] = idx + 1
     op = model.create_operation(
-        matrix_data, fmt="matrix_list", process_id=OpProcesses.disturbance
+        matrix_data,
+        fmt="matrix_list",
+        process_id=OpProcesses.disturbance,
+        init_value=0,
     )
     _dm_op_index = Dict.empty(
         key_type=types.int64,
