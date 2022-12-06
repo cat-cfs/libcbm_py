@@ -92,7 +92,7 @@ class MatrixOps:
         self, disturbance_type: Series, spuid: Series, sw_hw: Series
     ) -> Operation:
         if self._disturbance_op is None:
-            self._disturbance_op, self._dm_index = _disturbance(
+            matrix_list, self._dm_index = _disturbance(
                 self._model, self._parameters
             )
 
@@ -103,7 +103,14 @@ class MatrixOps:
                 sw_hw.to_numpy(),
             )
 
-            self._disturbance_op.set_op(matrix_idx)
+            self._disturbance_op = self._model.create_operation(
+                matrix_list,
+                fmt="matrix_list",
+                process_id=OpProcesses.disturbance,
+                matrix_index=matrix_idx,
+                init_value=0,
+            )
+
         else:
 
             self._disturbance_op.update_index(
@@ -180,12 +187,16 @@ class MatrixOps:
 
     def snag_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._snag_turnover_op:
-            self._snag_turnover_op = _snag_turnover(
+            snag_turnover_mats = _snag_turnover(
                 self._model, self._turnover_parameter_rates
             )
-            self._snag_turnover_op.set_op(
-                self._turnover_matrix_index(spuid, sw_hw)
+            self._snag_turnover_op = self._model.create_operation(
+                snag_turnover_mats,
+                fmt="repeating_coordinates",
+                matrix_index=self._turnover_matrix_index(spuid, sw_hw),
+                process_id=OpProcesses.growth,
             )
+
         else:
             self._snag_turnover_op.update_index(
                 self._turnover_matrix_index(spuid, sw_hw)
@@ -194,12 +205,16 @@ class MatrixOps:
 
     def biomass_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._biomass_turnover_op:
-            self._biomass_turnover_op = _biomass_turnover(
+            biomass_turnover_ops = _biomass_turnover(
                 self._model, self._turnover_parameter_rates
             )
-            self._biomass_turnover_op.set_op(
-                self._turnover_matrix_index(spuid, sw_hw)
+            self._biomass_turnover_op = self._model.create_operation(
+                biomass_turnover_ops,
+                fmt="repeating_coordinates",
+                matrix_index=self._turnover_matrix_index(spuid, sw_hw),
+                process_id=OpProcesses.growth,
             )
+
         else:
             self._biomass_turnover_op.update_index(
                 self._turnover_matrix_index(spuid, sw_hw)
@@ -212,14 +227,20 @@ class MatrixOps:
         growth_info = cbm_exn_functions.prepare_growth_info(
             cbm_vars, self._parameters
         )
-        self._net_growth_op = _net_growth(self._model, growth_info)
-        self._overmature_decline_op = _overmature_decline(
-            self._model, growth_info
+        self._net_growth_op = self._model.create_operation(
+            _net_growth(growth_info),
+            fmt="repeating_coordinates",
+            matrix_index=np.arange(0, cbm_vars["pools"].n_rows),
+            process_id=OpProcesses.growth
         )
-        self._net_growth_op.set_op(np.arange(0, cbm_vars["pools"].n_rows))
-        self._overmature_decline_op.set_op(
-            np.arange(0, cbm_vars["pools"].n_rows)
+
+        self._overmature_decline_op = self._model.create_operation(
+            _overmature_decline(growth_info),
+            fmt="repeating_coordinates",
+            matrix_index=np.arange(0, cbm_vars["pools"].n_rows),
+            process_id=OpProcesses.growth
         )
+
         return self._net_growth_op, self._overmature_decline_op
 
     def _spinup_net_growth_idx(self, spinup_vars: CBMVariables) -> np.ndarray:
@@ -247,17 +268,25 @@ class MatrixOps:
                 spinup_growth_info[k] = spinup_growth_info[k].flatten(
                     order="C"
                 )
-
-            self._spinup_net_growth_op = _net_growth(
-                self._model, spinup_growth_info
-            )
-            self._spinup_overmature_decline_op = _overmature_decline(
-                self._model, spinup_growth_info
-            )
-
             op_index = self._spinup_net_growth_idx(spinup_vars)
-            self._spinup_net_growth_op.set_op(op_index)
-            self._spinup_overmature_decline_op.set_op(op_index)
+            _net_growth_matrices = _net_growth(spinup_growth_info)
+
+            self._spinup_net_growth_op = self._model.create_operation(
+                matrices=_net_growth_matrices,
+                fmt="repeating_coordinates",
+                matrix_index=op_index,
+                process_id=OpProcesses.growth,
+            )
+            _overmature_decline_mats = _overmature_decline(
+                self._model, spinup_growth_info
+            )
+            self._spinup_overmature_decline_op = self._model.create_operation(
+                _overmature_decline_mats,
+                fmt="repeating_coordinates",
+                process_id=OpProcesses.growth,
+                matrix_index=op_index,
+            )
+
         else:
             op_index = self._spinup_net_growth_idx(spinup_vars)
             self._spinup_net_growth_op.update_index(op_index)
@@ -268,7 +297,7 @@ class MatrixOps:
 
 def _disturbance(
     model: CBMModel, parameters: CBMEXNParameters
-) -> tuple[Operation, Dict]:
+) -> tuple[list, Dict]:
     disturbance_matrices = parameters.get_disturbance_matrices()
 
     matrix_data = []
@@ -290,12 +319,7 @@ def _disturbance(
             dmid_mat_data.append([pool, pool, 1.0])
         matrix_data.append(dmid_mat_data)
         dmid_index[int(dmid)] = idx + 1
-    op = model.create_operation(
-        matrix_data,
-        fmt="matrix_list",
-        process_id=OpProcesses.disturbance,
-        init_value=0,
-    )
+
     _dm_op_index = Dict.empty(
         key_type=types.int64,
         value_type=numba.types.DictType(
@@ -324,140 +348,121 @@ def _disturbance(
         elif sw_hw not in _dm_op_index[dist_type][spuid]:
             _dm_op_index[dist_type][spuid][sw_hw] = dm_idx
 
-    return (op, _dm_op_index)
+    return (matrix_data, _dm_op_index)
 
 
 def _net_growth(
-    model: CBMModel,
+
     growth_info: dict[str, np.ndarray],
-) -> Operation:
-    op = model.create_operation(
-        matrices=[
-            ["Input", "Merch", growth_info["merch_inc"] * 0.5],
-            ["Input", "Other", growth_info["other_inc"] * 0.5],
-            ["Input", "Foliage", growth_info["foliage_inc"] * 0.5],
-            ["Input", "CoarseRoots", growth_info["coarse_root_inc"] * 0.5],
-            ["Input", "FineRoots", growth_info["fine_root_inc"] * 0.5],
-        ],
-        fmt="repeating_coordinates",
-        process_id=OpProcesses.growth,
-    )
-    return op
+) -> list:
+
+    matrices = [
+        ["Input", "Merch", growth_info["merch_inc"] * 0.5],
+        ["Input", "Other", growth_info["other_inc"] * 0.5],
+        ["Input", "Foliage", growth_info["foliage_inc"] * 0.5],
+        ["Input", "CoarseRoots", growth_info["coarse_root_inc"] * 0.5],
+        ["Input", "FineRoots", growth_info["fine_root_inc"] * 0.5],
+    ]
+    return matrices
 
 
 def _overmature_decline(
-    model: CBMModel,
     growth_info: dict[str, np.ndarray],
-) -> Operation:
+) -> list:
 
-    op = model.create_operation(
-        matrices=[
-            ["Merch", "StemSnag", growth_info["merch_to_stem_snag_prop"]],
-            ["Other", "BranchSnag", growth_info["other_to_branch_snag_prop"]],
-            [
-                "Other",
-                "AboveGroundFastSoil",
-                growth_info["other_to_ag_fast_prop"],
-            ],
-            [
-                "Foliage",
-                "AboveGroundVeryFastSoil",
-                growth_info["foliage_to_ag_fast_prop"],
-            ],
-            [
-                "CoarseRoots",
-                "AboveGroundFastSoil",
-                growth_info["coarse_root_to_ag_fast_prop"],
-            ],
-            [
-                "CoarseRoots",
-                "BelowGroundFastSoil",
-                growth_info["coarse_root_to_bg_fast_prop"],
-            ],
-            [
-                "FineRoots",
-                "AboveGroundVeryFastSoil",
-                growth_info["fine_root_to_ag_vfast_prop"],
-            ],
-            [
-                "FineRoots",
-                "BelowGroundVeryFastSoil",
-                growth_info["fine_root_to_bg_vfast_prop"],
-            ],
+    matrices = [
+        ["Merch", "StemSnag", growth_info["merch_to_stem_snag_prop"]],
+        ["Other", "BranchSnag", growth_info["other_to_branch_snag_prop"]],
+        [
+            "Other",
+            "AboveGroundFastSoil",
+            growth_info["other_to_ag_fast_prop"],
         ],
-        fmt="repeating_coordinates",
-        process_id=OpProcesses.growth,
-    )
-    return op
-
-
-def _snag_turnover(model: CBMModel, rates: dict[str, np.ndarray]) -> Operation:
-
-    op = model.create_operation(
-        matrices=[
-            ["StemSnag", "StemSnag", 1 - rates["StemSnag"]],
-            ["StemSnag", "MediumSoil", rates["StemSnag"]],
-            ["BranchSnag", "BranchSnag", 1 - rates["BranchSnag"]],
-            ["BranchSnag", "AboveGroundFastSoil", rates["BranchSnag"]],
+        [
+            "Foliage",
+            "AboveGroundVeryFastSoil",
+            growth_info["foliage_to_ag_fast_prop"],
         ],
-        fmt="repeating_coordinates",
-        process_id=OpProcesses.growth,
-    )
-    return op
-
-
-def _biomass_turnover(
-    model: CBMModel, rates: dict[str, np.ndarray]
-) -> Operation:
-
-    op = model.create_operation(
-        matrices=[
-            [
-                "Merch",
-                "StemSnag",
-                rates["StemAnnualTurnoverRate"],
-            ],
-            [
-                "Foliage",
-                "AboveGroundVeryFastSoil",
-                rates["FoliageFallRate"],
-            ],
-            [
-                "Other",
-                "BranchSnag",
-                rates["OtherToBranchSnagSplit"] * rates["BranchTurnoverRate"],
-            ],
-            [
-                "Other",
-                "AboveGroundFastSoil",
-                (1 - rates["OtherToBranchSnagSplit"])
-                * rates["BranchTurnoverRate"],
-            ],
-            [
-                "CoarseRoots",
-                "AboveGroundFastSoil",
-                rates["CoarseRootAGSplit"] * rates["CoarseRootTurnProp"],
-            ],
-            [
-                "CoarseRoots",
-                "BelowGroundFastSoil",
-                (1 - rates["CoarseRootAGSplit"]) * rates["CoarseRootTurnProp"],
-            ],
-            [
-                "FineRoots",
-                "AboveGroundVeryFastSoil",
-                rates["FineRootAGSplit"] * rates["FineRootTurnProp"],
-            ],
-            [
-                "FineRoots",
-                "BelowGroundVeryFastSoil",
-                (1 - rates["FineRootAGSplit"]) * rates["FineRootTurnProp"],
-            ],
+        [
+            "CoarseRoots",
+            "AboveGroundFastSoil",
+            growth_info["coarse_root_to_ag_fast_prop"],
         ],
-        fmt="repeating_coordinates",
-        process_id=OpProcesses.growth,
-    )
-    return op
+        [
+            "CoarseRoots",
+            "BelowGroundFastSoil",
+            growth_info["coarse_root_to_bg_fast_prop"],
+        ],
+        [
+            "FineRoots",
+            "AboveGroundVeryFastSoil",
+            growth_info["fine_root_to_ag_vfast_prop"],
+        ],
+        [
+            "FineRoots",
+            "BelowGroundVeryFastSoil",
+            growth_info["fine_root_to_bg_vfast_prop"],
+        ],
+    ]
+    return matrices
+
+
+def _snag_turnover(rates: dict[str, np.ndarray]) -> list:
+    matrices = [
+        ["StemSnag", "StemSnag", 1 - rates["StemSnag"]],
+        ["StemSnag", "MediumSoil", rates["StemSnag"]],
+        ["BranchSnag", "BranchSnag", 1 - rates["BranchSnag"]],
+        ["BranchSnag", "AboveGroundFastSoil", rates["BranchSnag"]],
+    ]
+    return matrices
+
+
+def _biomass_turnover(rates: dict[str, np.ndarray]) -> list:
+
+    matrices = [
+        [
+            "Merch",
+            "StemSnag",
+            rates["StemAnnualTurnoverRate"],
+        ],
+        [
+            "Foliage",
+            "AboveGroundVeryFastSoil",
+            rates["FoliageFallRate"],
+        ],
+        [
+            "Other",
+            "BranchSnag",
+            rates["OtherToBranchSnagSplit"] * rates["BranchTurnoverRate"],
+        ],
+        [
+            "Other",
+            "AboveGroundFastSoil",
+            (1 - rates["OtherToBranchSnagSplit"])
+            * rates["BranchTurnoverRate"],
+        ],
+        [
+            "CoarseRoots",
+            "AboveGroundFastSoil",
+            rates["CoarseRootAGSplit"] * rates["CoarseRootTurnProp"],
+        ],
+        [
+            "CoarseRoots",
+            "BelowGroundFastSoil",
+            (1 - rates["CoarseRootAGSplit"]) * rates["CoarseRootTurnProp"],
+        ],
+        [
+            "FineRoots",
+            "AboveGroundVeryFastSoil",
+            rates["FineRootAGSplit"] * rates["FineRootTurnProp"],
+        ],
+        [
+            "FineRoots",
+            "BelowGroundVeryFastSoil",
+            (1 - rates["FineRootAGSplit"]) * rates["FineRootTurnProp"],
+        ],
+    ]
+    return matrices
 
 
 def _dom_decay(
