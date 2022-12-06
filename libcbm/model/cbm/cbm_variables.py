@@ -30,25 +30,61 @@ class CBMVariables:
     def pools(self) -> DataFrame:
         return self._pools
 
+    @pools.setter
+    def pools(self, df: DataFrame):
+        self._pools = dataframe.convert_dataframe_backend(
+            df, self._pools.backend_type
+        )
+
     @property
     def flux(self) -> DataFrame:
         return self._flux
+
+    @flux.setter
+    def flux(self, df: DataFrame):
+        self._flux = dataframe.convert_dataframe_backend(
+            df, self._flux.backend_type
+        )
 
     @property
     def classifiers(self) -> DataFrame:
         return self._classifiers
 
+    @classifiers.setter
+    def classifiers(self, df: DataFrame):
+        self._classifiers = dataframe.convert_dataframe_backend(
+            df, self._classifiers.backend_type
+        )
+
     @property
     def state(self) -> DataFrame:
         return self._state
+
+    @state.setter
+    def state(self, df: DataFrame):
+        self._state = dataframe.convert_dataframe_backend(
+            df, self._state.backend_type
+        )
 
     @property
     def inventory(self) -> DataFrame:
         return self._inventory
 
+    @inventory.setter
+    def inventory(self, df: DataFrame):
+        self._inventory = dataframe.convert_dataframe_backend(
+            df, self._inventory.backend_type
+        )
+
     @property
     def parameters(self) -> DataFrame:
         return self._parameters
+
+    @parameters.setter
+    def parameters(self, df: DataFrame):
+        self._parameters = dataframe.convert_dataframe_backend(
+            df, self._parameters.backend_type
+        )
 
 
 def _initialize_pools(
