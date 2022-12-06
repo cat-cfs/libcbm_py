@@ -521,16 +521,16 @@ def step(
         model_context.dll,
         libcbm_operation.OperationFormat.RepeatingCoordinates,
         annual_process_matrix,
-        np.array(list(range(0, n_stands)), dtype=np.uintp),
         ANNUAL_PROCESSES,
+        np.array(list(range(0, n_stands)), dtype=np.uintp),
     )
 
     disturbance_matrices = libcbm_operation.Operation(
         model_context.dll,
         libcbm_operation.OperationFormat.MatrixList,
         model_context.disturbance_matrices.dm_list,
-        model_context.state["disturbance_type"].to_numpy(),
         DISTURBANCE_PROCESS,
+        model_context.state["disturbance_type"].to_numpy(),
     )
 
     flux = None
