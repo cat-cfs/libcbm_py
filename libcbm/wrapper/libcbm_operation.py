@@ -48,6 +48,7 @@ class Operation:
         format: OperationFormat,
         data: list,
         op_process_id: int,
+        matrix_index: np.ndarray,
         init_value: int = 1,
     ):
         self.format = format
@@ -60,9 +61,10 @@ class Operation:
         self._repeating_matrix_values = None
         self._init_value = init_value
         if self.format == OperationFormat.MatrixList:
-            self.__init_matrix_list(data)
+            self._init_matrix_list(data)
         elif self.format == OperationFormat.RepeatingCoordinates:
-            self.__init_repeating(data)
+            self._init_repeating(data)
+        self._set_op(matrix_index)
 
     def __enter__(self):
         return self
@@ -70,14 +72,14 @@ class Operation:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.dispose()
 
-    def __init_matrix_list(self, data: list):
+    def _init_matrix_list(self, data: list):
         self.__matrix_list = data
         self._matrix_list_p = libcbm_wrapper_functions.get_matrix_list_pointer(
             self.__matrix_list
         )
         self._matrix_list_len = len(self.__matrix_list)
 
-    def __init_repeating(self, data: list):
+    def _init_repeating(self, data: list):
         value_len = 1
         for d in data:
             if isinstance(d[2], np.ndarray):
@@ -91,7 +93,7 @@ class Operation:
         self._repeating_matrix_coords = LibCBM_Matrix_Int(coordinates)
         self._repeating_matrix_values = LibCBM_Matrix(values)
 
-    def __allocate_op(self, size: int):
+    def _allocate_op(self, size: int):
         if self._op_id is not None:
             self._dll.free_op(self._op_id)
         self._op_id = self._dll.allocate_op(size)
@@ -108,11 +110,11 @@ class Operation:
     def get_op_id(self) -> int:
         return self._op_id
 
-    def set_op(self, matrix_index: np.ndarray):
+    def _set_op(self, matrix_index: np.ndarray):
         if not matrix_index.dtype == np.uintp:
             matrix_index = matrix_index.astype(np.uintp)
         if self.format == OperationFormat.MatrixList:
-            self.__allocate_op(matrix_index.shape[0])
+            self._allocate_op(matrix_index.shape[0])
             self._dll.handle.call(
                 "LibCBM_SetOp",
                 self._op_id,
@@ -123,7 +125,7 @@ class Operation:
                 self._init_value,
             )
         elif self.format == OperationFormat.RepeatingCoordinates:
-            self.__allocate_op(matrix_index.shape[0])
+            self._allocate_op(matrix_index.shape[0])
             self._dll.handle.call(
                 "LibCBM_SetOp2",
                 self._op_id,

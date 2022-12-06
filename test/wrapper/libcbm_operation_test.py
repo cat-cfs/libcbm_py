@@ -23,6 +23,7 @@ class LibCBMOperationTest(unittest.TestCase):
                 [pool_dict["b"], pool_dict["b"], np.array([1.0, 1.0, 1.0])],
                 [pool_dict["c"], pool_dict["c"], np.array([1.0, 1.0, 1.0])],
             ],
+            matrix_index=np.array([0, 1, 2, 0], dtype=np.uint64),
             op_process_id=0,
         )
 
@@ -30,7 +31,6 @@ class LibCBMOperationTest(unittest.TestCase):
         pools_out = dataframe.from_numpy(
             {name: pools_orig[:, idx] for name, idx in pool_dict.items()}
         )
-        op.set_op(np.array([0, 1, 2, 0], dtype=np.uint64))
         libcbm_operation.compute(dll, pools_out, [op])
 
         self.assertTrue(
