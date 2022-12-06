@@ -1,5 +1,6 @@
 from typing import Iterator
 from contextlib import contextmanager
+import numpy as np
 from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.model.model_definition import model_handle
 from libcbm.model.model_definition.model_handle import ModelHandle
@@ -30,7 +31,12 @@ class CBMModel:
         return [f["name"] for f in self._flux_config]
 
     def create_operation(
-        self, matrices: list, fmt: str, process_id: int, init_value: int = 1
+        self,
+        matrices: list,
+        fmt: str,
+        process_id: int,
+        matrix_index: np.ndarray,
+        init_value: int = 1,
     ) -> Operation:
         """Create a set of matrix operations for C dynamics along the row axis
         of cbm_vars. The relationship of matrices to stands is 1:m
@@ -39,6 +45,9 @@ class CBMModel:
             matrices (list): a list of matrix information
             fmt (str): one of "repeating_coordinates" or "matrix_list"
             process_id (int): the process_id for flux indicator categorization
+            matrix_index (np.ndarray): a 1d numpy array of any length where
+                each value is the index to a matrix in the specified matrices
+                list
             init_value (int): the value to set on the diagonal of the matrix
                 initially, defaults to 1
 
@@ -46,7 +55,7 @@ class CBMModel:
             Operation: an `Operation` object
         """
         return self._model_handle.create_operation(
-            matrices, fmt, process_id, init_value
+            matrices, fmt, process_id, matrix_index, init_value
         )
 
     def compute(
