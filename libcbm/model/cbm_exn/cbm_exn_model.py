@@ -2,6 +2,7 @@ from typing import Union
 from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
+import numpy as np
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
@@ -97,9 +98,15 @@ class CBMEXNModel:
             return self._spinup_reporter.get_output()
 
     def create_operation(
-        self, matrices: list, fmt: str, process_id: int
+        self,
+        matrices: list,
+        fmt: str,
+        matrix_index: np.ndarray,
+        process_id: int,
     ) -> Operation:
-        return self._cbm_model.create_operation(matrices, fmt, process_id)
+        return self._cbm_model.create_operation(
+            matrices, fmt, matrix_index, process_id
+        )
 
     def compute(
         self,
