@@ -142,25 +142,40 @@ class MatrixOps:
         return matrix_idx
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
-        dom_decay_op = _dom_decay(
-            self._model, mean_annual_temperature.to_numpy(), self._parameters
+        dom_decay_mats = _dom_decay(
+            mean_annual_temperature.to_numpy(), self._parameters
         )
-        dom_decay_op.set_op(np.arange(0, mean_annual_temperature.length))
+        dom_decay_op = self._model.create_operation(
+            dom_decay_mats,
+            "repeating_coordinates",
+            OpProcesses.decay,
+            np.arange(0, mean_annual_temperature.length),
+        )
         return dom_decay_op
 
     def slow_decay(self, mean_annual_temperature: Series) -> Operation:
-        slow_decay_op = _slow_decay(
-            self._model, mean_annual_temperature.to_numpy(), self._parameters
+        slow_decay_mats = _slow_decay(
+            mean_annual_temperature.to_numpy(), self._parameters
         )
-        slow_decay_op.set_op(np.arange(0, mean_annual_temperature.length))
+        slow_decay_op = self._model.create_operation(
+            slow_decay_mats,
+            "repeating_coordinates",
+            OpProcesses.decay,
+            np.arange(0, mean_annual_temperature.length),
+        )
         return slow_decay_op
 
     def slow_mixing(self, n_rows: int) -> Operation:
         if not self._slow_mixing_op:
-            self._slow_mixing_op = _slow_mixing(
-                self._model, self._slow_mixing_rate
+            slow_mixing_mat = _slow_mixing(
+                self._slow_mixing_rate
             )
-            self._slow_mixing_op.set_op(np.zeros(n_rows, dtype="int"))
+            self._slow_mixing_op = self._model.create_operation(
+                slow_mixing_mat,
+                "repeating_coordinates",
+                OpProcesses.decay,
+                np.zeros(n_rows, dtype="int"),
+            )
         else:
             self._slow_mixing_op.update_index(np.zeros(n_rows, dtype="int"))
         return self._slow_mixing_op
@@ -231,14 +246,14 @@ class MatrixOps:
             _net_growth(growth_info),
             fmt="repeating_coordinates",
             matrix_index=np.arange(0, cbm_vars["pools"].n_rows),
-            process_id=OpProcesses.growth
+            process_id=OpProcesses.growth,
         )
 
         self._overmature_decline_op = self._model.create_operation(
             _overmature_decline(growth_info),
             fmt="repeating_coordinates",
             matrix_index=np.arange(0, cbm_vars["pools"].n_rows),
-            process_id=OpProcesses.growth
+            process_id=OpProcesses.growth,
         )
 
         return self._net_growth_op, self._overmature_decline_op
@@ -352,7 +367,6 @@ def _disturbance(
 
 
 def _net_growth(
-
     growth_info: dict[str, np.ndarray],
 ) -> list:
 
@@ -466,8 +480,8 @@ def _biomass_turnover(rates: dict[str, np.ndarray]) -> list:
 
 
 def _dom_decay(
-    model: CBMModel, mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
-) -> Operation:
+    mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
+) -> list:
 
     dom_pools = [
         "AboveGroundVeryFastSoil",
@@ -507,15 +521,13 @@ def _dom_decay(
             ]
         )
         matrix_data.append([dom_pool, "CO2", decay_rate * prop_to_atmosphere])
-    op = model.create_operation(
-        matrix_data, "repeating_coordinates", OpProcesses.decay
-    )
-    return op
+
+    return matrix_data
 
 
 def _slow_decay(
-    model: CBMModel, mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
-) -> Operation:
+    mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
+) -> list:
 
     matrix_data = []
     for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
@@ -537,20 +549,11 @@ def _slow_decay(
             ]
         )
 
-    op = model.create_operation(
-        matrix_data, "repeating_coordinates", OpProcesses.decay
-    )
-    return op
+    return matrix_data
 
 
-def _slow_mixing(model: CBMModel, rate: float) -> Operation:
-
-    op = model.create_operation(
-        matrices=[
+def _slow_mixing(rate: float) -> list:
+    return [
             ["AboveGroundSlowSoil", "BelowGroundSlowSoil", rate],
             ["AboveGroundSlowSoil", "AboveGroundSlowSoil", 1 - rate],
-        ],
-        fmt="repeating_coordinates",
-        process_id=OpProcesses.decay,
-    )
-    return op
+        ]
