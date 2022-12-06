@@ -167,9 +167,7 @@ class MatrixOps:
 
     def slow_mixing(self, n_rows: int) -> Operation:
         if not self._slow_mixing_op:
-            slow_mixing_mat = _slow_mixing(
-                self._slow_mixing_rate
-            )
+            slow_mixing_mat = _slow_mixing(self._slow_mixing_rate)
             self._slow_mixing_op = self._model.create_operation(
                 slow_mixing_mat,
                 "repeating_coordinates",
@@ -202,9 +200,7 @@ class MatrixOps:
 
     def snag_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._snag_turnover_op:
-            snag_turnover_mats = _snag_turnover(
-                self._model, self._turnover_parameter_rates
-            )
+            snag_turnover_mats = _snag_turnover(self._turnover_parameter_rates)
             self._snag_turnover_op = self._model.create_operation(
                 snag_turnover_mats,
                 fmt="repeating_coordinates",
@@ -221,7 +217,7 @@ class MatrixOps:
     def biomass_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
         if not self._biomass_turnover_op:
             biomass_turnover_ops = _biomass_turnover(
-                self._model, self._turnover_parameter_rates
+                self._turnover_parameter_rates
             )
             self._biomass_turnover_op = self._model.create_operation(
                 biomass_turnover_ops,
@@ -292,9 +288,7 @@ class MatrixOps:
                 matrix_index=op_index,
                 process_id=OpProcesses.growth,
             )
-            _overmature_decline_mats = _overmature_decline(
-                self._model, spinup_growth_info
-            )
+            _overmature_decline_mats = _overmature_decline(spinup_growth_info)
             self._spinup_overmature_decline_op = self._model.create_operation(
                 _overmature_decline_mats,
                 fmt="repeating_coordinates",
@@ -554,6 +548,6 @@ def _slow_decay(
 
 def _slow_mixing(rate: float) -> list:
     return [
-            ["AboveGroundSlowSoil", "BelowGroundSlowSoil", rate],
-            ["AboveGroundSlowSoil", "AboveGroundSlowSoil", 1 - rate],
-        ]
+        ["AboveGroundSlowSoil", "BelowGroundSlowSoil", rate],
+        ["AboveGroundSlowSoil", "AboveGroundSlowSoil", 1 - rate],
+    ]
