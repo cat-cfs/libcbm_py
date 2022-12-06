@@ -82,10 +82,10 @@ def test_integration():
                 ["Input", "Foliage", npp / 10.0],
             ],
             fmt="repeating_coordinates",
-            process_id=processes["GrowthAndMortality"]
+            matrix_index=np.arange(0, n_stands),
+            process_id=processes["GrowthAndMortality"],
         )
 
-        op.set_op(np.arange(0, n_stands))
         return op
 
     pd.DataFrame(
@@ -102,11 +102,12 @@ def test_integration():
                 ["Foliage", "FastDOM", 0.95],
             ],
             fmt="repeating_coordinates",
-            process_id=processes["GrowthAndMortality"]
+            # set every stand to point at the 0th matrix:
+            # they all share the same simple mortality matrix
+            matrix_index=np.full(n_stands, 0),
+            process_id=processes["GrowthAndMortality"],
         )
-        # set every stand to point at the 0th matrix:
-        # they all share the same simple mortality matrix
-        op.set_op(np.full(n_stands, 0))
+
         return op
 
     def get_decay_matrix(cbm_model: CBMModel, n_stands: int):
@@ -122,9 +123,9 @@ def test_integration():
                 ["FastDOM", "CO2", 0.10],
             ],
             fmt="repeating_coordinates",
-            process_id=processes["Decay"]
+            matrix_index=np.full(n_stands, 0),
+            process_id=processes["Decay"],
         )
-        op.set_op(np.full(n_stands, 0))
         return op
 
     disturbance_type_ids = {"none": 0, "fire": 1, "harvest": 2}
@@ -153,9 +154,9 @@ def test_integration():
         op = cbm_model.create_operation(
             matrices=[no_disturbance, fire_matrix, harvest_matrix],
             fmt="matrix_list",
+            matrix_index=disturbance_types,
             process_id=processes["Disturbance"],
         )
-        op.set_op(disturbance_types)
         return op
 
     with model.initialize(pool_def, flux_indicators) as model_handle:
