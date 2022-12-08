@@ -62,6 +62,7 @@ for x in [
     "moss_c_test_case",
     "moss_c_multiple_stands",
     "sit_spatially_explicit",
+    "cbm_exn_net_increments",
 ]:
     test_resources.append(os.path.join(resources_dir, "test", x, "*.csv"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.xlsx"))
@@ -92,6 +93,7 @@ setup(
         + ubuntu_binaries
         + mac_os_binaries
         + cbm_defaults_queries
+        + cbm_exn_default_parameters
         + test_resources
     },
     install_requires=requirements,
