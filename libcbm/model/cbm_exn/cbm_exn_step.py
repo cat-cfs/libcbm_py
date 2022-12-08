@@ -13,7 +13,7 @@ def step_disturbance(
     disturbance = model.matrix_ops.disturbance(
         cbm_vars["parameters"]["disturbance_type"],
         cbm_vars["state"]["spatial_unit_id"],
-        cbm_vars["state"]["species"],
+        cbm_vars["state"]["sw_hw"],
     )
     model.compute(cbm_vars, [disturbance])
     return cbm_vars
