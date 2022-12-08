@@ -349,6 +349,7 @@ def _disturbance(
     )
     return (matrix_list, _dm_op_index)
 
+
 @numba.njit()
 def _build_dm_op_index(
     _dm_op_index: Dict,
@@ -366,22 +367,7 @@ def _build_dm_op_index(
         key = (dist_type, spuid, _sw_hw)
         dm_idx = dmid_idx[disturbance_matrix_id[i]]
         _dm_op_index[key] = dm_idx
-        # if dist_type not in _dm_op_index:
-        #    _dm_op_index[dist_type] = Dict.empty(
-        #        key_type=types.int64,
-        #        value_type=numba.types.DictType(types.int64, types.int64),
-        #    )
-        #    _dm_op_index[dist_type][spuid] = Dict.empty(
-        #        key_type=types.int64, value_type=types.int64
-        #    )
-        #    _dm_op_index[dist_type][spuid][_sw_hw] = dm_idx
-        # elif spuid not in _dm_op_index[dist_type]:
-        #    _dm_op_index[dist_type][spuid] = Dict.empty(
-        #        key_type=types.int64, value_type=types.int64
-        #    )
-        #    _dm_op_index[dist_type][spuid][_sw_hw] = dm_idx
-        # elif _sw_hw not in _dm_op_index[dist_type][spuid]:
-        #    _dm_op_index[dist_type][spuid][_sw_hw] = dm_idx
+
     return _dm_op_index
 
 

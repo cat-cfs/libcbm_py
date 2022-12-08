@@ -1,4 +1,3 @@
-
 from typing import Union
 from typing import Iterator
 from contextlib import contextmanager
