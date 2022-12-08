@@ -109,7 +109,7 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
     cbm_vars["state"]["species"].assign(spinup_vars["parameters"]["species"])
     cbm_vars["state"]["sw_hw"].assign(spinup_vars["parameters"]["sw_hw"])
     cbm_vars["state"]["time_since_last_disturbance"].assign(
-        spinup_vars["state"]["age"] + spinup_vars["parameters"]["delay"]
+        spinup_vars["parameters"]["age"] + spinup_vars["parameters"]["delay"]
     )
 
     # TODO implement land use change routines for the following 3 variables:
@@ -140,6 +140,8 @@ def _end_spinup_step(
 ):
     n_rows = spinup_state.shape[0]
     for i in range(n_rows):
+        if spinup_state[i] == SpinupState.End:
+            break
         age[i] += 1
 
         if disturbance_type[i] > 0:
