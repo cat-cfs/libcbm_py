@@ -18,6 +18,11 @@ cbm_defaults_queries = [
     os.path.join(resources_dir, "cbm_defaults_queries", "*.sql")
 ]
 
+cbm_exn_default_parameters = [
+    os.path.join(resources_dir, "cbm_exn", "*.csv"),
+    os.path.join(resources_dir, "cbm_exn", "*.json"),
+]
+
 win_x86_64_bin = [
     os.path.join(resources_dir, "libcbm_bin", "win_x86_64", x)
     for x in [
