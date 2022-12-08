@@ -1,8 +1,10 @@
+
 from typing import Union
 from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
+from libcbm import resources
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables
@@ -121,6 +123,8 @@ def initialize(
     config_path: str, pandas_interface=True, include_spinup_debug=False
 ) -> Iterator[CBMEXNModel]:
 
+    if not config_path:
+        config_path = resources.get_cbm_exn_parameters_dir()
     parameters = CBMEXNParameters(config_path)
     with model.initialize(
         pool_config=parameters.pool_configuration(),
