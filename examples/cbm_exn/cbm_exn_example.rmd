@@ -1,0 +1,167 @@
+---
+title: "cbm_exn_example"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Libcbm cbm_exn package example in R
+
+The following example shows how to run `libcbm` `cbm_exn` in R.  `cbm_exn` is a package that supports running the CBM-CFS3 Carbon dynamics driven by net above ground forest Carbon increments of Merchantable, Foliage and Other pools.  This is in contrast to the default CBM-CFS3 method of generating said increments using the CBM3 volume to biomass routine.
+
+```{r}
+library(reticulate)
+library(plyr)
+cbm_exn_model <- import("libcbm.model.cbm_exn.cbm_exn_model")
+libcbm_resources <- import("libcbm.resources")
+cbm_variables <- import("libcbm.model.model_definition.cbm_variables")
+output_processor <- import("libcbm.model.model_definition.output_processor")
+```
+
+## spinup and step functions
+
+```{r}
+spinup <- function(spinup_input) {
+  # with config_path NULL default CBM-CFS3 derived parameters are used
+  with(cbm_exn_model$initialize(config_path=NULL) %as% cbm, {
+      # the spinup function creates the t=0 cbm_vars
+      # but you can save and or load cbm_vars for each
+      # timestep at the end of spinup point
+      cbm_vars = cbm$spinup(spinup_input)
+      return (cbm_vars)
+    }
+  )
+}
+
+step <- function(cbm_vars) {
+   
+    with(cbm_exn_model$initialize(config_path=NULL) %as% cbm, {
+      cbm_vars = cbm$step(cbm_vars)
+      return (cbm_vars)
+    }
+  )
+}
+```
+
+## load net increments
+
+Load some net increments based on a CBM-CFS3 tutorial1 run
+
+```{r}
+net_increments <- read.csv(
+  file.path(
+    libcbm_resources$get_test_resources_dir(),
+    "cbm_exn_net_increments",
+    "net_increments.csv"
+  )
+)
+```
+
+repeat the net increments to illustrate simulation of multiple stands
+
+```{r}
+colnames(net_increments) <- c("age", "merch_inc", "foliage_inc", "other_inc")
+stand_increments <- NULL
+n_stands <- 10000
+for(i in 0:(n_stands-1)){
+  copied_increments <- data.frame(net_increments)
+  copied_increments <- cbind(data.frame(row_idx=i), copied_increments)
+  stand_increments = rbind(
+    stand_increments, copied_increments
+  )
+}
+
+```
+
+set up some spin-up parameters 
+
+```{r}
+spinup_parameters <- data.frame(
+  age=sample(0L:60L, n_stands, replace=T),
+  area=rep(1.0, n_stands),
+  delay=rep(0L, n_stands),
+  return_interval=rep(125L, n_stands),
+  min_rotations=rep(10L, n_stands),
+  max_rotations=rep(30L, n_stands),
+  spatial_unit_id=rep(17L, n_stands), # Ontario/Mixedwood plains
+  species=rep(20L, n_stands), # red pine
+  mean_annual_temperature=rep(2.55, n_stands),
+  historical_disturbance_type=rep(1L, n_stands),
+  last_pass_disturbance_type=rep(1L, n_stands)
+)
+
+```
+## package dataframes
+
+## run spinup
+```{r}
+cbm_vars = spinup(
+  dict(
+    parameters=spinup_parameters,
+    increments=stand_increments
+  ))
+```
+
+
+
+## run 50 timesteps
+
+```{r}
+
+# helper to store results in-memory
+out_processor = output_processor$ModelOutputProcessor()
+
+for(t in 1:50){
+  cbm_vars$parameters$mean_annual_temperature = 2.55
+  cbm_vars$parameters$disturbance_type = sample(
+    c(0L, 1L, 4L), n_stands, replace=T, prob=c(0.98, 0.01, 0.01)
+  )
+  
+  # look up the original increments and join to the current stand age
+  step_increments = join(
+    x=data.frame(age=cbm_vars$state$age),
+    y=net_increments,
+    by="age")
+  
+  # since some of the ages are out of range for the defined 
+  # data, set the increments to 0
+  step_increments$merch_inc[is.na(step_increments$merch_inc)] = 0
+  step_increments$foliage_inc[is.na(step_increments$foliage_inc)] = 0
+  step_increments$other_inc[is.na(step_increments$other_inc)] = 0
+  
+  #assign the merged increments to the parameters dataframe
+  cbm_vars$parameters$merch_inc = step_increments$merch_inc
+  cbm_vars$parameters$foliage_inc = step_increments$foliage_inc
+  cbm_vars$parameters$other_inc = step_increments$other_inc
+  cbm_vars = step(cbm_vars)
+  
+  out_processor$append_results(
+    t, cbm_variables$CBMVariables$from_pandas(cbm_vars)
+  )
+}
+
+```
+
+```{r}
+results <- out_processor$get_results()
+
+```
+
+Due to how `Reticulate` works, the following are actually R data.frames
+```{r}
+
+pools <- results["pools"]$to_pandas()
+flux <- results["flux"]$to_pandas()
+parameters <- results["parameters"]$to_pandas()
+state <- results["state"]$to_pandas()
+```
+
+```{r}
+pools
+```
+
+```{r}
+state
+```
