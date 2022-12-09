@@ -141,7 +141,7 @@ def _end_spinup_step(
     n_rows = spinup_state.shape[0]
     for i in range(n_rows):
         if spinup_state[i] == SpinupState.End:
-            break
+            continue
         age[i] += 1
 
         if disturbance_type[i] > 0:
