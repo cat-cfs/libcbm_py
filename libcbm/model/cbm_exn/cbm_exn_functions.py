@@ -359,16 +359,16 @@ def prepare_growth_info(
     sw_hw = cbm_vars["state"]["sw_hw"].to_numpy()
     spatial_unit_id = cbm_vars["state"]["spatial_unit_id"].to_numpy()
     merch_inc = np.maximum(
-        merch,
-        -(cbm_vars["parameters"]["merch_inc"].to_numpy()),
+        -merch,
+        cbm_vars["parameters"]["merch_inc"].to_numpy(),
     )
     foliage_inc = np.maximum(
-        foliage,
-        -(cbm_vars["parameters"]["foliage_inc"].to_numpy()),
+        -foliage,
+        cbm_vars["parameters"]["foliage_inc"].to_numpy(),
     )
     other_inc = np.maximum(
-        other,
-        -(cbm_vars["parameters"]["other_inc"].to_numpy()),
+        -other,
+        cbm_vars["parameters"]["other_inc"].to_numpy(),
     )
 
     root_inc = compute_root_inc(
