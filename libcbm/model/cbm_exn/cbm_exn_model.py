@@ -26,7 +26,7 @@ class SpinupReporter:
         self, timestep: int, spinup_vars: CBMVariables
     ) -> None:
         self._output_processor.append_results(
-            timestep, spinup_vars.get_collection()
+            timestep, spinup_vars
         )
 
     def get_output(self) -> cbm_vars_type:

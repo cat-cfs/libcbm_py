@@ -133,13 +133,13 @@ def get_mortality_matrix(model, n_stands):
             ["Foliage", "FastDOM", 0.95],
         ],
         fmt="repeating_coordinates",
-    
+
         # set every stand to point at the 0th matrix:
         # they all share the same simple mortality matrix
         matrix_index=np.full(n_stands, 0),
         process_id=processes["GrowthAndMortality"]
     )
-    
+
     return op
 ```
 
@@ -162,7 +162,7 @@ def get_decay_matrix(model, n_stands):
         matrix_index=np.full(n_stands, 0),
         process_id=processes["Decay"]
     )
-    
+
     return op
 ```
 
@@ -201,9 +201,9 @@ def get_disturbance_matrix(model, disturbance_types):
         fmt="matrix_list",
         matrix_index=disturbance_types,
         process_id=processes["Disturbance"]
-                
+
     )
-    
+
     return op
 
 
@@ -240,7 +240,7 @@ with model.initialize(pool_def, flux_indicators) as cbm_model:
     for t in range(0, 1000):
 
         # add some simplistic disturbance scheduling
-        
+
         if (t % 150) == 0:
             disturbance_types = np.full(n_stands, disturbance_type_ids["fire"])
         elif t == 950:
@@ -265,7 +265,7 @@ with model.initialize(pool_def, flux_indicators) as cbm_model:
         cbm_model.compute(model_vars, operations)
         for op in operations:
             op.dispose()
-        output_processor.append_results(t, model_vars.get_collection())
+        output_processor.append_results(t, model_vars)
         stand_age[disturbance_types != 0] = 0
         stand_age += 1
 

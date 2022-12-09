@@ -220,7 +220,7 @@ def test_integration():
             model_handle.compute(model_vars, operations)
             for op in operations:
                 op.dispose()
-            output_processor.append_results(t, model_vars.get_collection())
+            output_processor.append_results(t, model_vars)
             stand_age[disturbance_types != 0] = 0
             stand_age += 1
 
