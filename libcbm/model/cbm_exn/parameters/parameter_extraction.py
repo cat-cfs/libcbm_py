@@ -87,7 +87,8 @@ def _flux_indicator_config(db_path: str, output_dir: str):
             elif item["name"] in [
                 "DisturbanceHardProduction",
                 "DecayHWStemSnagToAir",
-                "DecayHWBranchSnagToAir" "DisturbanceHWStemSnagToAir",
+                "DecayHWBranchSnagToAir",
+                "DisturbanceHWStemSnagToAir",
                 "DisturbanceHWBranchSnagToAir",
                 "DisturbanceHWStemSnagToAir",
                 "DisturbanceHWBranchSnagToAir",
