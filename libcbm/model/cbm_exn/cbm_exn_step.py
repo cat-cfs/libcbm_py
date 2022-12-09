@@ -24,7 +24,7 @@ def step_annual_process(
     cbm_vars: CBMVariables,
 ) -> CBMVariables:
 
-    cbm_vars["flux"].zero()
+
     growth_op, overmature_decline = model.matrix_ops.net_growth(cbm_vars)
     spuid = cbm_vars["state"]["spatial_unit_id"]
     sw_hw = cbm_vars["state"]["sw_hw"]
@@ -48,6 +48,7 @@ def step_annual_process(
 
 def step(model: "CBMEXNModel", cbm_vars: CBMVariables) -> CBMVariables:
 
+    cbm_vars["flux"].zero()
     cbm_vars = cbm_exn_land_state.start_step(cbm_vars, model.parameters)
     cbm_vars = step_disturbance(model, cbm_vars)
     cbm_vars = step_annual_process(model, cbm_vars)
