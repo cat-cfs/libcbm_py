@@ -1,3 +1,4 @@
+from libcbm.model.model_definition.cbm_variables import CBMVariables
 from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
@@ -12,8 +13,8 @@ class ModelOutputProcessor:
     def __init__(self):
         self._results: dict[str, DataFrame] = {}
 
-    def append_results(self, t: int, results: dict[str, DataFrame]):
-        for name, df in results.items():
+    def append_results(self, t: int, results: CBMVariables):
+        for name, df in results.get_collection().items():
             results_t = df.copy()
             results_t.add_column(
                 series.range(
@@ -44,4 +45,4 @@ class ModelOutputProcessor:
                 )
 
     def get_results(self) -> dict[str, DataFrame]:
-        return {k: v for k, v in self._results.items()}
+        return CBMVariables(self._results)
