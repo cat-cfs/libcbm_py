@@ -1,7 +1,7 @@
 libcbm
 ======
 
-version 0.6.4
+version 2.2.0
 
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
@@ -9,6 +9,7 @@ functions for extending CBM, or developing new CBM-like models.
 See github-page_
 
 .. _github-page: http://www.github.com/cat-cfs/libcbm_py
+.. _moss-c-publication: https://doi.org/10.1139/cjfr-2015-0512
 
 Key Features
 ------------
@@ -18,6 +19,8 @@ Key Features
  - General purpose matrix-based pool/flux compute methods. See: :ref:`libcbm-core-functions`
  - Example jupyter notebooks (see /examples)
  - Full support for the CBM-CFS3 standard import tool format
+ - Implementation of the moss C model See: moss-c-publication_
+ - Support for running CBM-CFS3 dynamics using net above ground biomass C Increment: :ref:`cbm-exn`
 
 Requirements
 ------------
