@@ -281,7 +281,7 @@ class LibCBMWrapper:
         _enabled = None
         if enabled is not None:
             _enabled = enabled.to_numpy()
-            if _enabled.dtype == "bool":
+            if _enabled.dtype != "int32":
                 _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputePools",
@@ -352,7 +352,7 @@ class LibCBMWrapper:
         _enabled = None
         if enabled is not None:
             _enabled = enabled.to_numpy()
-            if _enabled.dtype == "bool":
+            if _enabled.dtype != "int32":
                 _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputeFlux",
