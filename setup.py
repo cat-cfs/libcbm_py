@@ -84,7 +84,7 @@ setup(
     maintainer="Scott Morken",
     maintainer_email="scott.morken@canada.ca",
     license="MPL-2.0",
-    url="",
+    url="https://github.com/cat-cfs/libcbm_py",
     download_url="",
     packages=find_packages(exclude=["test*"]),
     package_data={
