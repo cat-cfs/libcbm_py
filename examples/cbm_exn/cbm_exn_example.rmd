@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Libcbm cbm_exn package example in R
 
-The following example shows how to run `libcbm` `cbm_exn` in R.  `cbm_exn` is a package that supports running the CBM-CFS3 Carbon dynamics driven by net above ground forest Carbon increments of Merchantable, Foliage and Other pools.  This is in contrast to the default CBM-CFS3 method of generating said increments using the CBM3 volume to biomass routine.
+The following example shows how to run `libcbm` `cbm_exn` in R.  `cbm_exn` is a package that supports running the CBM-CFS3 Carbon dynamics driven by net above ground forest Carbon increments of Merchantable, Foliage and Other pools.  This is in contrast to the default CBM-CFS3 method of generating increments using the CBM3 volume to biomass routine.
 
 ```{r}
 library(reticulate)
@@ -64,7 +64,7 @@ repeat the net increments to illustrate simulation of multiple stands
 ```{r}
 colnames(net_increments) <- c("age", "merch_inc", "foliage_inc", "other_inc")
 stand_increments <- NULL
-n_stands <- 10000
+n_stands <- 1000
 for(i in 0:(n_stands-1)){
   copied_increments <- data.frame(net_increments)
   copied_increments <- cbind(data.frame(row_idx=i), copied_increments)
