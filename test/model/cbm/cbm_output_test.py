@@ -63,8 +63,8 @@ def test_append_simulation_result_density_false():
         cbm_output.pools.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "p1": [1.0, 4.0, 9.0],
             }
         ),
@@ -74,8 +74,8 @@ def test_append_simulation_result_density_false():
         cbm_output.flux.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "f1": [1.0, 4.0, 9.0],
             }
         ),
@@ -85,8 +85,8 @@ def test_append_simulation_result_density_false():
         cbm_output.classifiers.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "c1": ["a", "a", "a"],
                 "c2": ["b", "b", "b"],
             }
@@ -97,8 +97,8 @@ def test_append_simulation_result_density_false():
         cbm_output.state.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "s1": [1, 1, 1],
                 "last_disturbance_type": [-1, 1, -1],
             }
@@ -109,8 +109,8 @@ def test_append_simulation_result_density_false():
         cbm_output.area.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "area": [1.0, 2.0, 3.0],
             }
         ),
@@ -120,8 +120,8 @@ def test_append_simulation_result_density_false():
         cbm_output.parameters.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "p1": [-1, -1, -1],
                 "disturbance_type": [1, 2, -1],
             }
@@ -142,8 +142,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.pools.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "p1": [1.0, 2.0, 3.0],
             }
         ),
@@ -152,8 +152,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.flux.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "f1": [1.0, 2.0, 3.0],
             }
         ),
@@ -163,8 +163,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.classifiers.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "c1": [1, 1, 1],
                 "c2": [2, 2, 2],
             }
@@ -175,8 +175,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.state.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "s1": [1, 1, 1],
                 "last_disturbance_type": [-1, 1, -1],
             }
@@ -187,8 +187,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.area.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "area": [1.0, 2.0, 3.0],
             }
         ),
@@ -198,8 +198,8 @@ def test_append_simulation_result_no_mapping():
         cbm_output.parameters.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3],
-                "timestep": pd.Series([1, 1, 1], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1], dtype="int"),
                 "p1": [-1, -1, -1],
                 "disturbance_type": [1, 2, -1],
             }
@@ -220,8 +220,8 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.pools.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "p1": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
             }
         ),
@@ -230,8 +230,8 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.flux.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "f1": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
             }
         ),
@@ -241,7 +241,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.classifiers.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "c1": ["c1", "c1", "c1", "c1", "c1", "c1"],
                 "c2": ["c2", "c2", "c2", "c2", "c2", "c2"],
@@ -253,7 +253,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.state.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "s1": [1, 1, 1, 1, 1, 1],
                 "last_disturbance_type": ["-1", "d1", "-1", "-1", "d1", "-1"],
@@ -265,7 +265,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.area.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "area": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
             }
@@ -276,7 +276,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         cbm_output.parameters.to_pandas(),
         pd.DataFrame(
             {
-                "identifier": [1, 2, 3, 1, 2, 3],
+                "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
                 "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
                 "p1": [-1, -1, -1, -1, -1, -1],
                 "disturbance_type": ["d1", "d2", "-1", "d1", "d2", "-1"],
