@@ -3,7 +3,7 @@ name: Python package
 on:
   push:
     branches:
-    - master
+    - 2.x
 
 jobs:
   build:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ["3.7", "3.10"]
+        python-version: ["3.9", "3.10"]
         os: [windows-latest, ubuntu-18.04, ubuntu-20.04, macos-latest]
 
     steps:
