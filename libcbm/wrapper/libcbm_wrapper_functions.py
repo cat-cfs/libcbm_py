@@ -1,3 +1,4 @@
+from __future__ import annotations
 import ctypes
 import numpy as np
 from libcbm.wrapper.libcbm_matrix import LibCBM_Matrix
