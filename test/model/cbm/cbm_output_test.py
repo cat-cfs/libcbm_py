@@ -242,7 +242,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         pd.DataFrame(
             {
                 "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "c1": ["c1", "c1", "c1", "c1", "c1", "c1"],
                 "c2": ["c2", "c2", "c2", "c2", "c2", "c2"],
             }
@@ -254,7 +254,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         pd.DataFrame(
             {
                 "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "s1": [1, 1, 1, 1, 1, 1],
                 "last_disturbance_type": ["-1", "d1", "-1", "-1", "d1", "-1"],
             }
@@ -266,7 +266,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         pd.DataFrame(
             {
                 "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "area": [1.0, 2.0, 3.0, 1.0, 2.0, 3.0],
             }
         ),
@@ -277,7 +277,7 @@ def test_append_simulation_result_with_mapping_multiple_append():
         pd.DataFrame(
             {
                 "identifier": pd.Series([1, 2, 3, 1, 2, 3], dtype="int64"),
-                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int32"),
+                "timestep": pd.Series([1, 1, 1, 2, 2, 2], dtype="int"),
                 "p1": [-1, -1, -1, -1, -1, -1],
                 "disturbance_type": ["d1", "d2", "-1", "d1", "d2", "-1"],
             }
