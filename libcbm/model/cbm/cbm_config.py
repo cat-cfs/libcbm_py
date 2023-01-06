@@ -2,6 +2,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+from __future__ import annotations
+
 
 def classifier_value(value: str, description: str = "") -> dict[str, str]:
     """Composes a classifier value structure used for configuring libcbm.

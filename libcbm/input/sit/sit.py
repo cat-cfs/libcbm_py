@@ -1,3 +1,4 @@
+from __future__ import annotations
 from copy import deepcopy
 from typing import Callable
 from libcbm.input.sit.sit_reader import SITData

@@ -2,7 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-
+from __future__ import annotations
 from libcbm.input.sit import sit_classifier_parser
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter

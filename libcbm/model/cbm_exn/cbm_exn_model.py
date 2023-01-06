@@ -1,4 +1,6 @@
+from __future__ import annotations
 from typing import Union
+from typing import Dict
 from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
@@ -14,7 +16,7 @@ from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
 from libcbm.wrapper.libcbm_operation import Operation
 
-cbm_vars_type = Union[CBMVariables, dict[str, pd.DataFrame]]
+cbm_vars_type = Union[CBMVariables, Dict[str, pd.DataFrame]]
 
 
 class SpinupReporter:

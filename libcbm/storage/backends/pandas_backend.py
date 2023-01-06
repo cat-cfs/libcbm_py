@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any
 from typing import Union
 import pandas as pd

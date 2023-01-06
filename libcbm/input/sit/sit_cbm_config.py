@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pandas as pd
 from libcbm.input.sit.sit_mapping import SITMapping
 from libcbm.model.cbm import cbm_config

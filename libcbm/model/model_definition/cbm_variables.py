@@ -1,3 +1,4 @@
+from __future__ import annotations
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 import pandas as pd

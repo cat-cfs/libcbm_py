@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Iterator
 from contextlib import contextmanager
 import numpy as np

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 from typing import Iterable
 import numpy as np

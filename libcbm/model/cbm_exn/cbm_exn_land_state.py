@@ -1,3 +1,4 @@
+from __future__ import annotations
 from libcbm.model.model_definition.spinup_engine import SpinupState
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.cbm_variables import CBMVariables

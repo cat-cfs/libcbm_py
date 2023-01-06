@@ -1,3 +1,4 @@
+from __future__ import annotations
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame

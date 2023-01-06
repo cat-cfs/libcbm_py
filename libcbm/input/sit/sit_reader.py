@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 # Built-in modules #
+from __future__ import annotations
 import os
 from typing import Iterable
 from typing import Union
