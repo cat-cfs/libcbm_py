@@ -7,7 +7,7 @@ from libcbm.model.model_definition.cbm_variables import CBMVariables
 
 
 def test_integration():
-    pool_def = {
+    pool_def = [
         "Input",
         "WoodyBiomass",
         "Foliage",
@@ -16,7 +16,7 @@ def test_integration():
         "FastDOM",
         "CO2",
         "Products",
-    }
+    ]
 
     processes = {"GrowthAndMortality": 0, "Decay": 1, "Disturbance": 2}
 
