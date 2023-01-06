@@ -6,7 +6,7 @@ from libcbm.storage import dataframe
 
 
 def test_series():
-    s_base = series.from_list("series_name", list(range(0, 100)))
+    s_base = series.from_numpy("series_name", np.arange(0, 100, dtype="int32"))
     for backend in BackendType:
         s = dataframe.convert_series_backend(s_base.copy(), backend)
 
