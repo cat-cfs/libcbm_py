@@ -88,10 +88,6 @@ def test_integration():
 
         return op
 
-    pd.DataFrame(
-        [weibull_cumulative(x, 5, 1) for x in np.arange(0, 2.5, 0.01)]
-    ).plot()
-
     def get_mortality_matrix(cbm_model: CBMModel, n_stands: int):
 
         op = cbm_model.create_operation(
@@ -236,7 +232,7 @@ def test_integration():
             "MediumDOM",
             "FastDOM",
         ]
-    ].groupby("timestep").sum().plot(figsize=(15, 10))
+    ].groupby("timestep").sum()
 
     output_flux.to_pandas()[
         [
@@ -246,4 +242,4 @@ def test_integration():
             "DisturbanceEmissions",
             "HarvestProduction",
         ]
-    ].groupby("timestep").sum().plot(figsize=(15, 10))
+    ].groupby("timestep").sum()
