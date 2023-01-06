@@ -176,12 +176,12 @@ class CBM:
                     cbm_vars.flux,
                     cbm_vars.state["enabled"],
                 )
-            if reporting_func:
-                reporting_func(iteration, cbm_vars)
 
             self.model_functions.end_spinup_step(
                 cbm_vars.pools, cbm_vars.state
             )
+            if reporting_func:
+                reporting_func(iteration, cbm_vars)
             iteration = iteration + 1
 
         for op_name in self.op_names:

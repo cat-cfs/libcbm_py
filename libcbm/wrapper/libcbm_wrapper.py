@@ -235,6 +235,11 @@ class LibCBMWrapper:
             init,
         )
 
+    def update_op_index(self, op_id: int, matrix_index: np.ndarray):
+        self.handle.call(
+            "LibCBM_SetOpIndex", op_id, matrix_index, matrix_index.shape[0]
+        )
+
     def compute_pools(
         self, ops: list, pools: DataFrame, enabled: Series = None
     ):
@@ -276,7 +281,7 @@ class LibCBMWrapper:
         _enabled = None
         if enabled is not None:
             _enabled = enabled.to_numpy()
-            if _enabled.dtype == "bool":
+            if _enabled.dtype != "int32":
                 _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputePools",
@@ -347,7 +352,7 @@ class LibCBMWrapper:
         _enabled = None
         if enabled is not None:
             _enabled = enabled.to_numpy()
-            if _enabled.dtype == "bool":
+            if _enabled.dtype != "int32":
                 _enabled = _enabled.astype("int32")
         self.handle.call(
             "LibCBM_ComputeFlux",

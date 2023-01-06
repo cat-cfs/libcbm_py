@@ -1,0 +1,195 @@
+species_id,species_name,genus_id,genus_name,forest_type_id,forest_type_name
+1,Spruce,1,Spruce,1,Softwood
+2,Black spruce,1,Spruce,1,Softwood
+3,Red spruce,1,Spruce,1,Softwood
+4,Norway spruce,1,Spruce,1,Softwood
+5,Engelmann spruce,1,Spruce,1,Softwood
+6,White spruce,1,Spruce,1,Softwood
+7,Sitka spruce,1,Spruce,1,Softwood
+8,Black and red spruce,1,Spruce,1,Softwood
+9,Red and white spruce,1,Spruce,1,Softwood
+10,Other spruce,1,Spruce,1,Softwood
+11,Pine,2,Pine,1,Softwood
+12,Western white pine,2,Pine,1,Softwood
+13,Eastern white pine,2,Pine,1,Softwood
+14,Jack pine,2,Pine,1,Softwood
+15,Lodgepole pine,2,Pine,1,Softwood
+16,Shore pine,2,Pine,1,Softwood
+17,Whitebark pine,2,Pine,1,Softwood
+18,Austrian pine,2,Pine,1,Softwood
+19,Ponderosa pine,2,Pine,1,Softwood
+20,Red pine,2,Pine,1,Softwood
+21,Pitch pine,2,Pine,1,Softwood
+22,Scots pine,2,Pine,1,Softwood
+23,Mugho pine,2,Pine,1,Softwood
+24,Limber pine,2,Pine,1,Softwood
+25,"Jack, lodgepole, and shore pine",2,Pine,1,Softwood
+26,Other pine,2,Pine,1,Softwood
+27,Fir,3,Fir,1,Softwood
+28,Amabilis fir,3,Fir,1,Softwood
+29,Balsam fir,3,Fir,1,Softwood
+30,Grand fir,3,Fir,1,Softwood
+31,Subalpine fir (or alpine fir),3,Fir,1,Softwood
+32,Balsam fir and subalpine fir,3,Fir,1,Softwood
+33,"Alpine, amabilis, and grand fir",3,Fir,1,Softwood
+34,Spruce and balsam fir,3,Fir,1,Softwood
+35,Balsam fir and spruce,3,Fir,1,Softwood
+36,Hemlock,4,Hemlock,1,Softwood
+37,Eastern hemlock,4,Hemlock,1,Softwood
+38,Western hemlock,4,Hemlock,1,Softwood
+39,Mountain hemlock,4,Hemlock,1,Softwood
+40,Western and mountain hemlock,4,Hemlock,1,Softwood
+41,Douglas-fir and Rocky Mountain Douglas-fir,5,Douglas-fir,1,Softwood
+42,Tamarack/larch,6,Larch,1,Softwood
+43,European larch,6,Larch,1,Softwood
+44,Tamarack,6,Larch,1,Softwood
+45,Western larch,6,Larch,1,Softwood
+46,Subalpine larch,6,Larch,1,Softwood
+47,Japanese larch,6,Larch,1,Softwood
+48,Cedar,7,Cedar and other conifers,1,Softwood
+49,Eastern white-cedar,7,Cedar and other conifers,1,Softwood
+50,Western redcedar,7,Cedar and other conifers,1,Softwood
+51,Cedar and other conifers,7,Cedar and other conifers,1,Softwood
+52,Juniper,7,Cedar and other conifers,1,Softwood
+53,Eastern redcedar,7,Cedar and other conifers,1,Softwood
+54,Rocky Mountain juniper,7,Cedar and other conifers,1,Softwood
+55,Yew,7,Cedar and other conifers,1,Softwood
+56,Western Yew,7,Cedar and other conifers,1,Softwood
+57,Cypress,7,Cedar and other conifers,1,Softwood
+58,Yellow-cypress,7,Cedar and other conifers,1,Softwood
+59,Other softwoods,8,Unspecified conifirs,1,Softwood
+60,Tamarack and cedar,7,Cedar and other conifers,1,Softwood
+61,Unspecified softwood species,8,Unspecified conifirs,1,Softwood
+62,Poplar/aspen,9,Poplar,3,Hardwood
+63,Trembling aspen,9,Poplar,3,Hardwood
+64,European white poplar,9,Poplar,3,Hardwood
+65,Balsam poplar,9,Poplar,3,Hardwood
+66,Black cottonwood,9,Poplar,3,Hardwood
+67,Eastern cottonwood,9,Poplar,3,Hardwood
+68,Largetooth aspen,9,Poplar,3,Hardwood
+69,Carolina poplar,9,Poplar,3,Hardwood
+70,Lombardy poplar,9,Poplar,3,Hardwood
+71,Hybrid poplar,9,Poplar,3,Hardwood
+72,Other poplar,9,Poplar,3,Hardwood
+73,Birch,10,Birch,3,Hardwood
+74,Yellow birch,10,Birch,3,Hardwood
+75,Cherry birch,10,Birch,3,Hardwood
+76,White birch,10,Birch,3,Hardwood
+77,Gray birch,10,Birch,3,Hardwood
+78,Alaska paper birch,10,Birch,3,Hardwood
+79,Mountain paper birch,10,Birch,3,Hardwood
+80,Other birch,10,Birch,3,Hardwood
+81,Maple,11,Maple,3,Hardwood
+82,Sugar maple,11,Maple,3,Hardwood
+83,Black maple,11,Maple,3,Hardwood
+84,Bigleaf maple,11,Maple,3,Hardwood
+85,Manitoba maple,11,Maple,3,Hardwood
+86,Red maple,11,Maple,3,Hardwood
+87,Silver maple,11,Maple,3,Hardwood
+88,Norway maple,11,Maple,3,Hardwood
+89,Sugar and black maple,11,Maple,3,Hardwood
+90,Other maple,11,Maple,3,Hardwood
+91,Striped maple,11,Maple,3,Hardwood
+92,Mountain maple,11,Maple,3,Hardwood
+93,Other hardwoods,12,Other broad-leaved species,3,Hardwood
+94,Unspecified hardwood species,13,Unspecified broad-leaved species,3,Hardwood
+95,Hickory,12,Other broad-leaved species,3,Hardwood
+96,Bitternut hickory,12,Other broad-leaved species,3,Hardwood
+97,Red hickory,12,Other broad-leaved species,3,Hardwood
+98,Shagbark hickory,12,Other broad-leaved species,3,Hardwood
+99,Shellbark hickory,12,Other broad-leaved species,3,Hardwood
+100,Walnut,12,Other broad-leaved species,3,Hardwood
+101,Butternut,12,Other broad-leaved species,3,Hardwood
+102,Black walnut,12,Other broad-leaved species,3,Hardwood
+103,Alder,12,Other broad-leaved species,3,Hardwood
+104,Sitka alder,12,Other broad-leaved species,3,Hardwood
+105,Red alder,12,Other broad-leaved species,3,Hardwood
+106,Ironwood,12,Other broad-leaved species,3,Hardwood
+107,Blue-beech,12,Other broad-leaved species,3,Hardwood
+108,Beech,12,Other broad-leaved species,3,Hardwood
+109,Oak,12,Other broad-leaved species,3,Hardwood
+110,White oak,12,Other broad-leaved species,3,Hardwood
+111,Swamp white oak,12,Other broad-leaved species,3,Hardwood
+112,Garry oak,12,Other broad-leaved species,3,Hardwood
+113,Bur oak,12,Other broad-leaved species,3,Hardwood
+114,Pin oak,12,Other broad-leaved species,3,Hardwood
+115,Chinquapin oak,12,Other broad-leaved species,3,Hardwood
+116,Chestnut oak,12,Other broad-leaved species,3,Hardwood
+117,Red oak,12,Other broad-leaved species,3,Hardwood
+118,Black oak,12,Other broad-leaved species,3,Hardwood
+119,Northern pin oak,12,Other broad-leaved species,3,Hardwood
+120,Shumard oak,12,Other broad-leaved species,3,Hardwood
+121,Elm,12,Other broad-leaved species,3,Hardwood
+122,White elm,12,Other broad-leaved species,3,Hardwood
+123,Slippery elm,12,Other broad-leaved species,3,Hardwood
+124,Rock elm,12,Other broad-leaved species,3,Hardwood
+125,Red mulberry,12,Other broad-leaved species,3,Hardwood
+126,Tulip-tree,12,Other broad-leaved species,3,Hardwood
+127,Cucumber-tree,12,Other broad-leaved species,3,Hardwood
+128,Sassafras,12,Other broad-leaved species,3,Hardwood
+129,Sycamore,12,Other broad-leaved species,3,Hardwood
+130,Cherry,12,Other broad-leaved species,3,Hardwood
+131,Black Cherry,12,Other broad-leaved species,3,Hardwood
+132,Pin cherry,12,Other broad-leaved species,3,Hardwood
+133,Bitter cherry,12,Other broad-leaved species,3,Hardwood
+134,Choke cherry,12,Other broad-leaved species,3,Hardwood
+135,Honey-locust,12,Other broad-leaved species,3,Hardwood
+136,Basswood,12,Other broad-leaved species,3,Hardwood
+137,Black-gum,12,Other broad-leaved species,3,Hardwood
+138,Flowering dogwood,12,Other broad-leaved species,3,Hardwood
+139,Eastern flowering dogwood,12,Other broad-leaved species,3,Hardwood
+140,Western flowering dogwood,12,Other broad-leaved species,3,Hardwood
+141,Alternate-leaf dogwood,12,Other broad-leaved species,3,Hardwood
+142,Arbutus,12,Other broad-leaved species,3,Hardwood
+143,Ash,12,Other broad-leaved species,3,Hardwood
+145,White ash,12,Other broad-leaved species,3,Hardwood
+146,Black ash,12,Other broad-leaved species,3,Hardwood
+147,Red ash,12,Other broad-leaved species,3,Hardwood
+148,Northern red ash,12,Other broad-leaved species,3,Hardwood
+149,Green ash,12,Other broad-leaved species,3,Hardwood
+150,Blue ash,12,Other broad-leaved species,3,Hardwood
+151,Oregon ash,12,Other broad-leaved species,3,Hardwood
+152,Pumpkin ash,12,Other broad-leaved species,3,Hardwood
+153,Willow,12,Other broad-leaved species,3,Hardwood
+154,Black willow,12,Other broad-leaved species,3,Hardwood
+155,Peachleaf willow,12,Other broad-leaved species,3,Hardwood
+156,Pacific willow,12,Other broad-leaved species,3,Hardwood
+157,Crack willow,12,Other broad-leaved species,3,Hardwood
+158,Shining willow,12,Other broad-leaved species,3,Hardwood
+159,Kentucky coffee tree,12,Other broad-leaved species,3,Hardwood
+160,Hackberry,12,Other broad-leaved species,3,Hardwood
+161,Serviceberry,12,Other broad-leaved species,3,Hardwood
+162,Beaked hazel,12,Other broad-leaved species,3,Hardwood
+163,Hawthorn,12,Other broad-leaved species,3,Hardwood
+164,Common winterberry,12,Other broad-leaved species,3,Hardwood
+165,Apple,12,Other broad-leaved species,3,Hardwood
+166,Mountain-holly,12,Other broad-leaved species,3,Hardwood
+167,Staghorn sumac,12,Other broad-leaved species,3,Hardwood
+168,Mountain-ash,12,Other broad-leaved species,3,Hardwood
+169,Tolerant hardwoods,13,Unspecified broad-leaved species,3,Hardwood
+170,Intolerant hardwoods,13,Unspecified broad-leaved species,3,Hardwood
+171,Not stocked,14,Missing Value,9,Not Applicable
+172,Mixedwood,15,Not applicable,2,Mixedwood
+173,White birch and Alaska white birch,10,Birch,3,Hardwood
+174,Jack and lodgepole pine hybrid,2,Pine,1,Softwood
+175,Whitebark and limber pine,2,Pine,1,Softwood
+176,Balsam poplar and black cottonwood,9,Poplar,3,Hardwood
+177,"Balsam poplar, largetooth aspen, and cottonwood",9,Poplar,3,Hardwood
+178,Upland hardwoods other than sugar maple,13,Unspecified broad-leaved species,3,Hardwood
+179,"Lowland hardwoods (silver and red maple, white elm)",13,Unspecified broad-leaved species,3,Hardwood
+180,Spruce - Genus type,1,Spruce,1,Softwood
+181,Pine - Genus type,2,Pine,1,Softwood
+182,Fir - Genus type,3,Fir,1,Softwood
+183,Hemlock- Genus type,4,Hemlock,1,Softwood
+184,Douglas-fir - Genus type,5,Douglas-fir,1,Softwood
+185,Larch - Genus type,6,Larch,1,Softwood
+186,Cedar and other conifers - Genus type,7,Cedar and other conifers,1,Softwood
+187,Unspecified conifers - Genus type,8,Unspecified conifirs,1,Softwood
+188,Poplar- Genus type,9,Poplar,3,Hardwood
+189,Birch - Genus type,10,Birch,3,Hardwood
+190,Maple - Genus type,11,Maple,3,Hardwood
+191,Other broadleaved species - Genus type,12,Other broad-leaved species,3,Hardwood
+192,Unspecified broadleaved species - Genus type,13,Unspecified broad-leaved species,3,Hardwood
+193,Missing value - Genus type,14,Missing Value,1,Softwood
+194,Softwood forest type,14,Missing Value,1,Softwood
+195,Hardwood forest type,14,Missing Value,3,Hardwood

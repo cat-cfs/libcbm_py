@@ -1,0 +1,651 @@
+[
+    {
+        "name": "DisturbanceCO2Production",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots",
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO2"
+        ]
+    },
+    {
+        "name": "DisturbanceCH4Production",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots",
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CH4"
+        ]
+    },
+    {
+        "name": "DisturbanceCOProduction",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots",
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO"
+        ]
+    },
+    {
+        "name": "DisturbanceBioCO2Emission",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "CO2"
+        ]
+    },
+    {
+        "name": "DisturbanceBioCH4Emission",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "CH4"
+        ]
+    },
+    {
+        "name": "DisturbanceBioCOEmission",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "CO"
+        ]
+    },
+    {
+        "name": "DecayDOMCO2Emission",
+        "process": 2,
+        "source_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO2"
+        ]
+    },
+    {
+        "name": "DisturbanceProduction",
+        "process": 3,
+        "source_pools": [
+            "Merch",
+            "Foliage",
+            "Other",
+            "CoarseRoots",
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "Products"
+        ]
+    },
+    {
+        "name": "DisturbanceDOMProduction",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "Products"
+        ]
+    },
+    {
+        "name": "DeltaBiomass_AG",
+        "process": 1,
+        "source_pools": [
+            "Input"
+        ],
+        "sink_pools": [
+            "Merch",
+            "Foliage",
+            "Other"
+        ]
+    },
+    {
+        "name": "DeltaBiomass_BG",
+        "process": 1,
+        "source_pools": [
+            "Input"
+        ],
+        "sink_pools": [
+            "CoarseRoots",
+            "FineRoots"
+        ]
+    },
+    {
+        "name": "TurnoverMerchLitterInput",
+        "process": 1,
+        "source_pools": [
+            "Merch"
+        ],
+        "sink_pools": [
+            "StemSnag"
+        ]
+    },
+    {
+        "name": "TurnoverFolLitterInput",
+        "process": 1,
+        "source_pools": [
+            "Foliage"
+        ],
+        "sink_pools": [
+            "AboveGroundVeryFastSoil"
+        ]
+    },
+    {
+        "name": "TurnoverOthLitterInput",
+        "process": 1,
+        "source_pools": [
+            "Other"
+        ],
+        "sink_pools": [
+            "AboveGroundFastSoil",
+            "BranchSnag"
+        ]
+    },
+    {
+        "name": "TurnoverCoarseLitterInput",
+        "process": 1,
+        "source_pools": [
+            "CoarseRoots"
+        ],
+        "sink_pools": [
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil"
+        ]
+    },
+    {
+        "name": "TurnoverFineLitterInput",
+        "process": 1,
+        "source_pools": [
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil"
+        ]
+    },
+    {
+        "name": "DecayVFastAGToAir",
+        "process": 2,
+        "source_pools": [
+            "AboveGroundVeryFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayVFastBGToAir",
+        "process": 2,
+        "source_pools": [
+            "BelowGroundVeryFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayFastAGToAir",
+        "process": 2,
+        "source_pools": [
+            "AboveGroundFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayFastBGToAir",
+        "process": 2,
+        "source_pools": [
+            "BelowGroundFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayMediumToAir",
+        "process": 2,
+        "source_pools": [
+            "MediumSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecaySlowAGToAir",
+        "process": 2,
+        "source_pools": [
+            "AboveGroundSlowSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecaySlowBGToAir",
+        "process": 2,
+        "source_pools": [
+            "BelowGroundSlowSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayStemSnagToAir",
+        "process": 2,
+        "source_pools": [
+            "StemSnag"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DecayBranchSnagToAir",
+        "process": 2,
+        "source_pools": [
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceMerchToAir",
+        "process": 3,
+        "source_pools": [
+            "Merch"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceFolToAir",
+        "process": 3,
+        "source_pools": [
+            "Foliage"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceOthToAir",
+        "process": 3,
+        "source_pools": [
+            "Other"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceCoarseToAir",
+        "process": 3,
+        "source_pools": [
+            "CoarseRoots"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceFineToAir",
+        "process": 3,
+        "source_pools": [
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceDOMCO2Emission",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO2"
+        ]
+    },
+    {
+        "name": "DisturbanceDOMCH4Emission",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CH4"
+        ]
+    },
+    {
+        "name": "DisturbanceDOMCOEmission",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "MediumSoil",
+            "AboveGroundSlowSoil",
+            "BelowGroundSlowSoil",
+            "StemSnag",
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO"
+        ]
+    },
+    {
+        "name": "DisturbanceMerchLitterInput",
+        "process": 3,
+        "source_pools": [
+            "Merch"
+        ],
+        "sink_pools": [
+            "StemSnag",
+            "MediumSoil",
+            "AboveGroundSlowSoil"
+        ]
+    },
+    {
+        "name": "DisturbanceFolLitterInput",
+        "process": 3,
+        "source_pools": [
+            "Foliage"
+        ],
+        "sink_pools": [
+            "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil"
+        ]
+    },
+    {
+        "name": "DisturbanceOthLitterInput",
+        "process": 3,
+        "source_pools": [
+            "Other"
+        ],
+        "sink_pools": [
+            "AboveGroundFastSoil",
+            "BranchSnag",
+            "BelowGroundFastSoil"
+        ]
+    },
+    {
+        "name": "DisturbanceCoarseLitterInput",
+        "process": 3,
+        "source_pools": [
+            "CoarseRoots"
+        ],
+        "sink_pools": [
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil"
+        ]
+    },
+    {
+        "name": "DisturbanceFineLitterInput",
+        "process": 3,
+        "source_pools": [
+            "FineRoots"
+        ],
+        "sink_pools": [
+            "AboveGroundVeryFastSoil",
+            "AboveGroundFastSoil",
+            "BelowGroundFastSoil",
+            "BelowGroundVeryFastSoil"
+        ]
+    },
+    {
+        "name": "DisturbanceVFastAGToAir",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundVeryFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceVFastBGToAir",
+        "process": 3,
+        "source_pools": [
+            "BelowGroundVeryFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceFastAGToAir",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceFastBGToAir",
+        "process": 3,
+        "source_pools": [
+            "BelowGroundFastSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceMediumToAir",
+        "process": 3,
+        "source_pools": [
+            "MediumSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceSlowAGToAir",
+        "process": 3,
+        "source_pools": [
+            "AboveGroundSlowSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceSlowBGToAir",
+        "process": 3,
+        "source_pools": [
+            "BelowGroundSlowSoil"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceStemSnagToAir",
+        "process": 3,
+        "source_pools": [
+            "StemSnag"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    },
+    {
+        "name": "DisturbanceBranchSnagToAir",
+        "process": 3,
+        "source_pools": [
+            "BranchSnag"
+        ],
+        "sink_pools": [
+            "CO2",
+            "CH4",
+            "CO",
+            "NO2"
+        ]
+    }
+]

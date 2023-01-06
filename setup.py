@@ -18,6 +18,11 @@ cbm_defaults_queries = [
     os.path.join(resources_dir, "cbm_defaults_queries", "*.sql")
 ]
 
+cbm_exn_default_parameters = [
+    os.path.join(resources_dir, "cbm_exn", "*.csv"),
+    os.path.join(resources_dir, "cbm_exn", "*.json"),
+]
+
 win_x86_64_bin = [
     os.path.join(resources_dir, "libcbm_bin", "win_x86_64", x)
     for x in [
@@ -57,6 +62,7 @@ for x in [
     "moss_c_test_case",
     "moss_c_multiple_stands",
     "sit_spatially_explicit",
+    "cbm_exn_net_increments",
 ]:
     test_resources.append(os.path.join(resources_dir, "test", x, "*.csv"))
     test_resources.append(os.path.join(resources_dir, "test", x, "*.xlsx"))
@@ -68,7 +74,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="libcbm",
-    version="2.0.0",
+    version="2.2.0",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
@@ -78,7 +84,7 @@ setup(
     maintainer="Scott Morken",
     maintainer_email="scott.morken@canada.ca",
     license="MPL-2.0",
-    url="",
+    url="https://github.com/cat-cfs/libcbm_py",
     download_url="",
     packages=find_packages(exclude=["test*"]),
     package_data={
@@ -87,6 +93,7 @@ setup(
         + ubuntu_binaries
         + mac_os_binaries
         + cbm_defaults_queries
+        + cbm_exn_default_parameters
         + test_resources
     },
     install_requires=requirements,

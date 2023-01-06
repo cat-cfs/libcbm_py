@@ -9,27 +9,29 @@ library(reshape2)
 
 library(reticulate)
 
-model_definition <- import("libcbm.model.model_definition")
+model <- import("libcbm.model.model_definition.model")
+output_processor <- import("libcbm.model.model_definition.output_processor")
+cbm_variables <- import("libcbm.model.model_definition.cbm_variables")
 ```
 
 ``` {r}
-pool_def = dict(
-  Input=0,
-  WoodyBiomass=1,
-  Foliage=2,
-  SlowDOM=3,
-  MediumDOM=4,
-  FastDOM=5,
-  CO2=6,
-  Products=7
+pool_def = list(
+  "Input",
+  "WoodyBiomass",
+  "Foliage",
+  "SlowDOM",
+  "MediumDOM",
+  "FastDOM",
+  "CO2",
+  "Products"
 )
 ```
 
 ``` {r}
 processes = dict(
-  GrowthAndMortality = 0,
-  Decay = 1,
-  Disturbance = 2
+  GrowthAndMortality = 0L,
+  Decay = 1L,
+  Disturbance = 2L
 )
 ```
 
@@ -37,53 +39,53 @@ processes = dict(
 flux_indicators = c(
     dict(
         name="NPP",
-        process_id=processes["GrowthAndMortality"],
+        process=processes["GrowthAndMortality"],
         source_pools=list(
-            pool_def["Input"],
-            pool_def["Foliage"]
+            "Input",
+            "Foliage"
         ),
         sink_pools=list(
-            pool_def["WoodyBiomass"],
-            pool_def["Foliage"],
-            pool_def["FastDOM"]
+            "WoodyBiomass",
+            "Foliage",
+            "FastDOM"
         )
     ),
     dict(
         name="DecayEmissions",
-        process_id=processes["Decay"],
+        process=processes["Decay"],
         source_pools=list(
-            pool_def["SlowDOM"],
-            pool_def["MediumDOM"],
-            pool_def["FastDOM"]
+            "SlowDOM",
+            "MediumDOM",
+            "FastDOM"
         ),
-        sink_pools=c(
-            pool_def["CO2"]
+        sink_pools=list(
+            "CO2"
         )
     ),
     dict(
         name="DisturbanceEmissions",
-        process_id=processes["Disturbance"],
+        process=processes["Disturbance"],
         source_pools=list(
-            pool_def["WoodyBiomass"],
-            pool_def["Foliage"],
-            pool_def["SlowDOM"],
-            pool_def["MediumDOM"],
-            pool_def["FastDOM"]
+            "WoodyBiomass",
+            "Foliage",
+            "SlowDOM",
+            "MediumDOM",
+            "FastDOM"
         ),
-        sink_pools=c(
-            pool_def["CO2"]
+        sink_pools=list(
+            "CO2"
         )
     ),
     dict(
         name="HarvestProduction",
-        process_id=processes["Disturbance"],
+        process=processes["Disturbance"],
         source_pools=list(
-            pool_def["WoodyBiomass"],
-            pool_def["Foliage"],
-            pool_def["MediumDOM"]
+            "WoodyBiomass",
+            "Foliage",
+            "MediumDOM"
         ),
         sink_pools=list(
-            pool_def["Products"]
+            "Products"
         )
     )
 )
@@ -104,9 +106,10 @@ get_npp_matrix <- function(model, age) {
             list("Input", "WoodyBiomass", npp),
             list("Input", "Foliage", npp/10.0)
         ),
-        fmt="repeating_coordinates")
-
-    op$set_matrix_index(matrix(seq(0, n_stands-1)))
+        fmt="repeating_coordinates",
+        matrix_index=matrix(seq(0L, n_stands-1)),
+        process_id=processes["GrowthAndMortality"]
+    )
     return(op)
 }
 ```
@@ -122,11 +125,12 @@ get_mortality_matrix <- function(model, n_stands) {
             list("Foliage", "Foliage", 1.0),
             list("Foliage", "FastDOM", 0.95)
         ),
-        fmt="repeating_coordinates"
+        fmt="repeating_coordinates",
+        # set every stand to point at the 0th matrix:
+        # they all share the same simple mortality matrix
+        matrix_index=matrix(rep(0L, n_stands)),
+        process_id=processes["GrowthAndMortality"]
     )
-    # set every stand to point at the 0th matrix:
-    # they all share the same simple mortality matrix
-    op$set_matrix_index(matrix(rep(0, n_stands)))
     return(op)
 }
 ```
@@ -146,18 +150,20 @@ get_decay_matrix <- function(model, n_stands) {
             list("FastDOM", "MediumDOM", 0.25),
             list("FastDOM", "CO2", 0.10)
         ),
-        fmt="repeating_coordinates"
+        fmt="repeating_coordinates",
+        matrix_index=matrix(rep(0L, n_stands)),
+        process_id=processes["Decay"]
     )
-    op$set_matrix_index(matrix(rep(0, n_stands)))
+
     return(op)
 }
 ```
 
 ``` {r}
 disturbance_type_ids = c(
-    none=0,
-    fire=1,
-    harvest=2
+    none=0L,
+    fire=1L,
+    harvest=2L
 )
 
 get_disturbance_matrix <- function(model, disturbance_types) {
@@ -184,59 +190,86 @@ get_disturbance_matrix <- function(model, disturbance_types) {
         matrices=list(
             no_disturbance, fire_matrix, harvest_matrix
         ),
-        fmt="matrix_list"
+        fmt="matrix_list",
+        matrix_index=matrix(disturbance_types),
+        process_id=processes["Disturbance"]
     )
-    op$set_matrix_index(matrix(disturbance_types))
     return(op)
 }
 
 ```
 
 ``` {r}
-with(model_definition$create_model(pool_def, flux_indicators) %as% model, {
 
-    output_processor = model$create_output_processor()
-    n_stands = 20000
-    vars = model$allocate_model_vars(n_stands)
+with(model$initialize(pool_def, flux_indicators) %as% cbm_model, {
 
-    vars$pools["Input"]$assign(1.0)
+    out_processor = output_processor$ModelOutputProcessor()
+    n_stands = 20000L
 
-    stand_age = rep(0, n_stands)
+    model_vars <- cbm_variables$CBMVariables$from_pandas(
+      dict(
+        pools=data.frame(
+          matrix(
+            0.0,
+            nrow=n_stands,
+            ncol=length(cbm_model$pool_names),
+            dimnames=list(NULL, cbm_model$pool_names)
+          )
+        ),
+        flux=data.frame(
+          matrix(
+            0.0,
+            nrow=n_stands,
+            ncol=length(cbm_model$flux_names),
+            dimnames=list(NULL, cbm_model$flux_names)
+          )
+        ),
+        state=data.frame(
+          matrix(1L, nrow=n_stands, ncol=1, dimnames=list(NULL, c("enabled")))
+        )
+      )
+    )
 
-    timesteps <- 0:100
+
+    model_vars["pools"]["Input"]$assign(1.0)
+
+    stand_age = rep(0L, n_stands)
+
+    timesteps <- 0:100L
     for(t in timesteps) {
         print(t)
         # add some simplistic disturbance scheduling
-        disturbance_types = sample( c(0,1,2), n_stands, replace=TRUE, prob=c(0.995, 0.003, 0.002) )
-    
+        disturbance_types = sample(
+          c(0L,1L,2L),
+          n_stands,
+          replace=TRUE,
+          prob=c(0.995, 0.003, 0.002)
+        )
+
         # reset flux at start of every time step
-        vars$flux$zero()
-    
+        model_vars["flux"]$zero()
+
         # prepare the matrix operations
-        operations = list(
-            get_disturbance_matrix(model, disturbance_types),
-            get_npp_matrix(model, stand_age),
-            get_mortality_matrix(model, n_stands),
-            get_decay_matrix(model, n_stands)
+        operations <- list(
+            get_disturbance_matrix(cbm_model, disturbance_types),
+            get_npp_matrix(cbm_model, stand_age),
+            get_mortality_matrix(cbm_model, n_stands),
+            get_decay_matrix(cbm_model, n_stands)
         )
-    
-        # associate each above operation with a flux indicator category
-        op_processes = list(
-            processes["Disturbance"],
-            processes["GrowthAndMortality"],
-            processes["GrowthAndMortality"],
-            processes["Decay"]
-        )
-    
+
         # enabled array can be used to disable(0)/enable(1)
         # dynamics per index
-        vars$enabled$assign(rep(1, n_stands))
-    
-        model$compute(vars, operations, op_processes)
+        model_vars["state"]["enabled"]$assign(
+          rep(1L, n_stands))
+        #print(operations[1]$op_process_id)
+        #print(operations[2]$op_process_id)
+        cbm_model$compute(model_vars, operations)
+
         for(op in operations){
             op$dispose()
         }
-        output_processor$append_results(t, vars)
+
+        #out_processor$append_results(t, model_vars)
         stand_age[disturbance_types != 0] = 0
         stand_age = stand_age + 1
     }

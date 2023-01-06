@@ -30,6 +30,13 @@ def get_cbm_defaults_path():
     )
 
 
+def get_cbm_exn_parameters_dir():
+    """
+    gets a path to a directory containing default parameters for cbm_exn
+    """
+    return os.path.join(get_local_dir(), "cbm_exn")
+
+
 def get_test_resources_dir():
     return os.path.join(get_local_dir(), "test")
 

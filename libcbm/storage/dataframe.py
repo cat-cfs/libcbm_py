@@ -113,7 +113,7 @@ class DataFrame(ABC):
     @abstractmethod  # pragma: no cover
     def to_pandas(self) -> pd.DataFrame:
         """
-        return the data in this dataframe as a pandas array.
+        return the data in this dataframe as a pandas dataframe.
         """
         pass
 
