@@ -114,7 +114,7 @@ def apply_rule_based_event(
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
     cbm_vars.parameters["disturbance_type"].assign(
-        disturbance_type_id, target_index
+        np.int32(disturbance_type_id), target_index
     )
 
     if split_inventory.n_rows > 0:
