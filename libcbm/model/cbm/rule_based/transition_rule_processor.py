@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Callable
 from typing import Iterable
 from typing import Tuple
+import numpy as np
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
@@ -272,7 +273,9 @@ class TransitionRuleProcessor(object):
         )
 
         for classifier_name, value_id in transition_classifier_ids:
-            classifiers[classifier_name].assign(value_id, eligible_idx)
+            classifiers[classifier_name].assign(
+                np.int32(value_id), eligible_idx
+            )
 
         if proportions[0] < 1.0:
 
