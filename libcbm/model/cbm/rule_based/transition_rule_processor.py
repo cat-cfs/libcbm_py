@@ -285,12 +285,12 @@ class TransitionRuleProcessor(object):
             )
 
         state["regeneration_delay"].assign(
-            int(tr_group["regeneration_delay"].at(0)),
+            np.int32(tr_group["regeneration_delay"].at(0)),
             eligible_idx,
         )
 
         parameters["reset_age"].assign(
-            int(tr_group["reset_age"].at(0)), eligible_idx
+            np.int32(tr_group["reset_age"].at(0)), eligible_idx
         )
 
         if len(proportions) > 1:
