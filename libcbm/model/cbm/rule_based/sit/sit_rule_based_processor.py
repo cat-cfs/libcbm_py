@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 from __future__ import annotations
 import pandas as pd
+import numpy as np
 from typing import Callable
 from libcbm.model.cbm.cbm_model import CBM
 from libcbm.model.cbm.cbm_variables import CBMVariables
@@ -93,8 +94,8 @@ class SITRuleBasedProcessor:
         self, time_step: int, cbm_vars: CBMVariables
     ) -> CBMVariables:
         if self._reset_parameters:
-            cbm_vars.parameters["disturbance_type"].assign(0)
-            cbm_vars.parameters["reset_age"].assign(-1)
+            cbm_vars.parameters["disturbance_type"].assign(np.int32(0))
+            cbm_vars.parameters["reset_age"].assign(np.int32(-1))
         cbm_vars = self.dist_func(time_step, cbm_vars)
         cbm_vars = self.tr_func(cbm_vars)
         return cbm_vars

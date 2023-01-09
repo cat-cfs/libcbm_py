@@ -114,11 +114,11 @@ def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
     )
 
     # TODO implement land use change routines for the following 3 variables:
-    cbm_vars["state"]["time_since_land_use_change"].assign(-1)
-    cbm_vars["state"]["land_class_id"].assign(-1)
+    cbm_vars["state"]["time_since_land_use_change"].assign(np.int32(-1))
+    cbm_vars["state"]["land_class_id"].assign(np.int32(-1))
     # TODO take the enabled value from the state, and secondly assign it based
     # on deforestation/afforestation status if necessary
-    cbm_vars["state"]["enabled"].assign(1)  # spinup_vars["state"]["enabled"])
+    cbm_vars["state"]["enabled"].assign(np.int32(1))
 
     cbm_vars["state"]["last_disturbance_type"].assign(
         spinup_vars["parameters"]["last_pass_disturbance_type"]
@@ -182,7 +182,7 @@ def start_step(
     disturbed_idx = idx.filter(cbm_vars["parameters"]["disturbance_type"] > 0)
 
     # currently only considering age-resetting disturbances
-    cbm_vars["state"]["age"].assign(0, disturbed_idx)
+    cbm_vars["state"]["age"].assign(np.int32(0), disturbed_idx)
 
     cbm_vars["state"]["last_disturbance_type"].assign(
         cbm_vars["parameters"]["disturbance_type"].take(disturbed_idx),
@@ -191,8 +191,8 @@ def start_step(
     cbm_vars["state"]["time_since_last_disturbance"].assign(0, disturbed_idx)
 
     # TODO implement land use change routines for the following 3 variables:
-    cbm_vars["state"]["time_since_land_use_change"].assign(-1)
-    cbm_vars["state"]["land_class_id"].assign(-1)
+    cbm_vars["state"]["time_since_land_use_change"].assign(np.int32(-1))
+    cbm_vars["state"]["land_class_id"].assign(np.int32(-1))
     # TODO assign enabled/disturbance based
     # on deforestation/afforestation status if necessary
     # cbm_vars["state"]["enabled"].assign(...)

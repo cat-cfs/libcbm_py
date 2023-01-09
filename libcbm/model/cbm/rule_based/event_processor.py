@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 from typing import Callable
+import numpy as np
 from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
@@ -155,7 +156,7 @@ def apply_rule_based_event(
         )
 
         new_params = cbm_vars.parameters.take(split_index)
-        new_params["disturbance_type"].assign(0)
+        new_params["disturbance_type"].assign(np.int32(0))
         parameters = dataframe.concat_data_frame(
             [cbm_vars.parameters, new_params]
         )

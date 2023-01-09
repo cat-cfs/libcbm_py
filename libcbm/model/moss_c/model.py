@@ -485,7 +485,7 @@ def spinup(
         )
         if all_finished:
             # re-enable everything for subsequent processes
-            model_context.state["enabled"].assign(1)
+            model_context.state["enabled"].assign(np.int32(1))
             break
         step(
             model_context,
@@ -567,4 +567,4 @@ def step(
         model_context.state["age"].take(age_increment_indices) + 1,
         age_increment_indices,
     )
-    model_context.state["age"].assign(0, age_zero_indices)
+    model_context.state["age"].assign(np.int32(0), age_zero_indices)
