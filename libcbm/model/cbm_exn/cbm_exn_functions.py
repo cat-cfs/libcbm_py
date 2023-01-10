@@ -13,6 +13,9 @@ def compute_decay_rate(
     tref: np.ndarray,
     max: np.ndarray,
 ) -> np.ndarray:
+    """Compute a CBM-CFS3 DOM pool specific decay rate based on mean annual
+    temperature and other parameters.
+    """
     return np.minimum(
         base_decay_rate
         * np.exp((mean_annual_temp - tref) * np.log(q10) * 0.1),
@@ -23,6 +26,8 @@ def compute_decay_rate(
 def total_root_bio_hw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ):
+    """Compute the total root biomass for a hardwood record
+    """
     return root_parameters["hw_a"] * np.power(
         total_ag_bio_t / root_parameters["biomass_to_carbon_rate"],
         root_parameters["hw_b"],
@@ -32,6 +37,8 @@ def total_root_bio_hw(
 def total_root_bio_sw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ) -> np.ndarray:
+    """Compute the total root biomass for a softwood record
+    """
     return (
         root_parameters["sw_a"]
         * total_ag_bio_t
@@ -42,6 +49,8 @@ def total_root_bio_sw(
 def fine_root_proportion(
     root_parameters: dict[str, float], total_root_bio
 ) -> np.ndarray:
+    """Compute fine root proportion.
+    """
     return root_parameters["frp_a"] + root_parameters["frp_b"] * np.exp(
         root_parameters["frp_c"] * total_root_bio
     )
@@ -164,6 +173,10 @@ def compute_overmature_decline(
     fine_root_inc: np.ndarray,
     parameters: CBMEXNParameters,
 ) -> dict[str, np.ndarray]:
+    """
+    Compute the C flows for CBM-CFS3 overmature decline
+    IE. when the net C incremenet is negative.
+    """
     turnover_parameters = parameters.get_turnover_parameters()[
         [
             "spatial_unit_id",
@@ -232,6 +245,8 @@ def compute_overmature_decline(
 def prepare_spinup_growth_info(
     spinup_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
+    """Pre-compute all growth C flow operations for spinup.
+    """
     sw_hw = spinup_vars["parameters"]["sw_hw"].to_numpy()
 
     spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
@@ -351,7 +366,9 @@ def prepare_spinup_growth_info(
 def prepare_growth_info(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
-
+    """
+    Prepare the C flows for growth in a CBM timestep
+    """
     merch = cbm_vars["pools"]["Merch"].to_numpy()
     foliage = cbm_vars["pools"]["Foliage"].to_numpy()
     other = cbm_vars["pools"]["Other"].to_numpy()
