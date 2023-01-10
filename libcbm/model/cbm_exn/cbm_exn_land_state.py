@@ -46,6 +46,8 @@ def _update_spinup_vars(
 def advance_spinup_state(
     spinup_vars: CBMVariables,
 ) -> tuple[bool, CBMVariables]:
+    """Update the variables and state at the start of each spinup timestep.
+    """
     n_stands = spinup_vars["state"]["spinup_state"].length
 
     spinup_state = spinup_engine.advance_spinup_state(
@@ -92,6 +94,9 @@ def advance_spinup_state(
 
 
 def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
+    """Initialze the CBM variables and state at the end of spinup and prior to
+    CBM stepping
+    """
     cbm_vars = cbm_exn_variables.init_cbm_vars(
         spinup_vars["pools"].n_rows,
         model.pool_names,
@@ -159,7 +164,9 @@ def _end_spinup_step(
 
 
 def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
-
+    """Update the spinup state and variables at the end of each spinup
+    timestep.
+    """
     _end_spinup_step(
         spinup_state=spinup_vars["state"]["spinup_state"].to_numpy(),
         disturbance_type=spinup_vars["state"]["disturbance_type"].to_numpy(),
@@ -178,6 +185,9 @@ def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
 def start_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
+    """
+    Assign the variables and state at the start of a CBM timestep.
+    """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     disturbed_idx = idx.filter(cbm_vars["parameters"]["disturbance_type"] > 0)
 
@@ -202,6 +212,9 @@ def start_step(
 def end_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
+    """
+    Assign the variables and state at the end of a CBM timestep.
+    """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     enabled_idx = idx.filter(cbm_vars["state"]["enabled"] > 0)
     cbm_vars["state"]["age"].assign(
