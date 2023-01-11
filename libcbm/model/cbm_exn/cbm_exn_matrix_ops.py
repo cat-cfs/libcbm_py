@@ -23,6 +23,9 @@ class OpProcesses(IntEnum):
 
 
 class MatrixOps:
+    """
+    Computes and caches C flow matrices for libcbm cbm_exn C operations
+    """
     def __init__(self, model: CBMModel, parameters: CBMEXNParameters):
         self._parameters = parameters
 
@@ -92,6 +95,13 @@ class MatrixOps:
     def disturbance(
         self, disturbance_type: Series, spuid: Series, sw_hw: Series
     ) -> Operation:
+        """
+        Get disturbance operations based on the specified disturbance
+        type, spatial unit id and forest type (softwood or hardwood).
+
+        Disturbance matrices corresponding to the specified parameters
+        are retrived from default parameters configuration.
+        """
         if self._disturbance_op is None:
             matrix_list, self._dm_index = _disturbance(
                 self._model, self._parameters
@@ -143,6 +153,10 @@ class MatrixOps:
         return matrix_idx
 
     def dom_decay(self, mean_annual_temperature: Series) -> Operation:
+        """
+        Compute the decay rate flows for dead organic matter (DOM) producing
+        a matrix of both DOM to DOM flows and DOM to emissions (CO2) flows
+        """
         dom_decay_mats = _dom_decay(
             mean_annual_temperature.to_numpy(), self._parameters
         )
@@ -155,6 +169,10 @@ class MatrixOps:
         return dom_decay_op
 
     def slow_decay(self, mean_annual_temperature: Series) -> Operation:
+        """
+        Compute the decay rate flows for dead organic matter (DOM)
+        specifically for the Slow AG and Slow BG transfers to atmosphere.
+        """
         slow_decay_mats = _slow_decay(
             mean_annual_temperature.to_numpy(), self._parameters
         )
@@ -167,6 +185,9 @@ class MatrixOps:
         return slow_decay_op
 
     def slow_mixing(self, n_rows: int) -> Operation:
+        """
+        Create slow mixing operations.
+        """
         if not self._slow_mixing_op:
             slow_mixing_mat = _slow_mixing(self._slow_mixing_rate)
             self._slow_mixing_op = self._model.create_operation(
@@ -200,6 +221,9 @@ class MatrixOps:
         )
 
     def snag_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
+        """
+        get snag turnover operations
+        """
         if not self._snag_turnover_op:
             snag_turnover_mats = _snag_turnover(self._turnover_parameter_rates)
             self._snag_turnover_op = self._model.create_operation(
@@ -216,6 +240,9 @@ class MatrixOps:
         return self._snag_turnover_op
 
     def biomass_turnover(self, spuid: Series, sw_hw: Series) -> Operation:
+        """
+        get biomass turnover operations
+        """
         if not self._biomass_turnover_op:
             biomass_turnover_ops = _biomass_turnover(
                 self._turnover_parameter_rates
@@ -236,6 +263,10 @@ class MatrixOps:
     def net_growth(
         self, cbm_vars: CBMVariables
     ) -> tuple[Operation, Operation]:
+        """
+        get net growth operations, which consist of net growth increment
+        and overmature decline
+        """
         growth_info = cbm_exn_functions.prepare_growth_info(
             cbm_vars, self._parameters
         )
@@ -270,6 +301,11 @@ class MatrixOps:
     def spinup_net_growth(
         self, spinup_vars: CBMVariables
     ) -> tuple[Operation, Operation]:
+        """
+        Get net growth operations for spinup.  Spinup increments and
+        overmature declines are pre-computed for a table of C increments
+        by age, stand index
+        """
         if not self._spinup_net_growth_op:
             spinup_growth_info = cbm_exn_functions.prepare_spinup_growth_info(
                 spinup_vars, self._parameters
