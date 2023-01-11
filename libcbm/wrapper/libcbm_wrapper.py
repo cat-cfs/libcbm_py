@@ -1,6 +1,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 from __future__ import annotations
 import ctypes
 import numpy as np
@@ -19,6 +20,7 @@ class LibCBMWrapper:
 
         Args (LibCBMHandle): handle
             for the underlying dll/so compiled library
+
     """
 
     def __init__(self, handle: LibCBMHandle):
@@ -41,6 +43,7 @@ class LibCBMWrapper:
 
         Returns:
             int: the id for an allocated block of matrices
+
         """
         op_id = self.handle.call("LibCBM_Allocate_Op", size)
         return op_id
