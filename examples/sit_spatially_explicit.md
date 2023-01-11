@@ -1,6 +1,6 @@
 # Spatially Explicit Dataset Example
 
-We had to patch the `libcbm` code to get it to run correctly with a "spatially explicit" SIT input dataset (which we exported from a spatially explicit Patchworks model of the UBC Malcolm Knapp Research Forest using the _Export to CBM-CFS3_ tool). 
+We had to patch the `libcbm` code to get it to run correctly with a "spatially explicit" SIT input dataset (which we exported from a spatially explicit Patchworks model of the UBC Malcolm Knapp Research Forest using the _Export to CBM-CFS3_ tool).
 
 
 See [this PDF document](https://carbon.nfis.org/cbm/downloadFile.action?file_id=1745) for details of "spatially explicit" (technically "spatially referenced" is a more accurate term for what is really happening here) modelling in CBM-CFS3 (requires NFIS login to access, concept maps well to `libcbm` which has the same structure as CBM-CFS3). The main `libcbm` developer (Scott Morken) confirmed that `libcbm` code was developed with the intent of accepting spatially explicit but that this path through the code was not throughly tested end-to-end with a full-sized dataset. Our patched code seems to run well, but testing is still in progress.
@@ -13,7 +13,7 @@ The patched fork will eventually be merged with the official distribution here:
 
 https://github.com/cat-cfs/libcbm_py
 
-We have added our "spatially explicit" test dataset (under `libcbm/resources/test/sit_spatially_explicit`) and this notebook (under `examples/sit_spatially_explicit`) to our patched fork. A version of this test dataset and notebook _may_ eventually be included in the official `libcbm` distribution. 
+We have added our "spatially explicit" test dataset (under `libcbm/resources/test/sit_spatially_explicit`) and this notebook (under `examples/sit_spatially_explicit`) to our patched fork.
 
 Import required packages and modules.
 
@@ -38,8 +38,8 @@ Load the standard import tool configuration at the specified path.  This configu
 
 
 ```python
-config_path = os.path.join(resources.get_test_resources_dir(), 
-                           "sit_spatially_explicit", 
+config_path = os.path.join(resources.get_test_resources_dir(),
+                           "sit_spatially_explicit",
                            "sit_config.json")
 sit = sit_cbm_factory.load_sit(config_path)
 ```
@@ -69,7 +69,7 @@ At this point the environment is ready to simulate growth and disturbance in eac
 with sit_cbm_factory.initialize_cbm(sit) as cbm:
     # Apply rule based disturbance events and transition rules based on the SIT input
     rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
-    
+
     def pre_dynamics_func(t, cbm_vars):
         print(t)
         return rule_based_processor.pre_dynamics_func(t, cbm_vars)
@@ -81,7 +81,7 @@ with sit_cbm_factory.initialize_cbm(sit) as cbm:
         inventory            = inventory,
         pre_dynamics_func    = pre_dynamics_func,
         reporting_func       = cbm_output.append_simulation_result,
-        #backend_type = BackendType.numpy
+        backend_type         = BackendType.numpy
     )
 ```
 
@@ -174,7 +174,7 @@ fi[["timestep"]+annual_process_fluxes].groupby("timestep").sum().plot(figsize=(1
 ```
 ### Disturbance Statistics
 
-The following call returns `None`. This is expected, as the (patched) code for the spatially explicit case currently does not compile any disturbance statistics when a `RuleTargetResult` object instance is instantiated with the `spatially_indexed_target` function (i.e., the `statistics` attribute is explicitly set to `None`). 
+The following call returns `None`. This is expected, as the (patched) code for the spatially explicit case currently does not compile any disturbance statistics when a `RuleTargetResult` object instance is instantiated with the `spatially_indexed_target` function (i.e., the `statistics` attribute is explicitly set to `None`).
 
 
 ```python
