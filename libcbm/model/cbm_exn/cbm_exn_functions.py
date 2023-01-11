@@ -13,8 +13,19 @@ def compute_decay_rate(
     tref: np.ndarray,
     max: np.ndarray,
 ) -> np.ndarray:
-    """Compute a CBM-CFS3 DOM pool specific decay rate based on mean annual
+    """
+    Compute a CBM-CFS3 DOM pool specific decay rate based on mean annual
     temperature and other parameters.
+
+    Args:
+        mean_annual_temp (np.ndarray): mean annual temperature (deg C)
+        base_decay_rate (np.ndarray): base decay rate for DOM pool
+        q10 (np.ndarray): Q10 decay rate parameter
+        tref (np.ndarray): reference temperature decay rate parameter
+        max (np.ndarray): maximum decay rate
+
+    Returns:
+        np.ndarray: proportional decay rates
     """
     return np.minimum(
         base_decay_rate
@@ -56,7 +67,7 @@ def fine_root_proportion(
     )
 
 
-def compute_root_inc(
+def _compute_root_inc(
     sw_hw: np.ndarray,
     merch: np.ndarray,
     foliage: np.ndarray,
@@ -158,7 +169,7 @@ def _overmature_decline_compute(
             )
 
 
-def compute_overmature_decline(
+def _compute_overmature_decline(
     spatial_unit_id: np.ndarray,
     sw_hw: np.ndarray,
     merch: np.ndarray,
@@ -307,7 +318,7 @@ def prepare_spinup_growth_info(
     overmature_decline = {}
 
     for col_idx, age in enumerate(unique_ages):
-        root_inc = compute_root_inc(
+        root_inc = _compute_root_inc(
             sw_hw,
             merch[:, col_idx],
             foliage[:, col_idx],
@@ -321,7 +332,7 @@ def prepare_spinup_growth_info(
         )
         coarse_root_inc[:, col_idx] = root_inc["coarse_root_inc"]
         fine_root_inc[:, col_idx] = root_inc["fine_root_inc"]
-        col_overmature_decline = compute_overmature_decline(
+        col_overmature_decline = _compute_overmature_decline(
             spatial_unit_id,
             sw_hw,
             merch[:, col_idx],
@@ -389,7 +400,7 @@ def prepare_growth_info(
         cbm_vars["parameters"]["other_inc"].to_numpy(),
     )
 
-    root_inc = compute_root_inc(
+    root_inc = _compute_root_inc(
         sw_hw,
         merch,
         foliage,
@@ -401,7 +412,7 @@ def prepare_growth_info(
         other_inc,
         parameters,
     )
-    overmature_decline = compute_overmature_decline(
+    overmature_decline = _compute_overmature_decline(
         spatial_unit_id,
         sw_hw,
         merch,
