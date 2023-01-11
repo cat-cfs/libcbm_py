@@ -24,24 +24,6 @@ The CBM class is a set of functions that run the CBM model including spinup,
 variable initialization and model stepping.  It replicates the Carbon dynamics
 and stand state of the CBM-CFS3 model.
 
-All model state and variables are user defined and passed to the CBM class
-functions.
-
-This means that consumers of the CBM class allocate and have full
-control and access to all CBM variables between calls to CBM functions.
-
-CBM provides a step function which allows caller control of stepping
-through CBM time, whereas in CBM-CFS3 stepping is an internal process
-that does not offer the ability to interact with other processes on a
-time step basis.
-
-With the above features CBM provides a powerful API for integrating or
-informing other processes or feedbacks to work with or inform the CBM model
-as it simulates Carbon dynamics.
-
-All CBM variables are allocated using standard Pandas data frames or numpy
-ndarrays, and many functions support either.
-
 The CBM class consists of 3 methods for simulating Carbon dynamics
 
     - spinup: used to initialize Carbon pools
@@ -64,4 +46,3 @@ Simulator
 
 .. automodule:: libcbm.model.cbm.cbm_simulator
     :members:
-
