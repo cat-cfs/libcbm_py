@@ -50,6 +50,7 @@ Code Documentation
    rule_based
    cbm3_tutorial2
    cbm_core_functions
+   model_definition
    moss_c_model
    cbm_exn
    libcbm_core_functions
