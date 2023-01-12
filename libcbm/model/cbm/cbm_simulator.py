@@ -39,7 +39,8 @@ def simulate(
             simulation timestep and all CBM variables, and which is called
             prior to computing C dynamics. The function returns all CBM
             variables which will then be passed into the current CBM timestep.
-        spinup_params (object): collection of spinup specific parameters. See
+        spinup_params (object): Collection of spinup specific parameters.
+            If unspecified, CBM default values are used. See
             :py:func:`libcbm.model.cbm.cbm_variables.initialize_spinup_parameters`
             for object format
         spinup_reporting_func (function, optional): a function which accepts
@@ -47,6 +48,9 @@ def simulate(
             function will result in a performance penalty as the per-iteration
             spinup results are computed and tracked. If unspecified spinup
             results are not tracked. Defaults to None.
+        backend_type (BackendType): specifies the backend storage method for
+            dataframes. If unspecified, the inventory data frame's backend
+            type is used.
     """
     if not backend_type:
         backend_type = inventory.backend_type
