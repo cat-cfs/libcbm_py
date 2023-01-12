@@ -257,7 +257,19 @@ def prepare_spinup_growth_info(
     spinup_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
     """Pre-compute all growth C flow operations for spinup.
+
+    Args:
+        spinup_vars (CBMVariables): collection of CBM parameters, simulation
+            and state variables
+        parameters (CBMEXNParameters): CBM constant parameters
+
+    Raises:
+        ValueError: specified increment table was not formatted correctly.
+
+    Returns:
+        dict[str, np.ndarray]: a dictionary of labelled pool C flows
     """
+
     sw_hw = spinup_vars["parameters"]["sw_hw"].to_numpy()
 
     spatial_unit_id = spinup_vars["parameters"]["spatial_unit_id"].to_numpy()
@@ -379,6 +391,13 @@ def prepare_growth_info(
 ) -> dict[str, np.ndarray]:
     """
     Prepare the C flows for growth in a CBM timestep
+
+    Args:
+        cbm_vars (CBMVariables): collection of CBM variables/parameters/state
+        parameters (CBMEXNParameters): CBM constant parameters
+
+    Returns:
+        dict[str, np.ndarray]: a dictionary of labelled pool C flows
     """
     merch = cbm_vars["pools"]["Merch"].to_numpy()
     foliage = cbm_vars["pools"]["Foliage"].to_numpy()
