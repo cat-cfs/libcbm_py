@@ -6,81 +6,21 @@ CBM Input and Variables
 
 .. currentmodule:: libcbm.model.cbm.cbm_variables
 
-.. autofunction::initialize_simulation_variables
+CBM Variables class (cbm_vars)
+------------------------------
 
-Inventory
----------
+.. autoclass:: CBMVariables
+    :members:
 
-.. autofunction:: initialize_inventory
-
-.. autofunction:: initialize_classifiers
-
-Pools
------
-
-.. autofunction:: initialize_pools
-
-Flux
-----
-
-.. autofunction:: initialize_flux
-
-
-Spinup parameters
------------------
-
-.. autofunction:: initialize_spinup_parameters
-
-Spinup variables
-----------------
+CBM Spinup variables Initialization
+-----------------------------------
 
 .. autofunction:: initialize_spinup_variables
 
-CBM time step parameters
-------------------------
-
-.. autofunction:: initialize_cbm_parameters
-
-CBM state variables
--------------------
-
-.. autofunction:: initialize_cbm_state_variables
+.. autofunction:: initialize_spinup_parameters
 
 
+CBM Step variables Initialization
+---------------------------------
 
-
-Classifiers
------------
-
-.. currentmodule:: libcbm.model.cbm.cbm_config
-
-.. autofunction:: classifier
-
-.. autofunction:: classifier_value
-
-.. autofunction:: classifier_config
-
-
-Merchantable Volume Curves
---------------------------
-
-.. autofunction:: merch_volume_curve
-
-.. autofunction:: merch_volume_to_biomass_config
-
-
-CBM default parameters
-----------------------
-
-The parameters in this section are the simulation-constant model parameters.
-These are used to initialize the CBM class.
-
-.. automodule:: libcbm.model.cbm.cbm_defaults
-    :members:
-
-
-CBM default parameters reference
---------------------------------
-
-.. autoclass:: libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference
-    :members:
+.. autofunction:: initialize_simulation_variables
