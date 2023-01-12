@@ -6,9 +6,9 @@ version 2.2.0
 libcbm is a next generation version of the CBM-CFS3 model.  It also has useful
 functions for extending CBM, or developing new CBM-like models.
 
-See github-page_
+github_
 
-.. _github-page: http://www.github.com/cat-cfs/libcbm_py
+.. _github: http://www.github.com/cat-cfs/libcbm_py
 .. _moss-c-publication: https://doi.org/10.1139/cjfr-2015-0512
 
 Key Features
@@ -51,8 +51,9 @@ Code Documentation
    cbm3_tutorial2
    cbm_core_functions
    moss_c_model
+   cbm_exn
    libcbm_core_functions
-   other_functions
+   package_resources
 
 Indices and tables
 ==================

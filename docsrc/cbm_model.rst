@@ -12,8 +12,6 @@ Usage
 
 A CBM instance can be initialized by using a composed factory method.
 
-
-
 .. automodule:: libcbm.model.cbm.cbm_factory
     :members:
 
@@ -45,4 +43,44 @@ Simulator
 ---------
 
 .. automodule:: libcbm.model.cbm.cbm_simulator
+    :members:
+
+Configuration Details
+---------------------
+
+
+Classifiers
+^^^^^^^^^^^
+
+.. currentmodule:: libcbm.model.cbm.cbm_config
+
+.. autofunction:: classifier
+
+.. autofunction:: classifier_value
+
+.. autofunction:: classifier_config
+
+
+Merchantable Volume Curves
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: merch_volume_curve
+
+.. autofunction:: merch_volume_to_biomass_config
+
+
+CBM default parameters
+^^^^^^^^^^^^^^^^^^^^^^
+
+The parameters in this section are the simulation-constant model parameters.
+These are used to initialize the CBM class.
+
+.. automodule:: libcbm.model.cbm.cbm_defaults
+    :members:
+
+
+CBM default parameters reference
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: libcbm.model.cbm.cbm_defaults_reference.CBMDefaultsReference
     :members:

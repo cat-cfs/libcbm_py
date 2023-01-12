@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath("../"))
 
 project = "libcbm"
 copyright = (
-    "2019, Her Majesty the Queen in Right of Canada, as represented "
+    "2023, His Majesty the King in Right of Canada, as represented "
     "by the Minister of Natural Resources Canada"
 )
 author = "Scott Morken"
@@ -58,3 +58,5 @@ html_theme = "sphinxdoc"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+
+coverage_show_missing_items = True
