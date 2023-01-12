@@ -53,6 +53,12 @@ class CBMEXNModel:
 
     @property
     def flux_names(self) -> list[str]:
+        """Get the list of flux indicator names, these form the columns for
+        the flux dataframe.
+
+        Returns:
+            list[str]: the flux indicator names
+        """
         return self._cbm_model.flux_names
 
     @property
