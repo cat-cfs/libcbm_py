@@ -185,6 +185,12 @@ def _end_spinup_step(
 def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
     """Update the spinup state and variables at the end of each spinup
     timestep.
+
+    Args:
+        spinup_vars (CBMVariables): spinup state and variables
+
+    Returns:
+        CBMVariables: inititlized state and variables
     """
     _end_spinup_step(
         spinup_state=spinup_vars["state"]["spinup_state"].to_numpy(),
@@ -204,8 +210,14 @@ def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
 def start_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
-    """
-    Assign the variables and state at the start of a CBM timestep.
+    """Assign the variables and state at the start of a CBM timestep.
+
+    Args:
+        cbm_vars (CBMVariables): cbm state and variables
+        parameters (CBMEXNParameters): constant CBM parameters
+
+    Returns:
+        CBMVariables: updated cbm state and variables
     """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     disturbed_idx = idx.filter(cbm_vars["parameters"]["disturbance_type"] > 0)
@@ -231,8 +243,14 @@ def start_step(
 def end_step(
     cbm_vars: CBMVariables, parameters: CBMEXNParameters
 ) -> CBMVariables:
-    """
-    Assign the variables and state at the end of a CBM timestep.
+    """Assign the variables and state at the end of a CBM timestep.
+
+    Args:
+        cbm_vars (CBMVariables): cbm state and variables
+        parameters (CBMEXNParameters): cbm constant parameters
+
+    Returns:
+        CBMVariables: updated cbm state and variables
     """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     enabled_idx = idx.filter(cbm_vars["state"]["enabled"] > 0)
