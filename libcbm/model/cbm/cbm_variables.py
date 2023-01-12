@@ -10,6 +10,11 @@ from libcbm.storage.backends import BackendType
 
 
 class CBMVariables:
+    """
+    CBM Variables are the entire set of state, variable, and stand specific
+    parameters for CBM spinup and simulation.  Data is stored in `DataFrame`
+    objects. Several libcbm methods both accept and return CBMVariables.
+    """
     def __init__(
         self,
         pools: DataFrame,
@@ -28,6 +33,17 @@ class CBMVariables:
 
     @property
     def pools(self) -> DataFrame:
+        """
+        Get or set CBM Pools
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: pools dataframe, each row represents a stand, and
+            columns are each CBM pool
+        """
         return self._pools
 
     @pools.setter
@@ -38,6 +54,17 @@ class CBMVariables:
 
     @property
     def flux(self) -> DataFrame:
+        """
+        Get or set CBM flux indicator storage
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: flux dataframe, each row represents a stand, and
+            columns are each CBM flux indicator
+        """
         return self._flux
 
     @flux.setter
@@ -48,6 +75,17 @@ class CBMVariables:
 
     @property
     def classifiers(self) -> DataFrame:
+        """
+        Get or set CBM classifier storage
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: classifier dataframe, each row represents a stand, and
+            columns are each inventory classifier.
+        """
         return self._classifiers
 
     @classifiers.setter
@@ -58,6 +96,17 @@ class CBMVariables:
 
     @property
     def state(self) -> DataFrame:
+        """
+        Get or set CBM state storage
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: state dataframe, each row represents a stand, and
+            columns are the CBM state variables.
+        """
         return self._state
 
     @state.setter
@@ -68,6 +117,16 @@ class CBMVariables:
 
     @property
     def inventory(self) -> DataFrame:
+        """
+        Get or set CBM inventory storage
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: state dataframe, each row represents a stand.
+        """
         return self._inventory
 
     @inventory.setter
@@ -78,6 +137,17 @@ class CBMVariables:
 
     @property
     def parameters(self) -> DataFrame:
+        """
+        Get or set CBM inventory storage
+
+        When setting, if the specified data frame's `backend_type` differs
+        from the existing dataframe's type the assigned value will be
+        converted to the existing type.
+
+        Returns:
+            DataFrame: state dataframe, each row represents a stand.
+                Contains stand-specific parameters for CBM spinup or stepping
+        """
         return self._parameters
 
     @parameters.setter
@@ -354,6 +424,21 @@ def initialize_spinup_variables(
     spinup_params: DataFrame = None,
     include_flux: bool = False,
 ) -> CBMVariables:
+    """Initialize spinup variables
+
+    Args:
+        cbm_vars (CBMVariables): instance of CBM vars.
+            See :py:func:`initialize_simulation_variables`
+        backend_type (BackendType): dataframe storage backend
+        spinup_params (DataFrame, optional): Collection of spinup specific
+            parameters. If unspecified, CBM default values are used.
+            Defaults to None.
+        include_flux (bool, optional): If set to true the spinup process
+            will track flux during computations. Defaults to False.
+
+    Returns:
+        CBMVariables: initialized spinup variables
+    """
 
     n_stands = cbm_vars.inventory.n_rows
     if spinup_params is None:
@@ -385,13 +470,14 @@ def initialize_simulation_variables(
         classifiers (DataFrame): DataFrame of integer classifier value
             ids.  Rows are stands and cols are classifiers
         inventory (DataFrame): The inventory to simulate. Each row
-            represents a stand. See :py:func:`initialize_inventory` for a
-            description of the required columns.
+            represents a stand.
         pool_codes (list): the list of string pool names which act as column
             labels for the resulting cbm_vars.pools DataFrame.
         flux_indicator_codes (list): the list of string flux indicator names
             which act as column labels for the resulting
             cbm_vars.flux DataFrame.
+        backend_type (BackendType): specifies which backend storage method to
+            use
 
     Returns:
         object: Returns the cbm_vars object for simulating CBM.
