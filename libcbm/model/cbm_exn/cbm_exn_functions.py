@@ -34,18 +34,20 @@ def compute_decay_rate(
     )
 
 
-def total_root_bio_hw(
+def _total_root_bio_hw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ):
-    """Compute the total root biomass for a hardwood record
     """
+    Compute the total root biomass for a hardwood record
+    """
+
     return root_parameters["hw_a"] * np.power(
         total_ag_bio_t / root_parameters["biomass_to_carbon_rate"],
         root_parameters["hw_b"],
     )
 
 
-def total_root_bio_sw(
+def _total_root_bio_sw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ) -> np.ndarray:
     """Compute the total root biomass for a softwood record
@@ -57,7 +59,7 @@ def total_root_bio_sw(
     )
 
 
-def fine_root_proportion(
+def _fine_root_proportion(
     root_parameters: dict[str, float], total_root_bio
 ) -> np.ndarray:
     """Compute fine root proportion.
@@ -86,10 +88,10 @@ def _compute_root_inc(
     root_parameters = parameters.get_root_parameters()
     total_root_bio = np.where(
         sw_hw,  # sw=0, hw=1
-        total_root_bio_hw(root_parameters, total_ag_bio_t),
-        total_root_bio_sw(root_parameters, total_ag_bio_t),
+        _total_root_bio_hw(root_parameters, total_ag_bio_t),
+        _total_root_bio_sw(root_parameters, total_ag_bio_t),
     )
-    fine_root_prop = fine_root_proportion(root_parameters, total_root_bio)
+    fine_root_prop = _fine_root_proportion(root_parameters, total_root_bio)
     coarse_root_inc = (
         total_root_bio
         * (1 - fine_root_prop)
