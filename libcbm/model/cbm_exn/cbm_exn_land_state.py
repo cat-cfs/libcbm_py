@@ -46,7 +46,16 @@ def _update_spinup_vars(
 def advance_spinup_state(
     spinup_vars: CBMVariables,
 ) -> tuple[bool, CBMVariables]:
-    """Update the variables and state at the start of each spinup timestep.
+    """
+    Update the variables and state at the start of each spinup timestep.
+
+    Args:
+        spinup_vars (CBMVariables): Collection of variables, parameters
+            and state applicable to spinup procedure
+
+    Returns:
+        tuple[bool, CBMVariables]: a tuple of the all finished flag,
+            and post-spinup-step modified CBMVariables
     """
     n_stands = spinup_vars["state"]["spinup_state"].length
 
@@ -96,6 +105,16 @@ def advance_spinup_state(
 def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
     """Initialze the CBM variables and state at the end of spinup and prior to
     CBM stepping
+
+    Args:
+        model (CBMModel): instance of CBMModel
+        spinup_vars (CBMVariables): Collection of variables, parameters
+            and state applicable to spinup procedure.
+            See :py:mod:`libcbm.model.cbm_exn.cbm_exn_variables`
+
+    Returns:
+        CBMVariables: initialized CBM variables, state, parameters ready for
+            CBM stepping
     """
     cbm_vars = cbm_exn_variables.init_cbm_vars(
         spinup_vars["pools"].n_rows,
