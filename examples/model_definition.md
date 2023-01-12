@@ -294,15 +294,3 @@ flux.to_pandas()[
      'HarvestProduction']
 ].groupby("timestep").sum().plot(figsize=(15,10))
 ```
-
-```python
-
-```
-
-```python
-
-```
-
-```python
-
-```
