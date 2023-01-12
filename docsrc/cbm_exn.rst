@@ -23,3 +23,24 @@ structuring via external grouping.
 
 .. automodule:: libcbm.model.cbm_exn.cbm_exn_matrix_ops
     :members:
+
+.. automodule:: libcbm.model.cbm_exn.cbm_exn_model
+    :members:
+
+.. autoclass:: libcbm.model.cbm_exn.cbm_exn_model.SpinupReporter
+    :members:
+
+.. autoclass:: libcbm.model.cbm_exn.cbm_exn_model.CBMEXNModel
+    :members:
+
+.. autoclass:: libcbm.model.cbm_exn.cbm_exn_parameters.CBMEXNParameters
+    :members:
+
+.. automodule:: libcbm.model.cbm_exn.cbm_exn_spinup
+    :members:
+
+.. automodule:: libcbm.model.cbm_exn.cbm_exn_step
+    :members:
+
+.. automodule:: libcbm.model.cbm_exn.cbm_exn_variables
+    :members:
