@@ -32,12 +32,23 @@ def get_cbm_defaults_path():
 
 def get_cbm_exn_parameters_dir():
     """
-    gets a path to a directory containing default parameters for cbm_exn
+    gets a path to a directory containing default parameters for
+    :py:mod:`libcbm.cbm_exn.cbm_exn_model`
+
+    Returns:
+        str: cbm_exn parameters
     """
     return os.path.join(get_local_dir(), "cbm_exn")
 
 
 def get_test_resources_dir():
+    """
+    gets a path to a directory containing files for integration testing
+    and examples
+
+    Returns:
+        str: test resources path
+    """
     return os.path.join(get_local_dir(), "test")
 
 
