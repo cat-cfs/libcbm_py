@@ -20,8 +20,8 @@ cbm_vars_type = Union[CBMVariables, Dict[str, pd.DataFrame]]
 
 
 class SpinupReporter:
-    """Tracks step-by-step results during spinup for debugging purposes.
-    """
+    """Tracks step-by-step results during spinup for debugging purposes."""
+
     def __init__(self, pandas_interface: bool):
         """initialize a SpinupReporter
 
@@ -53,6 +53,7 @@ class CBMEXNModel:
     """The CBMEXNModel: CBM-CFS3 with external net Aboveground Carbon biomass
     increments
     """
+
     def __init__(
         self,
         cbm_model: CBMModel,

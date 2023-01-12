@@ -26,6 +26,7 @@ class MatrixOps:
     """
     Computes and caches C flow matrices for libcbm cbm_exn C operations
     """
+
     def __init__(self, model: CBMModel, parameters: CBMEXNParameters):
         """initialize a MatrixOps object
 

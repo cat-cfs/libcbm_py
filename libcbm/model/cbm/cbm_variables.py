@@ -15,6 +15,7 @@ class CBMVariables:
     parameters for CBM spinup and simulation.  Data is stored in `DataFrame`
     objects. Several libcbm methods both accept and return CBMVariables.
     """
+
     def __init__(
         self,
         pools: DataFrame,

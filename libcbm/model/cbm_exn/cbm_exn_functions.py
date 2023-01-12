@@ -50,8 +50,7 @@ def _total_root_bio_hw(
 def _total_root_bio_sw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ) -> np.ndarray:
-    """Compute the total root biomass for a softwood record
-    """
+    """Compute the total root biomass for a softwood record"""
     return (
         root_parameters["sw_a"]
         * total_ag_bio_t
@@ -62,8 +61,7 @@ def _total_root_bio_sw(
 def _fine_root_proportion(
     root_parameters: dict[str, float], total_root_bio
 ) -> np.ndarray:
-    """Compute fine root proportion.
-    """
+    """Compute fine root proportion."""
     return root_parameters["frp_a"] + root_parameters["frp_b"] * np.exp(
         root_parameters["frp_c"] * total_root_bio
     )
