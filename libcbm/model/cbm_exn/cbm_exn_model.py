@@ -183,11 +183,16 @@ class CBMEXNModel:
 def initialize(
     config_path: str, pandas_interface=True, include_spinup_debug=False
 ) -> Iterator[CBMEXNModel]:
-    """_summary_
+    """Initialize CBMEXNModel
 
     Args:
-        config_path (str): _description_
-        pandas_interface (bool, optional): _description_. Defaults to True.
+        config_path (str): path to directoriy containing cbm_exn parameters in
+            json and csv formats.  If unspecified, packaged defaults are used.
+            See: :py:func:`libcbm.resources.get_cbm_exn_parameters_dir`.
+        pandas_interface (bool, optional): if set to true then all members
+            of CBMVariables are assumed to be of type pd.DataFrame, if
+            false then the internally defined libcbm DataFrame is used.
+            Defaults to True.
         include_spinup_debug (bool, optional): _description_. Defaults to False.
 
     Yields:
