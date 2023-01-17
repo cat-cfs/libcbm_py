@@ -10,7 +10,19 @@ def _load_json(path: str, fn: str):
 
 
 class CBMEXNParameters:
+    """Class for reading and accessing parameters for cbm_exn.
+    """
     def __init__(self, path: str):
+        """Read a directory containing configuration and parameters for
+        cbm_exn
+
+        Args:
+            path (str): path to a directory containing cbm_exn parameters
+                and configuration
+
+        Raises:
+            ValueError: a validation error occurred
+        """
         self._path = path
         self._pools: list = _load_json(self._path, "pools.json")
         self._flux: list = _load_json(self._path, "flux.json")
@@ -72,27 +84,67 @@ class CBMEXNParameters:
         )
 
     def pool_configuration(self) -> list[str]:
+        """returns the cbm_exn pools as a list of strings
+
+        Returns:
+            list[str]: pool names
+        """
         return self._pools
 
     def flux_configuration(self) -> list[dict]:
+        """returns cbm_exn's raw flux inidicator json configuration
+
+        Returns:
+            list[dict]: flux indicator configuration
+        """
         return self._flux
 
     def get_slow_mixing_rate(self) -> float:
+        """gets the CBM slow mixing rate parameter
+
+        Returns:
+            float: slow mixing rate
+        """
         return self._slow_mixing_rate
 
     def get_turnover_parameters(self) -> pd.DataFrame:
+        """gets a table of turnover parameters used for CBM proportional
+        turnovers
+
+        Returns:
+            pd.DataFrame: a pandas dataframe of the turnover parameters
+        """
         return self._turnover_parameters
 
     def get_sw_hw_map(self) -> dict[int, int]:
-        """
-        returns a map of speciesid: sw_hw where sw_hw is either 0: sw or 1: hw
+        """returns a map of species identifier to sw_hw
+        where the value is either 0: sw or 1: hw
+
+        Returns:
+            dict[int, int]: dictionary of species id to 0 (sw) or 1 (hw)
         """
         return self._sw_hw_map
 
     def get_root_parameters(self) -> dict[str, float]:
+        """get the CBM root parameters as a dictionary
+
+        Returns:
+            dict[str, float]: named root parameters as a dictionary of
+                name: parameter.
+        """
         return self._root_parameters
 
     def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
+        """Get decay parameters for the specified named dead organic matter
+        (DOM) pool.
+
+        Args:
+            dom_pool (str): the DOM pool
+
+        Returns:
+            dict[str, float]: a dictionary of named parameters for that DOM
+                pool.
+        """
         return self._decay_param_dict[dom_pool]
 
     def get_disturbance_matrices(self) -> pd.DataFrame:
@@ -106,6 +158,9 @@ class CBMEXNParameters:
          * sink_pool_id
          * proportion
 
+        Returns:
+            pd.DataFrame: a table of disturbance matrix values for CBM
+                disturbance C pool flows.
         """
         return self._disturbance_matrix_values
 
@@ -119,6 +174,10 @@ class CBMEXNParameters:
          * spatial_unit_id
          * sw_hw
          * disturbance_matrix_id
+
+        Returns:
+            pd.DataFrame: a table of values that associated disturbance matrix
+                ids with disturbance type, spatial unit and sw-hw forest type.
 
         """
         return self._disturbance_matrix_associations
