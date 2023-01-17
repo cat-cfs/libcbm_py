@@ -15,7 +15,7 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
                                      classifier_aggregates, sit_events,
                                      sit_transitions, tr_constants,
                                      sit_disturbance_eligibilities,
-                                     reset_parameters):
+                                     reset_parameters, disturbance_type_map):
 
     classifier_filter = ClassifierFilter(
         classifiers_config=classifiers_config,
@@ -37,7 +37,9 @@ def sit_rule_based_processor_factory(cbm, random_func, classifiers_config,
     event_processor = sit_event_processor.SITEventProcessor(
         cbm=cbm,
         classifier_filter_builder=classifier_filter,
-        random_generator=random_func)
+        random_generator=random_func,
+        disturbance_type_map=disturbance_type_map
+    )
 
     return SITRuleBasedProcessor(
         event_processor, tr_processor, sit_events, sit_transitions,

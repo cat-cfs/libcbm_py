@@ -33,8 +33,10 @@ class SITStandFilterTest(unittest.TestCase):
 
     def test_create_last_disturbance_type_filter(self):
         exp = sit_stand_filter.create_last_disturbance_type_filter(
-            {"LastDistTypeID": 1})
-        self.assertTrue(exp == "(last_disturbance_type == 1)")
+            sit_data={"LastDistTypeID": "distid1"},
+            sit_disturbance_type_map={"distid1": 9999}
+        )
+        self.assertTrue(exp == "(last_disturbance_type == 9999)")
 
     def test_expected_result_on_create_state_variable_filter(self):
 

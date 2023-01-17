@@ -22,11 +22,18 @@ class SITEventProcessor():
             whose single argument is an integer that specifies the number of
             random numbers in the returned sequence.
     """
-    def __init__(self, cbm, classifier_filter_builder, random_generator):
+    def __init__(
+        self,
+        cbm,
+        classifier_filter_builder,
+        random_generator,
+        disturbance_type_map
+    ):
 
-        self.cbm = cbm
-        self.classifier_filter_builder = classifier_filter_builder
-        self.random_generator = random_generator
+        self._cbm = cbm
+        self._classifier_filter_builder = classifier_filter_builder
+        self._random_generator = random_generator
+        self._disturbance_type_map = disturbance_type_map
 
     def _get_compute_disturbance_production(self, cbm, eligible):
 
@@ -44,14 +51,14 @@ class SITEventProcessor():
 
         compute_disturbance_production = \
             self._get_compute_disturbance_production(
-                cbm=self.cbm,
+                cbm=self._cbm,
                 eligible=eligible)
 
         target_factory = sit_stand_target.create_sit_event_target_factory(
             rule_target=rule_target,
             sit_event_row=sit_event,
             disturbance_production_func=compute_disturbance_production,
-            random_generator=self.random_generator)
+            random_generator=self._random_generator)
 
         if sit_eligibility is None:
             event_filters = self._create_sit_event_filters(sit_event, cbm_vars)
@@ -63,7 +70,7 @@ class SITEventProcessor():
                 rule_filter.create_filter(
                     expression=sit_eligibility.state_filter_expression,
                     data=cbm_vars.state),
-                self.classifier_filter_builder.create_classifiers_filter(
+                self._classifier_filter_builder.create_classifiers_filter(
                     sit_stand_filter.get_classifier_set(
                         sit_event, cbm_vars.classifiers.columns.tolist()),
                     cbm_vars.classifiers)]
@@ -86,7 +93,7 @@ class SITEventProcessor():
                 sit_event, False)
         dist_type_filter_expression = \
             sit_stand_filter.create_last_disturbance_type_filter(
-                sit_event)
+                sit_event, self._disturbance_type_map)
 
         return [
             rule_filter.create_filter(
@@ -95,7 +102,7 @@ class SITEventProcessor():
             rule_filter.create_filter(
                 expression=state_filter_expression,
                 data=cbm_vars.state),
-            self.classifier_filter_builder.create_classifiers_filter(
+            self._classifier_filter_builder.create_classifiers_filter(
                 sit_stand_filter.get_classifier_set(
                     sit_event, cbm_vars.classifiers.columns.tolist()),
                 cbm_vars.classifiers),
