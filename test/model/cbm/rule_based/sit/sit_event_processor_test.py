@@ -113,7 +113,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 lambda sit_event, age_only: "(mock_variable == 7)"
             )
             sit_stand_filter.create_last_disturbance_type_filter = Mock()
-            sit_stand_filter.create_last_disturbance_type_filter.side_effect = lambda sit_event: (  # noqa 501
+            sit_stand_filter.create_last_disturbance_type_filter.side_effect = lambda sit_event, disturbance_type_map: (  # noqa 501
                 "",
                 [],
             )
@@ -139,6 +139,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 cbm,
                 classifier_filter_builder=mock_classifier_filter_builder,
                 random_generator=mock_random_generator,
+                disturbance_type_map={},
             )
 
             cbm_vars_result, stats = sit_event_processor.process_events(

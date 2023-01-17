@@ -161,14 +161,26 @@ def create_state_filter_expression(sit_data: dict, age_only: bool) -> str:
     return expression
 
 
-def create_last_disturbance_type_filter(sit_data: dict) -> str:
+def _try_get_float(s: str) -> tuple[float, bool]:
+    try:
+        i = float(s)
+        return i, True
+    except ValueError:
+        return None, False
 
-    if int(sit_data["LastDistTypeID"]) == -1:
+
+def create_last_disturbance_type_filter(
+    sit_data: dict, sit_disturbance_type_map: dict
+) -> str:
+
+    last_dist_type_float, is_float = _try_get_float(sit_data["LastDistTypeID"])
+    # by convention in the SIT events format, a value of -1 is a null
+    if is_float and last_dist_type_float == -1.0:
         return ""
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",
-        value=int(sit_data["LastDistTypeID"]),
+        value=sit_disturbance_type_map[sit_data["LastDistTypeID"]],
     )
     return expression
 

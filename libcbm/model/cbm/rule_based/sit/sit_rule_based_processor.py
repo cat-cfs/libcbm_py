@@ -111,6 +111,7 @@ def sit_rule_based_processor_factory(
     tr_constants: TransitionRuleConstants,
     sit_disturbance_eligibilities: pd.DataFrame,
     reset_parameters: bool,
+    disturbance_type_map: dict,
 ) -> SITRuleBasedProcessor:
 
     classifier_filter = ClassifierFilter(
@@ -137,6 +138,7 @@ def sit_rule_based_processor_factory(
         cbm=cbm,
         classifier_filter_builder=classifier_filter,
         random_generator=random_func,
+        disturbance_type_map=disturbance_type_map,
     )
 
     return SITRuleBasedProcessor(

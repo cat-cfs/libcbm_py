@@ -458,4 +458,5 @@ def create_sit_rule_based_processor(
         tr_constants=tr_constants,
         sit_disturbance_eligibilities=disturbance_eligibilities,
         reset_parameters=reset_parameters,
+        disturbance_type_map={v: k for k, v in sit.disturbance_id_map.items()},
     )
