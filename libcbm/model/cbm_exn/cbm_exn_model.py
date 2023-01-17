@@ -121,10 +121,11 @@ class CBMEXNModel:
         """Perform one timestep of the CBMEXNModel
 
         Args:
-            cbm_vars (cbm_vars_type): _description_
+            cbm_vars (cbm_vars_type): the simulation state
+                and variables
 
         Returns:
-            cbm_vars_type: _description_
+            cbm_vars_type: modified state and variables.
         """
         if self._pandas_interface:
             return cbm_exn_step.step(
@@ -134,6 +135,16 @@ class CBMEXNModel:
             return cbm_exn_step.step(self, cbm_vars)
 
     def spinup(self, spinup_input: cbm_vars_type) -> cbm_vars_type:
+        """initializes Carbon pools along the row axis of the specified
+        spinup input using the CBM-CFS3 approach for spinup.
+
+        Args:
+            spinup_input (cbm_vars_type): spinup variables and parameters
+
+        Returns:
+            cbm_vars_type: initlaized CBM variables and state, prepared
+                for CBM stepping.
+        """
         reporting_func = (
             self._spinup_reporter.append_spinup_output
             if self._spinup_reporter
@@ -155,6 +166,17 @@ class CBMEXNModel:
             )
 
     def get_spinup_output(self) -> cbm_vars_type:
+        """If spinup debugging was enabled during construction of this class,
+        a time-step by time-step account of the spinup routine for all stands
+        is returned.
+
+        Raises:
+            ValueError: this class instance was not initialized to track spinup
+                results.
+
+        Returns:
+            cbm_vars_type: the timestep by timestep spinup results
+        """
         if not self._spinup_reporter:
             raise ValueError("spinup reporter not initialized")
         else:
@@ -167,6 +189,26 @@ class CBMEXNModel:
         matrix_index: np.ndarray,
         process_id: int,
     ) -> Operation:
+        """Creates an matrix based C flow operation.  An operation defines 1
+        or more matrix to apply to stand's Carbon pools.  The matrices have a
+        1:m relationship to stands.
+
+        For information on format see:
+        :py:func:`libcbm.model.model_definition.model_handle.ModelHandle.create_operation`
+
+        Args:
+            matrices (list): a list of matrices, whose format is described by
+                the `fmt` parameter
+            fmt (str): the matrix format of the `matrices` parameter
+            matrix_index (np.ndarray): an integer array along the stand axis
+                whose value is the index of the matrix to apply to that stand
+                index.
+            process_id (int): process id is used to define which flux
+                indicators this operation applies to
+
+        Returns:
+            Operation: the initialized operation.
+        """
         return self._cbm_model.create_operation(
             matrices, fmt, matrix_index, process_id
         )
@@ -176,6 +218,16 @@ class CBMEXNModel:
         cbm_vars: CBMVariables,
         operations: list[Operation],
     ):
+        """Apply several sequential operations to the pools, and flux stored
+        in the specified `cbm_vars`.
+
+        Args:
+            cbm_vars (CBMVariables): Collection of CBM simulation variables.
+                This function modifies the `pools` and `flux` dataframes stored
+                within cbm_vars.
+            operations (list[Operation]): The list of matrix operations to
+                apply
+        """
         self._cbm_model.compute(cbm_vars, operations)
 
 
@@ -193,10 +245,13 @@ def initialize(
             of CBMVariables are assumed to be of type pd.DataFrame, if
             false then the internally defined libcbm DataFrame is used.
             Defaults to True.
-        include_spinup_debug (bool, optional): _description_. Defaults to False.
+        include_spinup_debug (bool, optional): If set to true, the
+            `get_spinup_output` of the returned class instance can be used to
+            inspect timestep-by-timestep spinup output.  This will cause slow
+            spinup performance. Defaults to False.
 
     Yields:
-        Iterator[CBMEXNModel]: _description_
+        Iterator[CBMEXNModel]: instance of CBMEXNModel
     """
 
     if not config_path:
