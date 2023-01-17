@@ -50,7 +50,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="libcbm",
-    version="1.3.1",
+    version="1.3.2",
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
@@ -72,7 +72,6 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
     ],
     packages=find_packages(exclude=['test*']),
     package_data={
