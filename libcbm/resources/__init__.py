@@ -99,10 +99,9 @@ def get_libcbm_bin_path():
         major = version_tokens[0]
         minor = version_tokens[1]
         matched_ver = (
-            int(major) == 10 and
-            int(minor) >= 12
-        ) or (
-            int(major) == 11
+            (int(major) == 10 and int(minor) >= 12)
+            or (int(major) == 11)
+            or (int(major) == 12)
         )
         # Get the full path to the dylib #
         dylib = os.path.join(
