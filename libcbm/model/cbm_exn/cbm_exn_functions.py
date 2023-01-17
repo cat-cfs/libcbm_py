@@ -59,7 +59,7 @@ def _total_root_bio_sw(
 
 
 def _fine_root_proportion(
-    root_parameters: dict[str, float], total_root_bio
+    root_parameters: dict[str, float], total_root_bio: np.ndarray
 ) -> np.ndarray:
     """Compute fine root proportion."""
     return root_parameters["frp_a"] + root_parameters["frp_b"] * np.exp(
