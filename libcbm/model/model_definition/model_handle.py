@@ -7,10 +7,8 @@ from libcbm.wrapper import libcbm_operation
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.libcbm_handle import LibCBMHandle
 from libcbm import resources
-from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
-from libcbm.storage.backends import BackendType
 
 
 class ModelHandle:
