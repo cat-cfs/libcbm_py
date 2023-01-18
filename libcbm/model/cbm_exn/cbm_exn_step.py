@@ -10,6 +10,22 @@ def step_disturbance(
     model: "CBMEXNModel",
     cbm_vars: CBMVariables,
 ) -> CBMVariables:
+    """Compute and track disturbance matrix effects across multiple stands.
+
+    The "disturbance_type" series of the `cbm_vars` `parameters` dataframe
+    is used to set the disturbance type. Zero or negative values indicate no
+    disturbance.
+
+    The spatial_unit_id, and sw_hw series of the `cbm_vars` `state` dataframe
+    is used to select the appropriate disturbance matrix.
+
+    Args:
+        model (CBMEXNModel): initialized cbm_exn model
+        cbm_vars (CBMVariables): cbm variables and state
+
+    Returns:
+        CBMVariables: updated cbm_variables and state
+    """
     disturbance = model.matrix_ops.disturbance(
         cbm_vars["parameters"]["disturbance_type"],
         cbm_vars["state"]["spatial_unit_id"],
@@ -23,7 +39,15 @@ def step_annual_process(
     model: "CBMEXNModel",
     cbm_vars: CBMVariables,
 ) -> CBMVariables:
+    """Compute and track CBM annual processes.
 
+    Args:
+        model (CBMEXNModel): initialized cbm_exn model
+        cbm_vars (CBMVariables): cbm variables and state
+
+    Returns:
+        CBMVariables: updated cbm_vars
+    """
     growth_op, overmature_decline = model.matrix_ops.net_growth(cbm_vars)
     spuid = cbm_vars["state"]["spatial_unit_id"]
     sw_hw = cbm_vars["state"]["sw_hw"]
@@ -46,6 +70,20 @@ def step_annual_process(
 
 
 def step(model: "CBMEXNModel", cbm_vars: CBMVariables) -> CBMVariables:
+    """Advance CBM state by one timestep, and track results.
+
+    This function updates state variables, performs disturbances for affected
+    statnds and annaul processes for all stands.  The cbm_vars `pools`
+    dataframe is updated with changed pool values. The cbm_vars `flux`
+    dataframe tracks specific flows between pools for meaningful indicators.
+
+    Args:
+        model (CBMEXNModel): initialized cbm_exn model
+        cbm_vars (CBMVariables): cbm variables and state
+
+    Returns:
+        CBMVariables: updated cbm_vars
+    """
 
     cbm_vars["flux"].zero()
     cbm_vars = cbm_exn_land_state.start_step(cbm_vars, model.parameters)

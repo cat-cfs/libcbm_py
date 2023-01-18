@@ -10,8 +10,8 @@ def _load_json(path: str, fn: str):
 
 
 class CBMEXNParameters:
-    """Class for reading and accessing parameters for cbm_exn.
-    """
+    """Class for reading and accessing parameters for cbm_exn."""
+
     def __init__(self, path: str):
         """Read a directory containing configuration and parameters for
         cbm_exn
