@@ -137,6 +137,15 @@ class DataFrame(ABC):
 
     @abstractmethod  # pragma: no cover
     def evaluate_filter(self, expression: str) -> Series:
+        """Use a filter expression to produce a true/false series
+
+        Args:
+            expression (str): the boolean expression in terms of
+                dataframe column names and constant values
+
+        Returns:
+            Series: a boolean series
+        """
         pass
 
     @abstractmethod  # pragma: no cover
@@ -147,6 +156,17 @@ class DataFrame(ABC):
 def concat_data_frame(
     data: list[DataFrame], backend_type: BackendType = None
 ) -> DataFrame:
+    """Concatenate dataframes along the row axis.
+
+    Args:
+        data (list[DataFrame]): dataframes to concatenate
+        backend_type (BackendType, optional): backend storage type of the
+            resulting dataframe. If unspecified the backend type of the
+            first DataFrame in data is used. Defaults to None.
+
+    Returns:
+        DataFrame: concatenated dataframe
+    """
     data = [d for d in data if d is not None]
     if not data:
         return None
@@ -157,6 +177,17 @@ def concat_data_frame(
 def concat_series(
     series: list[Series], backend_type: BackendType = None
 ) -> Series:
+    """Concatenate series into a single series.
+
+    Args:
+        series (list[Series]): list of series to concatenate
+        backend_type (BackendType, optional): backend storage type of the
+            resulting series. If unspecified the backend type of the
+            first Series in data is used. Defaults to None. Defaults to None.
+
+    Returns:
+        Series: concatenated series
+    """
     backend_type, uniform_dfs = get_uniform_backend(series, backend_type)
     return backends.get_backend(backend_type).concat_series(uniform_dfs)
 
@@ -164,6 +195,18 @@ def concat_series(
 def logical_and(
     s1: Series, s2: Series, backend_type: BackendType = None
 ) -> Series:
+    """take the elementwise logical and of 2 series
+
+    Args:
+        s1 (Series): arg1 of the logical and
+        s2 (Series): arg2 of the logical and
+        backend_type (BackendType, optional): backend type of the result.
+            If not specified the backend type of the first arg is used.
+            Defaults to None.
+
+    Returns:
+        Series: result
+    """
     backend_type, uniform_dfs = get_uniform_backend([s1, s2], backend_type)
     return backends.get_backend(backend_type).logical_and(
         uniform_dfs[0], uniform_dfs[1]
@@ -171,12 +214,31 @@ def logical_and(
 
 
 def logical_not(series: Series) -> Series:
+    """Take the logical not of the specified series
+
+    Args:
+        series (Series): series to evaluate
+
+    Returns:
+        Series: result
+    """
     return backends.get_backend(series.backend_type).logical_not(series)
 
 
 def logical_or(
     s1: Series, s2: Series, backend_type: BackendType = None
 ) -> Series:
+    """take the elementwise logical or of 2 series
+
+    Args:
+        s1 (Series): arg1 of the logical or
+        s2 (Series): arg2 of the logical or
+        backend_type (BackendType, optional): backend type of the result.
+            If not specified the backend type of the first arg is used.
+            Defaults to None.
+    Returns:
+        Series: result
+    """
     backend_type, uniform_dfs = get_uniform_backend([s1, s2], backend_type)
     return backends.get_backend(backend_type).logical_or(
         uniform_dfs[0], uniform_dfs[1]
@@ -186,21 +248,43 @@ def logical_or(
 def make_boolean_series(
     init: bool, size: int, backend_type: BackendType.numpy
 ) -> Series:
+    """Make an initialized boolean series
+
+    Args:
+        init (bool): True or False, the entire Series is assigned this value.
+        size (int): length of the resulting series
+        backend_type (BackendType): backend type of the result.
+            If not specified then BackendType.numpy is used.
+            Defaults to None.
+
+    Returns:
+        Series: the boolean series
+    """
     return backends.get_backend(backend_type).make_boolean_series(init, size)
 
 
 def is_null(series: Series) -> Series:
-    """
-    returns an Series of True where any value in the specified series
+    """returns an Series of True where any value in the specified series
     is null, None, or NaN, and otherwise False
+
+    Args:
+        series (Series): series to evaluate
+
+    Returns:
+        Series: boolean series
     """
     return backends.get_backend(series.backend_type).is_null(series)
 
 
 def indices_nonzero(series: Series) -> Series:
-    """
-    return a series of the 0 based sequential index of non-zero values in
+    """return a series of the 0 based sequential index of non-zero values in
     the specfied series
+
+    Args:
+        series (Series): series to evaulate
+
+    Returns:
+        Series: indices of the non-zeros
     """
     return backends.get_backend(series.backend_type).indices_nonzero(series)
 
@@ -211,13 +295,34 @@ def numeric_dataframe(
     back_end: BackendType,
     init: float = 0.0,
 ) -> DataFrame:
+    """Make an initialized numeric-only dataframe
+
+    Args:
+        cols (list[str]): column names
+        nrows (int): number of rows
+        back_end (BackendType): backend storage type of the resulting dataframe
+        init (float, optional): initialization value. Defaults to 0.0.
+
+    Returns:
+        DataFrame: initialized numeric dataframe
+    """
     return backends.get_backend(back_end).numeric_dataframe(cols, nrows, init)
 
 
 def from_series_list(
     data: list[Union[Series, SeriesDef]], nrows: int, back_end: BackendType
 ) -> DataFrame:
+    """initialize a dataframe from a list of Series or SeriesDef objects
 
+    Args:
+        data (list[Union[Series, SeriesDef]]): series information
+        nrows (int): number of rows, this parameter is used when SeriesDef
+            object are provided, and otherwise ignored.
+        back_end (BackendType): backend storage type of the resulting dataframe
+
+    Returns:
+        DataFrame: dataframe object
+    """
     data_series = []
     for s in data:
         if isinstance(s, Series):
@@ -233,6 +338,19 @@ def from_series_dict(
     nrows: int,
     back_end: BackendType,
 ) -> DataFrame:
+    """Initialize a dataframe object from a dictionary of named Series or
+    SeriesDef objects.  The dictionary keys are used as the columns in the
+    resulting dataframe.
+
+    Args:
+        data (dict[str, Union[Series, SeriesDef]]): dictionary of named Series
+            or SeriesDef objects.
+        nrows (int): the number of rows
+        back_end (BackendType): _description_
+
+    Returns:
+        DataFrame: _description_
+    """
     data_series = []
     names = []
     for k, v in data.items():
