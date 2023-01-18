@@ -6,7 +6,8 @@ import pandas as pd
 
 class CBMVariables:
     """
-    Container for multiple named dataframes
+    Container for multiple named dataframes.  Dataframes are assumed to be
+    row-index-aligined
     """
 
     def __init__(self, data: dict[str, DataFrame]):

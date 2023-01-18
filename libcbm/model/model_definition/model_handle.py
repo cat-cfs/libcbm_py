@@ -25,7 +25,7 @@ class ModelHandle:
         pools: dict[str, int],
         flux_indicators: list[dict],
     ):
-        """_summary_
+        """Initialize ModelHandle
 
         Args:
             wrapper (LibCBMWrapper): low level function wrapper
@@ -79,9 +79,11 @@ class ModelHandle:
         """Create a libcbm Operation
 
         Args:
-            matrices (list): _description_
-            fmt (str): _description_
-            process_id (int): _description_
+            matrices (list): a list of matrix values.  The required format is
+                dependant on the `fmt` parameter.
+            fmt (str): matrix value format.
+            process_id (int): flux tracking category id.  Fluxes associated
+                with this Operation will fall under this category.
             matrix_index (np.ndarray): _description_
             init_value (int, optional): _description_. Defaults to 1.
 

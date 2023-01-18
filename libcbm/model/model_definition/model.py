@@ -46,9 +46,9 @@ class CBMModel:
             matrices (list): a list of matrix information
             fmt (str): one of "repeating_coordinates" or "matrix_list"
             process_id (int): the process_id for flux indicator categorization
-            matrix_index (np.ndarray): a 1d numpy array of any length where
-                each value is the index to a matrix in the specified matrices
-                list
+            matrix_index (np.ndarray): a 1d numpy array of the same length as
+                the dataframes in cbm_vars where each value is the index to a
+                matrix in the specified matrices list
             init_value (int): the value to set on the diagonal of the matrix
                 initially, defaults to 1
 
