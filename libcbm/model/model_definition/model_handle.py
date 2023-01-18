@@ -15,7 +15,10 @@ from libcbm.storage.backends import BackendType
 
 class ModelHandle:
     """
-    layer for simplifying the python interface to libcbm matrix processing
+    Class to facilitate optimizied pool flux operations.
+
+    This is essentially a layer for simplifying the python
+    interface to libcbm matrix processing
     """
 
     def __init__(
@@ -24,21 +27,16 @@ class ModelHandle:
         pools: dict[str, int],
         flux_indicators: list[dict],
     ):
+        """_summary_
+
+        Args:
+            wrapper (LibCBMWrapper): low level function wrapper
+            pools (dict[str, int]): the collection of named pools
+            flux_indicators (list[dict]): flux indicator configuration
+        """
         self.wrapper = wrapper
         self.pools = pools
         self.flux_indicators = flux_indicators
-
-    def allocate_pools(
-        self, n: int, backend_type: BackendType = BackendType.numpy
-    ) -> DataFrame:
-        pool_names = list(self.pools.keys())
-        return dataframe.numeric_dataframe(pool_names, n, backend_type)
-
-    def allocate_flux(
-        self, n: int, backend_type: BackendType = BackendType.numpy
-    ) -> DataFrame:
-        flux_names = [x["name"] for x in self.flux_indicators]
-        return dataframe.numeric_dataframe(flux_names, n, backend_type)
 
     def _matrix_rc(
         self,
@@ -80,6 +78,21 @@ class ModelHandle:
         matrix_index: np.ndarray,
         init_value: int = 1,
     ) -> libcbm_operation.Operation:
+        """Create a libcbm Operation
+
+        Args:
+            matrices (list): _description_
+            fmt (str): _description_
+            process_id (int): _description_
+            matrix_index (np.ndarray): _description_
+            init_value (int, optional): _description_. Defaults to 1.
+
+        Raises:
+            ValueError: _description_
+
+        Returns:
+            libcbm_operation.Operation: initialized Operation object
+        """
         if fmt == "repeating_coordinates":
             pool_id_mat = [
                 [self.pools[row[0]], self.pools[row[1]], row[2]]
