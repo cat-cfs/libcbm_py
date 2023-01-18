@@ -6,6 +6,8 @@ import numba
 
 
 class SpinupState(IntEnum):
+    """The possible spinup states for stands during spinup
+    """
     AnnualProcesses = 1
     HistoricalEvent = 2
     LastPassEvent = 3
@@ -42,7 +44,31 @@ def advance_spinup_state(
     this_rotation_slow: Series,
     enabled: Series,
 ) -> np.ndarray:
+    """Run the vectorized spinup finite state machine.  Passed values are not
+    modified by this function.
 
+    Args:
+        spinup_state (Series): The current spinup state value. See
+            :py:class:`SpinupState`
+        age (Series): The age.
+        delay_step (Series): The spinup delay step, when in the Delay state
+        final_age (Series): The final age at the end of spinup, which is also
+            known as the inventory age in CBM
+        delay (Series): The number of delay steps to perform in spinup.
+        return_interval (Series): The number of years between historical
+            disturbance rotations.
+        rotation_num (Series): The number of rotations already performed
+        min_rotations (Series): The minimum number of rotations to perform
+        max_rotations (Series): The maximum number of rotations to perform
+        last_rotation_slow (Series): The sum of Slow C pools at the end of the
+            last rotation, prior to historical disturbance.
+        this_rotation_slow (Series): The current sum of Slow C pools.
+        enabled (Series): A boolean flag indicating the corresponding stands
+            are finished spinup (when 0), or spinup is ongoing (when 1)
+
+    Returns:
+        np.ndarray: The array of updated SpinupState.
+    """
     out_state = spinup_state.copy().to_numpy()
     _advance_spinup_state(
         age.length,
