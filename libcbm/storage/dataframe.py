@@ -150,6 +150,16 @@ class DataFrame(ABC):
 
     @abstractmethod  # pragma: no cover
     def sort_values(self, by: str, ascending: bool = True) -> "DataFrame":
+        """Return a sorted version of this dataframe
+
+        Args:
+            by (str): a single column name to sort by
+            ascending (bool, optional): sort ascending (when True) or
+                descending (when false) by the column name. Defaults to True.
+
+        Returns:
+            DataFrame: a sorted dataframe
+        """
         pass
 
 
@@ -346,10 +356,10 @@ def from_series_dict(
         data (dict[str, Union[Series, SeriesDef]]): dictionary of named Series
             or SeriesDef objects.
         nrows (int): the number of rows
-        back_end (BackendType): _description_
+        back_end (BackendType): backend storage type of the resulting dataframe
 
     Returns:
-        DataFrame: _description_
+        DataFrame: initialized dataframe
     """
     data_series = []
     names = []
@@ -366,12 +376,30 @@ def from_series_dict(
 
 
 def from_pandas(df: pd.DataFrame) -> DataFrame:
+    """Create a DataFrame object with a pandas dataframe
+
+    Args:
+        df (pd.DataFrame): a pandas dataframe
+
+    Returns:
+        DataFrame: a DataFrame instance
+    """
     from libcbm.storage.backends import pandas_backend
 
     return pandas_backend.PandasDataFrameBackend(df)
 
 
 def from_numpy(data: dict[str, np.ndarray]) -> DataFrame:
+    """Create a DataFrame object from a dictionary of name, numpy array pairs.
+
+    Each array is expected to be single dimension and of the same length.
+
+    Args:
+        data (dict[str, np.ndarray]): name array pairs
+
+    Returns:
+        DataFrame: the Dataframe instance
+    """
     from libcbm.storage.backends import numpy_backend
 
     return numpy_backend.NumpyDataFrameFrameBackend(data)
@@ -380,6 +408,22 @@ def from_numpy(data: dict[str, np.ndarray]) -> DataFrame:
 def convert_series_backend(
     series: Series, backend_type: BackendType
 ) -> Series:
+    """Change the backend storage type of an existing Series object.
+
+    If the backend type of the specified series is the same as the
+    specified backend type, the series is simply returned.
+
+    Args:
+        series (Series): a Series object
+        backend_type (BackendType): the backend type
+
+    Raises:
+        NotImplementedError: the specified backend_type has not been
+            implemented.
+
+    Returns:
+        Series: The converted series
+    """
     if series.backend_type == backend_type:
         return series
 
@@ -400,6 +444,22 @@ def convert_series_backend(
 def convert_dataframe_backend(
     df: DataFrame, backend_type: BackendType
 ) -> DataFrame:
+    """Change the backend storage type of an existing DataFrame object.
+
+    If the backend type of the specified dataframe is the same as the
+    specified backend type, the dataframe is simply returned.
+
+    Args:
+        df (DataFrame): a DataFrame object
+        backend_type (BackendType): the backend type
+
+    Raises:
+        NotImplementedError: the specified backend_type has not been
+            implemented.
+
+    Returns:
+        DataFrame: the converted DataFrame
+    """
     if df.backend_type == backend_type:
         return df
     elif backend_type == BackendType.numpy:
@@ -421,6 +481,24 @@ def convert_dataframe_backend(
 def get_uniform_backend(
     data: list[Union[DataFrame, Series]], backend_type: BackendType = None
 ) -> tuple[BackendType, list[Union[DataFrame, Series]]]:
+    """Convert the backend type of all specified dataframes, or series.
+    Also used to assert backend type uniformity of collections of these
+    objects.
+
+    Args:
+        data (list[Union[DataFrame, Series]]): list of DataFrame or Series
+            objects to convert or on which assert uniformity.
+        backend_type (BackendType, optional): the required backend type of
+            the output.  This must be specified if the provided items in `data`
+            are non-uniform. Defaults to None.
+
+    Raises:
+        ValueError: backend_type was not specified, and the provided dataframe
+            or series objects were non-uniform.
+
+    Returns:
+        tuple[BackendType, list[Union[DataFrame, Series]]]: _description_
+    """
     if backend_type is None:
         inferred_backend = None
         for _d in data:
