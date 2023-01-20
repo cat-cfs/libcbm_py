@@ -4,7 +4,7 @@ from libcbm.storage import dataframe
 import pandas as pd
 
 
-class CBMVariables:
+class ModelVariables:
     """
     Container for multiple named dataframes.  Dataframes are assumed to be
     row-index-aligined
@@ -15,6 +15,10 @@ class CBMVariables:
 
     def __getitem__(self, name: str) -> DataFrame:
         return self._data[name]
+
+    def __setitem__(self, name: str, new_value: DataFrame):
+        self._data[name] = dataframe.convert_dataframe_backend(
+            new_value, self._data[name].backend_type)
 
     def __contains__(self, name: str) -> bool:
         return name in self._data
@@ -27,11 +31,11 @@ class CBMVariables:
         return {k: v for k, v in self._data.items()}
 
     @staticmethod
-    def from_pandas(frames: dict[str, pd.DataFrame]) -> "CBMVariables":
+    def from_pandas(frames: dict[str, pd.DataFrame]) -> "ModelVariables":
         """
         Assemble a CBMVariables instance from a collection of pandas DataFrames
         """
-        return CBMVariables(
+        return ModelVariables(
             {k: dataframe.from_pandas(v) for k, v in frames.items()}
         )
 
