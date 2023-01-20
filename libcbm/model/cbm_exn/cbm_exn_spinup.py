@@ -6,22 +6,22 @@ if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 
 from libcbm.model.cbm_exn import cbm_exn_variables
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn import cbm_exn_land_state
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
 def _prepare_spinup_vars(
-    spinup_input: CBMVariables,
+    spinup_input: ModelVariables,
     pool_names: list[str],
     flux_names: list[str],
     include_flux: bool,
     parameters: CBMEXNParameters,
-) -> CBMVariables:
+) -> ModelVariables:
     """Initialize spinup variables and state.
 
     Args:
-        spinup_input (CBMVariables): A collection of dataframes for running
+        spinup_input (ModelVariables): A collection of dataframes for running
             CBM spinup.
         pool_names (list[str]): The CBM pool names.
         flux_names (list[str]): the list of flux indicator names.  This
@@ -32,7 +32,7 @@ def _prepare_spinup_vars(
         parameters (CBMEXNParameters): initialized CBM parameters
 
     Returns:
-        CBMVariables: Inititlized cbm variables and state for running spinup.
+        ModelVariables: Inititlized cbm variables and state for running spinup.
     """
     data = {
         "parameters": spinup_input["parameters"],
@@ -59,27 +59,27 @@ def _prepare_spinup_vars(
             spinup_input["parameters"].backend_type,
         )
 
-    return CBMVariables(data)
+    return ModelVariables(data)
 
 
 def spinup(
     model: "CBMEXNModel",
-    input: CBMVariables,
-    reporting_func: Callable[[int, CBMVariables], None] = None,
+    input: ModelVariables,
+    reporting_func: Callable[[int, ModelVariables], None] = None,
     include_flux: bool = False,
-) -> CBMVariables:
+) -> ModelVariables:
     """Run the CBM spinup routine.
 
     Args:
         model (CBMEXNModel): Initialized cbm_exn model.
-        input (CBMVariables): Spinup input, which is a collection of dataframes
-            consisting of:
+        input (ModelVariables): Spinup input, which is a collection of
+            dataframes consisting of:
 
                 * `increments`: a table of aboveground merchantable, foliage,
                     and other C increments by age by stand
                 * `parameters`: CBM spinup parameters
 
-        reporting_func (Callable[[int, CBMVariables], None], optional):
+        reporting_func (Callable[[int, ModelVariables], None], optional):
             Optional function for accepting timestep-by-timestep spinup
             results for debugging. Defaults to None.
         include_flux (bool, optional): if reporting func is specified,
@@ -87,7 +87,7 @@ def spinup(
             process. Defaults to False.
 
     Returns:
-        CBMVariables: A collection of dataframes with initialized C pools and
+        ModelVariables: A collection of dataframes with initialized C pools and
             state, ready for CBM stepping.
     """
 

@@ -2,7 +2,7 @@ import tempfile
 import pandas as pd
 from libcbm.model.cbm_exn import cbm_exn_model
 from libcbm.model.cbm_exn.parameters import parameter_extraction
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm import resources
 
 
@@ -12,7 +12,7 @@ def test_cbm_exn_integration():
         parameter_extraction.extract(
             resources.get_cbm_defaults_path(), tempdir, locale_code="en-CA"
         )
-        spinup_input = CBMVariables.from_pandas(
+        spinup_input = ModelVariables.from_pandas(
             {
                 "parameters": pd.DataFrame(
                     {

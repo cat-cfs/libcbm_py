@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Iterator
 from contextlib import contextmanager
 import numpy as np
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import model_handle
 from libcbm.model.model_definition.model_handle import ModelHandle
 from libcbm.wrapper.libcbm_operation import Operation
@@ -61,13 +61,13 @@ class CBMModel:
 
     def compute(
         self,
-        cbm_vars: CBMVariables,
+        cbm_vars: ModelVariables,
         operations: list[Operation],
     ):
         """Compute a batch of C dynamics
 
         Args:
-            cbm_vars (CBMVariables): _description_
+            cbm_vars (ModelVariables): cbm variables and state
             operations (list[Operation]): a list of Operation objects as
                 allocated by `create_operation`
             op_process_ids (list[int]): list of integers

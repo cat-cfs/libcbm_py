@@ -5,7 +5,7 @@ import numba
 from numba.core import types
 from numba.typed import Dict
 from libcbm.model.model_definition.model import CBMModel
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.wrapper.libcbm_operation import Operation
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn import cbm_exn_functions
@@ -317,14 +317,14 @@ class MatrixOps:
         return self._biomass_turnover_op
 
     def net_growth(
-        self, cbm_vars: CBMVariables
+        self, cbm_vars: ModelVariables
     ) -> tuple[Operation, Operation]:
         """
         Get net growth operations, which consist of net growth increment
         and overmature decline
 
         Args:
-            cbm_vars (CBMVariables): cbm state and variables
+            cbm_vars (ModelVariables): cbm state and variables
 
         Returns:
             tuple[Operation, Operation]: tuple of growth (item 1) and
@@ -349,7 +349,9 @@ class MatrixOps:
 
         return self._net_growth_op, self._overmature_decline_op
 
-    def _spinup_net_growth_idx(self, spinup_vars: CBMVariables) -> np.ndarray:
+    def _spinup_net_growth_idx(
+        self, spinup_vars: ModelVariables
+    ) -> np.ndarray:
         age = spinup_vars["state"]["age"].to_numpy()
         op_index = (
             np.arange(0, self._spinup_2d_shape[0]) * self._spinup_2d_shape[1]
@@ -362,7 +364,7 @@ class MatrixOps:
         return op_index
 
     def spinup_net_growth(
-        self, spinup_vars: CBMVariables
+        self, spinup_vars: ModelVariables
     ) -> tuple[Operation, Operation]:
         """
         Get net growth operations for spinup.  Spinup increments and
@@ -370,7 +372,7 @@ class MatrixOps:
         by age, stand index
 
         Args:
-            spinup_vars (CBMVariables): cbm spinup state and variables
+            spinup_vars (ModelVariables): cbm spinup state and variables
 
         Returns:
             tuple[Operation, Operation]: tuple of growth (item 1) and

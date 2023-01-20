@@ -2,14 +2,14 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn import cbm_exn_land_state
 
 
 def step_disturbance(
     model: "CBMEXNModel",
-    cbm_vars: CBMVariables,
-) -> CBMVariables:
+    cbm_vars: ModelVariables,
+) -> ModelVariables:
     """Compute and track disturbance matrix effects across multiple stands.
 
     The "disturbance_type" series of the `cbm_vars` `parameters` dataframe
@@ -21,10 +21,10 @@ def step_disturbance(
 
     Args:
         model (CBMEXNModel): initialized cbm_exn model
-        cbm_vars (CBMVariables): cbm variables and state
+        cbm_vars (ModelVariables): cbm variables and state
 
     Returns:
-        CBMVariables: updated cbm_variables and state
+        ModelVariables: updated cbm_variables and state
     """
     disturbance = model.matrix_ops.disturbance(
         cbm_vars["parameters"]["disturbance_type"],
@@ -37,8 +37,8 @@ def step_disturbance(
 
 def step_annual_process(
     model: "CBMEXNModel",
-    cbm_vars: CBMVariables,
-) -> CBMVariables:
+    cbm_vars: ModelVariables,
+) -> ModelVariables:
     """Compute and track CBM annual processes.
 
     Args:
@@ -69,7 +69,7 @@ def step_annual_process(
     return cbm_vars
 
 
-def step(model: "CBMEXNModel", cbm_vars: CBMVariables) -> CBMVariables:
+def step(model: "CBMEXNModel", cbm_vars: ModelVariables) -> ModelVariables:
     """Advance CBM state by one timestep, and track results.
 
     This function updates state variables, performs disturbances for affected
@@ -79,10 +79,10 @@ def step(model: "CBMEXNModel", cbm_vars: CBMVariables) -> CBMVariables:
 
     Args:
         model (CBMEXNModel): initialized cbm_exn model
-        cbm_vars (CBMVariables): cbm variables and state
+        cbm_vars (ModelVariables): cbm variables and state
 
     Returns:
-        CBMVariables: updated cbm_vars
+        ModelVariables: updated cbm_vars
     """
 
     cbm_vars["flux"].zero()

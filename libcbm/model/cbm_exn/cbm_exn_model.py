@@ -8,7 +8,7 @@ import numpy as np
 from libcbm import resources
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
@@ -16,7 +16,7 @@ from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
 from libcbm.wrapper.libcbm_operation import Operation
 
-cbm_vars_type = Union[CBMVariables, Dict[str, pd.DataFrame]]
+cbm_vars_type = Union[ModelVariables, Dict[str, pd.DataFrame]]
 
 
 class SpinupReporter:
@@ -26,7 +26,7 @@ class SpinupReporter:
         """initialize a SpinupReporter
 
         Args:
-            pandas_interface (bool): if true CBMVariables members are assumed
+            pandas_interface (bool): if true ModelVariables members are assumed
                 to be pandas dataframes, and otherwise the internal DataFrame
                 interfaces
         """
@@ -34,13 +34,13 @@ class SpinupReporter:
         self._pandas_interface = pandas_interface
 
     def append_spinup_output(
-        self, timestep: int, spinup_vars: CBMVariables
+        self, timestep: int, spinup_vars: ModelVariables
     ) -> None:
         """Append a set of results to the spinup reporter
 
         Args:
             timestep (int): the step number
-            spinup_vars (CBMVariables): the spinup variables and state
+            spinup_vars (ModelVariables): the spinup variables and state
         """
         self._output_processor.append_results(timestep, spinup_vars)
 
@@ -129,7 +129,7 @@ class CBMEXNModel:
         """
         if self._pandas_interface:
             return cbm_exn_step.step(
-                self, CBMVariables.from_pandas(cbm_vars)
+                self, ModelVariables.from_pandas(cbm_vars)
             ).to_pandas()
         else:
             return cbm_exn_step.step(self, cbm_vars)
@@ -153,7 +153,7 @@ class CBMEXNModel:
         if self._pandas_interface:
             return cbm_exn_spinup.spinup(
                 self,
-                CBMVariables.from_pandas(spinup_input),
+                ModelVariables.from_pandas(spinup_input),
                 reporting_func=reporting_func,
                 include_flux=reporting_func is not None,
             ).to_pandas()
@@ -215,14 +215,14 @@ class CBMEXNModel:
 
     def compute(
         self,
-        cbm_vars: CBMVariables,
+        cbm_vars: ModelVariables,
         operations: list[Operation],
     ):
         """Apply several sequential operations to the pools, and flux stored
         in the specified `cbm_vars`.
 
         Args:
-            cbm_vars (CBMVariables): Collection of CBM simulation variables.
+            cbm_vars (ModelVariables): Collection of CBM simulation variables.
                 This function modifies the `pools` and `flux` dataframes stored
                 within cbm_vars.
             operations (list[Operation]): The list of matrix operations to

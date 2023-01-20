@@ -2,7 +2,7 @@ from __future__ import annotations
 import pandas as pd
 import numpy as np
 import numba as nb
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
@@ -254,12 +254,12 @@ def _compute_overmature_decline(
 
 
 def prepare_spinup_growth_info(
-    spinup_vars: CBMVariables, parameters: CBMEXNParameters
+    spinup_vars: ModelVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
     """Pre-compute all growth C flow operations for spinup.
 
     Args:
-        spinup_vars (CBMVariables): collection of CBM parameters, simulation
+        spinup_vars (ModelVariables): collection of CBM parameters, simulation
             and state variables
         parameters (CBMEXNParameters): CBM constant parameters
 
@@ -387,13 +387,13 @@ def prepare_spinup_growth_info(
 
 
 def prepare_growth_info(
-    cbm_vars: CBMVariables, parameters: CBMEXNParameters
+    cbm_vars: ModelVariables, parameters: CBMEXNParameters
 ) -> dict[str, np.ndarray]:
     """
     Prepare the C flows for growth in a CBM timestep
 
     Args:
-        cbm_vars (CBMVariables): collection of CBM variables/parameters/state
+        cbm_vars (ModelVariables): collection of CBM variables/parameters/state
         parameters (CBMEXNParameters): CBM constant parameters
 
     Returns:

@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.storage.backends import BackendType
 from libcbm.storage.series import SeriesDef
 from libcbm.model.model_definition.spinup_engine import SpinupState
@@ -180,7 +180,7 @@ def init_cbm_vars(
     pool_names: list[str],
     flux_names: list[str],
     backend_type: BackendType,
-) -> CBMVariables:
+) -> ModelVariables:
     """Initialize dataframe storage for cbm variables and state.
 
     Member dataframes of cbm_vars::
@@ -200,10 +200,10 @@ def init_cbm_vars(
         backend_type (BackendType): The backend storage type
 
     Returns:
-        CBMVariables: Initialized cbm_vars
+        ModelVariables: Initialized cbm_vars
     """
 
-    return CBMVariables(
+    return ModelVariables(
         {
             "pools": init_pools(n_rows, pool_names, backend_type),
             "flux": init_flux(n_rows, flux_names, backend_type),

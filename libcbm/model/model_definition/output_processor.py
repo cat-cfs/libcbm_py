@@ -1,5 +1,5 @@
 from __future__ import annotations
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.storage import series
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
@@ -19,7 +19,7 @@ class ModelOutputProcessor:
     def __init__(self):
         self._results: dict[str, DataFrame] = {}
 
-    def append_results(self, t: int, results: CBMVariables):
+    def append_results(self, t: int, results: ModelVariables):
         """Append results to the output processor.  Values from the specified
         results will be concatenated with previous timestep results.
 
@@ -28,7 +28,7 @@ class ModelOutputProcessor:
 
         Args:
             t (int): the timestep
-            results (CBMVariables): collection of cbm variables and state for
+            results (ModelVariables): collection of cbm variables and state for
                 the timestep.
         """
         for name, df in results.get_collection().items():
@@ -67,4 +67,4 @@ class ModelOutputProcessor:
         Returns:
             dict[str, DataFrame]: collection of dataframes holding results.
         """
-        return CBMVariables(self._results)
+        return ModelVariables(self._results)

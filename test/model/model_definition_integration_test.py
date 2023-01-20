@@ -3,7 +3,7 @@ import pandas as pd
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 
 
 def test_integration():
@@ -159,7 +159,7 @@ def test_integration():
 
         output_processor = ModelOutputProcessor()
         n_stands = 2
-        model_vars = CBMVariables.from_pandas(
+        model_vars = ModelVariables.from_pandas(
             {
                 "pools": pd.DataFrame(
                     columns=model_handle.pool_names,

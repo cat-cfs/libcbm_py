@@ -1,7 +1,7 @@
 from __future__ import annotations
 from libcbm.model.model_definition.spinup_engine import SpinupState
 from libcbm.model.model_definition.model import CBMModel
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import spinup_engine
 from libcbm.model.cbm_exn import cbm_exn_variables
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
@@ -44,18 +44,18 @@ def _update_spinup_vars(
 
 
 def advance_spinup_state(
-    spinup_vars: CBMVariables,
-) -> tuple[bool, CBMVariables]:
+    spinup_vars: ModelVariables,
+) -> tuple[bool, ModelVariables]:
     """
     Update the variables and state at the start of each spinup timestep.
 
     Args:
-        spinup_vars (CBMVariables): Collection of variables, parameters
+        spinup_vars (ModelVariables): Collection of variables, parameters
             and state applicable to spinup procedure
 
     Returns:
-        tuple[bool, CBMVariables]: a tuple of the all finished flag,
-            and post-spinup-step modified CBMVariables
+        tuple[bool, ModelVariables]: a tuple of the all finished flag,
+            and post-spinup-step modified ModelVariables
     """
     n_stands = spinup_vars["state"]["spinup_state"].length
 
@@ -102,13 +102,15 @@ def advance_spinup_state(
     return all_finished, spinup_vars
 
 
-def init_cbm_vars(model: CBMModel, spinup_vars: CBMVariables) -> CBMVariables:
+def init_cbm_vars(
+    model: CBMModel, spinup_vars: ModelVariables
+) -> ModelVariables:
     """Initialze the CBM variables and state at the end of spinup and prior to
     CBM stepping
 
     Args:
         model (CBMModel): instance of CBMModel
-        spinup_vars (CBMVariables): Collection of variables, parameters
+        spinup_vars (ModelVariables): Collection of variables, parameters
             and state applicable to spinup procedure.
             See :py:mod:`libcbm.model.cbm_exn.cbm_exn_variables`
 
@@ -182,15 +184,15 @@ def _end_spinup_step(
             age[i] = 0
 
 
-def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
+def end_spinup_step(spinup_vars: ModelVariables) -> ModelVariables:
     """Update the spinup state and variables at the end of each spinup
     timestep.
 
     Args:
-        spinup_vars (CBMVariables): spinup state and variables
+        spinup_vars (ModelVariables): spinup state and variables
 
     Returns:
-        CBMVariables: inititlized state and variables
+        ModelVariables: initialized state and variables
     """
     _end_spinup_step(
         spinup_state=spinup_vars["state"]["spinup_state"].to_numpy(),
@@ -208,16 +210,16 @@ def end_spinup_step(spinup_vars: CBMVariables) -> CBMVariables:
 
 
 def start_step(
-    cbm_vars: CBMVariables, parameters: CBMEXNParameters
-) -> CBMVariables:
+    cbm_vars: ModelVariables, parameters: CBMEXNParameters
+) -> ModelVariables:
     """Assign the variables and state at the start of a CBM timestep.
 
     Args:
-        cbm_vars (CBMVariables): cbm state and variables
+        cbm_vars (ModelVariables): cbm state and variables
         parameters (CBMEXNParameters): constant CBM parameters
 
     Returns:
-        CBMVariables: updated cbm state and variables
+        ModelVariables: updated cbm state and variables
     """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     disturbed_idx = idx.filter(cbm_vars["parameters"]["disturbance_type"] > 0)
@@ -241,16 +243,16 @@ def start_step(
 
 
 def end_step(
-    cbm_vars: CBMVariables, parameters: CBMEXNParameters
-) -> CBMVariables:
+    cbm_vars: ModelVariables, parameters: CBMEXNParameters
+) -> ModelVariables:
     """Assign the variables and state at the end of a CBM timestep.
 
     Args:
-        cbm_vars (CBMVariables): cbm state and variables
+        cbm_vars (ModelVariables): cbm state and variables
         parameters (CBMEXNParameters): cbm constant parameters
 
     Returns:
-        CBMVariables: updated cbm state and variables
+        ModelVariables: updated cbm state and variables
     """
     idx = series.from_numpy("", np.arange(0, cbm_vars["pools"].n_rows))
     enabled_idx = idx.filter(cbm_vars["state"]["enabled"] > 0)
