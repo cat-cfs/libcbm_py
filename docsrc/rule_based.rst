@@ -27,9 +27,6 @@ SIT Specific functionality
 .. autoclass:: libcbm.model.cbm.rule_based.sit.sit_event_processor.SITEventProcessor
     :members:
 
-.. automodule:: libcbm.model.cbm.rule_based.sit.sit_event_processor
-    :members:
-
 .. automodule:: libcbm.model.cbm.rule_based.sit.sit_stand_filter
     :members:
 

@@ -1,7 +1,7 @@
 .. _cbm-exn:
 
-`cbm-exn`
-=========
+cbm-exn
+=======
 
 CBM-EXN is a CBM-CFS3 equivalent model, except that it is driven by net C
 increments.  Therefore the difference between CBM-EXN, and CBM-CFS3 is that
@@ -16,6 +16,8 @@ structuring via external grouping.
 
 `cbm_exn` is built using the :ref:`model_definition` interfaces and classes
 
+Functions and classes
+---------------------
 
 .. automodule:: libcbm.model.cbm_exn.cbm_exn_functions
     :members:

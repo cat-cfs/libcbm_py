@@ -53,6 +53,7 @@ Code Documentation
    model_definition
    moss_c_model
    cbm_exn
+
    libcbm_core_functions
    package_resources
 
