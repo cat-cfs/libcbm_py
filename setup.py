@@ -1,6 +1,7 @@
 import os
 from setuptools import setup
 from setuptools import find_packages
+from libcbm import __version__ as libcbm_version
 
 
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -74,7 +75,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="libcbm",
-    version="2.2.1",
+    version=libcbm_version,
     description="Carbon budget model library based on CBM-CFS3",
     keywords=["cbm-cfs3"],
     long_description=long_description,
