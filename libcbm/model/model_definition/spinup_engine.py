@@ -6,8 +6,8 @@ import numba
 
 
 class SpinupState(IntEnum):
-    """The possible spinup states for stands during spinup
-    """
+    """The possible spinup states for stands during spinup"""
+
     AnnualProcesses = 1
     HistoricalEvent = 2
     LastPassEvent = 3

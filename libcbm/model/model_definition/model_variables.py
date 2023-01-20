@@ -18,7 +18,8 @@ class ModelVariables:
 
     def __setitem__(self, name: str, new_value: DataFrame):
         self._data[name] = dataframe.convert_dataframe_backend(
-            new_value, self._data[name].backend_type)
+            new_value, self._data[name].backend_type
+        )
 
     def __contains__(self, name: str) -> bool:
         return name in self._data

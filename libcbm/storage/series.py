@@ -355,6 +355,7 @@ class SeriesDef:
     Information/Factory class to allocate initialized series for Series
     and DataFrame construction
     """
+
     def __init__(self, name: str, init: Any, dtype: str):
         """Initialize SeriesDef
 
