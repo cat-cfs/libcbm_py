@@ -21,20 +21,6 @@ Key Features
  - Implementation of the moss C model See: moss-c-publication_
  - Support for running CBM-CFS3 dynamics using net above ground biomass C Increment: :ref:`cbm-exn`
 
-Requirements
-------------
- - python3x
- - The libcbm compiled library, or libcbm c/c++ source
- - numpy
- - pandas
- - sqlite3
- - numexpr
-
-Running the notebooks in /examples Also have additional requirements:
- - scipy
- - jupyter
- - jupytext
-
 
 Code Documentation
 ------------------
@@ -45,12 +31,10 @@ Code Documentation
 
    cbm_model
    cbm_sit
-   rule_based
    cbm3_tutorial2
    model_definition
    moss_c_model
    cbm_exn
-
    libcbm_core_functions
    package_resources
 
