@@ -46,6 +46,30 @@ def _concat_timestep_results(
 
 
 class CBMOutput:
+    """
+    Initialize CBMOutput
+
+    Args:
+        density (bool, optional): if set to true pool and flux indicators
+            will be computed as area densities (tonnes C/ha). By default,
+            pool and flux outputs are computed as mass (tonnes C) based on
+            the area of each stand. Defaults to False.
+        classifier_map (dict[int, str], optional): a classifier map for
+            subsituting the internal classifier id values with classifier
+            value names. If specified, the names associated with each id
+            in the map are the values in the the classifiers result
+            DataFrame. If set to None the id values will be returned.
+        disturbance_type_map (dict[int, str], optional): a disturbance
+            type map for subsituting the internally defined disturbance
+            type id with names or other ids in the parameters and state
+            tables.  If set to none no substitution will occur.
+        backend_type (BackendType, optional): the storage backend for the
+            output, one of the values of
+            :py:class:`libcbm.storage.backends.BackendType`. Defaults to
+            `BackendType.numpy` meaning simulation results will be stored
+            in memory.
+    """
+
     def __init__(
         self,
         density: bool = False,
@@ -53,32 +77,6 @@ class CBMOutput:
         disturbance_type_map: dict[int, str] = None,
         backend_type: BackendType = BackendType.numpy,
     ):
-        """Create storage and a function for complete simulation results.  The
-        function return value can be passed to :py:func:`simulate` to track
-        simulation results.
-
-        Args:
-            density (bool, optional): if set to true pool and flux indicators
-                will be computed as area densities (tonnes C/ha). By default,
-                pool and flux outputs are computed as mass (tonnes C) based on
-                the area of each stand. Defaults to False.
-            classifier_map (dict, optional): a classifier map for subsituting
-                the internal classifier id values with classifier value names.
-                If specified, the names associated with each id in the map are
-                the values in the  the classifiers result DataFrame  If set to
-                None the id values will be returned.
-            disturbance_type_map (dict, optional): a disturbance type map for
-                subsituting the internally defined disturbance type id with
-                names or other ids in the parameters and state tables.  If set
-                to none no substitution will occur.
-            backend_type (BackendType, optional): the storage backend for the
-                output, one of the values of
-                :py:class:`libcbm.storage.backends.BackendType`. Defaults to
-                `BackendType.numpy` meaning simulation results will be stored
-                in memory.
-            backend_params (dict): may be required depending on the specified
-                backend_type, but not required by default. Defaults to None
-        """
         self._density = density
         self._disturbance_type_map = disturbance_type_map
         self._classifier_map = classifier_map
@@ -96,41 +94,56 @@ class CBMOutput:
 
     @property
     def disturbance_type_map(self) -> dict[int, str]:
+        """get this instance's disturbance type map"""
         return self._disturbance_type_map
 
     @property
     def classifier_map(self) -> dict[int, str]:
+        """get this instance's clasifier map"""
         return self._classifier_map
 
     @property
     def backend_type(self) -> BackendType:
+        """get this instance's backend type"""
         return self._backend_type
 
     @property
     def pools(self) -> DataFrame:
+        """get all accumulated pool results"""
         return self._pools
 
     @property
     def flux(self) -> DataFrame:
+        """get all accumulated flux results"""
         return self._flux
 
     @property
     def state(self) -> DataFrame:
+        """get all accumulated state results"""
         return self._state
 
     @property
     def classifiers(self) -> DataFrame:
+        """get all accumulated clasifier results"""
         return self._classifiers
 
     @property
     def parameters(self) -> DataFrame:
+        """get all accumulated parameter results"""
         return self._parameters
 
     @property
     def area(self) -> DataFrame:
+        """get all accumulated area results"""
         return self._area
 
     def append_simulation_result(self, timestep: int, cbm_vars: CBMVariables):
+        """Append simulation resuls
+
+        Args:
+            timestep (int): the timestep corresponding to the results
+            cbm_vars (CBMVariables): The cbm vars for the timestep
+        """
         timestep_pools = (
             cbm_vars.pools.copy()
             if self._density

@@ -74,6 +74,11 @@ CBM Step variables Initialization
 
 .. autofunction:: initialize_simulation_variables
 
+Output processing
+-----------------
+
+.. autoclass:: libcbm.model.cbm.cbm_output.CBMOutput
+    :members:
 
 Configuration Details
 ---------------------
