@@ -15,7 +15,6 @@ Key Features
 ------------
 
  - User allocated model state using numpy/Pandas and user controlled model stepping See: :ref:`cbm-model`
- - Core CBM dynamics and state functions. See: :ref:`cbm-core-functions`
  - General purpose matrix-based pool/flux compute methods. See: :ref:`libcbm-core-functions`
  - Example jupyter notebooks (see /examples)
  - Full support for the CBM-CFS3 standard import tool format
@@ -45,11 +44,9 @@ Code Documentation
    :caption: Contents:
 
    cbm_model
-   cbm_input_and_variables
    cbm_sit
    rule_based
    cbm3_tutorial2
-   cbm_core_functions
    model_definition
    moss_c_model
    cbm_exn

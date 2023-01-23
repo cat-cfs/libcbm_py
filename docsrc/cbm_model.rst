@@ -1,22 +1,27 @@
+:tocdepth: 2
+
 .. _cbm-model:
 
-CBM
-===
+
+CBM-CFS3 support in libcbm
+==========================
 
 LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
 
-Usage
------
+libcbm supports 2 main methods for running the CBM-CFS3 implementation.
+
+ * Standard import tool (CBM-SIT) format support :ref:`cbm-sit`
+ * Multi-Stand level modelling support
+
+CBM Classes and functions
+-------------------------
 
 A CBM instance can be initialized by using a composed factory method.
 
 .. automodule:: libcbm.model.cbm.cbm_factory
     :members:
-
-The CBM class
--------------
 
 The CBM class is a set of functions that run the CBM model including spinup,
 variable initialization and model stepping.  It replicates the Carbon dynamics
@@ -44,6 +49,31 @@ Simulator
 
 .. automodule:: libcbm.model.cbm.cbm_simulator
     :members:
+
+CBM Input and Variables
+-----------------------
+
+.. currentmodule:: libcbm.model.cbm.cbm_variables
+
+CBM Variables class (cbm_vars)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: CBMVariables
+    :members:
+
+CBM Spinup variables Initialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: initialize_spinup_variables
+
+.. autofunction:: initialize_spinup_parameters
+
+
+CBM Step variables Initialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: initialize_simulation_variables
+
 
 Configuration Details
 ---------------------
