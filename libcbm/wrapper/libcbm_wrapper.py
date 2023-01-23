@@ -182,7 +182,7 @@ class LibCBMWrapper:
 
             matrix_index = [0, 1, 1, 2, 0]
 
-        Result of example (dense matrix form):
+        Result of example (dense matrix form)::
 
             stand0_matrix = [
                 [0.00, 0.20, 0.40],
@@ -258,6 +258,7 @@ class LibCBMWrapper:
                     M = op.get_matrix(s)
                     pools[s,:] = np.matmul(pools[s,:], M)
 
+
         Where get_matrix is pseudocode for an internal function returning the
         matrix for the op, stand index combination.
 
@@ -302,11 +303,17 @@ class LibCBMWrapper:
         flux: DataFrame,
         enabled: Series = None,
     ):
-        """Computes and tracks flows between pool values for all stands.
+
+        """
+        Computes and tracks flows between pool values for all stands.
 
         Performs the same operation as compute_pools, except that the fluxes
         are tracked in the specified flux parameter, according to the
         flux_indicators configuration passed to the LibCBM initialize method.
+
+        Raises:
+            ValueError: raised when parameters passed to this function are not
+                valid.
 
         Args:
             ops (list): list of matrix block ids as allocated by the
@@ -329,9 +336,6 @@ class LibCBMWrapper:
                 enabled stand index. If None, all flows are assumed to be
                 enabled. Defaults to None.
 
-        Raises:
-            ValueError: raised when parameters passed to this function are not
-                valid.
         """
         if not self.handle:
             raise AssertionError("dll not initialized")

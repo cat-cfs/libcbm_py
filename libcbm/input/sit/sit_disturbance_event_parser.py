@@ -1,6 +1,8 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+
 from __future__ import annotations
 import numpy as np
 import pandas as pd
@@ -71,7 +73,7 @@ def parse_eligibilities(
       are defined in the cbm_defaults database tables.
     * for state_filter_expression any of the state values may be used in the
       boolean expression. See:
-     :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
+      :py:func:`libcbm.model.cbm.cbm_variables.initialize_cbm_state_variables`
 
     The final eligibility is evaluated as follows:
 
@@ -149,6 +151,7 @@ def parse(
     age_classes: pd.DataFrame = None,
     separate_eligibilities: pd.DataFrame = False,
 ) -> pd.DataFrame:
+
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
     eligibilites are separate from sit_events and joined by foreign key.
@@ -190,7 +193,6 @@ def parse(
     Returns:
         pandas.DataFrame: the validated disturbance events
     """
-
     disturbance_event_format = sit_format.get_disturbance_event_format(
         classifiers.name,
         len(disturbance_events.columns),
