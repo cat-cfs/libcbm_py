@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 .. _cbm-sit:
 
 CBM Standard Import tool format
@@ -12,6 +14,45 @@ labels in DataFrames passed to SIT parse functions function will be ignored
 by the parsing functions here.
 
 .. _CBM-CFS3-Manual: http://www.cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf
+
+
+
+Simulating SIT input
+--------------------
+
+.. automodule:: libcbm.input.sit.sit_cbm_factory
+    :members:
+
+Reading SIT input
+-----------------
+
+.. automodule:: libcbm.input.sit.sit_reader
+    :members:
+
+SIT Mapping
+-----------
+
+.. autoclass:: libcbm.input.sit.sit_mapping.SITMapping
+    :members:
+
+
+The SIT Format
+--------------
+
+.. automodule:: libcbm.input.sit.sit_parser
+    :members:
+
+.. automodule:: libcbm.input.sit.sit_format
+    :members:
+
+SIT Configuration
+-----------------
+
+.. automodule:: libcbm.input.sit.sit_cbm_config
+    :members:
+
+.. automodule:: libcbm.input.sit.sit_cbm_defaults
+    :members:
 
 Classifiers
 -----------
@@ -53,31 +94,4 @@ Transition Rules
 ------------------
 
 .. automodule:: libcbm.input.sit.sit_transition_rule_parser
-    :members:
-
-The SIT Format
---------------
-
-.. automodule:: libcbm.input.sit.sit_parser
-    :members:
-
-.. automodule:: libcbm.input.sit.sit_format
-    :members:
-
-Simulating SIT input
---------------------
-
-.. automodule:: libcbm.input.sit.sit_cbm_factory
-    :members:
-
-Reading SIT input
------------------
-
-.. automodule:: libcbm.input.sit.sit_reader
-    :members:
-
-SIT Mapping
------------
-
-.. autoclass:: libcbm.input.sit.sit_mapping.SITMapping
     :members:
