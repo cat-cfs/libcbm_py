@@ -1,12 +1,14 @@
+:tocdepth: 2
+
 .. _libcbm-core-functions:
 
-LibCBM core functionality
+libcbm core functionality
 =========================
 
 Dataframe abstraction
 ---------------------
 
-Libcbm has an abstraction layer for dataframes for isolating interactions with
+libcbm has an abstraction layer for dataframes for isolating interactions with
 external libraries such as numpy, pandas and dask.  Internally libcbm
 functionality calls this abstraction layer rather than the 3rd party libraries directly.
 

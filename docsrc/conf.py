@@ -16,6 +16,7 @@ import sys
 sys.path.insert(0, os.path.abspath("../"))
 
 from libcbm import __version__  # noqa: E402
+
 version = __version__
 
 # -- Project information -----------------------------------------------------
