@@ -34,7 +34,8 @@ class ModelVariables:
     @staticmethod
     def from_pandas(frames: dict[str, pd.DataFrame]) -> "ModelVariables":
         """
-        Assemble a CBMVariables instance from a collection of pandas DataFrames
+        Assemble a ModelVariables instance from a collection of pandas
+        DataFrames
         """
         return ModelVariables(
             {k: dataframe.from_pandas(v) for k, v in frames.items()}
