@@ -2,8 +2,7 @@ from enum import Enum
 
 
 class BackendType(Enum):
-    """Enumeration of the supported dataFrame, series backend types in libcbm
-    """
+    """Enumeration of the supported dataFrame, series backend types in libcbm"""
 
     numpy = 1
     """the numpy backend type
