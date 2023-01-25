@@ -415,6 +415,12 @@ class NumpySeriesBackend(Series):
             self._get_data()[indices.to_numpy()],
         )
 
+    def is_null(self) -> "Series":
+        return NumpySeriesBackend(
+            self._name,
+            pd.isnull(self._get_data())
+        )
+
     def as_type(self, type_name: str) -> "Series":
         return NumpySeriesBackend(
             self._name, self._get_data().astype(type_name)

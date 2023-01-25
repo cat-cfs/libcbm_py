@@ -145,6 +145,12 @@ class PandasSeriesBackend(Series):
             self._get_series().iloc[indices.to_numpy()].reset_index(drop=True),
         )
 
+    def is_null(self) -> "Series":
+        return PandasSeriesBackend(
+            self._name,
+            pd.isnull(self._get_series())
+        )
+
     def as_type(self, type_name: str) -> "Series":
         return PandasSeriesBackend(
             self._name, self._get_series().astype(type_name)

@@ -66,6 +66,16 @@ class Series(ABC):
         """
         pass
 
+    @abstractmethod
+    def is_null(self) -> "Series":
+        """Returns true where items in this series are None, or nan
+
+        Returns:
+            Series: boolean series indicating positions of None or nan in this
+                series
+        """
+        pass
+
     @abstractmethod  # pragma: no cover
     def as_type(self, type_name: str) -> "Series":
         """Return a copied series with all elements converted to the specified
@@ -179,7 +189,7 @@ class Series(ABC):
         """returns a copy of the values in this series as a list
 
         Returns:
-            list: _description_
+            list: the series as a python list
         """
         pass
 
