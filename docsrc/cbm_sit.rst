@@ -8,7 +8,7 @@ CBM Standard Import tool format
 See Chapter 3 of the Operational-Scale CBM-CFS3-Manual_ for a detailed
 description of this format.
 
-Note the SIT format does not define specifically names to column headers.
+Note the SIT format does not define specific names to column headers.
 It instead interprets column meaning based on column ordering, so any column
 labels in DataFrames passed to SIT parse functions function will be ignored
 by the parsing functions here.

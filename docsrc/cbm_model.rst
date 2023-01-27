@@ -9,14 +9,32 @@ CBM-CFS3 support in libcbm
 LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.
 
 .. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
+.. _cbm3-tutorial2: cbm3_tutorial2.ipynb
+.. _multi-stand-modelling: multi_stand_modelling.ipynb
 
-libcbm supports 2 main methods for running the CBM-CFS3 implementation.
+libcbm supports methods for running the CBM-CFS3 implementation.
 
- * Standard import tool (CBM-SIT) format support :ref:`cbm-sit`
- * Multi-Stand level modelling support
+Standard import tool (CBM-SIT) format
+-------------------------------------
 
-CBM Classes and functions
--------------------------
+See cbm3-tutorial2_ for a step by step example for running libcbm via
+SIT format in a jupyter notebook.
+
+Code documentation for the SIT implementation :ref:`cbm-sit`
+
+
+Multi-Stand level modelling support
+-----------------------------------
+
+Libcbm can also run a simplified version of CBM, without the rule-based
+disturbances and transitions built into the SIT.  This method may be more
+suitable for larger scale simulations with direct, many-to-one linkages for
+disturbance events to stands across timesteps.
+
+See multi-stand-modelling_ for a step by step example of running libcbm this way.
+
+Internal CBM Classes and functions
+----------------------------------
 
 A CBM instance can be initialized by using a composed factory method.
 
@@ -39,7 +57,6 @@ The CBM class consists of 3 methods for simulating Carbon dynamics
 
 An instance of the CBM model can be created with the
 :py:func:`libcbm.model.cbm.cbm_factory` function.
-
 
 .. autoclass:: libcbm.model.cbm.cbm_model.CBM
     :members:
