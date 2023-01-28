@@ -8,5 +8,4 @@
 /.coverage
 /.pytest_cache
 /htmlcov
-*.ipynb
 debug.py
