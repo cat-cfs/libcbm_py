@@ -6,4 +6,6 @@ python ./convert_example_notebooks.py
 :: make the notebooks look at the local dir
 SET PYTHONPATH=%CD%
 pytest --nbval-lax ./examples --cov=libcbm --cov-report html  --cov-append
+:: run the notebooks in the docs dir as well
+pytest --nbval-lax ./docs --cov=libcbm --cov-report html  --cov-append
 coverage-badge -o coverage.svg -f
