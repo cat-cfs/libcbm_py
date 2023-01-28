@@ -146,10 +146,7 @@ class PandasSeriesBackend(Series):
         )
 
     def is_null(self) -> "Series":
-        return PandasSeriesBackend(
-            self._name,
-            pd.isnull(self._get_series())
-        )
+        return PandasSeriesBackend(self._name, pd.isnull(self._get_series()))
 
     def as_type(self, type_name: str) -> "Series":
         return PandasSeriesBackend(

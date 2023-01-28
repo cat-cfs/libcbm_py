@@ -96,7 +96,6 @@ def create_from_csv(
     spinup_parameter_fn: str = "spinup_parameter.csv",
     backend_type: BackendType = BackendType.pandas,
 ) -> ModelContext:
-
     def read_csv(fn: str, index_col: str = "id"):
         path = os.path.join(dir, fn)
         return pd.read_csv(path, index_col=index_col)
