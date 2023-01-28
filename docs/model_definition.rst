@@ -5,9 +5,12 @@
 Model definition
 ================
 
-The model_definition package of libcbm can be used to define a CBM-like model using python code.
+The model_definition package of libcbm can be used to define a CBM-like model
+using python code.
 
 
+Code Docs
+---------
 .. currentmodule:: libcbm.model.model_definition.model
 
 .. autofunction:: initialize
