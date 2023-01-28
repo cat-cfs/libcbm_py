@@ -20,7 +20,7 @@ import pandas as pd
 import numpy as np
 from numpy.random import default_rng
 from libcbm.model.cbm_exn import cbm_exn_model
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 ```
 
@@ -127,7 +127,7 @@ for t in range(50):
     cbm_vars["parameters"]["foliage_inc"] = increments["SoftwoodFoliage"]
     cbm_vars["parameters"]["other_inc"] = increments["SoftwoodOther"]
     cbm_vars = step(cbm_vars)
-    output_processor.append_results(t, CBMVariables.from_pandas(cbm_vars))
+    output_processor.append_results(t, ModelVariables.from_pandas(cbm_vars))
 ```
 
 ```python
