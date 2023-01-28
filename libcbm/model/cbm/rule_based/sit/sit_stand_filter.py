@@ -177,6 +177,7 @@ def create_last_disturbance_type_filter(
     # by convention in the SIT events format, a value of -1 is a null
     if is_float and last_dist_type_float == -1.0:
         return ""
+
     expression = "({state_variable} {operator} {value})".format(
         state_variable="last_disturbance_type",
         operator="==",
