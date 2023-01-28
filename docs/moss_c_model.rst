@@ -1,3 +1,5 @@
+:tocdepth: 2
+
 .. _moss-c-model:
 
 Moss C
@@ -25,4 +27,3 @@ Moss C helper methods
 
 .. automodule:: libcbm.model.moss_c.merch_vol_lookup
     :members:
-
