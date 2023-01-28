@@ -5,11 +5,16 @@
 Moss C
 ======
 
-.. automodule:: libcbm.model.moss_c.model
+.. automodule:: libcbm.model.moss_c.model_context_factory
     :members:
 
 .. autoclass:: libcbm.model.moss_c.model_context.ModelContext
     :members:
+
+.. automodule:: libcbm.model.moss_c.model
+    :members:
+
+
 
 Moss C pools and flux
 ---------------------
