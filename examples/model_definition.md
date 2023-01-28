@@ -21,7 +21,7 @@ import pandas as pd
 ```python
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
-from libcbm.model.model_definition.cbm_variables import CBMVariables
+from libcbm.model.model_definition.model_variables import ModelVariables
 ```
 
 ```python
@@ -214,7 +214,7 @@ with model.initialize(pool_def, flux_indicators) as cbm_model:
     rng = np.random.default_rng()
     output_processor = ModelOutputProcessor()
     n_stands = 10
-    model_vars = CBMVariables.from_pandas(
+    model_vars = ModelVariables.from_pandas(
         {
             "pools": pd.DataFrame(
                 columns=cbm_model.pool_names,
@@ -293,4 +293,8 @@ flux.to_pandas()[
     ['timestep', 'NPP', 'DecayEmissions', 'DisturbanceEmissions',
      'HarvestProduction']
 ].groupby("timestep").sum().plot(figsize=(15,10))
+```
+
+```python
+
 ```
