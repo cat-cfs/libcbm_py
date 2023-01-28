@@ -39,9 +39,11 @@ def _np_map(a: np.ndarray, m: numba.typed.Dict, out: np.ndarray):
 
 
 class DMData:
+
     def __init__(
         self, dm_dist_type_index: dict[int, int], dm_list: list[np.ndarray]
     ):
+
         self._dm_dist_type_index = dm_dist_type_index
         self._dm_list = dm_list
 

@@ -43,7 +43,7 @@ def _checked_merge(
     return merged
 
 
-def initialize_dynamics_parameter(input_data: InputData) -> DataFrame:
+def _initialize_dynamics_parameter(input_data: InputData) -> DataFrame:
 
     max_vols = pd.DataFrame(
         {
@@ -95,7 +95,8 @@ def create_from_csv(
     merch_volume_fn: str = "merch_volume.csv",
     spinup_parameter_fn: str = "spinup_parameter.csv",
     backend_type: BackendType = BackendType.pandas,
-):
+) -> ModelContext:
+
     def read_csv(fn: str, index_col: str = "id"):
         path = os.path.join(dir, fn)
         return pd.read_csv(path, index_col=index_col)
@@ -110,7 +111,7 @@ def create_from_csv(
         merch_volume=read_csv(merch_volume_fn),
         spinup_parameter=read_csv(spinup_parameter_fn),
     )
-    parameters = initialize_dynamics_parameter(input_data)
+    parameters = _initialize_dynamics_parameter(input_data)
     return ModelContext(
         dataframe.from_pandas(input_data.inventory),
         parameters,
