@@ -26,7 +26,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - name: setup python
         uses: actions/setup-python@v1
@@ -34,6 +34,7 @@ jobs:
           python-version: "3.10"
       - name: setup sphinx
         run: |
+          choco install pandoc
           python -m pip install --upgrade pip
           pip install sphinx
           pip install nbsphinx
