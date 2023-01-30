@@ -11,7 +11,7 @@ library(reticulate)
 
 model <- import("libcbm.model.model_definition.model")
 output_processor <- import("libcbm.model.model_definition.output_processor")
-cbm_variables <- import("libcbm.model.model_definition.cbm_variables")
+model_variables <- import("libcbm.model.model_definition.model_variables")
 ```
 
 ``` {r}
@@ -206,7 +206,7 @@ with(model$initialize(pool_def, flux_indicators) %as% cbm_model, {
     out_processor = output_processor$ModelOutputProcessor()
     n_stands = 20000L
 
-    model_vars <- cbm_variables$CBMVariables$from_pandas(
+    model_vars <- model_variables$ModelVariables$from_pandas(
       dict(
         pools=data.frame(
           matrix(

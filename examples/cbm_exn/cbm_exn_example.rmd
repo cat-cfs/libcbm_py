@@ -16,7 +16,7 @@ library(reticulate)
 library(plyr)
 cbm_exn_model <- import("libcbm.model.cbm_exn.cbm_exn_model")
 libcbm_resources <- import("libcbm.resources")
-cbm_variables <- import("libcbm.model.model_definition.cbm_variables")
+model_variables <- import("libcbm.model.model_definition.model_variables")
 output_processor <- import("libcbm.model.model_definition.output_processor")
 ```
 
@@ -138,7 +138,7 @@ for(t in 1:50){
   cbm_vars = step(cbm_vars)
   
   out_processor$append_results(
-    t, cbm_variables$CBMVariables$from_pandas(cbm_vars)
+    t, model_variables$ModelVariables$from_pandas(cbm_vars)
   )
 }
 
