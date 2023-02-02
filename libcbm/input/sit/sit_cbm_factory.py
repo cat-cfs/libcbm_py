@@ -37,24 +37,34 @@ DEFAULT_RNG: np.random.Generator = np.random.default_rng()
 
 
 class EventSort(Enum):
+    """
+    Controls the order in which SIT events are evaulated within a given
+    timestep.
+    """
 
-    # evaluate sit events by timestep, and then order of
-    # appearance of disturbance types in
-    # sit_disturbance_types (default)
     disturbance_type = 1
+    """
+    evaluate sit events by timestep, and then disturbance types in
+    sit_disturbance_types (default)
+    """
 
-    # evaluate sit events by timestep, and then the default disturbance type
-    # id defined in cbm_defaults database (CBM3 default)
     default_disturbance_type_id = 2
+    """
+    evaluate sit events by timestep, and then the default disturbance type
+    id defined in cbm_defaults database (CBM3 default)
+    """
 
-    # evaluate sit events sorted first by timestep, and then order of
-    # appearance of events within the sit_events table
     natural_order = 3
+    """
+    evaluate sit events sorted first by timestep, and then order of
+    appearance of events within the sit_events table
+    """
 
 
 def initialize_inventory(
     sit: SIT, backend_type: BackendType = BackendType.pandas
 ) -> Tuple[DataFrame, DataFrame]:
+
     if not sit.sit_data.chunked_inventory:
         pd_classifiers, pd_inventory = _initialize_inventory(
             sit.sit_mapping,
