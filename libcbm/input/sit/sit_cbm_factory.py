@@ -6,6 +6,7 @@ import os
 import json
 from typing import Callable
 from typing import Tuple
+from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
 import numpy as np
@@ -25,6 +26,9 @@ from libcbm.input.sit.sit import SIT
 from libcbm.input.sit.sit_reader import SITData
 from libcbm import resources
 from libcbm.model.cbm.rule_based.sit import sit_rule_based_processor
+from libcbm.model.cbm.rule_based.sit.sit_rule_based_processor import (
+    SITRuleBasedProcessor,
+)
 from libcbm.input.sit import sit_cbm_config
 from libcbm.input.sit.sit_cbm_config import SITIdentifierMapping
 from libcbm.storage.dataframe import DataFrame
@@ -292,7 +296,7 @@ def load_sit(
 @contextmanager
 def initialize_cbm(
     sit: SIT, dll_path=None, parameters_factory: Callable[[], dict] = None
-) -> CBM:
+) -> Iterator[CBM]:
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
 
@@ -348,7 +352,7 @@ def create_sit_rule_based_processor(
     sit_disturbance_eligibilities: pd.DataFrame = None,
     sit_transition_rules: pd.DataFrame = None,
     event_sort: EventSort = EventSort.disturbance_type,
-):
+) -> SITRuleBasedProcessor:
     """initializes a class for processing SIT rule based disturbances.
 
     Args:
