@@ -92,8 +92,6 @@ def initialize(
         pool_config (list[str]): list of string pool identifiers.
         flux_config (list[dict]): list of flux indicator dictionary
             structures.
-        model_parameters (dict): a dictionary of abitrary model
-            parameters used by the specified spinup or step functions
 
     Example Pools::
 
