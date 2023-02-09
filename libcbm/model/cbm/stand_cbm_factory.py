@@ -126,7 +126,7 @@ class StandCBMFactory:
         self.merch_vol_factory = self.merch_volumes_factory()
 
         self._disturbance_type_map = {
-            r["disturbance_type_id"]: r["disturbance_type_name"]
+            int(r["disturbance_type_id"]): r["disturbance_type_name"]
             for r in self.defaults_ref.disturbance_type_ref
         }
         self._disturbance_type_map[0] = ""
@@ -203,7 +203,7 @@ class StandCBMFactory:
     @property
     def classifier_value_names(self):
         """dictionary of classifier value id to classifier value name"""
-        self._classifier_idx["classifier_value_names"]
+        return self._classifier_idx["classifier_value_names"]
 
     def _get_classifier_value_ids(
         self, classifier_name: str, classifier_value_name_series: Series
