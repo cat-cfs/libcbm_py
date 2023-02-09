@@ -1,0 +1,113 @@
+---
+title: "multi stand level modelling in libcbm (R version)"
+output: html_notebook
+---
+
+```{r}
+library(reticulate)
+np = import("numpy")
+libcbm_dataframe = import("libcbm.storage.dataframe")
+stand_cbm_factory = import("libcbm.model.cbm.stand_cbm_factory")
+cbm_output = import("libcbm.model.cbm.cbm_output")
+cbm_simulator = import("libcbm.model.cbm.cbm_simulator")
+cbm_variables = import("libcbm.model.cbm.cbm_variables")
+```
+
+Define merchantable volume and classifiers input
+```{r}
+
+classifiers = dict(
+    c1=list("c1_v1"),
+    c2=list("c2_v1")
+)
+
+
+merch_volumes = list(
+    dict(
+        classifier_set=list("c1_v1", "?"),
+        merch_volumes=list(
+          dict(
+            species="Spruce",
+            age_volume_pairs=list(
+                list(0, 0),
+                list(50, 100),
+                list(100, 150),
+                list(150, 200)
+            )
+          )
+        )
+    )
+)
+
+```
+
+```{r}
+n_steps=50
+n_stands=1000
+
+inventory = libcbm_dataframe$from_pandas(
+  data.frame(
+    c1="c1_v1",
+    c2="c2_v1",
+    admin_boundary="Ontario",
+    eco_boundary="Mixedwood Plains",
+    age=sample(0L:60L, n_stands, replace=T),
+    area=1.0,
+    delay=0L,
+    land_class="UNFCCC_FL_R_FL",
+    afforestation_pre_type="None",
+    historic_disturbance_type="Wildfire",
+    last_pass_disturbance_type="Wildfire"
+    
+  )
+)
+```
+
+```{r}
+pre_dynamics <- function(t, cbm_vars){
+
+    
+    disturbance_types = sample(
+        c(0L,1L,2L),
+        n_stands,
+        replace=TRUE,
+        prob=c(0.95, 0.03, 0.02)
+    )
+    
+    cbm_vars$parameters["disturbance_type"]$assign(disturbance_types)
+
+    return( cbm_vars)
+}
+    
+
+cbm_factory = stand_cbm_factory$StandCBMFactory(
+  classifiers, merch_volumes
+)
+inv_tuple  = cbm_factory$prepare_inventory(inventory)
+csets = inv_tuple[[1]]
+inv = inv_tuple[[2]]
+
+with(cbm_factory$initialize_cbm() %as% cbm, {
+    output = cbm_output$CBMOutput(
+      classifier_map=dict(cbm_factory$classifier_value_names),
+      disturbance_type_map=dict(cbm_factory$disturbance_types)
+    )
+
+    
+    cbm_simulator$simulate(
+        cbm,
+        n_steps=n_steps,
+        classifiers=csets,
+        inventory=inv,
+        pre_dynamics_func=pre_dynamics,
+        reporting_func=output$append_simulation_result
+    )
+})
+```
+
+```{r}
+state_output = output$state$to_pandas()
+aggregated_age = aggregate(state_output$age, by=list(timestep=state_output$timestep), FUN=mean)
+colnames(aggregated_age)= c("timestep", "age")
+plot(aggregated_age$timestep, aggregated_age$age)
+```

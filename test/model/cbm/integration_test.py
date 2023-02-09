@@ -61,7 +61,7 @@ def test_integration():
                     1.0,
                     0,
                     "UNFCCC_FL_R_FL",
-                    None,
+                    "None",
                     "Wildfire",
                     "Wildfire",
                 ]

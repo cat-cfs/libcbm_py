@@ -61,7 +61,7 @@ def run_cbm():
             "historic_disturbance_type", "last_pass_disturbance_type"],
         data=[
             ["c1_v1", "c2_v1", "Ontario", "Mixedwood Plains", 15, 1.0,
-             0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]]))
+             0, "UNFCCC_FL_R_FL", "None", "Wildfire", "Wildfire"]]))
 
     n_stands = inventory.n_rows
 

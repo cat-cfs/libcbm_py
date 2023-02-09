@@ -56,9 +56,9 @@ inventory = dataframe.from_pandas(pd.DataFrame(
         "historic_disturbance_type", "last_pass_disturbance_type"],
     data=[
         ["c1_v1", "c2_v1", "British Columbia", "Pacific Maritime", 15, 1.0,
-         0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"],
+         0, "UNFCCC_FL_R_FL", "None", "Wildfire", "Wildfire"],
         ["c1_v1", "c2_v1", "British Columbia", "Pacific Maritime", 0, 1.0,
-         0, "UNFCCC_FL_R_FL", None, "Wildfire", "Wildfire"]]))
+         0, "UNFCCC_FL_R_FL", "None", "Wildfire", "Wildfire"]]))
 
 n_stands = inventory.n_rows
 
@@ -83,7 +83,7 @@ with cbm_factory.initialize_cbm() as cbm:
     spinup_results = CBMOutput(density=True)
     cbm_results = CBMOutput(
         classifier_map=cbm_factory.classifier_value_names,
-        disturbance_type_map={0: "none", 1: "fires"})
+        disturbance_type_map=cbm_factory.disturbance_types)
     cbm_simulator.simulate(
         cbm,
         n_steps=n_steps,

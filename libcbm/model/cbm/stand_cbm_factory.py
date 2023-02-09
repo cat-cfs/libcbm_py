@@ -12,7 +12,6 @@ from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
-import pandas as pd
 
 
 def _apply(series: Series, func: Callable):
@@ -23,14 +22,18 @@ def _apply(series: Series, func: Callable):
         series (Series): the series to map
         func (Callable): map function
 
-    Raises:
-        ValueError: at least one value in the mapped series was null
-
     Returns:
         Series: The mapped series
     """
     _map = {x: func(x) for x in series.to_list()}
-    out_series = series.map(_map)
+    try:
+        out_series = series.map(_map)
+    except KeyError:
+        raise KeyError(
+            "mapping values failed: "
+            f"series values: {series.to_list()[:10]} ...,"
+            f"map values: {list(_map.items())[:10]} ..."
+        )
     return out_series
 
 
@@ -123,7 +126,7 @@ class StandCBMFactory:
         self.merch_vol_factory = self.merch_volumes_factory()
 
         self._disturbance_type_map = {
-            r["disturbance_type_id"]: r["disturbance_type_name"]
+            int(r["disturbance_type_id"]): r["disturbance_type_name"]
             for r in self.defaults_ref.disturbance_type_ref
         }
         self._disturbance_type_map[0] = ""
@@ -200,7 +203,7 @@ class StandCBMFactory:
     @property
     def classifier_value_names(self):
         """dictionary of classifier value id to classifier value name"""
-        self._classifier_idx["classifier_value_names"]
+        return self._classifier_idx["classifier_value_names"]
 
     def _get_classifier_value_ids(
         self, classifier_name: str, classifier_value_name_series: Series
@@ -249,11 +252,14 @@ class StandCBMFactory:
                 * delay: inventory spinup delay [years]
                 * land_class: unfccc land class name (defined in db.landclass)
                 * afforestation_pre_type: afforestation pre-type name (defined
-                  in db)
+                  in db) Use the string "None" where no afforestation pre-type
+                  is needed
                 * historic_disturbance_type: historic disturbance type name
-                  (defined in db)
+                  (defined in db) Use the string "None" for the default
+                  historic disturbance type
                 * last_pass_disturbance_type: last pass disturbance type name
-                  (defined in db)
+                  (defined in db) Use the string "None" for the default
+                  last pass disturbance type
 
         Returns:
             Tuple:
@@ -292,7 +298,7 @@ class StandCBMFactory:
                     inventory_df["afforestation_pre_type"],
                     lambda x: (
                         -1
-                        if pd.isnull(x)
+                        if x == "None"
                         else self.defaults_ref.get_afforestation_pre_type_id(x)
                     ),
                 ),
@@ -304,7 +310,7 @@ class StandCBMFactory:
                     inventory_df["historic_disturbance_type"],
                     lambda x: (
                         -1
-                        if pd.isnull(x)
+                        if x == "None"
                         else self.defaults_ref.get_disturbance_type_id(x)
                     ),
                 ),
@@ -312,7 +318,7 @@ class StandCBMFactory:
                     inventory_df["last_pass_disturbance_type"],
                     lambda x: (
                         -1
-                        if pd.isnull(x)
+                        if x == "None"
                         else self.defaults_ref.get_disturbance_type_id(x)
                     ),
                 ),

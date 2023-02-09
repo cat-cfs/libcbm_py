@@ -128,7 +128,7 @@ class ModelHandle:
                 is the index to one of the matrices defined in the
                 `matrix_list` parameter.
             init_value (int, optional): The default value set on the diagonal
-                of each matrix. Diagonal values specified in the `matrix_list`
+                of each matrix. Diagonal values specified in the `matrices`
                 parameters will overwrite this default. Defaults to 1.
 
         Raises:
