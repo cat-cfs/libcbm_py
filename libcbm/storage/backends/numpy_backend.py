@@ -40,7 +40,8 @@ def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
 def _map(a: np.ndarray, d: dict) -> np.ndarray:
     out_value_type = type(next(iter(d.values())))
-
+    if out_value_type == str:
+        out_value_type = "object"
     out = np.empty_like(a, dtype=out_value_type)
 
     if a.ndim == 1:
