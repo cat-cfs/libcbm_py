@@ -45,16 +45,23 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         pool_filter_expression = ""
         state_filter_expression = ""
         expression_type = str(row["expression_type"])
-        if row["expression_type"] == "pool":
+        parameter_cols = preformat_df.columns[4:]
+
+        parameter_collection = {
+            row[col]
+            for col in parameter_cols
+            if not (pd.isnull(row[col]) or str(row[col]).strip() == "")
+        }
+        if expression_type == "pool":
             pool_filter_expression = (
-                f'({str(row["expression"]).format(p=row["parameter"])})'
+                f'({str(row["expression"]).format(**parameter_collection)})'
             )
-        elif row["expression_type"] == "state":
+        elif expression_type == "state":
             state_filter_expression = (
-                f'({str(row["expression"]).format(p=row["parameter"])})'
+                f'({str(row["expression"]).format(**parameter_collection)})'
             )
-        elif not pd.isnull(row["expression_type"]):
-            raise ValueError("uknown expression type {}")
+        elif not pd.isnull(expression_type):
+            raise ValueError(f"uknown expression type {expression_type}")
 
         row_values = {
             "disturbance_eligibility_id": row_id,
@@ -189,7 +196,8 @@ def parse_eligibilities(
     """  # noqa E501
     disturbance_eligibility_format = (
         sit_format.get_disturbance_eligibility_format(
-            disturbance_eligibilities.shape[1])
+            disturbance_eligibilities.shape[1]
+        )
     )
 
     eligibilities_preformat = sit_parser.unpack_table(
