@@ -48,7 +48,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         parameter_cols = preformat_df.columns[4:]
 
         parameter_collection = {
-            row[col]
+            col: row[col]
             for col in parameter_cols
             if not (pd.isnull(row[col]) or str(row[col]).strip() == "")
         }
