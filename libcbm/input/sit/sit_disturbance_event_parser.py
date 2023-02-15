@@ -4,6 +4,7 @@
 
 
 from __future__ import annotations
+from typing import Union
 import numpy as np
 import pandas as pd
 from libcbm.input.sit import sit_classifier_parser
@@ -37,11 +38,77 @@ def get_target_types() -> dict[str, str]:
     return {"A": "Area", "P": "Proportion", "M": "Merchantable"}
 
 
+def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
+    row_values_by_id: dict[int, dict[str, Union[int, list]]] = {}
+    for _, row in preformat_df.iterrows():
+        row_id = int(row["disturbance_eligibility_id"])
+        pool_filter_expression = ""
+        state_filter_expression = ""
+        expression_type = str(row["expression_type"])
+        if row["expression_type"] == "pool":
+            pool_filter_expression = (
+                f'({str(row["expression"]).format(p=row["parameter"])})'
+            )
+        elif row["expression_type"] == "state":
+            state_filter_expression = (
+                f'({str(row["expression"]).format(p=row["parameter"])})'
+            )
+        elif not pd.isnull(row["expression_type"]):
+            raise ValueError("uknown expression type {}")
+
+        row_values = {
+            "disturbance_eligibility_id": row_id,
+            "pool_filter_expression": pool_filter_expression,
+            "state_filter_expression": state_filter_expression,
+        }
+        if row_id in row_values_by_id:
+            matched_row = row_values_by_id[row_id]
+            if row_values["pool_filter_expression"]:
+                matched_row["pool_filter_expressions"].append(
+                    row_values["pool_filter_expression"]
+                )
+            if row_values["state_filter_expression"]:
+                matched_row["state_filter_expressions"].append(
+                    row_values["state_filter_expression"]
+                )
+        else:
+            row_values_by_id[row_id] = {
+                "disturbance_eligibility_id": row_id,
+                "pool_filter_expressions": [
+                    row_values["pool_filter_expression"]
+                ]
+                if row_values["pool_filter_expression"]
+                else [],
+                "state_filter_expressions": [
+                    row_values["state_filter_expression"]
+                ]
+                if row_values["state_filter_expression"]
+                else [],
+            }
+        out_data = []
+        for v in row_values_by_id.values():
+            out_data.append(
+                {
+                    "disturbance_eligibility_id": v[
+                        "disturbance_eligibility_id"
+                    ],
+                    "pool_filter_expression": " & ".join(
+                        v["pool_filter_expressions"]
+                    ),
+                    "state_filter_expression": " & ".join(
+                        v["state_filter_expressions"]
+                    ),
+                }
+            )
+    return pd.DataFrame(out_data)
+
+
 def parse_eligibilities(
     disturbance_events: pd.DataFrame, disturbance_eligibilities: pd.DataFrame
 ) -> pd.DataFrame:
-    """Parse and validate disturbance eligibilities which are a libcbm-specific
-    alternative to the eligibility columns in the cbm-cfs3 sit_disturbance
+    """
+    Parse and validate disturbance eligibilities which are a libcbm-specific
+    alternative to the eligibility columns in the CBM-CFS3 sit_disturbance
     events input.
 
     The benefit of this format is that the number of columns in sit_events is
@@ -49,15 +116,28 @@ def parse_eligibilities(
     values, rather than min/max ranges supported in the CBM3-SIT format may be
     used.
 
-    Example disturbance_eligibilities table:
+    Example Input value:
+
+    ==  ===============  ===============  ======================================   =====
+    id  description      expression_type  expression                               p1
+    ==  ===============  ===============  ======================================   =====
+    1   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}  10
+    2   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}  20
+    2   age min          state            age > {p1}                               5.0
+    2   age max          state            age < {p1}                               100.0
+    3   NULL             NULL             NULL                                     0.0
+
+    Example return value:
 
      ==   =====================================  =======================
      id   pool_filter_expression                 state_filter_expression
      ==   =====================================  =======================
      1    (SoftwoodMerch + HardwoodMerch) >= 10  NULL
-     2    (SoftwoodMerch + HardwoodMerch) >= 10  (age > 5) & (age < 100)
+     2    (SoftwoodMerch + HardwoodMerch) >= 20  (age > 5) & (age < 100)
      3    NULL                                   NULL
      ==   =====================================  =======================
+
+    Return value notes:
 
     * The id field in the disturbance_eligibilities corresponds to sit events
     * expressions are parsed by the numexpr library
@@ -99,23 +179,26 @@ def parse_eligibilities(
         ValueError: disturbance_eligibility_id values found in the specified
             sit_events were not present in the provided
             disturbance_eligibilities table.
-        ValueError: at lease one null id value was detected in the id column
+        ValueError: at least one null id value was detected in the id column
             of the specified disturbance_eligibilities table.
         ValueError: duplicate id value was detected in the id column of the
             specified disturbance_eligibilities table.
 
     Returns:
         pandas.DataFrame: the validated event eligibilities table
-    """
+    """  # noqa E501
     disturbance_eligibility_format = (
-        sit_format.get_disturbance_eligibility_format()
+        sit_format.get_disturbance_eligibility_format(
+            disturbance_eligibilities.shape[1])
     )
 
-    eligibilities = sit_parser.unpack_table(
+    eligibilities_preformat = sit_parser.unpack_table(
         disturbance_eligibilities,
         disturbance_eligibility_format,
         "disturbance eligibilities",
     )
+
+    eligibilities = _unpack_eligbility_preformat(eligibilities_preformat)
 
     # confirm that each row in the disturbance events with an
     # eligibility id >= 0 has a corresponding record in the eligibilities
@@ -149,7 +232,7 @@ def parse(
     classifier_aggregates: pd.DataFrame,
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame = None,
-    separate_eligibilities: pd.DataFrame = False,
+    separate_eligibilities: bool = False,
 ) -> pd.DataFrame:
 
     """Parses and validates the CBM SIT disturbance event format, or
@@ -177,8 +260,10 @@ def parse(
             age eligibility criteria in disturbance_events. Use the return
             value of:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`.
-        disturbance_eligibilities (pandas.DataFrame, optional): table of
-            eligibility expressions.
+        separate_eligibilities (bool, optional): indicates, when true, that
+            disturbance event eligibilities are stored in a separate table,
+            and the sit_event format is simplified.  When false, the sit_event
+            format is as documented in CBM-CFS3.
 
     Raises:
         ValueError: undefined classifier values were found in the disturbance
