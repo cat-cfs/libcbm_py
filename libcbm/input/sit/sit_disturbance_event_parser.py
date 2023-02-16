@@ -56,9 +56,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         def extract_formatted_expr() -> str:
             expr = str(row["expression"])
             if expr.strip() != "":
-                return (
-                    f'({expr.format(**parameter_collection)})'
-                )
+                return f"({expr.format(**parameter_collection)})"
             return ""
 
         if expression_type == "pool":
