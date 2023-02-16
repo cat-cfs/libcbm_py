@@ -502,5 +502,5 @@ def get_disturbance_eligibility_format(ncols: int) -> list[dict]:
     ]
     for i in range(4, ncols):
         p_idx = i - 3
-        fmt.append({"name": f"p{p_idx}", "index": i, "type": float})
+        fmt.append({"name": f"p{p_idx}", "index": i, "type": str})
     return fmt
