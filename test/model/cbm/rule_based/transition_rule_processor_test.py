@@ -124,7 +124,15 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         mock_classifiers = dataframe.from_pandas(
             pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_inventory = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "area": [1.0],
+                    "inventory_id": [20],
+                    "parent_inventory_id": [8000],
+                }
+            )
+        )
         mock_pools = dataframe.from_pandas(
             pd.DataFrame({"p0": [1], "p1": [4]})
         )
@@ -167,6 +175,13 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3])
 
             self.assertTrue(cbm_vars.inventory["area"].to_list() == [1.0])
+
+            self.assertTrue(
+                cbm_vars.inventory["inventory_id"].to_list() == [20]
+            )
+            self.assertTrue(
+                cbm_vars.inventory["parent_inventory_id"].to_list() == [8000]
+            )
             self.assertTrue(cbm_vars.pools["p0"].to_list() == [1])
             self.assertTrue(cbm_vars.pools["p1"].to_list() == [4])
             self.assertTrue(cbm_vars.flux["f1"].to_list() == [0])
@@ -214,7 +229,15 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         mock_classifiers = dataframe.from_pandas(
             pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_inventory = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "area": [1.0],
+                    "inventory_id": [7],
+                    "parent_inventory_id": [2],
+                }
+            )
+        )
         mock_pools = dataframe.from_pandas(
             pd.DataFrame({"p0": [1], "p1": [4]})
         )
@@ -259,6 +282,12 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3, 3])
 
             self.assertTrue(cbm_vars.inventory["area"].to_list() == [0.5, 0.5])
+            self.assertTrue(
+                cbm_vars.inventory["inventory_id"].to_list() == [7, 8]
+            )
+            self.assertTrue(
+                cbm_vars.inventory["parent_inventory_id"].to_list() == [2, 7]
+            )
 
             # since pools are area densities the are just copied here
             self.assertTrue(cbm_vars.pools["p0"].to_list() == [1, 1])
@@ -310,7 +339,15 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         mock_classifiers = dataframe.from_pandas(
             pd.DataFrame({"a": [1], "b": [3]})
         )
-        mock_inventory = dataframe.from_pandas(pd.DataFrame({"area": [1.0]}))
+        mock_inventory = dataframe.from_pandas(
+            pd.DataFrame(
+                {
+                    "area": [1.0],
+                    "inventory_id": [98000],
+                    "parent_inventory_id": [1],
+                }
+            )
+        )
         mock_pools = dataframe.from_pandas(
             pd.DataFrame({"p0": [33], "p1": [11]})
         )
@@ -354,6 +391,13 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.classifiers["b"].to_list() == [3, 4])
             self.assertTrue(
                 cbm_vars.inventory["area"].to_list() == [0.35, 0.65]
+            )
+            self.assertTrue(
+                cbm_vars.inventory["inventory_id"].to_list() == [98000, 98001]
+            )
+            self.assertTrue(
+                cbm_vars.inventory["parent_inventory_id"].to_list()
+                == [1, 98000]
             )
             self.assertTrue(cbm_vars.pools["p0"].to_list() == [33, 33])
             self.assertTrue(cbm_vars.pools["p1"].to_list() == [11, 11])
@@ -404,10 +448,26 @@ class TransitionRuleProcessorTest(unittest.TestCase):
         )
         transition_mask = series.from_numpy("", np.array([False], dtype=bool))
         mock_classifiers = dataframe.from_pandas(
-            pd.DataFrame({"a": [1, 2, 1], "b": [3, 6, 4]})
+            pd.DataFrame(
+                {
+                    "a": [
+                        1,  # "a1" - eligible for transtion
+                        2,  # "a2" - not eligible for transtion
+                        1,  # "a1" - eligible for transtion
+                    ],
+                    "b": [3, 6, 4],  # all eligible (wildcard criteria)
+                }
+            )
         )
         mock_inventory = dataframe.from_pandas(
-            pd.DataFrame({"index": [0, 1, 2], "area": [1.0, 5.0, 10.0]})
+            pd.DataFrame(
+                {
+                    "index": [0, 1, 2],
+                    "area": [1.0, 5.0, 10.0],
+                    "inventory_id": [3, 4, 5],
+                    "parent_inventory_id": [-1, 1, 2],
+                }
+            )
         )
         mock_pools = dataframe.from_pandas(
             pd.DataFrame({"p0": [33, 22, 11], "p1": [11, 0, -11]})
@@ -505,6 +565,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_1_v1.reset_age.sum() == 1)
             self.assertTrue(transitioned_1_v1.a.sum() == 2)
             self.assertTrue(transitioned_1_v1.b.sum() == 3)
+            self.assertTrue(transitioned_1_v1.inventory_id.sum() == 3)
+            self.assertTrue(transitioned_1_v1.parent_inventory_id.sum() == -1)
             transitioned_1_v2 = transitioned_1[
                 transitioned_1.regeneration_delay == 2
             ]
@@ -512,6 +574,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_1_v2.reset_age.sum() == 2)
             self.assertTrue(transitioned_1_v2.a.sum() == 1)
             self.assertTrue(transitioned_1_v2.b.sum() == 4)
+            self.assertTrue(transitioned_1_v2.inventory_id.sum() == 6)
+            self.assertTrue(transitioned_1_v2.parent_inventory_id.sum() == 3)
             transitioned_1_v3 = transitioned_1[
                 transitioned_1.regeneration_delay == 3
             ]
@@ -519,6 +583,9 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_1_v3.reset_age.sum() == 3)
             self.assertTrue(transitioned_1_v3.a.sum() == 3)
             self.assertTrue(transitioned_1_v3.b.sum() == 5)
+            self.assertTrue(transitioned_1_v3.inventory_id.sum() == 8)
+            self.assertTrue(transitioned_1_v3.parent_inventory_id.sum() == 3)
+
             transitioned_1_v4 = transitioned_1[
                 transitioned_1.regeneration_delay == 0
             ]
@@ -526,6 +593,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_1_v4.reset_age.sum() == -1)
             self.assertTrue(transitioned_1_v4.a.sum() == 1)
             self.assertTrue(transitioned_1_v4.b.sum() == 3)
+            self.assertTrue(transitioned_1_v4.inventory_id.sum() == 10)
+            self.assertTrue(transitioned_1_v4.parent_inventory_id.sum() == 3)
 
             transitioned_2_v1 = transitioned_2[
                 transitioned_2.regeneration_delay == 1
@@ -534,6 +603,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_2_v1.reset_age.sum() == 1)
             self.assertTrue(transitioned_2_v1.a.sum() == 2)
             self.assertTrue(transitioned_2_v1.b.sum() == 4)
+            self.assertTrue(transitioned_2_v1.inventory_id.sum() == 5)
+            self.assertTrue(transitioned_2_v1.parent_inventory_id.sum() == 2)
             transitioned_2_v2 = transitioned_2[
                 transitioned_2.regeneration_delay == 2
             ]
@@ -541,6 +612,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_2_v2.reset_age.sum() == 2)
             self.assertTrue(transitioned_2_v2.a.sum() == 1)
             self.assertTrue(transitioned_2_v2.b.sum() == 4)
+            self.assertTrue(transitioned_2_v2.inventory_id.sum() == 7)
+            self.assertTrue(transitioned_2_v2.parent_inventory_id.sum() == 5)
             transitioned_2_v3 = transitioned_2[
                 transitioned_2.regeneration_delay == 3
             ]
@@ -548,6 +621,8 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_2_v3.reset_age.sum() == 3)
             self.assertTrue(transitioned_2_v3.a.sum() == 3)
             self.assertTrue(transitioned_2_v3.b.sum() == 5)
+            self.assertTrue(transitioned_2_v3.inventory_id.sum() == 9)
+            self.assertTrue(transitioned_2_v3.parent_inventory_id.sum() == 5)
             transitioned_2_v4 = transitioned_2[
                 transitioned_2.regeneration_delay == 0
             ]
@@ -555,3 +630,5 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(transitioned_2_v4.reset_age.sum() == -1)
             self.assertTrue(transitioned_2_v4.a.sum() == 1)
             self.assertTrue(transitioned_2_v4.b.sum() == 4)
+            self.assertTrue(transitioned_2_v4.inventory_id.sum() == 11)
+            self.assertTrue(transitioned_2_v4.parent_inventory_id.sum() == 5)
