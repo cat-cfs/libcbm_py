@@ -9,6 +9,7 @@ from libcbm.model.cbm.rule_based import rule_filter
 from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.storage import series
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
@@ -110,7 +111,6 @@ def apply_rule_based_event(
     splits = target_area_proportions < 1.0
     split_index = target_index.filter(splits)
     split_inventory = cbm_vars.inventory.take(split_index)
-
     # set the disturbance types for the disturbed indices, based on
     # the sit_event disturbance_type field.
     cbm_vars.parameters["disturbance_type"].assign(
@@ -132,6 +132,24 @@ def apply_rule_based_event(
         split_inventory["area"].assign(
             split_inventory["area"]
             * (1.0 - target_area_proportions.filter(splits)),
+        )
+
+        # track inventory succession by assigning the parent_inventory_id,
+        # and generating new inventory_ids for the split records
+
+        split_inventory["parent_inventory_id"].assign(
+            split_inventory["inventory_id"]
+        )
+        next_id = cbm_vars.inventory["inventory_id"].max() + 1
+        split_inventory["inventory_id"].assign(
+            series.range(
+                "inventory_id",
+                next_id,
+                next_id + split_inventory.n_rows,
+                1,
+                "int",
+                cbm_vars.inventory.backend_type,
+            )
         )
 
         # create the updated inventory by appending the split records

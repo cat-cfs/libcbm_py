@@ -4,6 +4,7 @@
 from __future__ import annotations
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import series
 from libcbm.storage.series import SeriesDef
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
@@ -397,6 +398,10 @@ def _initialize_inventory(
     """
 
     data = [
+        series.range(
+            "inventory_id", 1, inventory.n_rows + 1, 1, "int", back_end
+        ),
+        SeriesDef("parent_inventory_id", -1, "int"),
         inventory["age"].as_type("int32"),
         inventory["area"].as_type("float64"),
         inventory["spatial_unit"].as_type("int32"),
