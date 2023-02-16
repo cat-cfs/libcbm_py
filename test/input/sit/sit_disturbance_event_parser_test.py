@@ -429,7 +429,6 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                     "(c<{p1}) or (d=={p2})",
                     "32",
                     "-22",
-
                 ],
                 [
                     2,
@@ -446,7 +445,7 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                     "",
                     "",
                     "",
-                ]
+                ],
             ],
         )
         sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
@@ -456,8 +455,8 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             sit_eligibilities["disturbance_eligibility_id"].iloc[0] == 1
         )
         self.assertTrue(
-            sit_eligibilities["pool_filter_expression"].iloc[0] ==
-            "((c<32.0) or (d==-22.0))"
+            sit_eligibilities["pool_filter_expression"].iloc[0]
+            == "((c<32.0) or (d==-22.0))"
         )
         self.assertTrue(
             sit_eligibilities["state_filter_expression"].iloc[0]
