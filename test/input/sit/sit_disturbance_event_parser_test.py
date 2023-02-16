@@ -412,17 +412,37 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             separate_eligibilities=True,
         )
         elgibilities_input = pd.DataFrame(
-            columns=["id", "pool_filter", "state_filter"],
-            data=[[1, "pool_expression_1", "state_expression_1"]],
+            columns=["id", "desc", "exp_type", "exp", "p1", "p2"],
+            data=[
+                [
+                    1,
+                    "filter desc",
+                    "state",
+                    "(a<{p1}) or (b=={p2})",
+                    "900",
+                    "-12",
+                ]
+            ],
         )
         sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
             sit_events, elgibilities_input
         )
         self.assertTrue(
+            sit_eligibilities["disturbance_eligibility_id"].iloc[0] == 1
+        )
+        self.assertTrue(
+            sit_eligibilities["pool_filter_expression"].iloc[0] == ""
+        )
+        self.assertTrue(
+            sit_eligibilities["state_filter_expression"].iloc[0]
+            == "((a<900.0) or (b==-12.0))"
+        )
+        self.assertTrue(
             list(sit_eligibilities.columns)
             == [
-                x["name"]
-                for x in sit_format.get_disturbance_eligibility_format()
+                "disturbance_eligibility_id",
+                "pool_filter_expression",
+                "state_filter_expression",
             ]
         )
 
