@@ -169,6 +169,33 @@ class RuleTargetTest(unittest.TestCase):
                 ),
             )
 
+    def test_sorted_merch_target_no_eligible_C(self):
+        mock_inventory = dataframe.from_pandas(
+            pd.DataFrame(
+                {"age": [0, 20, 10, 30], "area": [2.0, 2.0, 2.0, 2.0]}
+            )
+        )
+        mock_disturbance_production = dataframe.from_pandas(
+            pd.DataFrame({"Total": [10, 10, 10, 10]})
+        )  # tonnes C/ha
+        result = rule_target.sorted_merch_target(
+            carbon_target=55,
+            disturbance_production=mock_disturbance_production,
+            inventory=mock_inventory,
+            sort_value=series.from_pandas(pd.Series([4, 3, 2, 1])),
+            efficiency=1.0,
+            eligible=series.from_pandas(pd.Series([False, False, False, False])),
+        )
+        self.assertTrue(result.target is None)
+        self.assertTrue(result.statistics == {
+            "total_eligible_value": 0,
+            "total_achieved": 0,
+            "shortfall": 55,
+            "num_records_disturbed": 0,
+            "num_splits": 0,
+            "num_eligible": 0,
+        })
+
     def test_sorted_merch_target_expected_result(self):
         mock_inventory = dataframe.from_pandas(
             pd.DataFrame(

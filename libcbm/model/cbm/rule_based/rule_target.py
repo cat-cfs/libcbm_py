@@ -547,7 +547,8 @@ def sorted_merch_target(
         target=carbon_target,
         eligible=eligible,
     )
-    result.target["area_proportions"].assign(
-        result.target["area_proportions"] * efficiency
-    )
+    if result.target is not None:
+        result.target["area_proportions"].assign(
+            result.target["area_proportions"] * efficiency
+        )
     return result
