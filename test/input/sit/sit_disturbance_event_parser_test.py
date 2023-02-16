@@ -421,7 +421,33 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                     "(a<{p1}) or (b=={p2})",
                     "900",
                     "-12",
+                ],
+                [
+                    1,
+                    "filter desc",
+                    "pool",
+                    "(c<{p1}) or (d=={p2})",
+                    "32",
+                    "-22",
+
+                ],
+                [
+                    2,
+                    "filter desc",
+                    "state",
+                    "",
+                    "9999",
+                    "8888",
+                ],
+                [
+                    3,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
                 ]
+
             ],
         )
         sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
@@ -431,11 +457,32 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             sit_eligibilities["disturbance_eligibility_id"].iloc[0] == 1
         )
         self.assertTrue(
-            sit_eligibilities["pool_filter_expression"].iloc[0] == ""
+            sit_eligibilities["pool_filter_expression"].iloc[0] ==
+            "((c<32.0) or (d==-22.0))"
         )
         self.assertTrue(
             sit_eligibilities["state_filter_expression"].iloc[0]
             == "((a<900.0) or (b==-12.0))"
+        )
+
+        self.assertTrue(
+            sit_eligibilities["disturbance_eligibility_id"].iloc[1] == 2
+        )
+        self.assertTrue(
+            sit_eligibilities["pool_filter_expression"].iloc[1] == ""
+        )
+        self.assertTrue(
+            sit_eligibilities["state_filter_expression"].iloc[1] == ""
+        )
+
+        self.assertTrue(
+            sit_eligibilities["disturbance_eligibility_id"].iloc[2] == 3
+        )
+        self.assertTrue(
+            sit_eligibilities["pool_filter_expression"].iloc[2] == ""
+        )
+        self.assertTrue(
+            sit_eligibilities["state_filter_expression"].iloc[2] == ""
         )
         self.assertTrue(
             list(sit_eligibilities.columns)
