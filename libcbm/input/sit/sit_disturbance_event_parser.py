@@ -48,18 +48,23 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         parameter_cols = preformat_df.columns[4:]
 
         parameter_collection = {
-            col: row[col]
+            col: float(row[col])
             for col in parameter_cols
             if not (pd.isnull(row[col]) or str(row[col]).strip() == "")
         }
+
+        def extract_formatted_expr() -> str:
+            expr = str(row["expression"])
+            if expr.strip() != "":
+                return (
+                    f'({expr.format(**parameter_collection)})'
+                )
+            return ""
+
         if expression_type == "pool":
-            pool_filter_expression = (
-                f'({str(row["expression"]).format(**parameter_collection)})'
-            )
+            pool_filter_expression = extract_formatted_expr()
         elif expression_type == "state":
-            state_filter_expression = (
-                f'({str(row["expression"]).format(**parameter_collection)})'
-            )
+            state_filter_expression = extract_formatted_expr()
         elif not pd.isnull(expression_type):
             raise ValueError(f"uknown expression type {expression_type}")
 
@@ -123,16 +128,21 @@ def parse_eligibilities(
     values, rather than min/max ranges supported in the CBM3-SIT format may be
     used.
 
+    2 expressions types are supported: pool and state.  pool expressions are
+    in terms of any column that is defined in the cbm_vars.pools DataFrame and
+    state, for any column defined in cbm_vars.state during CBM runtime.
+
     Example Input value:
 
-    ==  ===============  ===============  ======================================   =====
-    id  description      expression_type  expression                               p1
-    ==  ===============  ===============  ======================================   =====
-    1   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}  10
-    2   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}  20
-    2   age min          state            age > {p1}                               5.0
-    2   age max          state            age < {p1}                               100.0
-    3   NULL             NULL             NULL                                     0.0
+    ==  ===============  ===============  =======================================   =====
+    id  description      expression_type  expression                                p1
+    ==  ===============  ===============  =======================================   =====
+    1   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}   10
+    2   min total merch  pool             (SoftwoodMerch + HardwoodMerch) >= {p1}   20
+    2   age min          state            age > {p1}                                5.0
+    2   age max          state            age < {p1}                                100.0
+    3   NULL             NULL             NULL                                      0.0
+    ==  ===============  ===============  =======================================   =====
 
     Example return value:
 
