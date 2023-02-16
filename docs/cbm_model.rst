@@ -12,7 +12,9 @@ LibCBM has an implementation of CBM which is comparable with CBM-CFS3_.
 .. _cbm3-tutorial2: cbm3_tutorial2.ipynb
 .. _multi-stand-modelling: multi_stand_modelling.ipynb
 
-libcbm supports methods for running the CBM-CFS3 implementation.
+libcbm supports 2 primary methods for running the CBM-CFS3 implementation.
+These are via the CBM standard import tool format (SIT) and through a
+more basic multi-stand modelling framework.
 
 Standard import tool (CBM-SIT) format
 -------------------------------------
