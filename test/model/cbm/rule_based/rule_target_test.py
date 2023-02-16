@@ -184,17 +184,22 @@ class RuleTargetTest(unittest.TestCase):
             inventory=mock_inventory,
             sort_value=series.from_pandas(pd.Series([4, 3, 2, 1])),
             efficiency=1.0,
-            eligible=series.from_pandas(pd.Series([False, False, False, False])),
+            eligible=series.from_pandas(
+                pd.Series([False, False, False, False])
+            ),
         )
         self.assertTrue(result.target is None)
-        self.assertTrue(result.statistics == {
-            "total_eligible_value": 0,
-            "total_achieved": 0,
-            "shortfall": 55,
-            "num_records_disturbed": 0,
-            "num_splits": 0,
-            "num_eligible": 0,
-        })
+        self.assertTrue(
+            result.statistics
+            == {
+                "total_eligible_value": 0,
+                "total_achieved": 0,
+                "shortfall": 55,
+                "num_records_disturbed": 0,
+                "num_splits": 0,
+                "num_eligible": 0,
+            }
+        )
 
     def test_sorted_merch_target_expected_result(self):
         mock_inventory = dataframe.from_pandas(
