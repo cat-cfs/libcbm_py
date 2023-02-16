@@ -214,7 +214,14 @@ class EventProcessorTest(unittest.TestCase):
                 pd.DataFrame({"classifier1": [1, 2, 3, 4]})
             ),
             inventory=dataframe.from_pandas(
-                pd.DataFrame({"area": [1, 2, 3, 4]}, dtype="float64")
+                pd.DataFrame(
+                    {
+                        "inventory_id": [2, 3, 4, 5],
+                        "parent_inventory_id": [-1, -1, -1, -1],
+                        "area": [1, 2, 3, 4],
+                    },
+                    dtype="float64",
+                )
             ),
             state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
@@ -255,6 +262,15 @@ class EventProcessorTest(unittest.TestCase):
                     3 * 0.1,  # the remainder of index=2
                 ],
             )
+        )
+
+        self.assertTrue(
+            cbm_vars_result.inventory["inventory_id"].to_list()
+            == [2, 3, 4, 5, 6, 7]
+        )
+        self.assertTrue(
+            cbm_vars_result.inventory["parent_inventory_id"].to_list()
+            == [-1, -1, -1, -1, 3, 4]
         )
 
         self.assertTrue(
