@@ -447,7 +447,6 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
                     "",
                     "",
                 ]
-
             ],
         )
         sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
