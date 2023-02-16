@@ -65,7 +65,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
             pool_filter_expression = extract_formatted_expr()
         elif expression_type == "state":
             state_filter_expression = extract_formatted_expr()
-        elif not pd.isnull(expression_type):
+        elif not pd.isnull(expression_type) and not expression_type == "":
             raise ValueError(f"uknown expression type {expression_type}")
 
         row_values = {
