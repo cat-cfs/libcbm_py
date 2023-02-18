@@ -62,6 +62,19 @@ def test_series():
         s_mapped1 = s.map({x: x + 1 for x in range(0, 100)})
         assert s_mapped1.to_list() == [x + 1 for x in range(0, 100)]
 
+        # map: if the specified map series is not empty, but the dict is empty,
+        # confirm a value error is raised
+        with pytest.raises(ValueError):
+            s.map({})
+
+        # map: if the map series is empty, just get an empty series back
+        # whether or not the dict is empty
+        empty_series_mapped = dataframe.convert_series_backend(
+            series.from_list("name", []), backend
+        )
+        assert empty_series_mapped.map({}).length == 0
+        assert empty_series_mapped.map({"a": 1}).length == 0
+
         with pytest.raises(KeyError):
             s.map({999: 2})
 

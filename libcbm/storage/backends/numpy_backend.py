@@ -39,6 +39,10 @@ def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
 
 
 def _map(a: np.ndarray, d: dict) -> np.ndarray:
+    if a.size == 0:
+        return a.copy()
+    elif len(d) == 0:
+        raise ValueError("empty dictionary provided")
     out_value_type = type(next(iter(d.values())))
     if out_value_type == str:
         out_value_type = "object"
