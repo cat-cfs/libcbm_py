@@ -38,15 +38,23 @@ def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
             out[i, j] = d[a[i, j]]
 
 
-def _map(a: np.ndarray, d: dict) -> np.ndarray:
-    if a.size == 0:
-        return a.copy()
-    elif len(d) == 0:
-        raise ValueError("empty dictionary provided")
+def _get_map_value_type(d: dict) -> str:
     out_value_type = type(next(iter(d.values())))
     if out_value_type == str:
         out_value_type = "object"
-    out = np.empty_like(a, dtype=out_value_type)
+    return out_value_type
+
+
+def _map(a: np.ndarray, d: dict) -> np.ndarray:
+    if a.size == 0:
+        if len(d) > 0:
+            return a.astype(_get_map_value_type(d))
+        else:
+            return a.copy()
+    elif len(d) == 0:
+        raise ValueError("empty dictionary provided")
+
+    out = np.empty_like(a, dtype=_get_map_value_type(d))
 
     if a.ndim == 1:
         _map_1D_nb(a, out, d)
@@ -252,7 +260,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             else:
                 self._storage_format = StorageFormat.mixed_columns
                 self._data_cols = {
-                    col: self._data_matrix[:, idx]
+                    col: np.ascontiguousarray(self._data_matrix[:, idx])
                     for col, idx in self._col_idx.items()
                 }
                 self._data_cols[series.name] = series.to_numpy()
@@ -469,10 +477,10 @@ class NumpySeriesBackend(Series):
                     if not allow_type_change:
                         raise ValueError("type change not allowed")
                     self._parent_df._data_cols = {
-                        col: self._parent_df._data_matrix[
+                        col: np.ascontiguousarray(self._parent_df._data_matrix[
                             _idx,
                             self._parent_df._col_idx[col],
-                        ]
+                        ])
                         for col in self._parent_df.columns
                     }
                     self._parent_df._data_matrix = None
