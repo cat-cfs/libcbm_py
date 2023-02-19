@@ -199,14 +199,17 @@ class PandasSeriesBackend(Series):
     def map(self, arg: dict) -> "Series":
         this_series = self._get_series()
         if len(this_series) == 0:
-            return self.copy()
+            if len(arg) > 0:
+                return self.as_type(type(next(iter(arg.values()))))
+            else:
+                return self.copy()
         elif len(arg) == 0:
             raise ValueError("specified map is empty")
         # This check may be built into pandas eventually as well
         # https://github.com/pandas-dev/pandas/issues/14210
-        if len(
-            set().union(arg.keys(), this_series.drop_duplicates())
-        ) > len(arg.keys()):
+        if len(set().union(arg.keys(), this_series.drop_duplicates())) > len(
+            arg.keys()
+        ):
             raise KeyError(
                 "values in array not found as keys in specified dictionary"
             )
