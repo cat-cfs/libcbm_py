@@ -73,7 +73,16 @@ def test_series():
             series.from_list("name", []), backend
         )
         assert empty_series_mapped.map({}).length == 0
-        assert empty_series_mapped.map({"a": 1}).length == 0
+        # the type of the result is the same as the mapped series type
+        assert (
+            empty_series_mapped.map({}).to_numpy().dtype
+            == empty_series_mapped.to_numpy().dtype
+        )
+
+        assert empty_series_mapped.map({"a": 1.9}).length == 0
+        # the type of the result is inherited from the dictionary value type if
+        # provided
+        assert empty_series_mapped.map({"a": 1.9}).to_numpy().dtype == "float"
 
         with pytest.raises(KeyError):
             s.map({999: 2})
