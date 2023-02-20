@@ -44,7 +44,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         row_id = int(row["disturbance_eligibility_id"])
         pool_filter_expression = ""
         state_filter_expression = ""
-        expression_type = str(row["expression_type"])
+        expression_type = row["expression_type"]
         parameter_cols = preformat_df.columns[4:]
 
         parameter_collection = {
