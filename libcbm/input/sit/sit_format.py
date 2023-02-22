@@ -491,9 +491,16 @@ def get_disturbance_event_format(
     return classifier_set + eligibiliy_cols + event_target
 
 
-def get_disturbance_eligibility_format() -> list[dict]:
-    return [
+def get_disturbance_eligibility_format(ncols: int) -> list[dict]:
+    if ncols < 5:
+        raise ValueError("number of columns must be > 5")
+    fmt = [
         {"name": "disturbance_eligibility_id", "index": 0, "type": int},
-        {"name": "pool_filter_expression", "index": 1, "type": str},
-        {"name": "state_filter_expression", "index": 2, "type": str},
+        {"name": "description", "index": 1, "type": str},
+        {"name": "expression_type", "index": 2, "type": str},
+        {"name": "expression", "index": 3, "type": str},
     ]
+    for i in range(4, ncols):
+        p_idx = i - 3
+        fmt.append({"name": f"p{p_idx}", "index": i, "type": str})
+    return fmt

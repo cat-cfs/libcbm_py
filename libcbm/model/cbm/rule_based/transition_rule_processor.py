@@ -9,6 +9,7 @@ from typing import Tuple
 import numpy as np
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
+from libcbm.storage import series
 from libcbm.storage.series import Series
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.model.cbm.rule_based import rule_filter
@@ -190,7 +191,7 @@ class TransitionRuleProcessor(object):
         state_split = None
         parameters_split = None
         flux_split = None
-
+        next_id = cbm_vars.inventory["inventory_id"].max() + 1
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
                 continue
@@ -222,7 +223,19 @@ class TransitionRuleProcessor(object):
             # set the area for the split portion according to the current
             # group member proportion
             inventory["area"].assign(inventory["area"] * proportion)
+            inventory["parent_inventory_id"].assign(inventory["inventory_id"])
 
+            inventory["inventory_id"].assign(
+                series.range(
+                    "inventory_id",
+                    next_id,
+                    next_id + inventory.n_rows,
+                    1,
+                    "int",
+                    cbm_vars.inventory.backend_type,
+                )
+            )
+            next_id = next_id + inventory.n_rows
             # if the current proportion is the remainder of 100 minus the
             # group's percentage sums, then this split portion will not be
             # transitioned, meaning the classifier set is not changed, and
@@ -284,6 +297,7 @@ class TransitionRuleProcessor(object):
                 eligible_idx,
             )
 
+        next_id = next_id + eligible_idx.length
         state["regeneration_delay"].assign(
             np.int32(tr_group["regeneration_delay"].at(0)),
             eligible_idx,
