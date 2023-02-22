@@ -477,10 +477,12 @@ class NumpySeriesBackend(Series):
                     if not allow_type_change:
                         raise ValueError("type change not allowed")
                     self._parent_df._data_cols = {
-                        col: np.ascontiguousarray(self._parent_df._data_matrix[
-                            _idx,
-                            self._parent_df._col_idx[col],
-                        ])
+                        col: np.ascontiguousarray(
+                            self._parent_df._data_matrix[
+                                _idx,
+                                self._parent_df._col_idx[col],
+                            ]
+                        )
                         for col in self._parent_df.columns
                     }
                     self._parent_df._data_matrix = None
