@@ -282,96 +282,96 @@ class PandasSeriesBackend(Series):
 
     def __mul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() * self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() * self._get_operand(other))
         )
 
     def __rmul__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) * self._get_series())
+            self._name, pd.Series(self._get_operand(other) * self.to_numpy())
         )
 
     def __truediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() / self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() / self._get_operand(other))
         )
 
     def __rtruediv__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) / self._get_series())
+            self._name, pd.Series((self._get_operand(other) / self.to_numpy()))
         )
 
     def __add__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() + self._get_operand(other))
+            self._name, pd.Series((self.to_numpy() + self._get_operand(other)))
         )
 
     def __radd__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) + self._get_series())
+            self._name, pd.Series((self._get_operand(other) + self.to_numpy()))
         )
 
     def __sub__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() - self._get_operand(other))
+            self._name, pd.Series((self.to_numpy() - self._get_operand(other)))
         )
 
     def __rsub__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) - self._get_series())
+            self._name, pd.Series(self._get_operand(other) - self.to_numpy())
         )
 
     def __ge__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() >= self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() >= self._get_operand(other))
         )
 
     def __gt__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() > self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() > self._get_operand(other))
         )
 
     def __le__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() <= self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() <= self._get_operand(other))
         )
 
     def __lt__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() < self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() < self._get_operand(other))
         )
 
     def __eq__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() == self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() == self._get_operand(other))
         )
 
     def __ne__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() != self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() != self._get_operand(other))
         )
 
     def __and__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() & self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() & self._get_operand(other))
         )
 
     def __or__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_series() | self._get_operand(other))
+            self._name, pd.Series(self.to_numpy() | self._get_operand(other))
         )
 
     def __rand__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) & self._get_series())
+            self._name, pd.Series(self._get_operand(other) & self.to_numpy())
         )
 
     def __ror__(self, other: Union[int, float, "Series"]) -> "Series":
         return PandasSeriesBackend(
-            self._name, (self._get_operand(other) | self._get_series())
+            self._name, pd.Series(self._get_operand(other) | self.to_numpy())
         )
 
     def __invert__(self) -> "Series":
-        return PandasSeriesBackend(self._name, ~self._get_series())
+        return PandasSeriesBackend(self._name, pd.Series(~self.to_numpy()))
 
 
 def concat_data_frame(
@@ -384,24 +384,24 @@ def concat_data_frame(
 
 def concat_series(series: list[PandasSeriesBackend]) -> PandasSeriesBackend:
     return PandasSeriesBackend(
-        None, pd.concat([s._get_series() for s in series])
+        None, pd.concat([s._get_series() for s in series], ignore_index=True)
     )
 
 
 def logical_and(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, s1._get_series() & s2._get_series())
+    return s1 & s2
 
 
 def logical_not(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, ~(series._get_series()))
+    return ~series
 
 
 def logical_or(
     s1: PandasSeriesBackend, s2: PandasSeriesBackend
 ) -> PandasSeriesBackend:
-    return PandasSeriesBackend(None, s1._get_series() | s2._get_series())
+    return s1 | s2
 
 
 def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
@@ -411,9 +411,7 @@ def make_boolean_series(init: bool, size: int) -> PandasSeriesBackend:
 
 
 def is_null(series: PandasSeriesBackend) -> PandasSeriesBackend:
-    return PandasSeriesBackend(
-        None, pd.Series(pd.isnull(series._get_series()))
-    )
+    return PandasSeriesBackend(None, pd.Series(pd.isnull(series.to_numpy())))
 
 
 def indices_nonzero(series: PandasSeriesBackend) -> PandasSeriesBackend:
