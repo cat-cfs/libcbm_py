@@ -25,12 +25,14 @@ def test_get_sort_value():
         "TOTALSTEMSNAG": [11.0],
         "SWSTEMSNAG": [1.0],
         "HWSTEMSNAG": [10.0],
-        "RANDOMSORT": [1, 2, 3],
+        "RANDOMSORT": [1.0, 2.0, 3.0],
     }
     for sort_type, expected_result in cases.items():
-        assert expected_result == sit_rule_based_sort.get_sort_value(
+        returned_value = sit_rule_based_sort.get_sort_value(
             sort_type, mock_cbm_vars, random_generator
-        ).to_list()
+        )
+        assert returned_value.to_numpy().dtype == "float"
+        assert expected_result == returned_value.to_list()
     random_generator.assert_called_with(999)
     with pytest.raises(ValueError):
         sit_rule_based_sort.get_sort_value(
