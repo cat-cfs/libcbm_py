@@ -11,7 +11,7 @@ def get_sort_value(
     random_generator: Callable[[int], Series],
 ) -> Series:
     if sort_type == "SORT_BY_SW_AGE" or sort_type == "SORT_BY_HW_AGE":
-        return cbm_vars.state["age"]
+        return cbm_vars.state["age"].as_type("float")
     elif sort_type == "TOTALSTEMSNAG":
         return (
             cbm_vars.pools["SoftwoodStemSnag"]
@@ -22,7 +22,7 @@ def get_sort_value(
     elif sort_type == "HWSTEMSNAG":
         return cbm_vars.pools["HardwoodStemSnag"]
     elif sort_type == "RANDOMSORT":
-        return random_generator(cbm_vars.pools.n_rows)
+        return random_generator(cbm_vars.pools.n_rows).as_type("float")
     else:
         raise ValueError(
             f"specified sort_type '{sort_type}' is not sort value"
