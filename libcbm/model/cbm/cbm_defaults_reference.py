@@ -220,7 +220,9 @@ class CBMDefaultsReference:
         with the following keys:
 
             - spatial_unit_id
+            - admin_boundary_id
             - admin_boundary_name
+            - eco_boundary_id
             - eco_boundary_name
 
         Returns:
