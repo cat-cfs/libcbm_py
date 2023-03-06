@@ -7,6 +7,18 @@ from libcbm.input.sit import sit_format
 from libcbm.input.sit import sit_parser
 
 
+def is_integer(s: str) -> bool:
+    try:
+        float_value = float(s)
+        integer_value = int(float_value)
+        if float_value == integer_value:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
+
+
 def parse(disturbance_types_table: pd.DataFrame) -> pd.DataFrame:
     """Parse and validate a SIT formatted disturbance type table
 
@@ -59,6 +71,13 @@ def parse(disturbance_types_table: pd.DataFrame) -> pd.DataFrame:
             f"duplicate ids detected in disturbance types {duplicates}"
         )
 
-    # establish a numeric identifier for each row of the SIT disturbances
-    result.insert(0, "sit_disturbance_type_id", np.arange(len(result)) + 1)
+    # need to establish a numeric identifier for each row of the SIT
+    # disturbances
+
+    if result["id"].apply(is_integer).all():
+        # use the id column itself if it is all integer values
+        result.insert(0, "sit_disturbance_type_id", result["id"].astype(int))
+    else:
+        # otherwise if the id column contains string identifiers use arange
+        result.insert(0, "sit_disturbance_type_id", np.arange(len(result)) + 1)
     return result
