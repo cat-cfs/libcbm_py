@@ -247,7 +247,6 @@ class AnnualProcessDynamics:
 def annual_process_dynamics(
     state: DataFrame, params: DataFrame
 ) -> AnnualProcessDynamics:
-
     _p = SimpleNamespace(
         **{col: params[col].to_numpy() for col in params.columns}
     )
@@ -432,7 +431,6 @@ class SpinupDebug:
 def spinup(
     model_context: ModelContext, enable_debugging: bool = False
 ) -> Union[None, SpinupDebug]:
-
     if enable_debugging:
         spinup_debug = SpinupDebug()
     else:
@@ -450,7 +448,6 @@ def spinup(
     )
     iteration = 0
     while True:
-
         state = spinup_engine.advance_spinup_state(
             spinup_state=spinup_vars["spinup_state"],
             age=model_context.state["age"],

@@ -89,7 +89,6 @@ class ResourcesTest(unittest.TestCase):
     @patch("libcbm.resources.get_linux_os_release")
     @patch("libcbm.resources.platform")
     def test_linux_versions(self, platform, get_linux_os_release):
-
         supported_os_releases = [
             {"NAME": "UBUNTU", "VERSION_ID": "18.04"},
             {"NAME": "Ubuntu", "VERSION_ID": "20.04"},
@@ -105,7 +104,6 @@ class ResourcesTest(unittest.TestCase):
     def test_unsupported_linux_versions(
         self, warnings, platform, get_linux_os_release
     ):
-
         unsupported_os_release = {"NAME": "UNKNOWN", "VERSION_ID": "40.00"}
         platform.system.side_effect = lambda: "Linux"
         get_linux_os_release.side_effect = lambda: unsupported_os_release

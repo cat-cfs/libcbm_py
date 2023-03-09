@@ -122,7 +122,6 @@ class SITClassifierParserTest(unittest.TestCase):
             sit_classifier_parser.parse(sit_classifiers_table)
 
     def test_expected_result(self):
-
         sit_classifiers_table = pd.DataFrame(
             data=[
                 ("1", "_CLASSIFIER", "classifier1", np.nan, np.nan),
@@ -187,7 +186,6 @@ class SITClassifierParserTest(unittest.TestCase):
         )
 
     def test_classifier_names_made_into_valid_identifiers(self):
-
         sit_classifiers_table = pd.DataFrame(
             data=[
                 ("1", "_CLASSIFIER", "1classifier 1", np.nan, np.nan),

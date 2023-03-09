@@ -11,7 +11,6 @@ def call_test_function(
     mock_random_generator,
     mock_disturbance_production_func=None,
 ):
-
     mock_inventory = "inventory"
     mock_eligible = "eligible"
     create_target = sit_stand_target.create_sit_event_target_factory(

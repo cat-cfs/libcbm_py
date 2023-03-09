@@ -10,7 +10,6 @@ from libcbm.storage import dataframe
 
 
 def load_dll(config):
-
     dll = LibCBMWrapper(
         LibCBMHandle(resources.get_libcbm_bin_path(), json.dumps(config))
     )

@@ -16,7 +16,6 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.transition_rule_processor"
 
 class TransitionRuleProcessorTest(unittest.TestCase):
     def test_create_split_proportions_percentage_error(self):
-
         mock_tr_group_key = {"a": 1, "b": 2}
         mock_tr_group = pd.DataFrame({"percent": [50, 51]})
         with self.assertRaises(ValueError):

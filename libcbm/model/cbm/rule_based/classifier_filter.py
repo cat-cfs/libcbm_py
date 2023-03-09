@@ -120,7 +120,6 @@ class ClassifierFilter:
         for i_classifier, classifier in enumerate(
             self.classifiers_config["classifiers"]
         ):
-
             classifier_set_value = classifier_set[i_classifier]
             classifier_name = classifier["name"]
             classifier_variable = get_classifier_variable(classifier_name)

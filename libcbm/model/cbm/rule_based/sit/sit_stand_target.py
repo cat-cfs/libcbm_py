@@ -40,7 +40,6 @@ def create_sit_event_target(
     eligible: Series,
     random_generator: Callable[[int], Series],
 ) -> RuleTargetResult:
-
     sort = sit_event_row["sort_type"]
     target_type = sit_event_row["target_type"]
     target = sit_event_row["target"]

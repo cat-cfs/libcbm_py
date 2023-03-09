@@ -7,7 +7,6 @@ from libcbm.model.cbm import cbm_model
 
 class ComputeProductionTest(unittest.TestCase):
     def test_compute_disturbance_production_expected_result(self):
-
         mock_pools = dataframe.from_pandas(
             pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]})
         )

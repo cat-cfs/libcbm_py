@@ -36,7 +36,6 @@ class ProcessEventResult:
         filter_result: Series,
         rule_target_result: RuleTargetResult,
     ):
-
         self.cbm_vars = cbm_vars
         self.filter_result = filter_result
         self.rule_target_result = rule_target_result

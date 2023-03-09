@@ -54,7 +54,6 @@ def load_cbm_parameters(sqlite_path: str) -> dict[str, pd.DataFrame]:
             "specified path does not exist '{0}'".format(sqlite_path)
         )
     with sqlite3.connect(sqlite_path) as conn:
-
         for table, query in queries.items():
             if table in result:
                 raise AssertionError(

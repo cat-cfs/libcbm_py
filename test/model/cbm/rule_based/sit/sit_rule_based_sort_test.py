@@ -8,15 +8,15 @@ from libcbm.storage import series
 
 
 def test_get_sort_value():
-
     pools_mock = MagicMock()
     pools_mock.__getitem__.side_effect = lambda x: dict(
         SoftwoodStemSnag=series.from_list("", [1.0]),
-        HardwoodStemSnag=series.from_list("", [10.0])
+        HardwoodStemSnag=series.from_list("", [10.0]),
     )[x]
     pools_mock.n_rows = 999
     mock_cbm_vars = SimpleNamespace(
-        state=dict(age=series.from_list("", [100])), pools=pools_mock)
+        state=dict(age=series.from_list("", [100])), pools=pools_mock
+    )
     random_generator = MagicMock()
     random_generator.side_effect = lambda x: series.from_list("", [1, 2, 3])
     cases = {

@@ -94,7 +94,6 @@ class TransitionRuleProcessor(object):
     def _filter_stands(
         self, tr_group_key: dict, cbm_vars: CBMVariables
     ) -> Series:
-
         dist_type_target = tr_group_key["disturbance_type_id"]
         classifier_set = [
             tr_group_key[x] for x in cbm_vars.classifiers.columns
@@ -243,7 +242,6 @@ class TransitionRuleProcessor(object):
             # effect for this split portion
             is_transition_split = i_proportion < tr_group.n_rows
             if is_transition_split:
-
                 transition_classifier_ids = (
                     self._get_transition_classifier_set(
                         transition_rule=tr_group.at(i_proportion)
@@ -291,7 +289,6 @@ class TransitionRuleProcessor(object):
             )
 
         if proportions[0] < 1.0:
-
             inventory["area"].assign(
                 cbm_vars.inventory["area"].take(eligible_idx) * proportions[0],
                 eligible_idx,

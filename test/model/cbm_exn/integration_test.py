@@ -7,7 +7,6 @@ from libcbm import resources
 
 
 def test_cbm_exn_integration():
-
     with tempfile.TemporaryDirectory() as tempdir:
         parameter_extraction.extract(
             resources.get_cbm_defaults_path(), tempdir, locale_code="en-CA"

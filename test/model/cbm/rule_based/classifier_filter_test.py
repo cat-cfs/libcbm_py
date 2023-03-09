@@ -75,7 +75,6 @@ class ClassifierFilterTest(unittest.TestCase):
         )
 
     def test_create_classifiers_filter_expected_value(self):
-
         classifier_set = ["c1_v1", "?", "agg1"]
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [
@@ -129,7 +128,6 @@ class ClassifierFilterTest(unittest.TestCase):
         self.assertTrue(result.data["c3"].to_list() == [7, 7, 7, 5, 6])
 
     def test_create_classifiers_filter_expected_value_all_wildcards(self):
-
         classifier_set = ["?", "?", "?"]
         classifiers_config = get_mock_classifiers_config()
         classifier_aggregates = [

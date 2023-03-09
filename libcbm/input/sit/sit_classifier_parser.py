@@ -176,7 +176,6 @@ def parse(
         ~pd.isnull(unpacked.iloc[:, 3:]).all(axis=1)
     ]
     for i in range(0, classifier_aggregates.shape[0]):
-
         agg_values = classifier_aggregates.iloc[i, 3:]
         agg_values = agg_values[~pd.isnull(agg_values)]
         aggregate_values.append(

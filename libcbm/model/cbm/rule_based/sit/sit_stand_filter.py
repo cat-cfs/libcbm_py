@@ -144,7 +144,6 @@ def create_state_filter_expression(sit_data: dict, age_only: bool) -> str:
     else:
         filter_mappings = get_state_variable_filter_mappings()
     for sit_column, state_variable_column, operator in filter_mappings:
-
         if sit_data[sit_column] < 0:
             # by convention, SIT criteria less than 0 are considered null
             # criteria
@@ -172,7 +171,6 @@ def _try_get_float(s: str) -> tuple[float, bool]:
 def create_last_disturbance_type_filter(
     sit_data: dict, sit_disturbance_type_map: dict
 ) -> str:
-
     last_dist_type_float, is_float = _try_get_float(sit_data["LastDistTypeID"])
     # by convention in the SIT events format, a value of -1 is a null
     if is_float and last_dist_type_float == -1.0:

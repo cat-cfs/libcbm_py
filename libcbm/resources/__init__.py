@@ -53,7 +53,6 @@ def get_test_resources_dir():
 
 
 def parse_key_value_file(path):
-
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
     with open(path) as fp:

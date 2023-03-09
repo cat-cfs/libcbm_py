@@ -141,7 +141,6 @@ class SITInventoryParserTest(unittest.TestCase):
             ("b", "a", "F", 0, 0, -1, 0),
             ("b", "a", "F", 0, 0, -1, 0, "dist1", "dist1", "x"),
         ]:
-
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
@@ -162,7 +161,6 @@ class SITInventoryParserTest(unittest.TestCase):
             ("b", "a", "F", 0, 0, 0, 0, "dist1", "MISSING"),
             ("b", "a", "F", 0, 0, 0, 0, "MISSING", "dist2"),
         ]:
-
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
@@ -183,7 +181,6 @@ class SITInventoryParserTest(unittest.TestCase):
             ("MISSING", "a", "F", 0, 0, 0, 0),
             ("b", "MISSING", "F", 0, 0, 0, 0),
         ]:
-
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(
@@ -202,7 +199,6 @@ class SITInventoryParserTest(unittest.TestCase):
         disturbance_types = self.get_mock_disturbance_types()
         age_classes = self.get_mock_age_classes()
         for data in [("b", "a", True, 1, 0, 0, 0, "dist1", "dist1", 1)]:
-
             inventory_table = pd.DataFrame([data])
             with self.assertRaises(ValueError):
                 sit_inventory_parser.parse(

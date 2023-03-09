@@ -250,7 +250,6 @@ def parse(
     age_classes: pd.DataFrame = None,
     separate_eligibilities: bool = False,
 ) -> pd.DataFrame:
-
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
     eligibilites are separate from sit_events and joined by foreign key.

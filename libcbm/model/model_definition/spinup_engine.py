@@ -106,7 +106,6 @@ def _advance_spinup_state(
     enabled: np.ndarray,
     out_state: np.ndarray,
 ) -> np.ndarray:
-
     for i in range(0, n_stands):
         state = spinup_state[i]
         if not enabled[i]:
@@ -114,7 +113,6 @@ def _advance_spinup_state(
             continue
         if state == SpinupState.AnnualProcesses:
             if age[i] >= (return_interval[i]):
-
                 small_slow_diff = (
                     _small_slow_diff(
                         last_rotation_slow[i], this_rotation_slow[i]

@@ -26,7 +26,6 @@ class SITEventProcessorTest(unittest.TestCase):
             sit_stand_filter=DEFAULT,
             sit_stand_target=DEFAULT,
         ) as mocks:
-
             mock_sit_events = pd.DataFrame(
                 data={
                     "time_step": [1, 1, 2, 2, 2, 2],
@@ -77,7 +76,6 @@ class SITEventProcessorTest(unittest.TestCase):
                 disturbance_type_id,
                 cbm_vars,
             ):
-
                 disturbance_id_order.append(disturbance_type_id)
 
                 n_stands = cbm_vars.inventory.shape[0]

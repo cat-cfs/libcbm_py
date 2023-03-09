@@ -251,7 +251,6 @@ def expand_age_class_inventory(
             f"age classes) detected: {undefined_age_class_name}"
         )
     for row in age_classes.itertuples():
-
         age_range = (
             range(row.start_year, row.start_year + row.class_size)
             if row.class_size > 0

@@ -118,7 +118,6 @@ def spinup(
     )
     t: int = 0
     while True:
-
         if include_flux:
             spinup_vars["flux"].zero()
         all_finished, spinup_vars = cbm_exn_land_state.advance_spinup_state(

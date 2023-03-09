@@ -63,7 +63,6 @@ class SITRuleBasedProcessor:
         sit_disturbance_eligibilities: pd.DataFrame,
         reset_parameters: bool,
     ):
-
         self.event_processor = event_processor
         self.transition_rule_processor = transition_rule_processor
         self.sit_events = sit_events
@@ -113,7 +112,6 @@ def sit_rule_based_processor_factory(
     reset_parameters: bool,
     disturbance_type_map: dict,
 ) -> SITRuleBasedProcessor:
-
     classifier_filter = ClassifierFilter(
         classifiers_config=classifiers_config,
         classifier_aggregates=classifier_aggregates,
