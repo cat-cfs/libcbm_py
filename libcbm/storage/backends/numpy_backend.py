@@ -26,13 +26,11 @@ class _numepxr_local_dict_wrap:
 
 
 def _map_1D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
-
     for i in np.arange(a.shape[0]):
         out[i] = d[a[i]]
 
 
 def _map_2D_nb(a: np.ndarray, out: np.ndarray, d: dict) -> np.ndarray:
-
     for i in np.arange(a.shape[0]):
         for j in np.arange(a.shape[1]):
             out[i, j] = d[a[i, j]]
@@ -89,7 +87,6 @@ def get_numpy_pointer(
     if data is None:
         return None
     else:
-
         if not data.flags["C_CONTIGUOUS"]:
             raise ValueError("specified array is not C_CONTIGUOUS")
         if dtype == ctypes.c_double:
@@ -116,7 +113,6 @@ class NumpyDataFrameFrameBackend(DataFrame):
         data: Union[np.ndarray, dict[str, np.ndarray]],
         cols: list[str] = None,
     ) -> None:
-
         if isinstance(data, dict):
             self._from_dict(data)
         else:
@@ -240,7 +236,6 @@ class NumpyDataFrameFrameBackend(DataFrame):
             )
 
     def add_column(self, series: Series, index: int) -> None:
-
         if series.name in self.columns:
             raise ValueError(
                 f"{series.name} already present in this Dataframe"
@@ -298,7 +293,6 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 self._data_cols[col][:] = 0
 
     def map(self, arg: dict) -> DataFrame:
-
         if self._storage_format == StorageFormat.uniform_matrix:
             return NumpyDataFrameFrameBackend(
                 _map(self._data_matrix, arg), self.columns
@@ -358,7 +352,6 @@ class NumpySeriesBackend(Series):
         data: np.ndarray = None,
         parent_df: NumpyDataFrameFrameBackend = None,
     ):
-
         if not ((data is None) ^ (parent_df is None)):
             raise ValueError("one of data, or parent_df must be specified")
 
@@ -442,7 +435,6 @@ class NumpySeriesBackend(Series):
         indices: "Series" = None,
         allow_type_change=False,
     ):
-
         assignment_value = None
         if isinstance(value, Series):
             assignment_value = value.to_numpy()
@@ -529,6 +521,10 @@ class NumpySeriesBackend(Series):
         return True if all values in this series are non-zero
         """
         return self._get_data().all()
+
+    def indices_nonzero(self) -> "Series":
+        """Get the indices of values that are non-zero in this series"""
+        return NumpySeriesBackend(self._name, np.nonzero(self._get_data())[0])
 
     def unique(self) -> "Series":
         return NumpySeriesBackend(self._name, np.unique(self._get_data()))
