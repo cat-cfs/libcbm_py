@@ -234,7 +234,7 @@ class PandasSeriesBackend(Series):
         """Get the indices of values that are non-zero in this series"""
         return PandasSeriesBackend(
             self._name,
-            pd.Series(self._name, np.nonzero(self._get_series())[0]),
+            pd.Series(self._name, np.nonzero(self.to_numpy())[0]),
         )
 
     def unique(self) -> "Series":
