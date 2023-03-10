@@ -50,6 +50,10 @@ def test_series():
         s_assigned.assign(1)
         assert s_assigned.to_list() == [1] * 100
         s_assigned = s.copy()
+        # assert that an empty indices array will result in no assignment
+        s_assigned.assign(1, series.from_numpy("", np.array([], dtype="int")))
+        assert s_assigned.to_list() == s.to_list()
+        s_assigned = s.copy()
         s_assigned.assign(
             series.from_list("", [99, 98, 97]), series.from_list("", [0, 1, 2])
         )
