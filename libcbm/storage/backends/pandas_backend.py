@@ -168,6 +168,8 @@ class PandasSeriesBackend(Series):
         dtype_original = self._get_series().dtype
         if indices is not None:
             _idx = indices.to_numpy()
+            if _idx.size == 0:
+                return
         else:
             _idx = slice(None)
         if self._series is not None:
