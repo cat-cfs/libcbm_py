@@ -86,7 +86,6 @@ class SITCBMFactoryTest(unittest.TestCase):
     @patch("libcbm.input.sit.sit_cbm_factory.SITCBMDefaults")
     @patch("libcbm.input.sit.sit_cbm_factory.SITMapping")
     def test_sit_maps(self, SITMapping, SITCBMDefaults, resources):
-
         sit_mapping = Mock()
         sit_mapping.sit_cbm_defaults.default_disturbance_id_lookup = {
             "default_a_name": 5,
@@ -185,7 +184,6 @@ class SITCBMFactoryTest(unittest.TestCase):
         )
         sit = sit_cbm_factory.load_sit(config_path)
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-
             rule_based_processor1 = (
                 sit_cbm_factory.create_sit_rule_based_processor(
                     sit, cbm, event_sort=EventSort.disturbance_type

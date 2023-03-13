@@ -104,7 +104,6 @@ class DaskSeriesBackend(Series):
         pass
 
     def map(self, arg: dict) -> "Series":
-
         pass
 
     def at(self, idx: int) -> Any:

@@ -44,7 +44,6 @@ def _checked_merge(
 
 
 def _initialize_dynamics_parameter(input_data: InputData) -> DataFrame:
-
     max_vols = pd.DataFrame(
         {
             "max_merch_vol": input_data.merch_volume["volume"]

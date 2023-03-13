@@ -30,7 +30,6 @@ def _get_merch_volume(
 
 class MerchVolumeLookup:
     def __init__(self, merch_volume: pd.DataFrame):
-
         self._lookup = {
             int(i): SimpleNamespace(age_volume_pairs={}, max_age=0)
             for i in merch_volume.index

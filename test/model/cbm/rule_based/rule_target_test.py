@@ -26,7 +26,6 @@ class RuleTargetTest(unittest.TestCase):
             )
 
     def test_sorted_disturbance_target_unrealized_on_zero_target_var_sum(self):
-
         result = rule_target.sorted_disturbance_target(
             target_var=series.from_pandas(pd.Series([0, 0, 0])),
             sort_var=series.from_pandas(pd.Series([1, 2, 3])),
@@ -43,7 +42,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_sorted_disturbance_target_on_unrealized_target(self):
-
         result = rule_target.sorted_disturbance_target(
             target_var=series.from_pandas(pd.Series([33, 33, 33])),
             sort_var=series.from_pandas(pd.Series([1, 2, 3])),
@@ -67,7 +65,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_sorted_disturbance_target_expected_result_with_exact_target(self):
-
         result = rule_target.sorted_disturbance_target(
             target_var=series.from_pandas(pd.Series([33, 33, 33])),
             sort_var=series.from_pandas(pd.Series([1, 2, 3])),
@@ -92,7 +89,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_sorted_disturbance_target_expected_result_with_less_target(self):
-
         result = rule_target.sorted_disturbance_target(
             target_var=series.from_pandas(pd.Series([33, 33, 33])),
             sort_var=series.from_pandas(pd.Series([1, 2, 3])),
@@ -115,7 +111,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_sorted_area_target_expected_result(self):
-
         mock_inventory = dataframe.from_pandas(
             pd.DataFrame(
                 {"age": [0, 20, 10, 30], "area": [1.5, 2.0, 2.0, 3.0]}
@@ -152,7 +147,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 4)
 
     def test_sorted_area_target_error_on_dimension_mismatch(self):
-
         mock_inventory = dataframe.from_pandas(
             pd.DataFrame(
                 {"age": [0, 20, 10, 30], "area": [1.5, 2.0, 2.0, 3.0]}
@@ -287,7 +281,6 @@ class RuleTargetTest(unittest.TestCase):
         self.assertTrue(result.statistics["num_eligible"] == 3)
 
     def test_sorted_merch_target_error_on_dimension_mismatch1(self):
-
         mock_inventory = dataframe.from_pandas(
             pd.DataFrame(
                 {"age": [0, 20, 10, 30], "area": [2.0, 2.0, 2.0, 2.0]}
@@ -312,7 +305,6 @@ class RuleTargetTest(unittest.TestCase):
             )
 
     def test_sorted_merch_target_error_on_dimension_mismatch2(self):
-
         mock_inventory = dataframe.from_pandas(
             pd.DataFrame(
                 {"age": [0, 20, 10, 30], "area": [2.0, 2.0, 2.0, 2.0]}

@@ -296,7 +296,6 @@ class SITEventIntegrationTest(unittest.TestCase):
         self.assertTrue(stats_row["num_eligible"] == 2)
 
     def test_rule_based_merch_target_age_sort(self):
-
         sit_input = helpers.load_sit_input()
 
         sit_input.sit_data.disturbance_events = helpers.initialize_events(

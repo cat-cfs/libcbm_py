@@ -40,7 +40,6 @@ class SITEventProcessor:
         random_generator: Callable[[int], Series],
         disturbance_type_map: dict[str, int],
     ):
-
         self._cbm = cbm
         self._classifier_filter_builder = classifier_filter_builder
         self._random_generator = random_generator
@@ -52,7 +51,6 @@ class SITEventProcessor:
         def compute_disturbance_production(
             cbm_vars: CBMVariables, disturbance_type_id: Union[int, Series]
         ):
-
             return cbm.compute_disturbance_production(
                 cbm_vars=cbm_vars,
                 disturbance_type=disturbance_type_id,
@@ -68,7 +66,6 @@ class SITEventProcessor:
         cbm_vars: CBMVariables,
         sit_eligibility=None,
     ) -> event_processor.ProcessEventResult:
-
         compute_disturbance_production = (
             self._get_compute_disturbance_production(
                 cbm=self._cbm, eligible=eligible

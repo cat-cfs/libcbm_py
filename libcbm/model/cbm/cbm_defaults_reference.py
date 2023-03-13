@@ -19,7 +19,6 @@ class CBMDefaultsReference:
     """
 
     def __init__(self, sqlite_path: str, locale_code: str = "en-CA"):
-
         # queries for species name/species id associations
         self.species_reference_query = queries.get_query("species_ref.sql")
 
@@ -220,7 +219,9 @@ class CBMDefaultsReference:
         with the following keys:
 
             - spatial_unit_id
+            - admin_boundary_id
             - admin_boundary_name
+            - eco_boundary_id
             - eco_boundary_name
 
         Returns:

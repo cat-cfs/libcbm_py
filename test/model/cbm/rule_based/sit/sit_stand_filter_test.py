@@ -5,7 +5,6 @@ from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 
 class SITStandFilterTest(unittest.TestCase):
     def test_expected_result_on_create_age_state_variable_filter(self):
-
         mock_data = [[10, 10], [-1, 10], [10, -1], [-1, -1]]
 
         expected_expressions = [
@@ -34,7 +33,6 @@ class SITStandFilterTest(unittest.TestCase):
         self.assertTrue(exp == "(last_disturbance_type == 9999)")
 
     def test_expected_result_on_create_state_variable_filter(self):
-
         mock_data_columns = [
             "min_age",
             "max_age",
@@ -66,7 +64,6 @@ class SITStandFilterTest(unittest.TestCase):
             self.assertTrue(exp == expected_expressions[i_row])
 
     def test_get_pool_variable_filter_mappings_expected_value(self):
-
         pool_mappings = sit_stand_filter.get_pool_variable_filter_mappings()
         mock_data_columns = [x[0] for x in pool_mappings]
 

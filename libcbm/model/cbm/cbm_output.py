@@ -37,7 +37,6 @@ def _concat_timestep_results(
     timestep_result: DataFrame,
     backend_type: BackendType,
 ) -> DataFrame:
-
     _add_timestep_series(timestep, timestep_result)
 
     return dataframe.concat_data_frame(
@@ -166,7 +165,6 @@ class CBMOutput:
         timestep_state = cbm_vars.state.copy()
         timestep_params = cbm_vars.parameters.copy()
         if self._disturbance_type_map:
-
             timestep_state["last_disturbance_type"].assign(
                 timestep_state["last_disturbance_type"].map(
                     self._disturbance_type_map
@@ -197,7 +195,6 @@ class CBMOutput:
                 self._backend_type,
             )
         else:
-
             timestep_classifiers = cbm_vars.classifiers.copy()
             timestep_classifiers = timestep_classifiers.map(
                 self.classifier_map

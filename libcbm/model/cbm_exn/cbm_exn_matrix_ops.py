@@ -144,7 +144,6 @@ class MatrixOps:
             )
 
         else:
-
             self._disturbance_op.update_index(
                 self._extract_dm_index(
                     self._dm_index,
@@ -163,7 +162,6 @@ class MatrixOps:
         spuid: np.ndarray,
         sw_hw: np.ndarray,
     ) -> np.ndarray:
-
         n_rows = disturbance_type.shape[0]
         matrix_idx = np.zeros(n_rows, dtype="uintp")
         for i in range(n_rows):
@@ -468,7 +466,6 @@ def _build_dm_op_index(
     spatial_unit_ids: np.ndarray,
     sw_hw: np.ndarray,
 ):
-
     for i in range(disturbance_type_id.shape[0]):
         dist_type = disturbance_type_id[i]
         spuid = spatial_unit_ids[i]
@@ -483,7 +480,6 @@ def _build_dm_op_index(
 def _net_growth(
     growth_info: dict[str, np.ndarray],
 ) -> list:
-
     matrices = [
         ["Input", "Merch", growth_info["merch_inc"] * 0.5],
         ["Input", "Other", growth_info["other_inc"] * 0.5],
@@ -497,7 +493,6 @@ def _net_growth(
 def _overmature_decline(
     growth_info: dict[str, np.ndarray],
 ) -> list:
-
     matrices = [
         ["Merch", "StemSnag", growth_info["merch_to_stem_snag_prop"]],
         ["Other", "BranchSnag", growth_info["other_to_branch_snag_prop"]],
@@ -546,7 +541,6 @@ def _snag_turnover(rates: dict[str, np.ndarray]) -> list:
 
 
 def _biomass_turnover(rates: dict[str, np.ndarray]) -> list:
-
     matrices = [
         [
             "Merch",
@@ -596,7 +590,6 @@ def _biomass_turnover(rates: dict[str, np.ndarray]) -> list:
 def _dom_decay(
     mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
 ) -> list:
-
     dom_pools = [
         "AboveGroundVeryFastSoil",
         "BelowGroundVeryFastSoil",
@@ -642,7 +635,6 @@ def _dom_decay(
 def _slow_decay(
     mean_annual_temp: np.ndarray, parameters: CBMEXNParameters
 ) -> list:
-
     matrix_data = []
     for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
         decay_parameter = parameters.get_decay_parameter(dom_pool)

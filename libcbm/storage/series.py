@@ -160,6 +160,16 @@ class Series(ABC):
         """
         pass
 
+    @abstractmethod
+    def indices_nonzero(self) -> "Series":
+        """Get the indices of values that are non-zero in this series
+
+        Returns:
+            Series: integer series that is the index of each non zero
+                value in this series.
+        """
+        pass
+
     @abstractmethod  # pragma: no cover
     def unique(self) -> "Series":
         """Get the distinct values in this series, as a new series

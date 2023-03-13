@@ -147,7 +147,6 @@ class EventProcessorTest(unittest.TestCase):
             )
 
     def test_apply_rule_based_event_expected_result_with_no_split(self):
-
         mock_cbm_vars = SimpleNamespace(
             classifiers=dataframe.from_pandas(
                 pd.DataFrame({"classifier1": [1, 2, 3, 4]})
@@ -208,7 +207,6 @@ class EventProcessorTest(unittest.TestCase):
         )
 
     def test_apply_rule_based_event_expected_result_with_split(self):
-
         mock_cbm_vars = SimpleNamespace(
             classifiers=dataframe.from_pandas(
                 pd.DataFrame({"classifier1": [1, 2, 3, 4]})
@@ -295,7 +293,6 @@ class EventProcessorTest(unittest.TestCase):
         )
 
     def test_apply_rule_based_event_expected_result_no_target_rows(self):
-
         mock_cbm_vars = SimpleNamespace(
             classifiers=dataframe.from_pandas(
                 pd.DataFrame({"classifier1": [1, 2, 3, 4]})

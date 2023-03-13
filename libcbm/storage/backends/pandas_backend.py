@@ -168,10 +168,11 @@ class PandasSeriesBackend(Series):
         dtype_original = self._get_series().dtype
         if indices is not None:
             _idx = indices.to_numpy()
+            if _idx.size == 0:
+                return
         else:
             _idx = slice(None)
         if self._series is not None:
-
             self._series.iloc[_idx] = assignment_value
 
             if (
@@ -180,7 +181,6 @@ class PandasSeriesBackend(Series):
             ):
                 self._series = self._series.astype(dtype_original)
         elif self._parent_df is not None:
-
             self._parent_df.iloc[
                 _idx,
                 self._parent_df.columns.get_loc(self.name),
@@ -231,6 +231,13 @@ class PandasSeriesBackend(Series):
         return True if all values in this series are non-zero
         """
         return self._get_series().all()
+
+    def indices_nonzero(self) -> "Series":
+        """Get the indices of values that are non-zero in this series"""
+        return PandasSeriesBackend(
+            self._name,
+            pd.Series(name=self._name, data=np.nonzero(self.to_numpy())[0]),
+        )
 
     def unique(self) -> "Series":
         return PandasSeriesBackend(

@@ -261,7 +261,6 @@ def initialize(
         pool_config=parameters.pool_configuration(),
         flux_config=parameters.flux_configuration(),
     ) as cbm_model:
-
         spinup_reporter = (
             SpinupReporter(pandas_interface) if include_spinup_debug else None
         )

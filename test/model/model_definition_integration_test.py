@@ -89,7 +89,6 @@ def test_integration():
         return op
 
     def get_mortality_matrix(cbm_model: CBMModel, n_stands: int):
-
         op = cbm_model.create_operation(
             matrices=[
                 ["WoodyBiomass", "WoodyBiomass", 1.0],
@@ -129,7 +128,6 @@ def test_integration():
     def get_disturbance_matrix(
         cbm_model: CBMModel, disturbance_types: np.ndarray
     ):
-
         no_disturbance = []
         fire_matrix = [
             ["WoodyBiomass", "WoodyBiomass", 0.0],
@@ -156,7 +154,6 @@ def test_integration():
         return op
 
     with model.initialize(pool_def, flux_indicators) as model_handle:
-
         output_processor = ModelOutputProcessor()
         n_stands = 2
         model_vars = ModelVariables.from_pandas(
@@ -183,7 +180,6 @@ def test_integration():
         stand_age = np.full(n_stands, 0)
 
         for t in range(0, 1000):
-
             # add some simplistic disturbance scheduling
 
             if (t % 150) == 0:

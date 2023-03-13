@@ -91,7 +91,6 @@ def test_tutorial2():
             disturbance_type_map=sit.disturbance_name_map,
         )
         with sit_cbm_factory.initialize_cbm(sit) as cbm:
-
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
             )

@@ -81,7 +81,6 @@ def test_dataframe_mixed_types():
 
 
 def test_dataframe_uniform_matrix():
-
     for backend_type in BackendType:
         data = dataframe.numeric_dataframe(
             cols=["A", "B", "C"], nrows=3, back_end=backend_type, init=2.0

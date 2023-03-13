@@ -100,7 +100,6 @@ class SIT:
         return self._sit_identifier_mapping.classifier_value_names.copy()
 
     def get_parameters_factory(self) -> Callable[[], dict]:
-
         sit_disturbance_types = self._sit_data.disturbance_types.copy()
         sit_disturbance_types.insert(
             0,

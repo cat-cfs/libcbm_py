@@ -74,7 +74,6 @@ def simulate(
     reporting_func(0, cbm_vars)
 
     for time_step in range(1, int(n_steps) + 1):
-
         if pre_dynamics_func:
             cbm_vars = pre_dynamics_func(time_step, cbm_vars)
 

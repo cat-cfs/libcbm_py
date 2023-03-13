@@ -129,7 +129,6 @@ def _overmature_decline_compute(
     fine_root_to_ag_vfast_prop: np.ndarray,
     fine_root_to_bg_vfast_prop: np.ndarray,
 ):
-
     tolerance = -0.0001
     size = merch.shape[0]
     for i in range(size):

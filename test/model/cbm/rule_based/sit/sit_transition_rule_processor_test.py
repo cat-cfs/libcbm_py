@@ -16,13 +16,11 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor"
 
 class SITTransitionRuleProcessorTest(unittest.TestCase):
     def test_state_variable_filter_func(self):
-
         with patch(
             PATCH_PATH + ".sit_stand_filter"
         ) as sit_stand_filter, patch(
             PATCH_PATH + ".rule_filter"
         ) as rule_filter:
-
             create_state_filter_expression = Mock()
             create_state_filter_expression.side_effect = (
                 lambda a, b: "mock_state_filter_expression"
@@ -135,7 +133,6 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
             )
 
     def test_process_transition_rules(self):
-
         mock_cbm_vars = SimpleNamespace(
             classifiers=dataframe.from_pandas(
                 pd.DataFrame({"c1": [1], "c2": [1]})

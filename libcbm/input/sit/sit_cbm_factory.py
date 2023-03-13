@@ -68,7 +68,6 @@ class EventSort(Enum):
 def initialize_inventory(
     sit: SIT, backend_type: BackendType = BackendType.pandas
 ) -> Tuple[DataFrame, DataFrame]:
-
     if not sit.sit_data.chunked_inventory:
         pd_classifiers, pd_inventory = _initialize_inventory(
             sit.sit_mapping,
@@ -404,7 +403,6 @@ def create_sit_rule_based_processor(
     disturbance_eligibilities = None
     transition_rules = None
     if sit_events is not None:
-
         disturbance_events = sit_disturbance_event_parser.parse(
             sit_events,
             sit.sit_data.classifiers,

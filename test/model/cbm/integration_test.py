@@ -8,7 +8,6 @@ from libcbm.model.cbm.cbm_output import CBMOutput
 
 
 def test_integration():
-
     classifiers = {
         "c1": ["c1_v1"],
         "c2": ["c2_v1"],
@@ -71,7 +70,6 @@ def test_integration():
     csets, inv = cbm_factory.prepare_inventory(inventory)
     n_stands = inv.n_rows
     with cbm_factory.initialize_cbm() as cbm:
-
         spinup_results = CBMOutput(density=True)
 
         cbm_results = CBMOutput(

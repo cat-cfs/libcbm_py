@@ -23,7 +23,6 @@ class MossCIntegrationTest(unittest.TestCase):
         flux_results = pd.DataFrame()
 
         for i in range(0, 125):
-
             model.step(ctx)
 
             pools = ctx.pools.to_pandas().copy()

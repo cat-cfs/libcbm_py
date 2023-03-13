@@ -162,7 +162,6 @@ def initialize_inventory(sit_input, inventory_data):
 
 
 def setup_cbm_vars(sit):
-
     classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
 
     cbm_vars = cbm_variables.initialize_simulation_variables(
@@ -177,7 +176,6 @@ def setup_cbm_vars(sit):
 
 @contextmanager
 def get_rule_based_processor(sit, random_func=None, parameters_factory=None):
-
     with sit_cbm_factory.initialize_cbm(
         sit, dll_path=None, parameters_factory=parameters_factory
     ) as cbm:
@@ -203,7 +201,6 @@ def get_disturbance_type_ids(sit_disturbance_types, disturbance_types):
 
 
 def get_transition_rules_pre_dynamics_func(sit):
-
     classifiers_config = sit_cbm_factory.get_classifiers(
         sit.sit_data.classifiers, sit.sit_data.classifier_values
     )

@@ -403,7 +403,6 @@ class SITMapping:
             and not self.config["nonforest"] is None
             and len(self.config["nonforest"]) > 0
         ):
-
             non_forest_classifier = sit_format.adjust_classifier_name(
                 self.config["nonforest"]["nonforest_classifier"]
             )

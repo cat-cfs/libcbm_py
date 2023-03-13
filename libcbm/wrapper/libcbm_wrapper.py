@@ -303,7 +303,6 @@ class LibCBMWrapper:
         flux: DataFrame,
         enabled: Series = None,
     ):
-
         """
         Computes and tracks flows between pool values for all stands.
 

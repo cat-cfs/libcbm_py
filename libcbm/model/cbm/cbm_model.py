@@ -68,7 +68,6 @@ class CBM:
         pool_codes: list[str],
         flux_indicator_codes: list[str],
     ):
-
         self.compute_functions = compute_functions
         self.model_functions = model_functions
 
@@ -140,7 +139,6 @@ class CBM:
         iteration = 0
 
         while True:
-
             n_finished = self.model_functions.advance_spinup_state(
                 cbm_vars.inventory, cbm_vars.state, cbm_vars.parameters
             )
