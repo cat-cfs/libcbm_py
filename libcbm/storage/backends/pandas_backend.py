@@ -443,7 +443,7 @@ def from_series_list(
     series_list: list[PandasSeriesBackend],
 ) -> PandasDataFrameBackend:
     return PandasDataFrameBackend(
-        pd.DataFrame({s.name: s._get_series() for s in series_list})
+        pd.DataFrame({s.name: s.to_numpy() for s in series_list})
     )
 
 
@@ -451,7 +451,7 @@ def from_series_dict(
     data: dict[str, PandasSeriesBackend],
 ) -> DataFrame:
     return PandasDataFrameBackend(
-        pd.DataFrame({k: v._get_series() for k, v in data.items()})
+        pd.DataFrame({k: v.to_numpy() for k, v in data.items()})
     )
 
 
