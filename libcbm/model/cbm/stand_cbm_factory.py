@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import contextmanager
 from typing import Callable
 from typing import Iterator
 from typing import Tuple
@@ -329,8 +330,9 @@ class StandCBMFactory:
         )
         return classifiers, inventory
 
+    @contextmanager
     def initialize_cbm(self) -> Iterator[CBM]:
-        return cbm_factory.create(
+        with cbm_factory.create(
             dll_path=self._dll_path,
             dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
                 self._db_path
@@ -340,4 +342,5 @@ class StandCBMFactory:
             ),
             merch_volume_to_biomass_factory=self.merch_volumes_factory,
             classifiers_factory=self.classifiers_factory,
-        )
+        ) as cbm:
+            yield cbm
