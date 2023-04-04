@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Union
+import copy
 import os
 import json
 import pandas as pd
@@ -32,7 +33,7 @@ class CBMEXNParameters:
         Raises:
             ValueError: a validation error occurred
         """
-        self._data = data
+        self._data = copy.deepcopy(data)
 
         self._slow_mixing_rate = float(
             self._data["slow_mixing_rate"].iloc[0, 1]
@@ -208,7 +209,7 @@ def parameters_factory(dir: str = None, data: dict = {}) -> CBMEXNParameters:
             )
         for item_name in missing_subset:
             _data[item_name] = _load_data_item(dir, item_name)
-        return _data
+        return CBMEXNParameters(_data)
     elif dir:
         _data = {}
         for item_name in CBMEXN_PARAMETERS_DATA.keys():
