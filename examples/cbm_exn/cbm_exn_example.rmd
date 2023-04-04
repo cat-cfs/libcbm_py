@@ -14,6 +14,7 @@ The following example shows how to run `libcbm` `cbm_exn` in R.  `cbm_exn` is a 
 ```{r}
 library(reticulate)
 library(plyr)
+#json <- import("json")
 cbm_exn_model <- import("libcbm.model.cbm_exn.cbm_exn_model")
 libcbm_resources <- import("libcbm.resources")
 model_variables <- import("libcbm.model.model_definition.model_variables")
@@ -23,9 +24,8 @@ output_processor <- import("libcbm.model.model_definition.output_processor")
 ## spinup and step functions
 
 ```{r}
-spinup <- function(spinup_input) {
-  # with config_path NULL default CBM-CFS3 derived parameters are used
-  with(cbm_exn_model$initialize(config_path=NULL) %as% cbm, {
+spinup <- function(spinup_input, parameters) {
+  with(cbm_exn_model$initialize(parameters=parameters) %as% cbm, {
       # the spinup function creates the t=0 cbm_vars
       # but you can save and or load cbm_vars for each
       # timestep at the end of spinup point
@@ -35,9 +35,9 @@ spinup <- function(spinup_input) {
   )
 }
 
-step <- function(cbm_vars) {
-   
-    with(cbm_exn_model$initialize(config_path=NULL) %as% cbm, {
+step <- function(cbm_vars, parameters) {
+
+    with(cbm_exn_model$initialize(parameters=parameters) %as% cbm, {
       cbm_vars = cbm$step(cbm_vars)
       return (cbm_vars)
     }
@@ -75,7 +75,7 @@ for(i in 0:(n_stands-1)){
 
 ```
 
-set up some spin-up parameters 
+set up some spin-up parameters
 
 ```{r}
 spinup_parameters <- data.frame(
@@ -93,7 +93,25 @@ spinup_parameters <- data.frame(
 )
 
 ```
-## package dataframes
+
+## assemble parameters
+```{r}
+# this is the path to some default bundled parameters for cbm_exn
+# any method for building equivalently formatted dataframes will also work
+param_path <- libcbm_resources$get_cbm_exn_parameters_dir()
+cbm_exn_parameters <- dict(
+    # TODO: need a solution for loading json that works correctly
+    #pools=json$loads((paste(readLines(file.path(param_path, "pools.json")), collapse = " "))),
+    #flux=json$loads((paste(readLines(file.path(param_path, "flux.json")), collapse = " "))),
+    slow_mixing_rate=read.csv(file.path(param_path, "slow_mixing_rate.csv")),
+    turnover_parameters=read.csv(file.path(param_path, "turnover_parameters.csv")),
+    species=read.csv(file.path(param_path, "species.csv")),
+    root_parameters=read.csv(file.path(param_path, "root_parameters.csv")),
+    decay_parameters=read.csv(file.path(param_path, "decay_parameters.csv")),
+    disturbance_matrix_value=read.csv(file.path(param_path, "disturbance_matrix_value.csv")),
+    disturbance_matrix_association=read.csv(file.path(param_path, "disturbance_matrix_association.csv"))
+)
+```
 
 ## run spinup
 ```{r}
@@ -101,9 +119,10 @@ cbm_vars = spinup(
   dict(
     parameters=spinup_parameters,
     increments=stand_increments
-  ))
+  ),
+  cbm_exn_parameters
+)
 ```
-
 
 
 ## run 50 timesteps
@@ -118,25 +137,25 @@ for(t in 1:50){
   cbm_vars$parameters$disturbance_type = sample(
     c(0L, 1L, 4L), n_stands, replace=T, prob=c(0.98, 0.01, 0.01)
   )
-  
+
   # look up the original increments and join to the current stand age
   step_increments = join(
     x=data.frame(age=cbm_vars$state$age),
     y=net_increments,
     by="age")
-  
-  # since some of the ages are out of range for the defined 
+
+  # since some of the ages are out of range for the defined
   # data, set the increments to 0
   step_increments$merch_inc[is.na(step_increments$merch_inc)] = 0
   step_increments$foliage_inc[is.na(step_increments$foliage_inc)] = 0
   step_increments$other_inc[is.na(step_increments$other_inc)] = 0
-  
+
   #assign the merged increments to the parameters dataframe
   cbm_vars$parameters$merch_inc = step_increments$merch_inc
   cbm_vars$parameters$foliage_inc = step_increments$foliage_inc
   cbm_vars$parameters$other_inc = step_increments$other_inc
-  cbm_vars = step(cbm_vars)
-  
+  cbm_vars = step(cbm_vars, cbm_exn_parameters)
+
   out_processor$append_results(
     t, model_variables$ModelVariables$from_pandas(cbm_vars)
   )
