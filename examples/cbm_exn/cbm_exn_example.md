@@ -15,6 +15,7 @@ jupyter:
 
 ```python
 import os
+import json
 from libcbm import resources
 import pandas as pd
 import numpy as np
@@ -26,18 +27,18 @@ from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 
 ```python
 # define some run methods for use later in the notebook
-def spinup(spinup_input):
+def spinup(spinup_input, parameters):
     with cbm_exn_model.initialize(
-        config_path=None, # when None, packaged default parameters are used
+        parameters=parameters, # when None, packaged default parameters are used
         pandas_interface=True,
         include_spinup_debug=False,
     ) as model:
         cbm_vars = model.spinup(spinup_input)
         return cbm_vars
 
-def step(cbm_vars):
+def step(cbm_vars, parameters):
     with cbm_exn_model.initialize(
-        config_path=None, # when None, packaged default parameters are used
+        parameters=parameters, # when None, packaged default parameters are used
         pandas_interface=True,
         include_spinup_debug=False,
     ) as model:
@@ -50,8 +51,8 @@ rng = default_rng()
 ```
 
 ```python
-# read some packaged net increments, derived from a 
-# simulation of the same growth curve used in CBM-CFS3 
+# read some packaged net increments, derived from a
+# simulation of the same growth curve used in CBM-CFS3
 # tutorial 1
 net_increments = pd.read_csv(
     os.path.join(
@@ -105,9 +106,26 @@ spinup_input = {
 }
 ```
 
+Assemble parameters
+```python
+# this is the path to some default bundled parameters for cbm_exn
+param_path = resources.get_cbm_exn_parameters_dir()
+parameters = dict(
+    pools=json.load(open(os.path.join(param_path, "pools.json"), 'r')),
+    flux=json.load(open(os.path.join(param_path, "flux.json"), 'r')),
+    slow_mixing_rate=pd.read_csv(os.path.join(param_path, "slow_mixing_rate.csv")),
+    turnover_parameters=pd.read_csv(os.path.join(param_path, "turnover_parameters.csv")),
+    species=pd.read_csv(os.path.join(param_path, "species.csv")),
+    root_parameters=pd.read_csv(os.path.join(param_path, "root_parameters.csv")),
+    decay_parameters=pd.read_csv(os.path.join(param_path, "decay_parameters.csv")),
+    disturbance_matrix_value=pd.read_csv(os.path.join(param_path, "disturbance_matrix_value.csv")),
+    disturbance_matrix_association=pd.read_csv(os.path.join(param_path, "disturbance_matrix_association.csv")),
+)
+```
+
 ```python
 #run spinup
-cbm_vars = spinup(spinup_input)
+cbm_vars = spinup(spinup_input, parameters)
 ```
 
 ```python
@@ -115,8 +133,10 @@ output_processor = ModelOutputProcessor()
 for t in range(50):
     n_stands = len(cbm_vars["state"]["age"].index)
     cbm_vars["parameters"]["mean_annual_temperature"] = 2.55
-    cbm_vars["parameters"]["disturbance_type"] = rng.choice([0,1,4], n_stands, p=[0.98, 0.01, 0.01])
-    
+    cbm_vars["parameters"]["disturbance_type"] = rng.choice(
+        [0,1,4], n_stands, p=[0.98, 0.01, 0.01]
+    )
+
     increments = net_increments.merge(
         cbm_vars["state"]["age"],
         left_on="age",
@@ -126,7 +146,7 @@ for t in range(50):
     cbm_vars["parameters"]["merch_inc"] = increments["SoftwoodMerch"]
     cbm_vars["parameters"]["foliage_inc"] = increments["SoftwoodFoliage"]
     cbm_vars["parameters"]["other_inc"] = increments["SoftwoodOther"]
-    cbm_vars = step(cbm_vars)
+    cbm_vars = step(cbm_vars, parameters)
     output_processor.append_results(t, ModelVariables.from_pandas(cbm_vars))
 ```
 
@@ -160,8 +180,4 @@ results["flux"].to_pandas()[[
     "timestep",'DisturbanceCO2Production',
     'DisturbanceCH4Production', 'DisturbanceCOProduction'
 ]].groupby("timestep").sum().plot(figsize=(15,10))
-```
-
-```python
-
 ```
