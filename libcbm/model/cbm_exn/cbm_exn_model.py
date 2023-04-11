@@ -12,6 +12,7 @@ from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
+from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
 from libcbm.wrapper.libcbm_operation import Operation
@@ -233,13 +234,21 @@ class CBMEXNModel:
 
 @contextmanager
 def initialize(
-    config_path: str, pandas_interface=True, include_spinup_debug=False
+    parameters: dict = None,
+    config_path: str = None,
+    pandas_interface: bool = True,
+    include_spinup_debug: bool = False,
 ) -> Iterator[CBMEXNModel]:
     """Initialize CBMEXNModel
 
     Args:
-        config_path (str): path to directoriy containing cbm_exn parameters in
-            json and csv formats.  If unspecified, packaged defaults are used.
+        parameters (dict, optional): a dictionary of named parameters for
+            running the cbm_exn module.  During initialization any required
+            parameters that are not defined in this dictionary will be drawn
+            from the specified config_path.
+        config_path (str, optional): path to directory containing cbm_exn
+            parameters in json and csv formats.  If unspecified, packaged
+            defaults are used.
             See: :py:func:`libcbm.resources.get_cbm_exn_parameters_dir`.
         pandas_interface (bool, optional): if set to true then all members
             of CBMVariables are assumed to be of type pd.DataFrame, if
@@ -256,10 +265,11 @@ def initialize(
 
     if not config_path:
         config_path = resources.get_cbm_exn_parameters_dir()
-    parameters = CBMEXNParameters(config_path)
+
+    params = parameters_factory(config_path, parameters)
     with model.initialize(
-        pool_config=parameters.pool_configuration(),
-        flux_config=parameters.flux_configuration(),
+        pool_config=params.pool_configuration(),
+        flux_config=params.flux_configuration(),
     ) as cbm_model:
         spinup_reporter = (
             SpinupReporter(pandas_interface) if include_spinup_debug else None
@@ -267,7 +277,7 @@ def initialize(
 
         yield CBMEXNModel(
             cbm_model,
-            parameters,
+            params,
             pandas_interface=pandas_interface,
             spinup_reporter=spinup_reporter,
         )

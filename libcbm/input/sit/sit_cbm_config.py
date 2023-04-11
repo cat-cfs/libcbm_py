@@ -90,38 +90,50 @@ def get_merch_volumes(
         list: configuration for CBM. See:
             :py:mod:`libcbm.model.cbm.cbm_config`
     """
+    classifier_names: list[str] = list(classifiers["name"])
+    unique_csets = (
+        yield_table[classifier_names].drop_duplicates().reset_index(drop=True)
+    )
+    unique_csets.insert(
+        0, "yield_group_index", range(0, len(unique_csets.index))
+    )
 
-    unique_classifier_sets = (
-        yield_table.groupby(list(classifiers.name)).size().reset_index()
+    yield_table_processed = yield_table.copy()
+    yield_table_processed["leading_species"] = sit_mapping.get_species(
+        yield_table["leading_species"], classifiers, classifier_values
     )
-    # removes the extra field created by the above method
-    unique_classifier_sets = unique_classifier_sets.drop(columns=[0])
-    ages = list(age_classes.end_year)
+    yield_table_grouped = unique_csets.merge(
+        yield_table_processed,
+        left_on=classifier_names,
+        right_on=classifier_names,
+        how="left",
+    )
+
+    output_data = {}
+    ages = list(age_classes["end_year"])
+    for _, row in yield_table_grouped.iterrows():
+        out_idx = int(row["yield_group_index"])
+        start_range = len(classifiers) + 2
+        vols = row.iloc[start_range:]
+        merch_vols = {
+            "species_id": int(row["leading_species"]),
+            "age_volume_pairs": [(ages[i], vols[i]) for i in range(len(vols))],
+        }
+        if out_idx not in output_data:
+            output_data[out_idx] = {
+                "classifier_set": [
+                    str(row[name]) for name in classifier_names
+                ],
+                "merch_volumes": [merch_vols],
+            }
+        else:
+            output_data[out_idx]["merch_volumes"].append(merch_vols)
     output = []
-    yield_table.leading_species = sit_mapping.get_species(
-        yield_table.leading_species, classifiers, classifier_values
-    )
-    for _, row in unique_classifier_sets.iterrows():
-        match = yield_table.merge(
-            pd.DataFrame([row]),
-            left_on=list(classifiers.name),
-            right_on=list(classifiers.name),
-        )
-        merch_vols = []
-        for _, match_row in match.iterrows():
-            start_range = len(classifiers) + 1
-            vols = match_row.iloc[start_range:]
-            merch_vols.append(
-                {
-                    "species_id": match_row["leading_species"],
-                    "age_volume_pairs": [
-                        (ages[i], vols[i]) for i in range(len(vols))
-                    ],
-                }
-            )
+    for out_idx, data in output_data.items():
         output.append(
             cbm_config.merch_volume_curve(
-                classifier_set=list(row), merch_volumes=merch_vols
+                classifier_set=data["classifier_set"],
+                merch_volumes=data["merch_volumes"],
             )
         )
     return output

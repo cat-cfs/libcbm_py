@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import contextmanager
 from typing import Callable
 from typing import Iterator
 from typing import Tuple
@@ -14,7 +15,7 @@ from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
 from libcbm import resources
 
 
-def _apply(series: Series, func: Callable):
+def _apply(series: Series, func: Callable) -> Series:
     """Helper method to ensure an error is thrown if any value in a
     mapped series is null
 
@@ -126,12 +127,12 @@ class StandCBMFactory:
         self.merch_vol_factory = self.merch_volumes_factory()
 
         self._disturbance_type_map = {
-            int(r["disturbance_type_id"]): r["disturbance_type_name"]
+            int(r["disturbance_type_id"]): str(r["disturbance_type_name"])
             for r in self.defaults_ref.disturbance_type_ref
         }
         self._disturbance_type_map[0] = ""
 
-    def _has_undefined_classifier_values(self, classifier_set):
+    def _has_undefined_classifier_values(self, classifier_set: list) -> bool:
         """returns true if any non-wildcard value in the classifier_set does
         not correspond to a value in self._classifiers.
 
@@ -178,22 +179,22 @@ class StandCBMFactory:
         )
 
     @property
-    def disturbance_types(self):
+    def disturbance_types(self) -> dict[int, str]:
         """dictionary of disturbance type id to disturbance type name"""
         return self._disturbance_type_map
 
     @property
-    def classifier_names(self):
+    def classifier_names(self) -> dict[int, str]:
         """dictionary of classifier id to classifier name"""
         return self._classifier_idx["classifier_names"]
 
     @property
-    def classifier_ids(self):
+    def classifier_ids(self) -> dict[str, int]:
         """dictionary of classifier name to classifier id"""
         return self._classifier_idx["classifier_ids"]
 
     @property
-    def classifier_value_ids(self):
+    def classifier_value_ids(self) -> dict[str, dict[str, int]]:
         """
         nested dictionary of classifier name (outer key) to classifier value
         name (inner key) to classifier value id.
@@ -201,7 +202,7 @@ class StandCBMFactory:
         return self._classifier_idx["classifier_value_ids"]
 
     @property
-    def classifier_value_names(self):
+    def classifier_value_names(self) -> dict[int, str]:
         """dictionary of classifier value id to classifier value name"""
         return self._classifier_idx["classifier_value_names"]
 
@@ -227,7 +228,7 @@ class StandCBMFactory:
 
         return cbm_config.classifier_config(classifiers_list)
 
-    def classifiers_factory(self):
+    def classifiers_factory(self) -> dict:
         return self._classifier_config
 
     def prepare_inventory(
@@ -329,8 +330,9 @@ class StandCBMFactory:
         )
         return classifiers, inventory
 
+    @contextmanager
     def initialize_cbm(self) -> Iterator[CBM]:
-        return cbm_factory.create(
+        with cbm_factory.create(
             dll_path=self._dll_path,
             dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
                 self._db_path
@@ -340,4 +342,5 @@ class StandCBMFactory:
             ),
             merch_volume_to_biomass_factory=self.merch_volumes_factory,
             classifiers_factory=self.classifiers_factory,
-        )
+        ) as cbm:
+            yield cbm
