@@ -48,7 +48,7 @@ class SITCBMDefaults(CBMDefaultsReference):
         """
         parameter_names = [
             "disturbance_matrix_associations",
-            "land_class_transitions",
+            "disturbance_type_land_type",
         ]
         for parameter_name in parameter_names:
             df = parameters[parameter_name]

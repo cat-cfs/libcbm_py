@@ -40,7 +40,7 @@ def load_cbm_parameters(sqlite_path: str) -> dict[str, pd.DataFrame]:
             "root_parameter",
             "growth_multipliers",
             "land_classes",
-            "land_class_transitions",
+            "disturbance_type_land_type",
             "spatial_units",
             "random_return_interval",
             "spinup_parameter",
