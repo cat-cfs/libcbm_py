@@ -35,8 +35,8 @@ class CBMDefaultsReference:
 
         # queries information on disturbance types which have an effect on
         # UNFCCC land class
-        self.land_class_disturbance_query = queries.get_query(
-            "land_class_disturbance_ref.sql"
+        self.land_type_disturbance_query = queries.get_query(
+            "land_type_disturbance_ref.sql"
         )
 
         # queries for land class name,id,code,descriptions
@@ -100,12 +100,12 @@ class CBMDefaultsReference:
             sqlite_path, self.flux_indicator_query
         )
 
-        self.land_class_disturbance_ref = self.load_data(
-            sqlite_path, self.land_class_disturbance_query, locale_param
+        self.land_type_disturbance_ref = self.load_data(
+            sqlite_path, self.land_type_disturbance_query, locale_param
         )
         self.land_classes_by_dist_type = {
             x["disturbance_type_name"]: x
-            for x in self.land_class_disturbance_ref
+            for x in self.land_type_disturbance_ref
         }
 
     def load_data(
@@ -287,49 +287,19 @@ class CBMDefaultsReference:
     def get_land_class_disturbance_ref(self) -> list[sqlite3.Row]:
         """Get name and id information for the cbm disturbance types that
         cause a change to UNFCCC land class, along with the post-disturbance
-        land class.  Non-land class altering disturbance types are not
+        land type.  Non-land class altering disturbance types are not
         included in the result. Returns a list of dictionaries with the
         following keys:
 
             - disturbance_type_id
             - disturbance_type_name
-            - land_class_id
-            - land_class_code
-            - land_class_description
+            - land_type_id
+            - land_type_name
 
         Returns:
-            list: a list of rows with disturbance type/landclass data
+            list: a list of rows with disturbance type/landtype data
         """
-        return self.land_class_disturbance_ref
-
-    def get_land_class_by_disturbance_type(
-        self, disturbance_type_name: str
-    ) -> dict:
-        """For the specified disturbance_type_name get UNFCCC land class
-        info for the land class caused by the disturbance type.  If no
-        UNFCCC land class is associated, return None.
-
-        Args:
-            disturbance_type_name (str): a disturbance type name
-
-        Returns:
-            dict, or None: if a match is found for the specified name, a
-            dictionary containing values for:
-
-                - land_class_id
-                - land_class_code
-                - land_class_description
-
-            is returned
-        """
-        if disturbance_type_name not in self.land_classes_by_dist_type:
-            return None
-        match = self.land_classes_by_dist_type[disturbance_type_name]
-        return {
-            "land_class_id": match["land_class_id"],
-            "land_class_code": match["land_class_code"],
-            "land_class_description": match["land_class_description"],
-        }
+        return self.land_type_disturbance_ref
 
     def get_pools(self) -> list[str]:
         """Get the ordered list of human readable pool codes defined in
