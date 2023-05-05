@@ -331,14 +331,43 @@ class StandCBMFactory:
         return classifiers, inventory
 
     @contextmanager
-    def initialize_cbm(self) -> Iterator[CBM]:
+    def initialize_cbm(
+        self,
+        dll_config_factory: Callable[[], dict] = None,
+        cbm_parameters_factory: Callable[[], dict] = None,
+    ) -> Iterator[CBM]:
+        """Context manager to create an instance of CBM for multi stand
+        simulation.
+
+
+        Args:
+            dll_config_factory (Callable[[], dict], optional): libcbm core
+                library configuration factory.  If None, a packaged default
+                factory is used.
+                See :py:func:`cbm_defaults.get_libcbm_configuration_factory`
+                Defaults to None.
+            cbm_parameters_factory (Callable[[], dict], optional): CBM
+                parameters factory. If set to None, a packaged default factory
+                which draws parameters from the `cbm_defaults` database is
+                used. See: :py:func:`cbm_defaults.get_cbm_parameters_factory`
+                Defaults to None.
+
+        Yields:
+            Iterator[CBM]: _description_
+        """
         with cbm_factory.create(
             dll_path=self._dll_path,
-            dll_config_factory=cbm_defaults.get_libcbm_configuration_factory(
-                self._db_path
+            dll_config_factory=(
+                dll_config_factory
+                if dll_config_factory
+                else cbm_defaults.get_libcbm_configuration_factory(
+                    self._db_path
+                )
             ),
-            cbm_parameters_factory=cbm_defaults.get_cbm_parameters_factory(
-                self._db_path
+            cbm_parameters_factory=(
+                cbm_parameters_factory
+                if cbm_parameters_factory
+                else cbm_defaults.get_cbm_parameters_factory(self._db_path)
             ),
             merch_volume_to_biomass_factory=self.merch_volumes_factory,
             classifiers_factory=self.classifiers_factory,
