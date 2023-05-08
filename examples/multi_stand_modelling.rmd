@@ -24,7 +24,7 @@ Activate a python environment named "my-environment"
 use_virtualenv("my-environment")
 ```
 
-python imports 
+python imports
 
 ```{r}
 np = import("numpy")
@@ -38,12 +38,12 @@ resources = import("libcbm.resources")
 cbm_defaults_ref = import("libcbm.model.cbm.cbm_defaults_reference")
 ```
 
-Define merchantable volume and classifiers input used to drive CBM.  
+Define merchantable volume and classifiers input used to drive CBM.
 
 The values shown here are purely for illustrative purposes.
 
 Inventory and yields have a m:1 relationship, and the relationship is defined by
-the classifier values attached to each merch volume curve and each inventory 
+the classifier values attached to each merch volume curve and each inventory
 record.
 
 This information is well-suited for storage in a `json` formatted file in order
@@ -116,7 +116,7 @@ n_stands=1000
 
 inventory = libcbm_dataframe$from_pandas(
   data.frame(
-    c1="c1_v1", 
+    c1="c1_v1",
     c2="c2_v1",
     admin_boundary="Ontario",
     eco_boundary="Mixedwood Plains",
@@ -127,13 +127,13 @@ inventory = libcbm_dataframe$from_pandas(
     afforestation_pre_type="None",
     historic_disturbance_type="Wildfire",
     last_pass_disturbance_type="Wildfire"
-    
+
   )
 )
 ```
 
 
-Default parameters and defaults reference: inspection and modification of CBM 
+Default parameters and defaults reference: inspection and modification of CBM
 parameters
 
 ```{r}
@@ -142,7 +142,7 @@ defaults_ref <- cbm_defaults_ref$CBMDefaultsReference(
 )
 ```
 
-Example showing how to interact with one of the properties of `defaults_ref` 
+Example showing how to interact with one of the properties of `defaults_ref`
 
 ```{r}
 defaults_ref$as_data_frame(defaults_ref$disturbance_type_ref)
@@ -154,7 +154,7 @@ default_parameters <- cbm_defaults$get_cbm_parameters_factory(
   resources$get_cbm_defaults_path())()
 default_parameters
 ```
-The parameters can be changed here, and will set the value during simulation via 
+The parameters can be changed here, and will set the value during simulation via
 a parameter factory function
 
 ```{r}
@@ -172,20 +172,23 @@ CBM Spinup function - initialize the CBM pools and state (cbm_vars)
 ```{r}
 
 
-spinup <- function(parameter_factory, inventory, classifiers, merch_volumes ){
+spinup <- function(
+  cbm_factory,
+  parameter_factory,
+  inventory,
+  classifiers,
+  merch_volumes
+){
   with(cbm_factory$initialize_cbm(
     # note we pass the customized parameter factory here
     cbm_parameters_factory=parameter_factory
   ) %as% cbm, {
-      
-      cbm_factory = stand_cbm_factory$StandCBMFactory(
-        classifiers, merch_volumes
-      )
+
       inv_tuple  = cbm_factory$prepare_inventory(inventory)
       csets = inv_tuple[[1]]
       inv = inv_tuple[[2]]
 
-  
+
       cbm_vars <- cbm_variables$initialize_simulation_variables(
           csets,
           inv,
@@ -193,7 +196,7 @@ spinup <- function(parameter_factory, inventory, classifiers, merch_volumes ){
           cbm$flux_indicator_codes,
           inv$backend_type
       )
-  
+
       spinup_vars = cbm_variables$initialize_spinup_variables(
           cbm_vars,
           inv$backend_type,
@@ -208,32 +211,37 @@ spinup <- function(parameter_factory, inventory, classifiers, merch_volumes ){
 }
 ```
 
-CBM Step function - step the annual process and disturbance routine by 1 
+CBM Step function - step the annual process and disturbance routine by 1
 timestep
 
 ```{r}
-step <- function(parameter_factory, cbm_vars){
+step <- function(cbm_factory, parameter_factory, cbm_vars){
   with(cbm_factory$initialize_cbm(
     # note we pass the customized parameter factory here
     cbm_parameters_factory=parameter_factory
   ) %as% cbm, {
-    
+
       cbm_vars = cbm$step_start(cbm_vars)
       cbm_vars = cbm$step_disturbance(cbm_vars)
       cbm_vars = cbm$step_annual_process(cbm_vars)
       cbm_vars = cbm$step_end(cbm_vars)
       return (cbm_vars)
-    
+
   })
 }
-      
+
 ```
 
 
-Create a `CBMOutput`object to store the time step output. 
+Create a `StandCBMFactory` object for initializing the cbm model, and a
+`CBMOutput`object to store the time step output.
+
 
 ```{r}
-output = cbm_output$CBMOutput(
+cbm_factory <-stand_cbm_factory$StandCBMFactory(
+        classifiers, merch_volumes
+      )
+output <- cbm_output$CBMOutput(
   classifier_map=dict(cbm_factory$classifier_value_names),
   disturbance_type_map=dict(cbm_factory$disturbance_types)
 )
@@ -243,7 +251,7 @@ output = cbm_output$CBMOutput(
 CBM spinup
 
 ```{r}
-cbm_vars = spinup(parameter_factory, inventory, classifiers, merch_volumes)
+cbm_vars = spinup(cbm_factory, parameter_factory, inventory)
 output$append_simulation_result(0, cbm_vars)
 ```
 
@@ -254,8 +262,8 @@ CBM time-stepping
 for (i in 1:50){
 
   # set the disturbance type array with randomly drawn disturbance types
-  # note the CBM default disturbance type ids are used 
-  
+  # note the CBM default disturbance type ids are used
+
   # this is here to illustrate that it's possible to read and inspect and modify
   # the CBM simulation state between timesteps
   disturbance_types = sample(
@@ -264,10 +272,10 @@ for (i in 1:50){
       replace=TRUE,
       prob=c(0.95, 0.03, 0.02)
   )
-  
+
   cbm_vars$parameters["disturbance_type"]$assign(disturbance_types)
-  
-  step(parameter_factory, cbm_vars)
+
+  step(cbm_factory, parameter_factory, cbm_vars)
   # record the end of timestep result
   output$append_simulation_result(i, cbm_vars)
 }
