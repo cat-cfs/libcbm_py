@@ -1,8 +1,10 @@
-# Running `libcbm` examples in `jupyter`
+# Running `libcbm` examples in `python` with `jupyter` or `R` with `R-markdown`
 
-A step by step guide on one of many methods to run the `jupyter` notebook examples in this directory.  
+A step by step guide on one of many methods to run the `jupyter` notebook examples in this directory.
 
-## Download and Install `python` and `git`
+## Python
+
+### Download and Install `python` and `git`
 
 [https://www.python.org/downloads/](https://www.python.org/downloads/)
 
@@ -16,7 +18,7 @@ See [Creation of virtual environments](https://docs.python.org/3/library/venv.ht
 python -m venv my_venv
 ```
 
-## Install Packages 
+### Install Packages
 
 Install the following packages.  If using a virtual environment, activate the environment first.
 
@@ -30,7 +32,15 @@ pip install jupytext
 pip install matplotlib
 ```
 
-## Clone and install `libcbm`
+### Clone and install `libcbm`
+
+Install
+
+```
+pip install libcbm
+```
+
+OR Install from github source
 
 ```
 git clone https://github.com/cat-cfs/libcbm_py
@@ -38,7 +48,9 @@ cd libcbm_py
 pip install .
 ```
 
-## Run `jupyter` from the examples directory
+
+
+### Run `jupyter` from the examples directory
 
 Any of the  [example notebooks](https://github.com/cat-cfs/libcbm_py/tree/master/examples) can be run via the `jupyter` user interface
 
@@ -47,5 +59,27 @@ cd libcbm_py/examples
 jupyter notebook
 ```
 
+## R
 
+See the `*.rmd` formatted examples in this directory
 
+Calling libcbm functions, which are coded in `python`, from `R` requires the `Reticulate` package.
+
+See https://rstudio.github.io/reticulate/
+
+Example method to set up python on your system:
+
+```R
+library(reticulate)
+version <- "3.10:latest"
+install_python(version)
+virtualenv_create("my-environment", version = version)
+use_virtualenv("my-environment")
+```
+
+In subsequent R sessions you can re-use the environment: it is not necessary to use `install_python` and `virtualenv_create` for each R session.
+
+```R
+library(reticulate)
+use_virtualenv("my-environment")
+```

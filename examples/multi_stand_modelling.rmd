@@ -5,19 +5,54 @@ output: html_notebook
 
 ```{r}
 library(reticulate)
+```
+
+Optional Set up steps: only need to run the following section when python is not
+already set up
+
+```{r}
+version <- "3.11:latest"
+install_python(version)
+virtualenv_create("my-environment", version = version)
+# install libcbm and its dependencies
+py_install("libcbm", "my-environment")
+```
+
+Activate a python environment named "my-environment"
+
+```{r}
+use_virtualenv("my-environment")
+```
+
+python imports
+
+```{r}
 np = import("numpy")
 libcbm_dataframe = import("libcbm.storage.dataframe")
 stand_cbm_factory = import("libcbm.model.cbm.stand_cbm_factory")
 cbm_output = import("libcbm.model.cbm.cbm_output")
 cbm_simulator = import("libcbm.model.cbm.cbm_simulator")
 cbm_variables = import("libcbm.model.cbm.cbm_variables")
+cbm_defaults = import ("libcbm.model.cbm.cbm_defaults")
+resources = import("libcbm.resources")
+cbm_defaults_ref = import("libcbm.model.cbm.cbm_defaults_reference")
 ```
 
-Define merchantable volume and classifiers input
+Define merchantable volume and classifiers input used to drive CBM.
+
+The values shown here are purely for illustrative purposes.
+
+Inventory and yields have a m:1 relationship, and the relationship is defined by
+the classifier values attached to each merch volume curve and each inventory
+record.
+
+This information is well-suited for storage in a `json` formatted file in order
+to scale up this information.
+
 ```{r}
 
 classifiers = dict(
-    c1=list("c1_v1"),
+    c1=list("c1_v1", "c1_v2"),
     c2=list("c2_v1")
 )
 
@@ -34,12 +69,46 @@ merch_volumes = list(
                 list(100, 150),
                 list(150, 200)
             )
+          ),
+          dict(
+            species="Oak",
+            age_volume_pairs=list(
+                list(0, 0),
+                list(50, 100),
+                list(100, 150),
+                list(150, 200)
+            )
+          )
+        )
+    ),
+    dict(
+        classifier_set=list("c1_v2", "c2_v1"),
+        merch_volumes=list(
+          dict(
+            species="Spruce",
+            age_volume_pairs=list(
+                list(0, 0),
+                list(50, 100),
+                list(100, 150),
+                list(150, 200)
+            )
+          ),
+          dict(
+            species="Oak",
+            age_volume_pairs=list(
+                list(0, 0),
+                list(50, 100),
+                list(100, 150),
+                list(150, 200)
+            )
           )
         )
     )
 )
 
 ```
+
+Define example inventory, this could also be derived from CSV.
 
 ```{r}
 n_steps=50
@@ -58,56 +127,180 @@ inventory = libcbm_dataframe$from_pandas(
     afforestation_pre_type="None",
     historic_disturbance_type="Wildfire",
     last_pass_disturbance_type="Wildfire"
-    
+
   )
 )
 ```
 
+
+Default parameters and defaults reference: inspection and modification of CBM
+parameters
+
 ```{r}
-pre_dynamics <- function(t, cbm_vars){
-
-    
-    disturbance_types = sample(
-        c(0L,1L,2L),
-        n_stands,
-        replace=TRUE,
-        prob=c(0.95, 0.03, 0.02)
-    )
-    
-    cbm_vars$parameters["disturbance_type"]$assign(disturbance_types)
-
-    return( cbm_vars)
-}
-    
-
-cbm_factory = stand_cbm_factory$StandCBMFactory(
-  classifiers, merch_volumes
+defaults_ref <- cbm_defaults_ref$CBMDefaultsReference(
+  resources$get_cbm_defaults_path()
 )
-inv_tuple  = cbm_factory$prepare_inventory(inventory)
-csets = inv_tuple[[1]]
-inv = inv_tuple[[2]]
+```
 
-with(cbm_factory$initialize_cbm() %as% cbm, {
-    output = cbm_output$CBMOutput(
-      classifier_map=dict(cbm_factory$classifier_value_names),
-      disturbance_type_map=dict(cbm_factory$disturbance_types)
-    )
+Example showing how to interact with one of the properties of `defaults_ref`
 
-    
-    cbm_simulator$simulate(
-        cbm,
-        n_steps=n_steps,
-        classifiers=csets,
-        inventory=inv,
-        pre_dynamics_func=pre_dynamics,
-        reporting_func=output$append_simulation_result
-    )
-})
+```{r}
+defaults_ref$as_data_frame(defaults_ref$disturbance_type_ref)
+
 ```
 
 ```{r}
-state_output = output$state$to_pandas()
-aggregated_age = aggregate(state_output$age, by=list(timestep=state_output$timestep), FUN=mean)
+default_parameters <- cbm_defaults$get_cbm_parameters_factory(
+  resources$get_cbm_defaults_path())()
+default_parameters
+```
+The parameters can be changed here, and will set the value during simulation via
+a parameter factory function
+
+```{r}
+# replace the slow mixing rate parameter with a new value
+default_parameters$slow_mixing_rate[,] <- 0.005
+
+# create a new "cbm_parameters_factory" with the customizations
+parameter_factory <- function(){
+  return(default_parameters)
+}
+```
+
+CBM Spinup function - initialize the CBM pools and state (cbm_vars)
+
+```{r}
+
+
+spinup <- function(
+  cbm_factory,
+  parameter_factory,
+  inventory,
+  classifiers,
+  merch_volumes
+){
+  with(cbm_factory$initialize_cbm(
+    # note we pass the customized parameter factory here
+    cbm_parameters_factory=parameter_factory
+  ) %as% cbm, {
+
+      inv_tuple  = cbm_factory$prepare_inventory(inventory)
+      csets = inv_tuple[[1]]
+      inv = inv_tuple[[2]]
+
+
+      cbm_vars <- cbm_variables$initialize_simulation_variables(
+          csets,
+          inv,
+          cbm$pool_codes,
+          cbm$flux_indicator_codes,
+          inv$backend_type
+      )
+
+      spinup_vars = cbm_variables$initialize_spinup_variables(
+          cbm_vars,
+          inv$backend_type,
+          spinup_params=NULL,
+          include_flux=FALSE
+      )
+      cbm$spinup(spinup_vars, reporting_func = NULL)
+      cbm_vars = cbm$init(cbm_vars)
+
+      return(cbm_vars)
+  })
+}
+```
+
+CBM Step function - step the annual process and disturbance routine by 1
+timestep
+
+```{r}
+step <- function(cbm_factory, parameter_factory, cbm_vars){
+  with(cbm_factory$initialize_cbm(
+    # note we pass the customized parameter factory here
+    cbm_parameters_factory=parameter_factory
+  ) %as% cbm, {
+
+      cbm_vars = cbm$step_start(cbm_vars)
+      cbm_vars = cbm$step_disturbance(cbm_vars)
+      cbm_vars = cbm$step_annual_process(cbm_vars)
+      cbm_vars = cbm$step_end(cbm_vars)
+      return (cbm_vars)
+
+  })
+}
+
+```
+
+
+Create a `StandCBMFactory` object for initializing the cbm model, and a
+`CBMOutput`object to store the time step output.
+
+
+```{r}
+cbm_factory <-stand_cbm_factory$StandCBMFactory(
+        classifiers, merch_volumes
+      )
+output <- cbm_output$CBMOutput(
+  classifier_map=dict(cbm_factory$classifier_value_names),
+  disturbance_type_map=dict(cbm_factory$disturbance_types)
+)
+
+```
+
+CBM spinup
+
+```{r}
+cbm_vars = spinup(cbm_factory, parameter_factory, inventory)
+output$append_simulation_result(0, cbm_vars)
+```
+
+CBM time-stepping
+
+```{r}
+
+for (i in 1:50){
+
+  # set the disturbance type array with randomly drawn disturbance types
+  # note the CBM default disturbance type ids are used
+
+  # this is here to illustrate that it's possible to read and inspect and modify
+  # the CBM simulation state between timesteps
+  disturbance_types = sample(
+      c(0L,1L,2L),
+      n_stands,
+      replace=TRUE,
+      prob=c(0.95, 0.03, 0.02)
+  )
+
+  cbm_vars$parameters["disturbance_type"]$assign(disturbance_types)
+
+  step(cbm_factory, parameter_factory, cbm_vars)
+  # record the end of timestep result
+  output$append_simulation_result(i, cbm_vars)
+}
+
+
+```
+
+
+extract the results data frames
+
+```{r}
+pools_output <- output$pools$to_pandas()
+flux_output <- output$flux$to_pandas()
+state_output <- output$state$to_pandas()
+parameters_output <- output$parameters$to_pandas()
+area <- output$area$to_pandas()
+```
+
+Plot some output
+
+```{r}
+
+aggregated_age = aggregate(
+  state_output$age, by=list(timestep=state_output$timestep), FUN=mean
+)
 colnames(aggregated_age)= c("timestep", "age")
 plot(aggregated_age$timestep, aggregated_age$age)
 ```
