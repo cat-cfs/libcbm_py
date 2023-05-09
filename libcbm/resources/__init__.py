@@ -99,19 +99,19 @@ def get_libcbm_bin_path():
             raise RuntimeError("unsupported platform")
         version_id = os_release["VERSION_ID"]
         os_name = os_release["NAME"].lower()
-        if os_name == "ubuntu" and version_id == "18.04":
-            return os.path.join(
-                local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so"
-            )
-        elif os_name == "ubuntu" and version_id == "20.04":
+        if os_name == "ubuntu" and version_id == "20.04":
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so"
             )
+        elif os_name == "ubuntu" and version_id == "22.04":
+            return os.path.join(
+                local_dir, "libcbm_bin", "ubuntu_22_04_x86_64", "libcbm.so"
+            )
         else:
-            message = f"unsupported linux distribution: {platform.platform()}"
+            message = f"untested linux distribution: {platform.platform()}"
             warnings.warn(message, RuntimeWarning)
             return os.path.join(
-                local_dir, "libcbm_bin", "ubuntu_18_04_x86_64", "libcbm.so"
+                local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so"
             )
     # macOS case #
     elif system == "Darwin":
