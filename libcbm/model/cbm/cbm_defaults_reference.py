@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 import sqlite3
+import pandas as pd
 import libcbm.resources.cbm_defaults_queries as queries
 from typing import Tuple
 
@@ -336,3 +337,18 @@ class CBMDefaultsReference:
             list: list of string names of flux indicators
         """
         return [x["name"] for x in self.flux_indicator_ref]
+
+    @staticmethod
+    def as_data_frame(row_list: list[sqlite3.Row]) -> pd.DataFrame:
+        """
+        helper method to convert functions that return lists of
+        sqlite3.Row objects into dataframes
+
+        Args:
+            row_list (list[sqlite3.Row]): list of rows
+
+        Returns:
+            pd.DataFrame: pandas dataframe representation of the specified
+                list.
+        """
+        return pd.DataFrame([dict(x) for x in row_list])
