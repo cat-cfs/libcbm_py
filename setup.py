@@ -12,7 +12,7 @@ resources_dir = "resources"
 
 cbm_defaults_db = [
     os.path.join(resources_dir, "cbm_defaults_db", x)
-    for x in ["cbm_defaults_v1.2.7739.338.db"]
+    for x in ["cbm_defaults_v1.2.8340.362.db"]
 ]
 
 cbm_defaults_queries = [

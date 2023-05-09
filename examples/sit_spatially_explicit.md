@@ -134,7 +134,7 @@ si = cbm_output.state.to_pandas()
 si.head()
 ```
 ```python
-state_variables = ['timestep', 'time_since_land_class_change',
+state_variables = ['timestep', 'time_since_last_disturbance', 'time_since_land_class_change',
  'growth_enabled', 'enabled', 'land_class', 'age', 'growth_multiplier', 'regeneration_delay']
 si[state_variables].groupby('timestep').mean().plot(figsize=(10,10))
 ```

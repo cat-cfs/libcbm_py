@@ -1,0 +1,5 @@
+select
+disturbance_type.id as disturbance_type_id,
+disturbance_type.land_type_id
+from disturbance_type
+where disturbance_type.land_type_id is not null
