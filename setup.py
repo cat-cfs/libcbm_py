@@ -37,7 +37,7 @@ win_x86_64_bin = [
 ]
 
 ubuntu_binaries = []
-for ubuntu_ver in ["ubuntu_18_04_x86_64", "ubuntu_20_04_x86_64"]:
+for ubuntu_ver in ["ubuntu_20_04_x86_64", "ubuntu_22_x86_64"]:
     ubuntu_binaries.extend(
         [
             os.path.join(resources_dir, "libcbm_bin", ubuntu_ver, x)
@@ -46,7 +46,7 @@ for ubuntu_ver in ["ubuntu_18_04_x86_64", "ubuntu_20_04_x86_64"]:
     )
 
 mac_os_binaries = []
-for mac_os_ver in ["macosx_10_12_x86_64", "macosx_10_15_x86_64"]:
+for mac_os_ver in ["macos_64"]:
     mac_os_binaries.extend(
         [
             os.path.join(resources_dir, "libcbm_bin", mac_os_ver, x)
