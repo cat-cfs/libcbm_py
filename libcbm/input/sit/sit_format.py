@@ -283,7 +283,7 @@ def get_transition_rules_format(
 
 
 def get_inventory_format(
-    classifier_names: list[str], n_columns: int
+    classifier_names: list[str], n_columns: int, has_inventory_ids: bool
 ) -> list[dict]:
     """Gets a description of the SIT inventory columns as a list of
     dictionaries
@@ -293,6 +293,9 @@ def get_inventory_format(
         n_columns (int): the number of columns in inventory data.  This
             is required because the format has a varying number of optional
             columns.
+        has_inventory_ids (bool): if true, the table is expected to have a
+            leading column defining the inventory id for each row for
+            simulation area tracking purposes
 
     Raises:
         ValueError: The number of columns was incorrect
@@ -301,69 +304,76 @@ def get_inventory_format(
         list: a list of dictionaries describing the SIT inventory columns
     """
     n_classifiers = len(classifier_names)
+    n_leading_cols = n_classifiers
 
+    inventory_id = []
+    if has_inventory_ids:
+        n_leading_cols += 1
+        inventory_id.append(
+            {"name": "inventory_id", "index": 0, "type": int}
+        )
     classifier_set = [
-        {"name": c, "index": i, "type": str}
+        {"name": c, "index": i + len(inventory_id), "type": str}
         for i, c in enumerate(classifier_names)
     ]
 
     inventory = [
-        {"name": "using_age_class", "index": n_classifiers, "type": str},
+        {"name": "using_age_class", "index": n_leading_cols, "type": str},
         # age can be a string (for "using_age_class" support, so no min value
         # is specified)
-        {"name": "age", "index": n_classifiers + 1},
+        {"name": "age", "index": n_leading_cols + 1},
         {
             "name": "area",
-            "index": n_classifiers + 2,
+            "index": n_leading_cols + 2,
             "min_value": 0,
             "type": float,
         },
         {
             "name": "delay",
-            "index": n_classifiers + 3,
+            "index": n_leading_cols + 3,
             "min_value": 0,
             "type": int,
         },
-        {"name": "land_class", "index": n_classifiers + 4},
+        {"name": "land_class", "index": n_leading_cols + 4},
     ]
 
-    if n_columns > n_classifiers + 6:
+    if n_columns > n_leading_cols + 6:
         inventory.extend(
             [
                 {
                     "name": "historical_disturbance_type",
-                    "index": n_classifiers + 5,
+                    "index": n_leading_cols + 5,
                     "type": str,
                 },
                 {
                     "name": "last_pass_disturbance_type",
-                    "index": n_classifiers + 6,
+                    "index": n_leading_cols + 6,
                     "type": str,
                 },
             ]
         )
-    if n_columns == n_classifiers + 6:
+    if n_columns == n_leading_cols + 6:
         raise ValueError(
             "Invalid number of columns: both historical and last pass "
             "disturbance types must be defined."
         )
-    if n_columns < n_classifiers + 5:
+    if n_columns < n_leading_cols + 5:
         raise ValueError(
-            f"With {n_classifiers} classifiers, SIT inventory should have "
-            f"at least {n_classifiers + 5} columns."
+            f"With {n_leading_cols} classifiers, SIT inventory should have "
+            f"at least {n_leading_cols + 5} columns."
         )
-    if n_columns == n_classifiers + 8:
+    if n_columns == n_leading_cols + 8:
         inventory.append(
             {
                 "name": "spatial_reference",
-                "index": n_classifiers + 7,
+                "index": n_leading_cols + 7,
                 "type": int,
             }
         )
-    if n_columns > n_classifiers + 8:
+    if n_columns > n_leading_cols + 8:
         raise ValueError(
-            f"With {n_classifiers} classifiers, SIT inventory should have "
-            f"at most {n_classifiers + 8} columns."
+            f"With {n_leading_cols} classifiers, SIT inventory should have "
+            f"at most {n_leading_cols + 8} columns."
         )
 
     return classifier_set + inventory
