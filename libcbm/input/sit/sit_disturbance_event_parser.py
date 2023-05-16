@@ -249,6 +249,7 @@ def parse(
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame = None,
     separate_eligibilities: bool = False,
+    has_disturbance_event_ids: bool = False
 ) -> pd.DataFrame:
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
@@ -278,7 +279,12 @@ def parse(
         separate_eligibilities (bool, optional): indicates, when true, that
             disturbance event eligibilities are stored in a separate table,
             and the sit_event format is simplified.  When false, the sit_event
-            format is as documented in CBM-CFS3.
+            eligbility columns are as documented in CBM-CFS3.
+        has_disturbance_event_ids (bool, optional): if set to true, the first
+            column is expected to represent a disturbance event id.  This
+            value is used to track last disturbance event id in the model
+            state, and can be used to filter subsequent disturbance events
+            or transition rules to chain specific events.
 
     Raises:
         ValueError: undefined classifier values were found in the disturbance
@@ -294,9 +300,10 @@ def parse(
         pandas.DataFrame: the validated disturbance events
     """
     disturbance_event_format = sit_format.get_disturbance_event_format(
-        classifiers.name,
+        classifiers["name"].to_list(),
         len(disturbance_events.columns),
         include_eligibility_columns=not separate_eligibilities,
+        has_disturbance_event_ids=has_disturbance_event_ids
     )
 
     events = sit_parser.unpack_table(
