@@ -374,7 +374,7 @@ def get_inventory_format(
             f"at most {n_leading_cols + 8} columns."
         )
 
-    return classifier_set + inventory
+    return inventory_id + classifier_set + inventory
 
 
 def get_disturbance_eligibility_columns(index: int) -> list[dict]:
@@ -442,11 +442,13 @@ def get_disturbance_event_format(
     """
     n_classifiers = len(classifier_names)
     n_leading_cols = n_classifiers
-    disturbance_event_id = (
-        [{"name": "disturbance_event_id", "index": 0, "type": int}]
-        if has_disturbance_event_ids
-        else []
-    )
+    disturbance_event_id = []
+    if has_disturbance_event_ids:
+        n_leading_cols += 1
+        disturbance_event_id.append(
+            {"name": "disturbance_event_id", "index": 0, "type": int}
+        )
+
     classifier_set = [
         {"name": c, "index": i + len(disturbance_event_id), "type": str}
         for i, c in enumerate(classifier_names)
@@ -502,7 +504,9 @@ def get_disturbance_event_format(
             "specified number of columns invalid.  Expected at most "
             "{}".format(index + 7)
         )
-    return classifier_set + eligibiliy_cols + event_target
+    return (
+        disturbance_event_id + classifier_set + eligibiliy_cols + event_target
+    )
 
 
 def get_disturbance_eligibility_format(ncols: int) -> list[dict]:
