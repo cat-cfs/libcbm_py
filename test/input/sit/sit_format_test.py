@@ -70,6 +70,9 @@ class SITFormatTest(unittest.TestCase):
             sit_format.get_inventory_format(
                 mock_classifier_names, n_classifiers + 7, False
             ),
+            sit_format.get_inventory_format(
+                mock_classifier_names, n_classifiers + 8, True
+            ),
             sit_format.get_disturbance_event_format(
                 mock_classifier_names,
                 n_classifiers
@@ -80,6 +83,28 @@ class SITFormatTest(unittest.TestCase):
                 )
                 + len(sit_format.get_age_eligibility_columns(n_classifiers))
                 + 7,
+            ),
+            sit_format.get_disturbance_event_format(
+                mock_classifier_names, n_classifiers + 8, False
+            ),
+            sit_format.get_disturbance_event_format(
+                mock_classifier_names,
+                n_classifiers
+                + len(
+                    sit_format.get_disturbance_eligibility_columns(
+                        n_classifiers
+                    )
+                )
+                + len(sit_format.get_age_eligibility_columns(n_classifiers))
+                + 7,
+                True,
+                True,
+            ),
+            sit_format.get_disturbance_event_format(
+                mock_classifier_names,
+                n_classifiers + 8,
+                False,
+                True,
             ),
         ]
         required_keys = {"name", "index"}
