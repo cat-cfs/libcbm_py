@@ -309,9 +309,7 @@ def get_inventory_format(
     inventory_id = []
     if has_inventory_ids:
         n_leading_cols += 1
-        inventory_id.append(
-            {"name": "inventory_id", "index": 0, "type": int}
-        )
+        inventory_id.append({"name": "inventory_id", "index": 0, "type": int})
     classifier_set = [
         {"name": c, "index": i + len(inventory_id), "type": str}
         for i, c in enumerate(classifier_names)
@@ -420,6 +418,7 @@ def get_disturbance_event_format(
     classifier_names: list[str],
     n_columns: int,
     include_eligibility_columns: bool = True,
+    has_disturbance_event_ids: bool = False,
 ) -> list[dict]:
     """Gets a list of column description dictionaries describing the SIT
     disturbance event format
@@ -442,34 +441,39 @@ def get_disturbance_event_format(
             table columns
     """
     n_classifiers = len(classifier_names)
-
+    n_leading_cols = n_classifiers
+    disturbance_event_id = (
+        [{"name": "disturbance_event_id", "index": 0, "type": int}]
+        if has_disturbance_event_ids
+        else []
+    )
     classifier_set = [
-        {"name": c, "index": i, "type": str}
+        {"name": c, "index": i + len(disturbance_event_id), "type": str}
         for i, c in enumerate(classifier_names)
     ]
 
     eligibiliy_cols = []
     if include_eligibility_columns:
         disturbance_age_eligibility = get_age_eligibility_columns(
-            n_classifiers
+            n_leading_cols
         )
         n_age_fields = len(disturbance_age_eligibility)
         disturbance_eligibility = get_disturbance_eligibility_columns(
-            n_classifiers + n_age_fields
+            n_leading_cols + n_age_fields
         )
         n_eligibility_fields = len(disturbance_eligibility)
-        index = n_classifiers + n_age_fields + n_eligibility_fields
+        index = n_leading_cols + n_age_fields + n_eligibility_fields
         eligibiliy_cols.extend(disturbance_age_eligibility)
         eligibiliy_cols.extend(disturbance_eligibility)
     else:
         eligibiliy_cols.append(
             {
                 "name": "disturbance_eligibility_id",
-                "index": n_classifiers,
+                "index": n_leading_cols,
                 "type": int,
             }
         )
-        index = n_classifiers + 1
+        index = n_leading_cols + 1
     event_target = [
         {
             "name": "efficiency",
