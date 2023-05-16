@@ -249,7 +249,7 @@ def parse(
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame = None,
     separate_eligibilities: bool = False,
-    has_disturbance_event_ids: bool = False
+    has_disturbance_event_ids: bool = False,
 ) -> pd.DataFrame:
     """Parses and validates the CBM SIT disturbance event format, or
     optionally an extended sit disturbance event format where disturbance
@@ -303,7 +303,7 @@ def parse(
         classifiers["name"].to_list(),
         len(disturbance_events.columns),
         include_eligibility_columns=not separate_eligibilities,
-        has_disturbance_event_ids=has_disturbance_event_ids
+        has_disturbance_event_ids=has_disturbance_event_ids,
     )
 
     events = sit_parser.unpack_table(
