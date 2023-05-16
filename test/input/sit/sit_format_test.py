@@ -30,13 +30,13 @@ class SITFormatTest(unittest.TestCase):
         mock_classifier_names = ["a", "b", "c"]
         with self.assertRaises(ValueError):
             sit_format.get_inventory_format(
-                mock_classifier_names, len(mock_classifier_names) + 6
+                mock_classifier_names, len(mock_classifier_names) + 6, False
             )
         with self.assertRaises(ValueError):
-            sit_format.get_inventory_format(mock_classifier_names, 4)
+            sit_format.get_inventory_format(mock_classifier_names, 4, False)
         with self.assertRaises(ValueError):
             sit_format.get_inventory_format(
-                mock_classifier_names, len(mock_classifier_names) + 9
+                mock_classifier_names, len(mock_classifier_names) + 9, False
             )
 
     def test_get_disturbance_event_format_value_error(self):
@@ -68,7 +68,7 @@ class SITFormatTest(unittest.TestCase):
                 + 4,
             ),
             sit_format.get_inventory_format(
-                mock_classifier_names, n_classifiers + 7
+                mock_classifier_names, n_classifiers + 7, False
             ),
             sit_format.get_disturbance_event_format(
                 mock_classifier_names,
