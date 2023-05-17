@@ -54,6 +54,12 @@ def sit_transition_rule_iterator(
     Raises:
         ValueError: the sum of the percent field for any grouped set of
             transition rule rows exceeded 100%
+
+    Returns:
+        Tuple:
+            Item1: the "key values" of the grouped transition rule rows
+            Item2: the rows which compose the transtion rule group, as a
+                dataframe
     """
     if len(sit_transitions.index) == 0:
         return
