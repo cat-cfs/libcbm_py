@@ -16,6 +16,49 @@ from libcbm.storage import dataframe
 from libcbm.model.cbm.cbm_variables import CBMVariables
 
 
+def create_split_proportions(
+    tr_group_key: dict, tr_group: DataFrame, group_error_max: float
+) -> list[float]:
+    """Create proportions
+
+    Args:
+        tr_group_key (dict): the composite key common to the transition
+            rule group members
+        tr_group (DataFrame): The table of transition rule group
+            members
+        group_error_max (float): used as a threshold to test if the group's
+            total percentage exceeds 100 percent.
+
+    Raises:
+        ValueError:  Thrown if the absolute difference of total percentage
+            minus 100 percent is greater than the group_error_max threshold.
+
+    Returns:
+        list: a list of proportions whose sum is 1.0 for splitting records
+            for transition
+    """
+    # dealing with a couple of cases here:
+    #
+    # if the sum of the percent column in the specified group is less then
+    # 100% then the number of splits is len(tr_group)+1 since the remainder
+    # is allowed and is modelled as "unchanged" as far as transitioning
+    # classifiers, etc.
+
+    percent_sum = tr_group["percent"].sum()
+    if abs(percent_sum - 100) < group_error_max:
+        return (tr_group["percent"] / percent_sum).to_list()
+    elif percent_sum > 100:
+        raise ValueError(
+            f"total percent ({percent_sum}) in transition rule group "
+            f"{tr_group_key} exceeds 100%"
+        )
+    else:
+        remainder = 100 - percent_sum
+        appended_percent = tr_group["percent"].to_list() + [remainder]
+        appended_percent_sum = sum(appended_percent)
+        return [p / appended_percent_sum for p in appended_percent]
+
+
 def create_state_variable_filter(
     tr_group_key: dict, state_variables: DataFrame
 ) -> RuleFilter:
