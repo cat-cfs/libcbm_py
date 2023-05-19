@@ -123,7 +123,7 @@ def sit_rule_based_processor_factory(
             transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
         ),
         classifier_filter=classifier_filter,
-        group_error_max=tr_constants.group_error_max
+        group_error_max=tr_constants.group_error_max,
     )
 
     event_processor = SITEventProcessor(
