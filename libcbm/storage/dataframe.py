@@ -81,7 +81,7 @@ class DataFrame(ABC):
     @abstractmethod  # pragma: no cover
     def copy(self) -> "DataFrame":
         """
-        produce a new in-memory copy of this dataframe
+        produce a copy of this dataframe
         """
         pass
 
