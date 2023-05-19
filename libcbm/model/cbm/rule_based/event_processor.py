@@ -102,7 +102,7 @@ def apply_rule_based_event(
 
     Args:
         target (DataFrame): object describing the index of
-            records to disturbance and area split proportions.
+            records to disturb and area split proportions.
         disturbance_type_id (int): the id for the disturbance event being
             applied.
         cbm_vars (CBMVariables): an object containing dataframes that store cbm
@@ -191,4 +191,14 @@ def apply_rule_based_event(
     cbm_vars.parameters["disturbance_type"].assign(
         np.int32(disturbance_type_id), target_index
     )
+    cbm_vars.state["last_disturbance_type"].assign(
+        np.int32(disturbance_type_id), target_index
+    )
+    cbm_vars.state["time_since_last_disturbance"].assign(
+        0, target_index
+    )
+    if disturbance_event_id:
+        cbm_vars.state["last_disturbance_event"].assign(
+            np.int32(disturbance_event_id), target_index
+        )
     return cbm_vars
