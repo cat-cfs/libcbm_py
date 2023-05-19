@@ -342,6 +342,7 @@ def _initialize_cbm_state_variables(
     """
     data = [
         SeriesDef("last_disturbance_type", 0, "int32"),
+        SeriesDef("last_disturbance_event", 0, "int32"),
         SeriesDef("time_since_last_disturbance", 0, "int32"),
         SeriesDef("time_since_land_class_change", -1, "int32"),
         SeriesDef("growth_enabled", 0, "int32"),
