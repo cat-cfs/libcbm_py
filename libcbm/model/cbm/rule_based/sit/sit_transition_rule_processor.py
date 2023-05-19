@@ -161,14 +161,17 @@ class SITTransitionRuleProcessor:
         self,
         transition_rule_processor: TransitionRuleProcessor,
         classifier_filter: ClassifierFilter,
-        group_error_max: float
+        group_error_max: float,
     ):
         self._transition_rule_processor = transition_rule_processor
         self._classifier_filter = classifier_filter
         self._group_error_max = group_error_max
 
     def process_transition_rules(
-        self, sit_transitions: pd.DataFrame, cbm_vars: CBMVariables
+        self,
+        sit_transitions: pd.DataFrame,
+        cbm_vars: CBMVariables,
+        sit_eligibilities: pd.DataFrame = None,
     ) -> CBMVariables:
         """Process the specified SIT transition rules versus the current model
         state.
@@ -178,6 +181,8 @@ class SITTransitionRuleProcessor:
                 See:
                 :py:func:`libcbm.input.sit.sit_transition_rule_parser.parse`
             cbm_vars (CBMVariables): CBM model state.
+            sit_eligibilities (pandas.DataFrame): table of eligibility
+                expressions with foreign key "eligibility_id"
 
         Returns:
             CBMVariables: the input CBM model state with the transition rules
@@ -197,9 +202,18 @@ class SITTransitionRuleProcessor:
             False, n_stands, cbm_vars.classifiers.backend_type
         )
 
+        eligibilty_expressions: dict[int, pd.Series] = None
+        if sit_eligibilities is not None:
+            eligibilty_expressions = {
+                int(row["eligibility_id"]): row
+                for _, row in sit_eligibilities.iterrows()
+            }
+
         for tr_group_key, tr_group in transition_iterator:
-            filters = get_transition_rule_filters(
-                self._classifier_filter, tr_group_key, cbm_vars
+            filters = self._create_filters(
+                cbm_vars,
+                tr_group_key,
+                eligibilty_expressions,
             )
 
             split_proportions = create_split_proportions(
@@ -217,3 +231,31 @@ class SITTransitionRuleProcessor:
                 cbm_vars,
             )
         return cbm_vars
+
+    def _create_filters(
+        self,
+        cbm_vars: CBMVariables,
+        tr_group_key: dict[str, str],
+        eligibilty_expressions: dict[int, pd.Series] = None,
+    ) -> list[RuleFilter]:
+        if eligibilty_expressions:
+            expression = eligibilty_expressions[
+                int(tr_group_key["eligibility_id"])
+            ]
+            filters = [
+                rule_filter.create_filter(
+                    expression=expression["pool_filter_expression"],
+                    data=cbm_vars.pools,
+                ),
+                rule_filter.create_filter(
+                    expression=expression["state_filter_expression"],
+                    data=cbm_vars.state,
+                ),
+                self._classifier_filter.create_classifiers_filter(),
+            ]
+        else:
+            filters = get_transition_rule_filters(
+                self._classifier_filter, tr_group_key, cbm_vars
+            )
+
+        return filters
