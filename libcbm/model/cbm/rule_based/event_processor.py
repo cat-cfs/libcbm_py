@@ -194,9 +194,7 @@ def apply_rule_based_event(
     cbm_vars.state["last_disturbance_type"].assign(
         np.int32(disturbance_type_id), target_index
     )
-    cbm_vars.state["time_since_last_disturbance"].assign(
-        0, target_index
-    )
+    cbm_vars.state["time_since_last_disturbance"].assign(0, target_index)
     if disturbance_event_id:
         cbm_vars.state["last_disturbance_event"].assign(
             np.int32(disturbance_event_id), target_index
