@@ -430,7 +430,7 @@ def get_disturbance_event_format(
             columns.
         include_eligibility_columns (bool, optional): if set to false the
             standard age eligibility and carbon eligibility columns are
-            excluded from the result, and an disturbance_eligibility_id
+            excluded from the result, and an eligibility_id
             column instead is included.
 
     Raises:
@@ -470,7 +470,7 @@ def get_disturbance_event_format(
     else:
         eligibiliy_cols.append(
             {
-                "name": "disturbance_eligibility_id",
+                "name": "eligibility_id",
                 "index": n_leading_cols,
                 "type": int,
             }
@@ -509,11 +509,11 @@ def get_disturbance_event_format(
     )
 
 
-def get_disturbance_eligibility_format(ncols: int) -> list[dict]:
+def get_eligibility_format(ncols: int) -> list[dict]:
     if ncols < 5:
         raise ValueError("number of columns must be > 5")
     fmt = [
-        {"name": "disturbance_eligibility_id", "index": 0, "type": int},
+        {"name": "eligibility_id", "index": 0, "type": int},
         {"name": "description", "index": 1, "type": str},
         {"name": "expression_type", "index": 2, "type": str},
         {"name": "expression", "index": 3, "type": str},

@@ -451,9 +451,7 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
         sit_eligibilities = sit_disturbance_event_parser.parse_eligibilities(
             sit_events, elgibilities_input
         )
-        self.assertTrue(
-            sit_eligibilities["disturbance_eligibility_id"].iloc[0] == 1
-        )
+        self.assertTrue(sit_eligibilities["eligibility_id"].iloc[0] == 1)
         self.assertTrue(
             sit_eligibilities["pool_filter_expression"].iloc[0]
             == "((c<32.0) or (d==-22.0))"
@@ -463,9 +461,7 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             == "((a<900.0) or (b==-12.0))"
         )
 
-        self.assertTrue(
-            sit_eligibilities["disturbance_eligibility_id"].iloc[1] == 2
-        )
+        self.assertTrue(sit_eligibilities["eligibility_id"].iloc[1] == 2)
         self.assertTrue(
             sit_eligibilities["pool_filter_expression"].iloc[1] == ""
         )
@@ -473,9 +469,7 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
             sit_eligibilities["state_filter_expression"].iloc[1] == ""
         )
 
-        self.assertTrue(
-            sit_eligibilities["disturbance_eligibility_id"].iloc[2] == 3
-        )
+        self.assertTrue(sit_eligibilities["eligibility_id"].iloc[2] == 3)
         self.assertTrue(
             sit_eligibilities["pool_filter_expression"].iloc[2] == ""
         )
@@ -485,7 +479,7 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
         self.assertTrue(
             list(sit_eligibilities.columns)
             == [
-                "disturbance_eligibility_id",
+                "eligibility_id",
                 "pool_filter_expression",
                 "state_filter_expression",
             ]

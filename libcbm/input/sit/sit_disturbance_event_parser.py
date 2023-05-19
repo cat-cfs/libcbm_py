@@ -41,7 +41,7 @@ def get_target_types() -> dict[str, str]:
 def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
     row_values_by_id: dict[int, dict[str, Union[int, list]]] = {}
     for _, row in preformat_df.iterrows():
-        row_id = int(row["disturbance_eligibility_id"])
+        row_id = int(row["eligibility_id"])
         pool_filter_expression = ""
         state_filter_expression = ""
         expression_type = row["expression_type"]
@@ -67,7 +67,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
             raise ValueError(f"uknown expression type {expression_type}")
 
         row_values = {
-            "disturbance_eligibility_id": row_id,
+            "eligibility_id": row_id,
             "pool_filter_expression": pool_filter_expression,
             "state_filter_expression": state_filter_expression,
         }
@@ -83,7 +83,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
                 )
         else:
             row_values_by_id[row_id] = {
-                "disturbance_eligibility_id": row_id,
+                "eligibility_id": row_id,
                 "pool_filter_expressions": [
                     row_values["pool_filter_expression"]
                 ]
@@ -99,9 +99,7 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         for v in row_values_by_id.values():
             out_data.append(
                 {
-                    "disturbance_eligibility_id": v[
-                        "disturbance_eligibility_id"
-                    ],
+                    "eligibility_id": v["eligibility_id"],
                     "pool_filter_expression": " & ".join(
                         v["pool_filter_expressions"]
                     ),
@@ -187,11 +185,11 @@ def parse_eligibilities(
             and min-max columns are omitted.
         disturbance_eligibilities (pandas.DataFrame): table of id (int),
             state_filter expression (str), pool filter expression (str).
-            The disturbance event disturbance_eligibility_id column
+            The disturbance event eligibility_id column
             corresponds to the id column in this table.
 
     Raises:
-        ValueError: disturbance_eligibility_id values found in the specified
+        ValueError: eligibility_id values found in the specified
             sit_events were not present in the provided
             disturbance_eligibilities table.
         ValueError: at least one null id value was detected in the id column
@@ -202,15 +200,13 @@ def parse_eligibilities(
     Returns:
         pandas.DataFrame: the validated event eligibilities table
     """  # noqa E501
-    disturbance_eligibility_format = (
-        sit_format.get_disturbance_eligibility_format(
-            disturbance_eligibilities.shape[1]
-        )
+    eligibility_format = sit_format.get_eligibility_format(
+        disturbance_eligibilities.shape[1]
     )
 
     eligibilities_preformat = sit_parser.unpack_table(
         disturbance_eligibilities,
-        disturbance_eligibility_format,
+        eligibility_format,
         "disturbance eligibilities",
     )
 
@@ -219,23 +215,21 @@ def parse_eligibilities(
     # confirm that each row in the disturbance events with an
     # eligibility id >= 0 has a corresponding record in the eligibilities
     # table
-    missing_ids = set(disturbance_events["disturbance_eligibility_id"]) - set(
-        eligibilities["disturbance_eligibility_id"]
+    missing_ids = set(disturbance_events["eligibility_id"]) - set(
+        eligibilities["eligibility_id"]
     )
     if missing_ids:
         raise ValueError(
-            "disturbance_eligibility_id values found in sit_events "
+            "eligibility_id values found in sit_events "
             f"but not in sit_disturbance_eligibilities {missing_ids}"
         )
-    if pd.isnull(eligibilities.disturbance_eligibility_id).any():
+    if pd.isnull(eligibilities.eligibility_id).any():
         raise ValueError(
-            "null values detected in eligibilities disturbance_eligibility_id "
-            "column"
+            "null values detected in eligibilities eligibility_id " "column"
         )
-    if eligibilities.disturbance_eligibility_id.duplicated().any():
+    if eligibilities.eligibility_id.duplicated().any():
         raise ValueError(
-            "duplicated disturbance_eligibility_id values detected in "
-            "eligibilities"
+            "duplicated eligibility_id values detected in " "eligibilities"
         )
     eligibilities = eligibilities.fillna("")
     return eligibilities
