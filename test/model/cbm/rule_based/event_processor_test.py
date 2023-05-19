@@ -240,7 +240,15 @@ class EventProcessorTest(unittest.TestCase):
                     dtype="float64",
                 )
             ),
-            state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
+            state=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "last_disturbance_type": [1, 2, 3, 4],
+                        "time_since_last_disturbance": [5, 0, 5, 0],
+                        "last_disturbance_event": [0, 0, 10, 10],
+                    }
+                )
+            ),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
             flux=dataframe.from_pandas(pd.DataFrame({"f1": [1, 2, 3, 4]})),
             parameters=dataframe.from_pandas(
@@ -260,6 +268,7 @@ class EventProcessorTest(unittest.TestCase):
             ),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars,
+            disturbance_event_id=19,
         )
 
         self.assertTrue(
@@ -297,7 +306,13 @@ class EventProcessorTest(unittest.TestCase):
         )
         self.assertTrue(
             cbm_vars_result.state.to_pandas().equals(
-                pd.DataFrame({"s1": [1, 2, 3, 4, 2, 3]})
+                pd.DataFrame(
+                    {
+                        "last_disturbance_type": [9000, 9000, 9000, 4, 2, 3],
+                        "time_since_last_disturbance": [0, 0, 0, 0, 0, 5],
+                        "last_disturbance_event": [19, 19, 19, 10, 0, 10],
+                    }
+                )
             )
         )
         self.assertTrue(
@@ -319,7 +334,15 @@ class EventProcessorTest(unittest.TestCase):
             inventory=dataframe.from_pandas(
                 pd.DataFrame({"area": [1, 2, 3, 4]})
             ),
-            state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
+            state=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "last_disturbance_type": [1, 2, 3, 4],
+                        "time_since_last_disturbance": [5, 0, 5, 0],
+                        "last_disturbance_event": [0, 0, 10, 10],
+                    }
+                )
+            ),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
             flux=dataframe.from_pandas(pd.DataFrame({"f1": [1, 2, 3, 4]})),
             parameters=dataframe.from_pandas(
