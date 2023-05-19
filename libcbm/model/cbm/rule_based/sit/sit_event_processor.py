@@ -104,6 +104,11 @@ class SITEventProcessor:
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
             cbm_vars=cbm_vars,
+            disturbance_event_id=(
+                sit_event["disturbance_event_id"]
+                if "disturbance_event_id" in sit_event
+                else None
+            ),
         )
 
         return process_event_result
@@ -186,7 +191,9 @@ class SITEventProcessor:
 
         if sit_events is None:
             return cbm_vars, None
-        time_step_events = sit_events[sit_events.time_step == time_step].copy()
+        time_step_events = sit_events[
+            sit_events["time_step"] == time_step
+        ].copy()
 
         stats_rows = []
         eligibilty_expressions = None
