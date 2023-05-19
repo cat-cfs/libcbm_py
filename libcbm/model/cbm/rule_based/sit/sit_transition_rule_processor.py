@@ -14,6 +14,7 @@ from libcbm.model.cbm.rule_based.rule_filter import RuleFilter
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 from libcbm.model.cbm.cbm_variables import CBMVariables
+from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 
 def create_split_proportions(
@@ -82,6 +83,33 @@ def create_state_variable_filter(
     )
 
 
+def get_transition_rule_filters(
+    classifier_filter: ClassifierFilter,
+    tr_group_key: dict,
+    cbm_vars: CBMVariables,
+) -> list[RuleFilter]:
+    """
+    Build a filter for the default CBM SIT transtion rule format: transition
+    rules are eligible, or ineligible based on the values of disturbance type,
+    classifier set, and age ranges
+
+
+    """
+    dist_type_target = tr_group_key["disturbance_type_id"]
+    classifier_set = [tr_group_key[x] for x in cbm_vars.classifiers.columns]
+    tr_filters = [
+        create_state_variable_filter(tr_group_key, cbm_vars.state),
+        classifier_filter.create_classifiers_filter(
+            classifier_set, cbm_vars.classifiers
+        ),
+        rule_filter.create_filter(
+            expression=f"(disturbance_type == {dist_type_target})",
+            data=cbm_vars.parameters,
+        ),
+    ]
+    return tr_filters
+
+
 def sit_transition_rule_iterator(
     sit_transitions: pd.DataFrame, classifier_names: list[str]
 ) -> Iterable[tuple[dict[str, str], pd.DataFrame]]:
@@ -129,8 +157,15 @@ def sit_transition_rule_iterator(
 
 
 class SITTransitionRuleProcessor:
-    def __init__(self, transition_rule_processor: TransitionRuleProcessor):
-        self.transition_rule_processor = transition_rule_processor
+    def __init__(
+        self,
+        transition_rule_processor: TransitionRuleProcessor,
+        classifier_filter: ClassifierFilter,
+        group_error_max: float
+    ):
+        self._transition_rule_processor = transition_rule_processor
+        self._classifier_filter = classifier_filter
+        self._group_error_max = group_error_max
 
     def process_transition_rules(
         self, sit_transitions: pd.DataFrame, cbm_vars: CBMVariables
@@ -157,16 +192,27 @@ class SITTransitionRuleProcessor:
         transition_iterator = sit_transition_rule_iterator(
             sit_transitions, classifier_names
         )
+
         transition_mask = dataframe.make_boolean_series(
             False, n_stands, cbm_vars.classifiers.backend_type
         )
+
         for tr_group_key, tr_group in transition_iterator:
+            filters = get_transition_rule_filters(
+                self._classifier_filter, tr_group_key, cbm_vars
+            )
+
+            split_proportions = create_split_proportions(
+                tr_group_key, tr_group, self._group_error_max
+            )
+
             (
                 transition_mask,
                 cbm_vars,
-            ) = self.transition_rule_processor.apply_transition_rule(
-                tr_group_key,
+            ) = self._transition_rule_processor.apply_transition_rule(
                 dataframe.from_pandas(tr_group),
+                filters,
+                split_proportions,
                 transition_mask,
                 cbm_vars,
             )
