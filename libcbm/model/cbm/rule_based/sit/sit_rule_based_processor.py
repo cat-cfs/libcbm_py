@@ -13,7 +13,6 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import (
 )
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
-from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor import (
     SITTransitionRuleProcessor,
 )
@@ -117,19 +116,14 @@ def sit_rule_based_processor_factory(
         classifier_aggregates=classifier_aggregates,
     )
 
-    state_filter_func = (
-        sit_transition_rule_processor.create_state_variable_filter
-    )
-
     tr_processor = SITTransitionRuleProcessor(
         TransitionRuleProcessor(
-            classifier_filter_builder=classifier_filter,
-            state_variable_filter_func=state_filter_func,
             classifiers_config=classifiers_config,
-            grouped_percent_err_max=tr_constants.group_error_max,
             wildcard=tr_constants.wildcard,
             transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
-        )
+        ),
+        classifier_filter=classifier_filter,
+        group_error_max=tr_constants.group_error_max
     )
 
     event_processor = SITEventProcessor(
