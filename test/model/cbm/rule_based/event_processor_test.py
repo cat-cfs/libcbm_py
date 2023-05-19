@@ -29,7 +29,11 @@ class EventProcessorTest(unittest.TestCase):
             mock_state_variables = dataframe.from_pandas(
                 pd.DataFrame(
                     [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
-                    columns=["i", "j", "k"],
+                    columns=[
+                        "last_disturbance_type",
+                        "time_since_last_disturbance",
+                        "last_disturbance_event",
+                    ],
                 )
             )
 
@@ -154,7 +158,15 @@ class EventProcessorTest(unittest.TestCase):
             inventory=dataframe.from_pandas(
                 pd.DataFrame({"area": [1, 2, 3, 4]})
             ),
-            state=dataframe.from_pandas(pd.DataFrame({"s1": [1, 2, 3, 4]})),
+            state=dataframe.from_pandas(
+                pd.DataFrame(
+                    {
+                        "last_disturbance_type": [1, 2, 3, 4],
+                        "time_since_last_disturbance": [5, 0, 5, 0],
+                        "last_disturbance_event": [0, 0, 10, 10],
+                    }
+                )
+            ),
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1, 2, 3, 4]})),
             flux=dataframe.from_pandas(pd.DataFrame({"f1": [1, 2, 3, 4]})),
             parameters=dataframe.from_pandas(
@@ -173,6 +185,7 @@ class EventProcessorTest(unittest.TestCase):
             ),
             disturbance_type_id=disturbance_type_id,
             cbm_vars=mock_cbm_vars,
+            disturbance_event_id=10001,
         )
 
         self.assertTrue(
@@ -187,7 +200,13 @@ class EventProcessorTest(unittest.TestCase):
         )
         self.assertTrue(
             cbm_vars.state.to_pandas().equals(
-                pd.DataFrame({"s1": [1, 2, 3, 4]})
+                pd.DataFrame(
+                    {
+                        "last_disturbance_type": [1, 11, 11, 4],
+                        "time_since_last_disturbance": [5, 0, 0, 0],
+                        "last_disturbance_event": [0, 10001, 10001, 10],
+                    }
+                )
             )
         )
         self.assertTrue(
