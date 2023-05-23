@@ -6,7 +6,6 @@ import numpy as np
 from libcbm.storage import dataframe
 from libcbm.storage import series
 from types import SimpleNamespace
-from libcbm.model.cbm.rule_based import transition_rule_processor
 from libcbm.model.cbm.rule_based.transition_rule_processor import (
     TransitionRuleProcessor,
 )
@@ -17,8 +16,7 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.transition_rule_processor"
 class TransitionRuleProcessorTest(unittest.TestCase):
 
     def test_single_record_transition(self):
-        mock_classifier_filter_builder = Mock()
-        mock_state_variable_filter_func = Mock()
+
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -27,19 +25,14 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 {"id": 3, "classifier_id": 2, "value": "b1"},
             ],
         }
-        grouped_percent_err_max = 0.001
         wildcard = "?"
         transition_classifier_postfix = "_tr"
         tr_processor = TransitionRuleProcessor(
-            mock_classifier_filter_builder,
-            mock_state_variable_filter_func,
             mock_classifier_config,
-            grouped_percent_err_max,
             wildcard,
             transition_classifier_postfix,
         )
 
-        tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
         tr_group = dataframe.from_pandas(
             pd.DataFrame(
                 {
@@ -93,7 +86,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, mock_cbm_vars
+                tr_group, [], [1.0], transition_mask, mock_cbm_vars
             )
             self.assertTrue(transition_mask.to_list() == [True])
             self.assertTrue(
@@ -122,8 +115,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [0])
 
     def test_single_record_split_remainder_transition(self):
-        mock_classifier_filter_builder = Mock()
-        mock_state_variable_filter_func = Mock()
+
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -132,19 +124,14 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 {"id": 3, "classifier_id": 2, "value": "b1"},
             ],
         }
-        grouped_percent_err_max = 0.001
         wildcard = "?"
         transition_classifier_postfix = "_tr"
         tr_processor = TransitionRuleProcessor(
-            mock_classifier_filter_builder,
-            mock_state_variable_filter_func,
             mock_classifier_config,
-            grouped_percent_err_max,
             wildcard,
             transition_classifier_postfix,
         )
 
-        tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
         tr_group = dataframe.from_pandas(
             pd.DataFrame(
                 {
@@ -198,7 +185,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, mock_cbm_vars
+                tr_group, [], [0.5, 0.5], transition_mask, mock_cbm_vars
             )
 
             self.assertTrue(transition_mask.to_list() == [True, True])
@@ -231,8 +218,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [0, 0])
 
     def test_single_record_split_transition(self):
-        mock_classifier_filter_builder = Mock()
-        mock_state_variable_filter_func = Mock()
+
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -242,19 +228,15 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 {"id": 4, "classifier_id": 2, "value": "b2"},
             ],
         }
-        grouped_percent_err_max = 0.001
+
         wildcard = "?"
         transition_classifier_postfix = "_tr"
         tr_processor = TransitionRuleProcessor(
-            mock_classifier_filter_builder,
-            mock_state_variable_filter_func,
             mock_classifier_config,
-            grouped_percent_err_max,
             wildcard,
             transition_classifier_postfix,
         )
 
-        tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
         tr_group = dataframe.from_pandas(
             pd.DataFrame(
                 {
@@ -310,7 +292,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, mock_cbm_vars
+                tr_group, [], [0.35, 0.65], transition_mask, mock_cbm_vars
             )
 
             self.assertTrue(transition_mask.to_list() == [True, True])
@@ -339,8 +321,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [100, 100])
 
     def test_multiple_records_multiple_split_transitions(self):
-        mock_classifier_filter_builder = Mock()
-        mock_state_variable_filter_func = Mock()
+
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -353,19 +334,14 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             ],
         }
 
-        grouped_percent_err_max = 0.001
         wildcard = "?"
         transition_classifier_postfix = "_tr"
         tr_processor = TransitionRuleProcessor(
-            mock_classifier_filter_builder,
-            mock_state_variable_filter_func,
             mock_classifier_config,
-            grouped_percent_err_max,
             wildcard,
             transition_classifier_postfix,
         )
 
-        tr_group_key = {"a": "a1", "b": "?", "disturbance_type_id": 55}
         tr_group = dataframe.from_pandas(
             pd.DataFrame(
                 {
@@ -434,7 +410,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
-                tr_group_key, tr_group, transition_mask, mock_cbm_vars
+                tr_group, [], [0.1, 0.1, 0.1, 0.7], transition_mask, mock_cbm_vars
             )
 
             result = (
