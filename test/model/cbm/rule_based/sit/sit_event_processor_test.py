@@ -75,6 +75,7 @@ class SITEventProcessorTest(unittest.TestCase):
                 target_func,
                 disturbance_type_id,
                 cbm_vars,
+                disturbance_event_id
             ):
                 disturbance_id_order.append(disturbance_type_id)
 
