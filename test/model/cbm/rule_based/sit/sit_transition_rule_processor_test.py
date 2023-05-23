@@ -200,3 +200,72 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
         )
         self.assertTrue(cbm_vars_result == "mock_cbm_vars_result")
         mock_apply_transition_rule.assert_called_once()
+
+    def test_process_transition_rules_extended_eligibility(
+        self
+    ):
+        mock_cbm_vars = SimpleNamespace(
+            pools=dataframe.from_pandas(pd.DataFrame({"p1": [1]})),
+            state=dataframe.from_pandas(pd.DataFrame({"age": [1]})),
+            classifiers=dataframe.from_pandas(
+                pd.DataFrame({"c1": [1], "c2": [1]})
+            ),
+            parameters=dataframe.from_pandas(
+                pd.DataFrame({"reset_age": np.array([1, 2])})
+            ),
+        )
+
+        mock_transition_rule_processor = Mock()
+        mock_apply_transition_rule = Mock()
+        mock_transition_rule_processor.apply_transition_rule = (
+            mock_apply_transition_rule
+        )
+
+        def test_apply_transition_rule(
+            tr_group,
+            rule_filters,
+            split_proportions,
+            transition_mask,
+            cbm_vars,
+        ):
+            self.assertTrue(tr_group.to_pandas().equals(mock_sit_transitions))
+            self.assertTrue(transition_mask.to_list() == [False])
+            self.assertTrue(
+                cbm_vars.classifiers.to_pandas().equals(
+                    mock_cbm_vars.classifiers.to_pandas()
+                )
+            )
+
+            return "mock_mask", "mock_cbm_vars_result"
+
+        mock_apply_transition_rule.side_effect = test_apply_transition_rule
+        mock_classifier_filter = Mock()
+        s = SITTransitionRuleProcessor(
+            mock_transition_rule_processor,
+            classifier_filter=mock_classifier_filter,
+            group_error_max=0.00001,
+        )
+        mock_sit_transitions = pd.DataFrame(
+            {
+                "c1": ["a1", "a1"],
+                "c2": ["b1", "b1"],
+                "eligibility_id": [100, 100],
+                "reset_age": [1, 2],
+                "percent": [50, 50],
+            }
+        )
+
+        mock_sit_eligibilities = pd.DataFrame(
+            {
+                "eligibility_id": [100],
+                "pool_filter_expression": [""],
+                "state_filter_expression": ["age > 10"]
+            }
+        )
+
+        cbm_vars_result = s.process_transition_rules(
+            mock_sit_transitions, mock_cbm_vars, mock_sit_eligibilities
+        )
+
+        self.assertTrue(cbm_vars_result == "mock_cbm_vars_result")
+        mock_apply_transition_rule.assert_called_once()
