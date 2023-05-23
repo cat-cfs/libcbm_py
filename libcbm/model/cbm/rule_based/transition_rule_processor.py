@@ -72,6 +72,12 @@ class TransitionRuleProcessor(object):
         Args:
             tr_group (DataFrame): the grouped transition rules, where
                 each row is a member.
+            rule_filters (list): list of trnasition rule filters that includes
+                or excludes areas for this transition.
+            proportions (list): list of proportions adding up to 100. This
+                is row-index-aligned with the specified `tr_group` with the
+                exception that an extra element at the end representing
+                non-transitioned proportion can be present.
             transition_mask (Series): a boolean mask indicating when
                 true that the correspoding index has already been transitioned.
                 This is used to detect transition rule criteria collisions.
