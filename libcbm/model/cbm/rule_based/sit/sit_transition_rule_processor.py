@@ -134,13 +134,18 @@ def sit_transition_rule_iterator(
     """
     if len(sit_transitions.index) == 0:
         return
-    group_cols = classifier_names + [
-        "min_age",
-        "max_age",
-        "disturbance_type_id",
-    ]
+
+    group_cols = classifier_names
+    if "eligibility_id" in sit_transitions:
+        group_cols.append("eligibility_id")
+    else:
+        group_cols.extend([
+            "min_age",
+            "max_age",
+            "disturbance_type_id",
+        ])
     if "spatial_reference" in sit_transitions:
-        group_cols += ["spatial_reference"]
+        group_cols.extend(["spatial_reference"])
 
     # group transition rules by their filter criteria
     # (classifier set, age range, disturbance type)
