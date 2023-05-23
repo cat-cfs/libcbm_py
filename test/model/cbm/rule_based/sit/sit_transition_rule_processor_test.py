@@ -132,7 +132,8 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
 
-    def test_process_transition_rules(self):
+    @patch(PATCH_PATH + ".get_transition_rule_filters")
+    def test_process_transition_rules(self, get_transition_rule_filters):
         mock_cbm_vars = SimpleNamespace(
             classifiers=dataframe.from_pandas(
                 pd.DataFrame({"c1": [1], "c2": [1]})
@@ -149,18 +150,12 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
         )
 
         def test_apply_transition_rule(
-            tr_group_key, tr_group, transition_mask, cbm_vars
+            tr_group,
+            rule_filters,
+            split_proportions,
+            transition_mask,
+            cbm_vars,
         ):
-            self.assertTrue(
-                tr_group_key
-                == {
-                    "c1": "a1",
-                    "c2": "b1",
-                    "min_age": 0,
-                    "max_age": 10,
-                    "disturbance_type_id": 1,
-                }
-            )
             self.assertTrue(tr_group.to_pandas().equals(mock_sit_transitions))
             self.assertTrue(transition_mask.to_list() == [False])
             self.assertTrue(
@@ -172,7 +167,12 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
             return "mock_mask", "mock_cbm_vars_result"
 
         mock_apply_transition_rule.side_effect = test_apply_transition_rule
-        s = SITTransitionRuleProcessor(mock_transition_rule_processor)
+        mock_classifier_filter = Mock()
+        s = SITTransitionRuleProcessor(
+            mock_transition_rule_processor,
+            classifier_filter=mock_classifier_filter,
+            group_error_max=0.00001,
+        )
         mock_sit_transitions = pd.DataFrame(
             {
                 "c1": ["a1", "a1"],
@@ -187,6 +187,16 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
 
         cbm_vars_result = s.process_transition_rules(
             mock_sit_transitions, mock_cbm_vars
+        )
+        expected_tr_group_key = {
+            "c1": "a1",
+            "c2": "b1",
+            "min_age": 0,
+            "max_age": 10,
+            "disturbance_type_id": 1,
+        }
+        get_transition_rule_filters.assert_called_with(
+            mock_classifier_filter, expected_tr_group_key, mock_cbm_vars
         )
         self.assertTrue(cbm_vars_result == "mock_cbm_vars_result")
         mock_apply_transition_rule.assert_called_once()
