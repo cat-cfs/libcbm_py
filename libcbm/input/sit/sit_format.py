@@ -220,28 +220,38 @@ def get_transition_rules_format(
         {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)
     ]
-    age_eligibility = get_age_eligibility_columns(n_classifiers)
-    disturbance_type = [
-        {"name": "disturbance_type", "index": n_classifiers + 5, "type": str}
-    ]
+    if not separate_eligibilities:
+        age_eligibility = get_age_eligibility_columns(n_classifiers)
+        disturbance_type = [
+            {
+                "name": "disturbance_type",
+                "index": n_classifiers + 5,
+                "type": str,
+            }
+        ]
 
-    regeneration_delay_index = 2 * n_classifiers + len(age_eligibility) + 1
+        col_offset = 2 * n_classifiers + len(age_eligibility) + 1
+    else:
+        eligibility_id = [
+            {"name": "eligibility_id", "index": n_classifiers, "type": int}
+        ]
+        col_offset = 2 * n_classifiers + 1
     post_transition = [
         {
             "name": "regeneration_delay",
-            "index": regeneration_delay_index,
+            "index": col_offset,
             "min_value": 0,
             "type": int,
         },
         {
             "name": "reset_age",
-            "index": regeneration_delay_index + 1,
+            "index": col_offset + 1,
             "min_value": -1,
             "type": int,
         },
         {
             "name": "percent",
-            "index": regeneration_delay_index + 2,
+            "index": col_offset + 2,
             "min_value": 0,
             "max_value": 100,
             "type": float,
@@ -250,7 +260,7 @@ def get_transition_rules_format(
     spatial_reference = [
         {
             "name": "spatial_reference",
-            "index": regeneration_delay_index + 3,
+            "index": col_offset + 3,
             "type": int,
         }
     ]
@@ -265,8 +275,11 @@ def get_transition_rules_format(
     ]
     result = []
     result.extend(classifier_set_src)  # source classifier set
-    result.extend(age_eligibility)
-    result.extend(disturbance_type)
+    if not separate_eligibilities:
+        result.extend(age_eligibility)
+        result.extend(disturbance_type)
+    else:
+        result.extend(eligibility_id)
     result.extend(classifier_set_dest)  # destination classifier set
     result.extend(post_transition)
     if n_columns < len(result):
