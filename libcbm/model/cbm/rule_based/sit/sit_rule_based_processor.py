@@ -59,13 +59,13 @@ class SITRuleBasedProcessor:
         transition_rule_processor: SITTransitionRuleProcessor,
         sit_events: pd.DataFrame,
         sit_transitions: pd.DataFrame,
-        sit_disturbance_eligibilities: pd.DataFrame,
+        sit_eligibilities: pd.DataFrame,
         reset_parameters: bool,
     ):
         self.event_processor = event_processor
         self.transition_rule_processor = transition_rule_processor
         self.sit_events = sit_events
-        self.sit_disturbance_eligibilities = sit_disturbance_eligibilities
+        self.sit_eligibilities = sit_eligibilities
         self.sit_event_stats_by_timestep = {}
         self.sit_transitions = sit_transitions
         self._reset_parameters = reset_parameters
@@ -83,7 +83,7 @@ class SITRuleBasedProcessor:
             time_step=time_step,
             sit_events=self.sit_events,
             cbm_vars=cbm_vars,
-            sit_eligibilities=self.sit_disturbance_eligibilities,
+            sit_eligibilities=self.sit_eligibilities,
         )
         self.sit_event_stats_by_timestep[time_step] = stats_df
         return cbm_vars
