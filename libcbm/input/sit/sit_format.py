@@ -220,6 +220,7 @@ def get_transition_rules_format(
         {"name": c, "index": i, "type": str}
         for i, c in enumerate(classifier_names)
     ]
+    age_eligibility = []
     if not separate_eligibilities:
         age_eligibility = get_age_eligibility_columns(n_classifiers)
         disturbance_type = [
