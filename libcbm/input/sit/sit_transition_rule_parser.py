@@ -57,7 +57,7 @@ def parse(
         pandas.DataFrame: validated transition rules
     """
     transition_rule_format = sit_format.get_transition_rules_format(
-        classifiers.name, len(transition_rules.columns)
+        classifiers.name, len(transition_rules.columns), separate_eligibilites
     )
 
     transitions = sit_parser.unpack_table(
@@ -139,11 +139,14 @@ def parse(
 
     # if the sum of percent for grouped transition rules exceeds 100% raise an
     # error
-    group_cols = list(classifiers.name) + [
-        "min_age",
-        "max_age",
-        "disturbance_type",
-    ]
+    if not separate_eligibilites:
+        group_cols = list(classifiers.name) + [
+            "min_age",
+            "max_age",
+            "disturbance_type",
+        ]
+    else:
+        group_cols = list(classifiers["name"] + ["eligibility_id"])
     if "spatial_reference" in transitions.columns:
         group_cols += ["spatial_reference"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
