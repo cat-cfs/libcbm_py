@@ -201,9 +201,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
         self.assertTrue(cbm_vars_result == "mock_cbm_vars_result")
         mock_apply_transition_rule.assert_called_once()
 
-    def test_process_transition_rules_extended_eligibility(
-        self
-    ):
+    def test_process_transition_rules_extended_eligibility(self):
         mock_cbm_vars = SimpleNamespace(
             pools=dataframe.from_pandas(pd.DataFrame({"p1": [1]})),
             state=dataframe.from_pandas(pd.DataFrame({"age": [1]})),
@@ -259,7 +257,7 @@ class SITTransitionRuleProcessorTest(unittest.TestCase):
             {
                 "eligibility_id": [100],
                 "pool_filter_expression": [""],
-                "state_filter_expression": ["age > 10"]
+                "state_filter_expression": ["age > 10"],
             }
         )
 
