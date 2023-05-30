@@ -192,7 +192,9 @@ def get_age_eligibility_columns(base_index: int) -> list[dict]:
 
 
 def get_transition_rules_format(
-    classifier_names: list[str], n_columns: int
+    classifier_names: list[str],
+    n_columns: int,
+    separate_eligibilities: bool = False,
 ) -> list[dict]:
     """Generate a list of dictionaries describing each column in the SIT
     format transition rules.  The format is dynamic and changes based on the
@@ -204,7 +206,9 @@ def get_transition_rules_format(
         n_columns (int): the number of columns in transition rules data.
             This is used to detect whether or not a spatial identifier is
             included in the data.
-
+        separate_eligibilites (bool, Optional): if set to true, the transition
+            rule format contains a eligbility id column rather than the
+            CBM-CFS3 age and disturbance type elgibility columns.
     Raises:
         ValueError: n_columns was not valid for the sit transitions format
 

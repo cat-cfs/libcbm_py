@@ -17,6 +17,7 @@ def parse(
     classifier_aggregates: pd.DataFrame,
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame,
+    separate_eligibilites: bool = False,
 ) -> pd.DataFrame:
     """Parses and validates the CBM SIT transition rule format.
 
@@ -40,6 +41,9 @@ def parse(
         age_classes (pandas.DataFrame): used to validate the number of volume
             columns.  Use the return value of:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        separate_eligibilites (bool, Optional): if set to true, the transition
+            rule format contains a eligbility id column rather than the
+            CBM-CFS3 age and disturbance type elgibility columns.
 
     Raises:
         ValueError: undefined classifier values were found in the transition
