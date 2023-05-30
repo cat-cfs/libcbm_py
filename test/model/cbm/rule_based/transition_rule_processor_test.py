@@ -14,9 +14,7 @@ PATCH_PATH = "libcbm.model.cbm.rule_based.transition_rule_processor"
 
 
 class TransitionRuleProcessorTest(unittest.TestCase):
-
     def test_single_record_transition(self):
-
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -115,7 +113,6 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [0])
 
     def test_single_record_split_remainder_transition(self):
-
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -218,7 +215,6 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [0, 0])
 
     def test_single_record_split_transition(self):
-
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -321,7 +317,6 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             self.assertTrue(cbm_vars.flux["f2"].to_list() == [100, 100])
 
     def test_multiple_records_multiple_split_transitions(self):
-
         mock_classifier_config = {
             "classifiers": [{"id": 1, "name": "a"}, {"id": 2, "name": "b"}],
             "classifier_values": [
@@ -410,7 +405,11 @@ class TransitionRuleProcessorTest(unittest.TestCase):
                 )
             )
             transition_mask, cbm_vars = tr_processor.apply_transition_rule(
-                tr_group, [], [0.1, 0.1, 0.1, 0.7], transition_mask, mock_cbm_vars
+                tr_group,
+                [],
+                [0.1, 0.1, 0.1, 0.7],
+                transition_mask,
+                mock_cbm_vars,
             )
 
             result = (
