@@ -67,6 +67,12 @@ class SITFormatTest(unittest.TestCase):
                 + len(sit_format.get_age_eligibility_columns(n_classifiers))
                 + 4,
             ),
+            sit_format.get_transition_rules_format(
+                mock_classifier_names,
+                2 * n_classifiers
+                + 4,
+                True
+            ),
             sit_format.get_inventory_format(
                 mock_classifier_names, n_classifiers + 7, False
             ),
