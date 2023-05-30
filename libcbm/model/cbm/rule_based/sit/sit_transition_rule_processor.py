@@ -139,11 +139,13 @@ def sit_transition_rule_iterator(
     if "eligibility_id" in sit_transitions:
         group_cols.append("eligibility_id")
     else:
-        group_cols.extend([
-            "min_age",
-            "max_age",
-            "disturbance_type_id",
-        ])
+        group_cols.extend(
+            [
+                "min_age",
+                "max_age",
+                "disturbance_type_id",
+            ]
+        )
     if "spatial_reference" in sit_transitions:
         group_cols.extend(["spatial_reference"])
 
