@@ -1,5 +1,11 @@
 {
     "import_config": {
+        "parse_options": {
+            "sit_inventory_ids": false,
+            "sit_event_ids": false,
+            "sit_events_external_eligibilities": true,
+            "sit_transitions_external_eligibilities": false
+        },
         "classifiers":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "classifiers", "engine": "openpyxl"}},
         "disturbance_types": {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_types", "engine": "openpyxl"}},
         "age_classes":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "age_classes", "engine": "openpyxl"}},
