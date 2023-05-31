@@ -19,6 +19,7 @@ from libcbm.input.sit import sit_inventory_parser
 from libcbm.input.sit import sit_yield_parser
 from libcbm.input.sit import sit_disturbance_event_parser
 from libcbm.input.sit import sit_transition_rule_parser
+from libcbm.input.sit import sit_eligbility_parser
 
 
 class SITData:
@@ -34,7 +35,6 @@ class SITData:
         yield_table: pd.DataFrame,
         disturbance_events: pd.DataFrame,
         transition_rules: pd.DataFrame,
-        separate_eligibilities: bool = True,
         disturbance_eligibilities: pd.DataFrame = None,
         chunked_inventory: bool = False,
     ):
@@ -47,7 +47,6 @@ class SITData:
         self.inventory = inventory
         self.yield_table = yield_table
         self.disturbance_events = disturbance_events
-        self.separate_eligibilities = separate_eligibilities
         self.disturbance_eligibilities = disturbance_eligibilities
         self.transition_rules = transition_rules
         self.chunked_inventory = chunked_inventory
@@ -131,6 +130,18 @@ def read(config: dict, config_dir: str) -> SITData:
         if "transitions" in config and config["transitions"]
         else None
     )
+    parse_options = None
+    if "parse_options" in config:
+        parse_options = SITParseOptions(
+            inventory_ids=config["parse_options"]["sit_inventory_ids"],
+            event_ids=config["parse_options"]["sit_event_ids"],
+            events_external_eligibilities=config["parse_options"][
+                "sit_events_external_eligibilities"
+            ],
+            transitions_external_eligibilities=config["parse_options"][
+                "sit_transitions_external_eligibilities"
+            ],
+        )
     # Validate data #
     sit_data = parse(
         sit_classifiers,
@@ -141,60 +152,42 @@ def read(config: dict, config_dir: str) -> SITData:
         sit_events,
         sit_transitions,
         sit_eligibilities,
+        parse_options,
     )
     # Return #
     return sit_data
 
 
-def _inventory_parse_iterator(
-    inventory_chunks: Iterable[pd.DataFrame],
-    classifiers: pd.DataFrame,
-    classifier_values: pd.DataFrame,
-    disturbance_types: pd.DataFrame,
-    age_classes: pd.DataFrame,
-) -> Iterable[pd.DataFrame]:
-    for sit_inventory in inventory_chunks:
-        yield sit_inventory_parser.parse(
-            sit_inventory,
-            classifiers,
-            classifier_values,
-            disturbance_types,
-            age_classes,
-        )
-
-
 class SITParseOptions:
     def __init__(
         self,
-        sit_inventory_ids: bool = False,
-        sit_event_ids: bool = False,
-        sit_events_external_eligibilities: bool = False,
-        sit_transitions_external_eligibilities: bool = False,
+        inventory_ids: bool = False,
+        event_ids: bool = False,
+        events_external_eligibilities: bool = False,
+        transitions_external_eligibilities: bool = False,
     ):
-        self._sit_inventory_ids = sit_inventory_ids
-        self._sit_event_ids = sit_event_ids
-        self._sit_events_external_eligibilities = (
-            sit_events_external_eligibilities
-        )
-        self._sit_transitions_external_eligibilities = (
-            sit_transitions_external_eligibilities
+        self._inventory_ids = inventory_ids
+        self._event_ids = event_ids
+        self._events_external_eligibilities = events_external_eligibilities
+        self._transitions_external_eligibilities = (
+            transitions_external_eligibilities
         )
 
     @property
-    def sit_inventory_ids(self) -> bool:
-        return self._sit_inventory_ids
+    def inventory_ids(self) -> bool:
+        return self._inventory_ids
 
     @property
-    def sit_event_ids(self) -> bool:
-        return self._sit_event_ids
+    def event_ids(self) -> bool:
+        return self._event_ids
 
     @property
-    def sit_events_external_eligibilities(self) -> bool:
-        return self._sit_events_external_eligibilities
+    def events_external_eligibilities(self) -> bool:
+        return self._events_external_eligibilities
 
     @property
-    def sit_transitions_external_eligibilities(self) -> bool:
-        return self._sit_transitions_external_eligibilities
+    def transitions_external_eligibilities(self) -> bool:
+        return self._transitions_external_eligibilities
 
 
 def parse(
@@ -278,7 +271,7 @@ def parse(
             classifier_values,
             disturbance_types,
             age_classes,
-            sit_parse_options.sit_inventory_ids,
+            sit_parse_options.inventory_ids,
         )
     else:
         raise NotImplementedError("")
@@ -287,22 +280,7 @@ def parse(
         sit_yield, classifiers, classifier_values, age_classes
     )
 
-    if (
-        sit_parse_options.sit_events_external_eligibilities
-        or sit_parse_options.sit_transitions_external_eligibilities
-    ):
-        # if either of the above are true, require separate eligbilites file
-        if sit_eligibilities is None:
-            raise ValueError(
-                "sit_eligibilites must be specified with "
-                "sit_events_external_eligibilities or "
-                "sit_transitions_external_eligibilities options enabled"
-            )
-
     if sit_events is not None:
-        separate_eligibilities = False
-        if sit_eligibilities is not None:
-            separate_eligibilities = True
         disturbance_events = sit_disturbance_event_parser.parse(
             sit_events,
             classifiers,
@@ -310,22 +288,12 @@ def parse(
             classifier_aggregates,
             disturbance_types,
             age_classes,
-            separate_eligibilities,
-            sit_parse_options.sit_event_ids,
+            sit_parse_options.events_external_eligibilities,
+            sit_parse_options.event_ids,
         )
-        if sit_eligibilities is not None:
-            disturbance_eligibilities = (
-                sit_disturbance_event_parser.parse_eligibilities(
-                    disturbance_events, sit_eligibilities
-                )
-            )
-        else:
-            disturbance_eligibilities = None
-            separate_eligibilities = False
     else:
         disturbance_events = None
-        disturbance_eligibilities = None
-        separate_eligibilities = False
+
     if sit_transitions is not None:
         transition_rules = sit_transition_rule_parser.parse(
             sit_transitions,
@@ -334,9 +302,41 @@ def parse(
             classifier_aggregates,
             disturbance_types,
             age_classes,
+            sit_parse_options.transitions_external_eligibilities,
         )
     else:
         transition_rules = None
+
+    if (
+        sit_parse_options.events_external_eligibilities
+        or sit_parse_options.transitions_external_eligibilities
+    ):
+        # if either of the above are true, require separate eligbilites file
+        if sit_eligibilities is None:
+            raise ValueError(
+                "sit_eligibilites must be specified with "
+                "sit_events_external_eligibilities or "
+                "sit_transitions_external_eligibilities options enabled"
+            )
+        eligibilities = sit_eligbility_parser.parse_eligibilities(
+            sit_eligibilities
+        )
+        sit_eligbility_parser.validate_eligibilities_relationship(
+            eligibilities,
+            disturbance_events=(
+                disturbance_events
+                if sit_parse_options.events_external_eligibilities
+                else None
+            ),
+            transition_rules=(
+                transition_rules
+                if sit_parse_options._transitions_external_eligibilities
+                else None
+            ),
+        )
+    else:
+        eligibilities = None
+
     return SITData(
         classifiers,
         original_classifier_labels,
@@ -348,7 +348,6 @@ def parse(
         yield_table,
         disturbance_events,
         transition_rules,
-        separate_eligibilities,
-        disturbance_eligibilities,
+        eligibilities,
         is_chunked_inventory,
     )
