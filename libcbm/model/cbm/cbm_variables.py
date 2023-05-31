@@ -6,6 +6,7 @@ from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import SeriesDef
 from libcbm.storage.series import Series
+from libcbm.storage import series
 from libcbm.storage.backends import BackendType
 
 
@@ -397,9 +398,14 @@ def _initialize_inventory(
     Returns:
         DataFrame: dataframe containing the inventory data.
     """
-
+    if "inventory_id" in inventory.columns:
+        inventory_id = inventory["inventory_id"].as_type("int")
+    else:
+        inventory_id = series.range(
+            "inventory_id", 1, inventory.n_rows + 1, 1, "int", back_end
+        )
     data = [
-        inventory["inventory_id"].as_type("int"),
+        inventory_id,
         SeriesDef("parent_inventory_id", -1, "int"),
         inventory["age"].as_type("int32"),
         inventory["area"].as_type("float64"),
