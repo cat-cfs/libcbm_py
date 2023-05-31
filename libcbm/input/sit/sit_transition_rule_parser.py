@@ -111,31 +111,35 @@ def parse(
                 f"classifier: '{row.name}', values: {diff_dest}"
             )
 
-    parse_bool_func = sit_parser.get_parse_bool_func(
-        "transitions", "using_age_class"
-    )
-    transitions = sit_parser.substitute_using_age_class_rows(
-        transitions, parse_bool_func, age_classes
-    )
-
-    # validate and substitute disturbance type names versus the SIT disturbance
-    # types
-    a = transitions.disturbance_type.unique()
-    b = disturbance_types.id.unique()
-    undefined_disturbances = np.setdiff1d(a, b)
-    if len(undefined_disturbances) > 0:
-        raise ValueError(
-            "Undefined disturbance type ids (as defined in sit "
-            f"disturbance types) detected: {undefined_disturbances}"
+    if not separate_eligibilites:
+        parse_bool_func = sit_parser.get_parse_bool_func(
+            "transitions", "using_age_class"
+        )
+        transitions = sit_parser.substitute_using_age_class_rows(
+            transitions, parse_bool_func, age_classes
         )
 
-    transitions = transitions.rename(
-        columns={"min_softwood_age": "min_age", "max_softwood_age": "max_age"}
-    )
+        # validate and substitute disturbance type names versus the SIT
+        # disturbance types
+        a = transitions.disturbance_type.unique()
+        b = disturbance_types.id.unique()
+        undefined_disturbances = np.setdiff1d(a, b)
+        if len(undefined_disturbances) > 0:
+            raise ValueError(
+                "Undefined disturbance type ids (as defined in sit "
+                f"disturbance types) detected: {undefined_disturbances}"
+            )
 
-    transitions = transitions.drop(
-        columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"]
-    )
+        transitions = transitions.rename(
+            columns={
+                "min_softwood_age": "min_age",
+                "max_softwood_age": "max_age",
+            }
+        )
+
+        transitions = transitions.drop(
+            columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"]
+        )
 
     # if the sum of percent for grouped transition rules exceeds 100% raise an
     # error
@@ -146,7 +150,7 @@ def parse(
             "disturbance_type",
         ]
     else:
-        group_cols = list(classifiers["name"] + ["eligibility_id"])
+        group_cols = list(classifiers["name"]) + ["eligibility_id"]
     if "spatial_reference" in transitions.columns:
         group_cols += ["spatial_reference"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()
