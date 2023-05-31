@@ -163,6 +163,40 @@ def _inventory_parse_iterator(
         )
 
 
+class SITParseOptions:
+    def __init__(
+        self,
+        sit_inventory_ids: bool = False,
+        sit_event_ids: bool = False,
+        sit_events_external_eligibilities: bool = False,
+        sit_transitions_external_eligibilities: bool = False,
+    ):
+        self._sit_inventory_ids = sit_inventory_ids
+        self._sit_event_ids = sit_event_ids
+        self._sit_events_external_eligibilities = (
+            sit_events_external_eligibilities
+        )
+        self._sit_transitions_external_eligibilities = (
+            sit_transitions_external_eligibilities
+        )
+
+    @property
+    def sit_inventory_ids(self) -> bool:
+        return self._sit_inventory_ids
+
+    @property
+    def sit_event_ids(self) -> bool:
+        return self._sit_event_ids
+
+    @property
+    def sit_events_external_eligibilities(self) -> bool:
+        return self._sit_events_external_eligibilities
+
+    @property
+    def sit_transitions_external_eligibilities(self) -> bool:
+        return self._sit_transitions_external_eligibilities
+
+
 def parse(
     sit_classifiers: pd.DataFrame,
     sit_disturbance_types: pd.DataFrame,
@@ -172,6 +206,7 @@ def parse(
     sit_events: pd.DataFrame = None,
     sit_transitions: pd.DataFrame = None,
     sit_eligibilities: pd.DataFrame = None,
+    sit_parse_options: SITParseOptions = None,
 ) -> SITData:
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object
@@ -219,6 +254,9 @@ def parse(
         SITData: an object containing parsed and validated SIT dataset
     """
 
+    if not sit_parse_options:
+        sit_parse_options = SITParseOptions()
+
     (
         classifiers,
         original_classifier_labels,
@@ -233,26 +271,33 @@ def parse(
 
     if isinstance(sit_inventory, pd.DataFrame):
         is_chunked_inventory = False
+
         inventory = sit_inventory_parser.parse(
             sit_inventory,
             classifiers,
             classifier_values,
             disturbance_types,
             age_classes,
+            sit_parse_options.sit_inventory_ids,
         )
     else:
-        is_chunked_inventory = False
-        return _inventory_parse_iterator(
-            sit_inventory,
-            classifiers,
-            classifier_values,
-            disturbance_types,
-            age_classes,
-        )
+        raise NotImplementedError("")
 
     yield_table = sit_yield_parser.parse(
         sit_yield, classifiers, classifier_values, age_classes
     )
+
+    if (
+        sit_parse_options.sit_events_external_eligibilities
+        or sit_parse_options.sit_transitions_external_eligibilities
+    ):
+        # if either of the above are true, require separate eligbilites file
+        if sit_eligibilities is None:
+            raise ValueError(
+                "sit_eligibilites must be specified with "
+                "sit_events_external_eligibilities or "
+                "sit_transitions_external_eligibilities options enabled"
+            )
 
     if sit_events is not None:
         separate_eligibilities = False
@@ -266,6 +311,7 @@ def parse(
             disturbance_types,
             age_classes,
             separate_eligibilities,
+            sit_parse_options.sit_event_ids,
         )
         if sit_eligibilities is not None:
             disturbance_eligibilities = (
