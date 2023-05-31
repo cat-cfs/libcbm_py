@@ -1,0 +1,67 @@
+{
+    "import_config": {
+        "parse_options": {
+            "sit_inventory_ids": true,
+            "sit_event_ids": true,
+            "sit_events_external_eligibilities": true,
+            "sit_transitions_external_eligibilities": true
+        },
+        "classifiers":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "classifiers", "engine": "openpyxl"}},
+        "disturbance_types": {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_types", "engine": "openpyxl"}},
+        "age_classes":       {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "age_classes", "engine": "openpyxl"}},
+        "inventory":         {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "inventory", "engine": "openpyxl"}},
+        "yield":             {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "growth_and_yield", "engine": "openpyxl"}},
+        "events":            {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "disturbance_events", "engine": "openpyxl"}},
+        "transitions": 	     {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "transition_rules", "engine": "openpyxl"}},
+        "eligibilities": 	 {"type": "excel", "params": {"path": "sit_input.xlsx", "sheet_name": "eligibilities", "engine": "openpyxl"}}
+    },
+    "mapping_config": {
+        "nonforest": null,
+        "species": {
+            "species_classifier": "Working Species Or Leading Species",
+            "species_mapping": [
+                {"user_species": "Balsam Fir",
+                 "default_species": "Balsam fir"},
+                {"user_species": "Black Spruce",
+                 "default_species": "Black spruce"},
+                {"user_species": "Western Larch",
+                 "default_species": "Western larch"},
+                {"user_species": "Jack Pine",
+                 "default_species": "Jack pine"},
+                {"user_species": "Other Spruce",
+                 "default_species": "Other spruce"},
+                {"user_species": "Red Pine",
+                 "default_species": "Red pine"},
+                {"user_species": "Unspecified Softwood",
+                 "default_species": "Unspecified softwood species"},
+                {"user_species": "Larch",
+                 "default_species": "Tamarack/larch"},
+                {"user_species": "White Spruce",
+                 "default_species": "White spruce"}
+            ]
+        },
+        "spatial_units": {
+            "mapping_mode": "SingleDefaultSpatialUnit",
+            "admin_boundary": "Ontario",
+            "eco_boundary": "Boreal Shield East"
+        },
+        "disturbance_types": [
+            {
+                "user_dist_type": "ClearCut Harvesting",
+                "default_dist_type": "Clearcut harvesting without salvage"
+            },
+            {
+                "user_dist_type": "Natural forest fire",
+                "default_dist_type": "Wildfire"
+            },
+            {
+                "user_dist_type": "Senescence",
+                "default_dist_type": "Stand–replacing natural succession"
+            },
+            {
+                "user_dist_type": "Mountain pine beetle infestation",
+                "default_dist_type": "Insect disturbance"
+            }
+        ]
+    }
+}
