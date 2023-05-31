@@ -58,6 +58,7 @@ test_resources = []
 for x in [
     "cbm3_tutorial2",
     "cbm3_tutorial2_eligibilities",
+    "cbm3_tutorial2_extensions",
     "cbm3_tutorial6",
     "sit_rule_based_events",
     "moss_c_test_case",
