@@ -72,7 +72,7 @@ class SITRuleBasedProcessor:
 
     def tr_func(self, cbm_vars: CBMVariables) -> CBMVariables:
         cbm_vars = self.transition_rule_processor.process_transition_rules(
-            self.sit_transitions, cbm_vars
+            self.sit_transitions, cbm_vars, self.sit_eligibilities
         )
         return cbm_vars
 
@@ -107,7 +107,7 @@ def sit_rule_based_processor_factory(
     sit_events: pd.DataFrame,
     sit_transitions: pd.DataFrame,
     tr_constants: TransitionRuleConstants,
-    sit_disturbance_eligibilities: pd.DataFrame,
+    sit_eligibilities: pd.DataFrame,
     reset_parameters: bool,
     disturbance_type_map: dict,
 ) -> SITRuleBasedProcessor:
@@ -138,6 +138,6 @@ def sit_rule_based_processor_factory(
         tr_processor,
         sit_events,
         sit_transitions,
-        sit_disturbance_eligibilities,
+        sit_eligibilities,
         reset_parameters,
     )
