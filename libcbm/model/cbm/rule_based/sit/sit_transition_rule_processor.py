@@ -210,7 +210,10 @@ class SITTransitionRuleProcessor:
         )
 
         eligibilty_expressions: dict[int, pd.Series] = None
-        if sit_eligibilities is not None:
+        if (
+            sit_eligibilities is not None
+            and "eligibility_id" in sit_transitions
+        ):
             eligibilty_expressions = {
                 int(row["eligibility_id"]): row
                 for _, row in sit_eligibilities.iterrows()
@@ -258,7 +261,10 @@ class SITTransitionRuleProcessor:
                     expression=expression["state_filter_expression"],
                     data=cbm_vars.state,
                 ),
-                self._classifier_filter.create_classifiers_filter(),
+                self._classifier_filter.create_classifiers_filter(
+                    [tr_group_key[x] for x in cbm_vars.classifiers.columns],
+                    cbm_vars.classifiers,
+                ),
             ]
         else:
             filters = get_transition_rule_filters(
