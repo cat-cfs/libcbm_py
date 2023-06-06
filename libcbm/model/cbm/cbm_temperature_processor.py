@@ -32,7 +32,7 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
         for idx in range(0, len(timesteps)):
             timestep = int(timesteps[idx])
             spatial_unit = int(spatial_units[idx])
-            temperature = int(temperatures[idx])
+            temperature = float(temperatures[idx])
             if timestep in self._timestep_lookups:
                 if spatial_unit in self._timestep_lookups[timestep]:
                     raise ValueError(
@@ -72,6 +72,8 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
         Returns:
             DataFrame: initialized spinup parameter dataframe
         """
+        if 0 not in self._timestep_lookups:
+            raise ValueError("timestep zero not defined")
         spinup_mean_annual_temp = self._timestep_lookups[0]
         return cbm_variables.initialize_spinup_parameters(
             inventory.n_rows,
@@ -97,8 +99,8 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
         mapped_data = cbm_vars.inventory["spatial_unit"].map(timestep_data)
         mapped_data.name = "mean_annual_temp"
         if "mean_annual_temp" not in cbm_vars.parameters.columns:
-            cbm_vars.parameters.add_column(mapped_data)
-        cbm_vars.parameters["mean_annual_temp"].assign(
-            mapped_data
-        )
+            cbm_vars.parameters.add_column(
+                mapped_data, cbm_vars.parameters.n_cols
+            )
+        cbm_vars.parameters["mean_annual_temp"].assign(mapped_data)
         return cbm_vars
