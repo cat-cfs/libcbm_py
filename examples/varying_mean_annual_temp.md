@@ -195,11 +195,11 @@ fi[["timestep"]+annual_process_fluxes].groupby("timestep").sum().plot(figsize=(1
 ## Disturbance Statistics
 
 ```python
-rule_based_processor.sit_event_stats_by_timestep[100]
+rule_based_disturbance_processor.sit_event_stats_by_timestep[100]
 ```
 
 ```python
-rule_based_processor.sit_events
+rule_based_disturbance_processor.sit_events
 ```
 
 ## Appendix
