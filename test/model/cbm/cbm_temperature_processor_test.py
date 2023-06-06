@@ -9,20 +9,22 @@ from libcbm.storage import dataframe
 
 def test_temperature_processor_error_no_t0_data():
     processor = SpatialUnitMeanAnnualTemperatureProcessor(
-            pd.DataFrame(
-                {
+        pd.DataFrame(
+            {
                 "timestep": [1, 2, 1, 2],
                 "spatial_unit": [1, 1, 2, 2],
                 "mean_annual_temp": [0.2, 0.3, 0.4, 0.5],
-                }
-            )
+            }
         )
+    )
     with pytest.raises(ValueError):
-
         processor.get_spinup_parameters(
             inventory=dataframe.from_pandas(
                 pd.DataFrame({"spatial_unit": [1, 1, 2, 2, 2]})
-            ))
+            )
+        )
+
+
 def test_temperature_processor_error_on_duplicate_key():
     with pytest.raises(ValueError):
         SpatialUnitMeanAnnualTemperatureProcessor(
