@@ -126,10 +126,14 @@ class CBMDefaultsReference:
         with sqlite3.connect(sqlite_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            if query_params:
-                return cursor.execute(query, query_params).fetchall()
-            else:
-                return cursor.execute(query).fetchall()
+            try:
+                if query_params:
+                    return cursor.execute(query, query_params).fetchall()
+                else:
+                    return cursor.execute(query).fetchall()
+            finally:
+                cursor.close()
+                conn.commit()
 
     def get_species_id(self, species_name: str) -> int:
         """Get the species id associated with the specified species name.

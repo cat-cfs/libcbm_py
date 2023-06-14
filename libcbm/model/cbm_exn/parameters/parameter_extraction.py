@@ -7,7 +7,11 @@ from argparse import ArgumentParser
 
 def query(db_path, query, params=None):
     con = sqlite3.connect(db_path)
-    df = pd.read_sql_query(query, con, params=params)
+    try:
+        df = pd.read_sql_query(query, con, params=params)
+    finally:
+        con.commit()
+        con.close()
     return df
 
 
