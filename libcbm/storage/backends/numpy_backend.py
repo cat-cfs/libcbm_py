@@ -762,9 +762,9 @@ def from_series_list(
 
 def from_series_dict(
     data: dict[str, NumpySeriesBackend],
-) -> DataFrame:
-    return NumpySeriesBackend(
-        pd.DataFrame({k: v._get_data() for k, v in data.items()})
+) -> NumpyDataFrameFrameBackend:
+    return NumpyDataFrameFrameBackend(
+        {k: v._get_data() for k, v in data.items()}
     )
 
 
