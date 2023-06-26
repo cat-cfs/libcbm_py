@@ -70,6 +70,15 @@ def simulate(
     )
 
     cbm.spinup(spinup_vars, reporting_func=spinup_reporting_func)
+
+    if "mean_annual_temp" in spinup_vars.parameters.columns:
+        # since the mean_annual_temp appears in the spinup parameters, carry
+        # it forward to the simulation period so that we have consistent
+        # columns in the outputs
+        cbm_vars.parameters.add_column(
+            spinup_vars.parameters["mean_annual_temp"],
+            cbm_vars.parameters.n_cols,
+        )
     cbm_vars = cbm.init(cbm_vars)
     reporting_func(0, cbm_vars)
 

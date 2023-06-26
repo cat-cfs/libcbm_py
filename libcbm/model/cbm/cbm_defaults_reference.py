@@ -123,13 +123,17 @@ class CBMDefaultsReference:
         Returns:
             list: a list of sqlite3.Row objects containing the query results
         """
-        with sqlite3.connect(sqlite_path) as conn:
-            conn.row_factory = sqlite3.Row
-            cursor = conn.cursor()
+        conn = sqlite3.connect(sqlite_path)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        try:
             if query_params:
                 return cursor.execute(query, query_params).fetchall()
             else:
                 return cursor.execute(query).fetchall()
+        finally:
+            cursor.close()
+            conn.close()
 
     def get_species_id(self, species_name: str) -> int:
         """Get the species id associated with the specified species name.

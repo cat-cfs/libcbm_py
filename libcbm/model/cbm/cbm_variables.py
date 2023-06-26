@@ -254,11 +254,17 @@ def initialize_spinup_parameters(
     Returns:
         DataFrame: table of spinup paramaeters
     """
-    data = []
-    for s in [return_interval, min_rotations, max_rotations, mean_annual_temp]:
-        if s is not None:
-            data.append(s)
-    parameters = dataframe.from_series_list(
+    data = {}
+    series_dict = {
+        "return_interval": return_interval,
+        "min_rotations": min_rotations,
+        "max_rotations": max_rotations,
+        "mean_annual_temp": mean_annual_temp,
+    }
+    for name, value in series_dict.items():
+        if value is not None:
+            data[name] = value
+    parameters = dataframe.from_series_dict(
         data,
         nrows=n_stands,
         back_end=back_end,

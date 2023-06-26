@@ -53,13 +53,16 @@ def load_cbm_parameters(sqlite_path: str) -> dict[str, pd.DataFrame]:
         raise ValueError(
             "specified path does not exist '{0}'".format(sqlite_path)
         )
-    with sqlite3.connect(sqlite_path) as conn:
+    conn = sqlite3.connect(sqlite_path)
+    try:
         for table, query in queries.items():
             if table in result:
                 raise AssertionError(
                     "duplicate table name detected {}".format(table)
                 )
             result[table] = pd.read_sql(query, conn)
+    finally:
+        conn.close()
 
     return result
 
@@ -84,14 +87,18 @@ def load_cbm_pools(sqlite_path: str) -> list[dict]:
                 ]
     """
     result = []
-    with sqlite3.connect(sqlite_path) as conn:
-        cursor = conn.cursor()
+    conn = sqlite3.connect(sqlite_path)
+    cursor = conn.cursor()
+    try:
         index = 0
         query = cbm_defaults_queries.get_query("pools.sql")
         for row in cursor.execute(query):
             result.append({"name": row[0], "id": row[1], "index": index})
             index += 1
         return result
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
@@ -127,8 +134,9 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
     flux_indicator_sink_sql = cbm_defaults_queries.get_query(
         "flux_indicator_sink.sql"
     )
-    with sqlite3.connect(sqlite_path) as conn:
-        cursor = conn.cursor()
+    conn = sqlite3.connect(sqlite_path)
+    cursor = conn.cursor()
+    try:
         index = 0
         flux_indicator_sql = cbm_defaults_queries.get_query(
             "flux_indicator.sql"
@@ -146,7 +154,9 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
             for source_pool_row in cursor.execute(
                 flux_indicator_source_sql, (row[0],)
             ):
-                flux_indicator["source_pools"].append(int(source_pool_row[0]))
+                flux_indicator["source_pools"].append(
+                    int(source_pool_row[0])
+                )
             for sink_pool_row in cursor.execute(
                 flux_indicator_sink_sql, (row[0],)
             ):
@@ -154,6 +164,9 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
             result.append(flux_indicator)
             index += 1
         return result
+    finally:
+        cursor.close()
+        conn.commit()
 
 
 def get_cbm_parameters_factory(

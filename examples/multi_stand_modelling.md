@@ -24,6 +24,9 @@ from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_defaults
 from libcbm import resources
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
+from libcbm.model.cbm.cbm_temperature_processor import (
+    SpatialUnitMeanAnnualTemperatureProcessor,
+)
 ```
 Define merchantable volume and classifiers input used to drive CBM.
 
@@ -129,14 +132,18 @@ defaults_ref = CBMDefaultsReference(resources.get_cbm_defaults_path())
 Example showing how to interact with one of the properties of `defaults_ref`
 
 ```python
-defaults_ref.as_data_frame(defaults_ref.disturbance_type_ref)
+spatial_units = defaults_ref.as_data_frame(defaults_ref.spatial_unit_ref)
+spatial_units.loc[spatial_units["admin_boundary_name"]== "Ontario"]
 ```
+
+extract the default parameters passed to the model in order to inspect and modify them
 
 ```python
 default_parameters = cbm_defaults.get_cbm_parameters_factory(
   resources.get_cbm_defaults_path())()
 default_parameters
 ```
+
 The parameters can be changed here, and will set the value during simulation via
 a parameter factory function
 
@@ -148,6 +155,23 @@ default_parameters["slow_mixing_rate"].iloc[0,0] = 0.005
 def parameter_factory():
     return default_parameters
 
+```
+
+Apply a table of mean annual temperatures to the workflow, in CBM
+
+```python
+# example mean annual temperature table
+mean_annual_temperature_data = pd.DataFrame(
+    {
+        # by convention in CBM3 t=0 refers to spinup
+        "timestep": np.arange(0,201),
+        # note only one spatial unit "Ontario Mixedwood Plains" is in use for this example
+        "spatial_unit": 17,
+        # generating a simple ramp here, but it's also easy to inform this information based on a file such as csv
+        "mean_annual_temp": np.arange(5, 7+2/200, 2/200)
+    }
+)
+mean_annual_temp_processor = SpatialUnitMeanAnnualTemperatureProcessor(mean_annual_temperature_data)
 ```
 
 CBM Spinup function - initialize the CBM pools and state (cbm_vars)
@@ -172,10 +196,17 @@ def spinup(cbm_factory, parameter_factory, inventory):
         spinup_vars = cbm_variables.initialize_spinup_variables(
           cbm_vars,
           inv.backend_type,
-          spinup_params=None,
+          spinup_params=mean_annual_temp_processor.get_spinup_parameters(inv),
           include_flux=False
         )
         cbm.spinup(spinup_vars, reporting_func = None)
+        # since we are assigning the "mean_annual_temp" directly, 
+        # as opposed to using the default value in the CBM defaults
+        # database, assign the parameter to the simulation cbm_vars
+        cbm_vars.parameters.add_column(
+            spinup_vars.parameters["mean_annual_temp"],
+            cbm_vars.parameters.n_cols,
+        )
         cbm_vars = cbm.init(cbm_vars)
 
         return cbm_vars
@@ -226,7 +257,7 @@ CBM time-stepping
 
 ```python
 
-for i in range(1,50):
+for timestep in range(1,50):
 
     # set the disturbance type array with randomly drawn disturbance types
     # note the CBM default disturbance type ids are used
@@ -241,10 +272,17 @@ for i in range(1,50):
     )
 
     cbm_vars.parameters["disturbance_type"].assign(disturbance_types)
-
+    
+    # use the mean annual temperature processor to assign the mean 
+    # annual temperature based on each simulation area's spatial_unit
+    # based on the lookup table above
+    cbm_vars = mean_annual_temp_processor.set_timestep_mean_annual_temperature(
+        timestep, cbm_vars
+    )
+    
     step(cbm_factory, parameter_factory, cbm_vars)
     # record the end of timestep result
-    output.append_simulation_result(i, cbm_vars)
+    output.append_simulation_result(timestep, cbm_vars)
 
 ```
 
@@ -264,4 +302,12 @@ Plot some output
 mean_age = state_output[["timestep", "age"]].groupby("timestep").mean()
 
 mean_age.plot()
+```
+
+```python
+parameters_output[["timestep", "mean_annual_temp"]].groupby("timestep").mean().plot()
+```
+
+```python
+
 ```

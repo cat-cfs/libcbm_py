@@ -1,0 +1,7 @@
+pytest
+pytest-cov
+nbval
+flake8
+black
+sphinx
+nbsphinx
