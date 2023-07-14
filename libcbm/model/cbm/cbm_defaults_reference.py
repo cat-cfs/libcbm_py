@@ -269,8 +269,19 @@ class CBMDefaultsReference:
         Result is returned as a list of rows with keys:
 
             - land_class_id
-            - code
-            - description
+            - code - land class code
+            - description - land class description
+            - is_forest - whether or not this land class is forested
+            - is_simulated - whether or not CBM dynamics are tracked in this
+                             land class state
+            - transitional_period - number of years in the transtional period
+            - transition_id - land_class_id (from within this table) of the
+                              land class to which this land class transitions
+            - land_type_id_1 - the pre-land-class-transition land type id
+            - land_type_id_2 - the post-land-class-transition land type id
+
+        for defintion of land_type ids and their relationship to disturbance
+        types see: :py:func:`get_land_class_disturbance_ref`
 
         Returns:
             list: list of rows with land class information information
