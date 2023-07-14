@@ -154,9 +154,7 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
             for source_pool_row in cursor.execute(
                 flux_indicator_source_sql, (row[0],)
             ):
-                flux_indicator["source_pools"].append(
-                    int(source_pool_row[0])
-                )
+                flux_indicator["source_pools"].append(int(source_pool_row[0]))
             for sink_pool_row in cursor.execute(
                 flux_indicator_sink_sql, (row[0],)
             ):
