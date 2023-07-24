@@ -14,6 +14,7 @@ def parse(
     classifier_values: pd.DataFrame,
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame,
+    has_inventory_ids: bool = False,
 ) -> pd.DataFrame:
     """Parses and validates SIT formatted inventory data.  The inventory_table
     parameter is the primary data, and the other args act as validation
@@ -33,10 +34,17 @@ def parse(
         age_classes (pandas.DataFrame): table of disturbance types as
             returned by the function:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        has_inventory_ids (bool, optional): if set to true, in addition to the
+            usually-formatted sit inventory input, a single column representing
+            "inventory_id" is expected to be in the first column position.
+            Note this option is not compatible when the sit inventory
+            "using_age_class" option is activated, and if these are combined
+            a ValueError is raised.
 
     Raises:
         ValueError: Undefined classifier values detected in inventory table
         ValueError: Undefined disturbance types detected in inventory table
+        ValueError: has_inventory_ids combined with using_age_class option
 
     Example:
 
@@ -137,7 +145,7 @@ def parse(
         pandas.DataFrame: validated inventory
     """
     inventory_format = sit_format.get_inventory_format(
-        classifiers.name, len(inventory_table.columns)
+        classifiers.name, len(inventory_table.columns), has_inventory_ids
     )
 
     inventory = sit_parser.unpack_table(
@@ -200,6 +208,11 @@ def parse(
     )
 
     if inventory.using_age_class.any():
+        if has_inventory_ids:
+            raise ValueError(
+                "inventory id option is not supported when inventory 'using "
+                "age class' option is true"
+            )
         inventory = expand_age_class_inventory(inventory, age_classes)
 
     inventory = inventory.drop(columns=["using_age_class"])

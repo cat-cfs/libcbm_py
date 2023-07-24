@@ -17,6 +17,7 @@ def parse(
     classifier_aggregates: pd.DataFrame,
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame,
+    separate_eligibilites: bool = False,
 ) -> pd.DataFrame:
     """Parses and validates the CBM SIT transition rule format.
 
@@ -40,6 +41,9 @@ def parse(
         age_classes (pandas.DataFrame): used to validate the number of volume
             columns.  Use the return value of:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
+        separate_eligibilites (bool, Optional): if set to true, the transition
+            rule format contains a eligbility id column rather than the
+            CBM-CFS3 age and disturbance type elgibility columns.
 
     Raises:
         ValueError: undefined classifier values were found in the transition
@@ -53,7 +57,7 @@ def parse(
         pandas.DataFrame: validated transition rules
     """
     transition_rule_format = sit_format.get_transition_rules_format(
-        classifiers.name, len(transition_rules.columns)
+        classifiers.name, len(transition_rules.columns), separate_eligibilites
     )
 
     transitions = sit_parser.unpack_table(
@@ -107,39 +111,46 @@ def parse(
                 f"classifier: '{row.name}', values: {diff_dest}"
             )
 
-    parse_bool_func = sit_parser.get_parse_bool_func(
-        "transitions", "using_age_class"
-    )
-    transitions = sit_parser.substitute_using_age_class_rows(
-        transitions, parse_bool_func, age_classes
-    )
-
-    # validate and substitute disturbance type names versus the SIT disturbance
-    # types
-    a = transitions.disturbance_type.unique()
-    b = disturbance_types.id.unique()
-    undefined_disturbances = np.setdiff1d(a, b)
-    if len(undefined_disturbances) > 0:
-        raise ValueError(
-            "Undefined disturbance type ids (as defined in sit "
-            f"disturbance types) detected: {undefined_disturbances}"
+    if not separate_eligibilites:
+        parse_bool_func = sit_parser.get_parse_bool_func(
+            "transitions", "using_age_class"
+        )
+        transitions = sit_parser.substitute_using_age_class_rows(
+            transitions, parse_bool_func, age_classes
         )
 
-    transitions = transitions.rename(
-        columns={"min_softwood_age": "min_age", "max_softwood_age": "max_age"}
-    )
+        # validate and substitute disturbance type names versus the SIT
+        # disturbance types
+        a = transitions.disturbance_type.unique()
+        b = disturbance_types.id.unique()
+        undefined_disturbances = np.setdiff1d(a, b)
+        if len(undefined_disturbances) > 0:
+            raise ValueError(
+                "Undefined disturbance type ids (as defined in sit "
+                f"disturbance types) detected: {undefined_disturbances}"
+            )
 
-    transitions = transitions.drop(
-        columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"]
-    )
+        transitions = transitions.rename(
+            columns={
+                "min_softwood_age": "min_age",
+                "max_softwood_age": "max_age",
+            }
+        )
+
+        transitions = transitions.drop(
+            columns=["using_age_class", "min_hardwood_age", "max_hardwood_age"]
+        )
 
     # if the sum of percent for grouped transition rules exceeds 100% raise an
     # error
-    group_cols = list(classifiers.name) + [
-        "min_age",
-        "max_age",
-        "disturbance_type",
-    ]
+    if not separate_eligibilites:
+        group_cols = list(classifiers.name) + [
+            "min_age",
+            "max_age",
+            "disturbance_type",
+        ]
+    else:
+        group_cols = list(classifiers["name"]) + ["eligibility_id"]
     if "spatial_reference" in transitions.columns:
         group_cols += ["spatial_reference"]
     grouped = transitions[group_cols + ["percent"]].groupby(group_cols).sum()

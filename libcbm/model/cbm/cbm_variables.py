@@ -4,9 +4,9 @@
 from __future__ import annotations
 from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
-from libcbm.storage import series
 from libcbm.storage.series import SeriesDef
 from libcbm.storage.series import Series
+from libcbm.storage import series
 from libcbm.storage.backends import BackendType
 
 
@@ -348,6 +348,7 @@ def _initialize_cbm_state_variables(
     """
     data = [
         SeriesDef("last_disturbance_type", 0, "int32"),
+        SeriesDef("last_disturbance_event", 0, "int32"),
         SeriesDef("time_since_last_disturbance", 0, "int32"),
         SeriesDef("time_since_land_class_change", -1, "int32"),
         SeriesDef("growth_enabled", 0, "int32"),
@@ -372,18 +373,19 @@ def _initialize_inventory(
 
     Example Inventory table: (abbreviated column names)
 
-    ====  ==== =====  ======  =====  ====  =====  =====
-     age  area  spu   affor    lc    hist  last   delay
-    ====  ==== =====  ======  =====  ====  =====  =====
-     0     5      1      1      1     1      3     10
-     11    7     10     -1      0     1      1     -1
-     0    30     42      1      0     1      5     -1
-    ====  ==== =====  ======  =====  ====  =====  =====
+    ==== ====  ==== =====  ======  =====  ====  =====  =====
+     id  age  area  spu   affor    lc    hist  last   delay
+    ==== ====  ==== =====  ======  =====  ====  =====  =====
+     1    0     5      1      1      1     1      3     10
+     2   11     7     10     -1      0     1      1     -1
+     3    0    30     42      1      0     1      5     -1
+    ==== ====  ==== =====  ======  =====  ====  =====  =====
 
     Args:
 
         inventory (DataFrame): Data defining the inventory. Columns:
 
+            - inventory_id: the unique identifier of the inventory
             - age: the inventory age at the start of CBM simulation
             - area: the inventory area
             - spatial_unit: the spatial unit id
@@ -402,11 +404,14 @@ def _initialize_inventory(
     Returns:
         DataFrame: dataframe containing the inventory data.
     """
-
-    data = [
-        series.range(
+    if "inventory_id" in inventory.columns:
+        inventory_id = inventory["inventory_id"].as_type("int")
+    else:
+        inventory_id = series.range(
             "inventory_id", 1, inventory.n_rows + 1, 1, "int", back_end
-        ),
+        )
+    data = [
+        inventory_id,
         SeriesDef("parent_inventory_id", -1, "int"),
         inventory["age"].as_type("int32"),
         inventory["area"].as_type("float64"),

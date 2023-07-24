@@ -13,7 +13,6 @@ from libcbm.model.cbm.rule_based.transition_rule_processor import (
 )
 from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
-from libcbm.model.cbm.rule_based.sit import sit_transition_rule_processor
 from libcbm.model.cbm.rule_based.sit.sit_transition_rule_processor import (
     SITTransitionRuleProcessor,
 )
@@ -60,20 +59,20 @@ class SITRuleBasedProcessor:
         transition_rule_processor: SITTransitionRuleProcessor,
         sit_events: pd.DataFrame,
         sit_transitions: pd.DataFrame,
-        sit_disturbance_eligibilities: pd.DataFrame,
+        sit_eligibilities: pd.DataFrame,
         reset_parameters: bool,
     ):
         self.event_processor = event_processor
         self.transition_rule_processor = transition_rule_processor
         self.sit_events = sit_events
-        self.sit_disturbance_eligibilities = sit_disturbance_eligibilities
+        self.sit_eligibilities = sit_eligibilities
         self.sit_event_stats_by_timestep = {}
         self.sit_transitions = sit_transitions
         self._reset_parameters = reset_parameters
 
     def tr_func(self, cbm_vars: CBMVariables) -> CBMVariables:
         cbm_vars = self.transition_rule_processor.process_transition_rules(
-            self.sit_transitions, cbm_vars
+            self.sit_transitions, cbm_vars, self.sit_eligibilities
         )
         return cbm_vars
 
@@ -84,7 +83,7 @@ class SITRuleBasedProcessor:
             time_step=time_step,
             sit_events=self.sit_events,
             cbm_vars=cbm_vars,
-            sit_eligibilities=self.sit_disturbance_eligibilities,
+            sit_eligibilities=self.sit_eligibilities,
         )
         self.sit_event_stats_by_timestep[time_step] = stats_df
         return cbm_vars
@@ -108,7 +107,7 @@ def sit_rule_based_processor_factory(
     sit_events: pd.DataFrame,
     sit_transitions: pd.DataFrame,
     tr_constants: TransitionRuleConstants,
-    sit_disturbance_eligibilities: pd.DataFrame,
+    sit_eligibilities: pd.DataFrame,
     reset_parameters: bool,
     disturbance_type_map: dict,
 ) -> SITRuleBasedProcessor:
@@ -117,19 +116,14 @@ def sit_rule_based_processor_factory(
         classifier_aggregates=classifier_aggregates,
     )
 
-    state_filter_func = (
-        sit_transition_rule_processor.create_state_variable_filter
-    )
-
     tr_processor = SITTransitionRuleProcessor(
         TransitionRuleProcessor(
-            classifier_filter_builder=classifier_filter,
-            state_variable_filter_func=state_filter_func,
             classifiers_config=classifiers_config,
-            grouped_percent_err_max=tr_constants.group_error_max,
             wildcard=tr_constants.wildcard,
             transition_classifier_postfix=tr_constants.classifier_value_postfix,  # noqa 501
-        )
+        ),
+        classifier_filter=classifier_filter,
+        group_error_max=tr_constants.group_error_max,
     )
 
     event_processor = SITEventProcessor(
@@ -144,6 +138,6 @@ def sit_rule_based_processor_factory(
         tr_processor,
         sit_events,
         sit_transitions,
-        sit_disturbance_eligibilities,
+        sit_eligibilities,
         reset_parameters,
     )

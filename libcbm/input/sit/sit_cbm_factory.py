@@ -134,8 +134,12 @@ def _initialize_inventory(
     classifiers_result = pd.DataFrame(
         data=classifiers_data, columns=list(sit_classifiers["name"])
     )
-
+    if "inventory_id" in sit_inventory:
+        inventory_id = sit_inventory["inventory_id"]
+    else:
+        inventory_id = np.arange(1, len(sit_inventory.index) + 1)
     data = {
+        "inventory_id": inventory_id,
         "age": sit_inventory["age"],
         "spatial_unit": sit_mapping.get_spatial_unit(
             sit_inventory,
@@ -235,6 +239,8 @@ def _initialize_transition_rules(
     """
     if transition_rules is None:
         return None
+    if "disturbance_type" not in transition_rules:
+        return transition_rules
     transition_rules = transition_rules.copy()
     transition_rules[
         "disturbance_type_id"
@@ -468,7 +474,7 @@ def create_sit_rule_based_processor(
             transition_rules, sit.sit_mapping
         ),
         tr_constants=tr_constants,
-        sit_disturbance_eligibilities=disturbance_eligibilities,
+        sit_eligibilities=disturbance_eligibilities,
         reset_parameters=reset_parameters,
         disturbance_type_map={v: k for k, v in sit.disturbance_id_map.items()},
     )

@@ -64,7 +64,7 @@ class SITEventProcessor:
         eligible: Series,
         sit_event: dict,
         cbm_vars: CBMVariables,
-        sit_eligibility=None,
+        sit_eligibility: Series = None,
     ) -> event_processor.ProcessEventResult:
         compute_disturbance_production = (
             self._get_compute_disturbance_production(
@@ -83,11 +83,11 @@ class SITEventProcessor:
         else:
             event_filters = [
                 rule_filter.create_filter(
-                    expression=sit_eligibility.pool_filter_expression,
+                    expression=sit_eligibility["pool_filter_expression"],
                     data=cbm_vars.pools,
                 ),
                 rule_filter.create_filter(
-                    expression=sit_eligibility.state_filter_expression,
+                    expression=sit_eligibility["state_filter_expression"],
                     data=cbm_vars.state,
                 ),
                 self._classifier_filter_builder.create_classifiers_filter(
@@ -104,6 +104,11 @@ class SITEventProcessor:
             target_func=target_factory,
             disturbance_type_id=sit_event["disturbance_type_id"],
             cbm_vars=cbm_vars,
+            disturbance_event_id=(
+                sit_event["disturbance_event_id"]
+                if "disturbance_event_id" in sit_event
+                else None
+            ),
         )
 
         return process_event_result
@@ -177,7 +182,7 @@ class SITEventProcessor:
             cbm_vars (object): an object containing dataframes that store cbm
                 simulation state and variables
             sit_eligibilities (pandas.DataFrame): table of eligibility
-                expressions with foreign key "disturbance_eligibility_id"
+                expressions with foreign key "eligibility_id"
 
         Returns:
             object: expanded and updated cbm_vars
@@ -186,13 +191,15 @@ class SITEventProcessor:
 
         if sit_events is None:
             return cbm_vars, None
-        time_step_events = sit_events[sit_events.time_step == time_step].copy()
+        time_step_events = sit_events[
+            sit_events["time_step"] == time_step
+        ].copy()
 
         stats_rows = []
         eligibilty_expressions = None
         if sit_eligibilities is not None:
             eligibilty_expressions = {
-                int(row.disturbance_eligibility_id): row
+                int(row["eligibility_id"]): row
                 for _, row in sit_eligibilities.iterrows()
             }
 
@@ -201,7 +208,7 @@ class SITEventProcessor:
             expression = None
             if eligibilty_expressions:
                 expression = eligibilty_expressions[
-                    int(sit_event["disturbance_eligibility_id"])
+                    int(sit_event["eligibility_id"])
                 ]
             process_event_result = self._process_event(
                 eligible, sit_event, cbm_vars, expression

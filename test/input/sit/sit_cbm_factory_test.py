@@ -234,3 +234,35 @@ class SITCBMFactoryTest(unittest.TestCase):
                 list(rule_based_processor3.sit_events["sort_field"])
                 == list(range(len(sit.sit_data.disturbance_events.index)))
             )
+
+    def test_sit_id_and_transition_rule_eligibility_extensions(self):
+        config_path = os.path.join(
+            resources.get_test_resources_dir(),
+            "cbm3_tutorial2_extensions",
+            "sit_config.json",
+        )
+        sit = sit_cbm_factory.load_sit(config_path)
+        classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+        with sit_cbm_factory.initialize_cbm(sit) as cbm:
+            in_memory_cbm_output = CBMOutput()
+            rule_based_processor = (
+                sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+            )
+
+            cbm_simulator.simulate(
+                cbm,
+                n_steps=1,
+                classifiers=classifiers,
+                inventory=inventory,
+                pre_dynamics_func=rule_based_processor.pre_dynamics_func,
+                reporting_func=in_memory_cbm_output.append_simulation_result,
+            )
+            self.assertTrue(
+                in_memory_cbm_output.pools.filter(
+                    in_memory_cbm_output.pools["timestep"] == 0
+                ).n_rows
+                == inventory.n_rows
+            )
+            self.assertTrue(
+                len(rule_based_processor.sit_event_stats_by_timestep) > 0
+            )
