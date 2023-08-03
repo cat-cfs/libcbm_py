@@ -56,7 +56,7 @@ class SITReaderTest(unittest.TestCase):
             "yield_table",
             "disturbance_events",
             "transition_rules",
-            "disturbance_eligibilities",
+            "eligibilities",
         ]
         for table in expected_tables:
             self.assertTrue(result.__dict__[table] is not None)

@@ -35,7 +35,7 @@ class SITData:
         yield_table: pd.DataFrame,
         disturbance_events: pd.DataFrame,
         transition_rules: pd.DataFrame,
-        disturbance_eligibilities: pd.DataFrame = None,
+        eligibilities: pd.DataFrame = None,
         chunked_inventory: bool = False,
     ):
         self.classifiers = classifiers
@@ -47,7 +47,7 @@ class SITData:
         self.inventory = inventory
         self.yield_table = yield_table
         self.disturbance_events = disturbance_events
-        self.disturbance_eligibilities = disturbance_eligibilities
+        self.eligibilities = eligibilities
         self.transition_rules = transition_rules
         self.chunked_inventory = chunked_inventory
 
@@ -225,7 +225,7 @@ def parse(
      - transition_rules: a pandas.DataFrame of the transition rules based on
         sit_transitions.  If the sit_transitions parameter is None this field
         is None.
-     - disturbance_eligibilities: a pandas.DataFrame of the disturbance event
+     - eligibilities: a pandas.DataFrame of the event or transition
         eligibilities based on sit_eligibilities.  If the sit_events parameter
         is None this field is None.
 
