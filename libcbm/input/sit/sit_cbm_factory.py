@@ -420,10 +420,8 @@ def create_sit_rule_based_processor(
         )
 
         if sit_eligibilities is not None:
-            eligibilities = (
-                sit_disturbance_event_parser.parse_eligibilities(
-                    sit_events, sit_eligibilities
-                )
+            eligibilities = sit_disturbance_event_parser.parse_eligibilities(
+                sit_events, sit_eligibilities
             )
     else:
         disturbance_events = sit.sit_data.disturbance_events
