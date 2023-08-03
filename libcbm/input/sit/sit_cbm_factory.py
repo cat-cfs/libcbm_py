@@ -354,7 +354,7 @@ def create_sit_rule_based_processor(
     random_func: Callable[[int], Series] = None,
     reset_parameters: bool = True,
     sit_events: pd.DataFrame = None,
-    sit_disturbance_eligibilities: pd.DataFrame = None,
+    sit_eligibilities: pd.DataFrame = None,
     sit_transition_rules: pd.DataFrame = None,
     event_sort: EventSort = EventSort.disturbance_type,
 ) -> SITRuleBasedProcessor:
@@ -375,7 +375,7 @@ def create_sit_rule_based_processor(
             value will be parsed and validated (sit_classifiers,
             sit_disturbance_type etc.) based on the values in the specified sit
             object.
-        sit_disturbance_eligibilities (pandas.DataFrame, optional): SIT
+        sit_eligibilities (pandas.DataFrame, optional): SIT
             formatted disturbance eligibilities. Cannot be specified without
             also specified sit_events using the disturbance-eligibility
             formatting. Defaults to None.
@@ -394,7 +394,7 @@ def create_sit_rule_based_processor(
             given timestep.
 
     Raises:
-        ValueError: cannot specify sit_disturbance_eligibilities with no
+        ValueError: cannot specify sit_eligibilities with no
             specified sit_events
 
     Returns:
@@ -404,9 +404,9 @@ def create_sit_rule_based_processor(
 
     if not random_func:
         random_func = default_random_func
-    separate_eligibilities = sit_disturbance_eligibilities is not None
+    separate_eligibilities = sit_eligibilities is not None
     disturbance_events = None
-    disturbance_eligibilities = None
+    eligibilities = None
     transition_rules = None
     if sit_events is not None:
         disturbance_events = sit_disturbance_event_parser.parse(
@@ -419,18 +419,16 @@ def create_sit_rule_based_processor(
             separate_eligibilities=separate_eligibilities,
         )
 
-        if sit_disturbance_eligibilities is not None:
-            disturbance_eligibilities = (
-                sit_disturbance_event_parser.parse_eligibilities(
-                    sit_events, sit_disturbance_eligibilities
-                )
+        if sit_eligibilities is not None:
+            eligibilities = sit_disturbance_event_parser.parse_eligibilities(
+                sit_events, sit_eligibilities
             )
     else:
         disturbance_events = sit.sit_data.disturbance_events
-        disturbance_eligibilities = sit.sit_data.disturbance_eligibilities
+        eligibilities = sit.sit_data.eligibilities
         if separate_eligibilities:
             raise ValueError(
-                "cannot specify sit_disturbance_eligibilities with no "
+                "cannot specify sit_eligibilities with no "
                 "specified sit_events"
             )
 
@@ -474,7 +472,7 @@ def create_sit_rule_based_processor(
             transition_rules, sit.sit_mapping
         ),
         tr_constants=tr_constants,
-        sit_eligibilities=disturbance_eligibilities,
+        sit_eligibilities=eligibilities,
         reset_parameters=reset_parameters,
         disturbance_type_map={v: k for k, v in sit.disturbance_id_map.items()},
     )

@@ -188,19 +188,16 @@ def parse_eligibilities(sit_eligibilities: pd.DataFrame) -> pd.DataFrame:
      ====================== ======================= =================
 
     Args:
-        disturbance_eligibilities (pandas.DataFrame): table of id (int),
+        sit_eligibilities (pandas.DataFrame): table of id (int),
             state_filter expression (str), pool filter expression (str).
             The disturbance event eligibility_id column
             corresponds to the id column in this table.
 
     Raises:
-        ValueError: eligibility_id values found in the specified
-            sit_events were not present in the provided
-            disturbance_eligibilities table.
         ValueError: at least one null id value was detected in the id column
-            of the specified disturbance_eligibilities table.
+            of the specified sit_eligibilities table.
         ValueError: duplicate id value was detected in the id column of the
-            specified disturbance_eligibilities table.
+            specified eligibilities table.
 
     Returns:
         pandas.DataFrame: the validated event eligibilities table
