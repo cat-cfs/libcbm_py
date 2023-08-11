@@ -118,6 +118,68 @@ class SITDisturbanceEventParserTest(unittest.TestCase):
         self.assertTrue(list(result.classifier1) == ["1"])
         self.assertTrue(list(result.classifier2) == ["2.0"])
 
+    def test_expected_value_with_disturbance_event_id(self):
+        """Checks that numeric classifiers that appear in events data
+        are parsed as strings
+        """
+        event_row = {
+            "identifier": ["9000"],
+            "classifier_set": [1, 2.0],
+            "eligibility_id": [-1],
+            "target": [1.0, "1", "A", 100, "dist1", 2, 100],
+        }
+
+        classifiers = pd.DataFrame(
+            data=[(1, "classifier1"), (2, "classifier2")],
+            columns=["id", "name"],
+        )
+        classifier_values = pd.DataFrame(
+            data=[(1, "1", "a"), (1, "b", "b"), (2, "a", "a")],
+            columns=["classifier_id", "name", "description"],
+        )
+        aggregates = [
+            {
+                "classifier_id": 1,
+                "name": "agg1",
+                "description": "agg2",
+                "classifier_values": ["a", "b"],
+            },
+            {
+                "classifier_id": 1,
+                "name": "agg2",
+                "description": "agg2",
+                "classifier_values": ["a", "b"],
+            },
+            {
+                "classifier_id": 2,
+                "name": "2.0",
+                "description": "agg1",
+                "classifier_values": ["a"],
+            },
+        ]
+        event_row = [
+            event_row["identifier"]
+            + event_row["classifier_set"]
+            + event_row["eligibility_id"]
+            + event_row["target"]
+        ]
+
+        e = pd.DataFrame(event_row)
+        result = sit_disturbance_event_parser.parse(
+            e,
+            classifiers,
+            classifier_values,
+            aggregates,
+            self.get_mock_disturbance_types(),
+            self.get_mock_age_classes(),
+            separate_eligibilities=True,
+            has_disturbance_event_ids=True,
+        )
+        self.assertTrue(result["disturbance_event_id"].to_list() == [9000])
+        self.assertTrue(result["disturbance_event_id"].dtype == "int64")
+        self.assertTrue(result["eligibility_id"].to_list() == [-1])
+        self.assertTrue(result["eligibility_id"].dtype == "int64")
+
     def test_incorrect_number_of_classifiers_error(self):
         """checks that the format has the correct number of columns
         according to the defined classifiers

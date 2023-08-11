@@ -44,6 +44,7 @@ def test_parse_eligibilities():
     sit_eligibilities = sit_eligbility_parser.parse_eligibilities(
         elgibilities_input
     )
+    assert sit_eligibilities["eligibility_id"].dtype == "int64"
     assert sit_eligibilities["eligibility_id"].iloc[0] == 1
     assert (
         sit_eligibilities["pool_filter_expression"].iloc[0]
