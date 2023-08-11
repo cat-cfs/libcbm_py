@@ -234,7 +234,7 @@ def get_transition_rules_format(
         col_offset = 2 * n_classifiers + len(age_eligibility) + 1
     else:
         eligibility_id = [
-            {"name": "eligibility_id", "index": n_classifiers, "type": int}
+            {"name": "eligibility_id", "index": n_classifiers, "type": "int64"}
         ]
         col_offset = 2 * n_classifiers + 1
     post_transition = [
@@ -327,7 +327,9 @@ def get_inventory_format(
     inventory_id = []
     if has_inventory_ids:
         n_leading_cols += 1
-        inventory_id.append({"name": "inventory_id", "index": 0, "type": int})
+        inventory_id.append(
+            {"name": "inventory_id", "index": 0, "type": "int64"}
+        )
     classifier_set = [
         {"name": c, "index": i + len(inventory_id), "type": str}
         for i, c in enumerate(classifier_names)
@@ -350,7 +352,7 @@ def get_inventory_format(
             "min_value": 0,
             "type": int,
         },
-        {"name": "land_class", "index": n_leading_cols + 4},
+        {"name": "land_class", "index": n_leading_cols + 4, "type": int},
     ]
 
     if n_columns > n_leading_cols + 6:
@@ -464,7 +466,7 @@ def get_disturbance_event_format(
     if has_disturbance_event_ids:
         n_leading_cols += 1
         disturbance_event_id.append(
-            {"name": "disturbance_event_id", "index": 0, "type": int}
+            {"name": "disturbance_event_id", "index": 0, "type": "int64"}
         )
 
     classifier_set = [
@@ -490,7 +492,7 @@ def get_disturbance_event_format(
             {
                 "name": "eligibility_id",
                 "index": n_leading_cols,
-                "type": int,
+                "type": "int64",
             }
         )
         index = n_leading_cols + 1
@@ -531,7 +533,7 @@ def get_eligibility_format(ncols: int) -> list[dict]:
     if ncols < 5:
         raise ValueError("number of columns must be > 5")
     fmt = [
-        {"name": "eligibility_id", "index": 0, "type": int},
+        {"name": "eligibility_id", "index": 0, "type": "int64"},
         {"name": "description", "index": 1, "type": str},
         {"name": "expression_type", "index": 2, "type": str},
         {"name": "expression", "index": 3, "type": str},
