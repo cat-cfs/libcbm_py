@@ -46,13 +46,19 @@ def unpack_column(
     data = table.iloc[:, column_description["index"]].copy()
     col_name = column_description["name"]
     if "type" in column_description:
-        try:
-            data.loc[data.notna()] = data.astype(column_description["type"])
-        except ValueError:
-            raise ValueError(
-                f"{table_name} table, column: '{col_name}' contains values "
-                f"that cannot be converted to: '{column_description['type']}'"
-            )
+        if data.isna().any():
+            try:
+                data.loc[data.notna()] = data.loc[data.notna()].astype(
+                    column_description["type"]
+                )
+            except ValueError:
+                raise ValueError(
+                    f"{table_name} table, column: '{col_name}' contains "
+                    "values that cannot be converted to: "
+                    f"'{column_description['type']}'"
+                )
+        else:
+            data = data.astype(column_description["type"])
     if "min_value" in column_description:
         if "type" not in column_description:
             raise ValueError("type required with min_value")
