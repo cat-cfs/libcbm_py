@@ -17,7 +17,7 @@ def parse(
     classifier_aggregates: pd.DataFrame,
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame,
-    separate_eligibilites: bool = False,
+    separate_eligibilities: bool = False,
 ) -> pd.DataFrame:
     """Parses and validates the CBM SIT transition rule format.
 
@@ -41,7 +41,7 @@ def parse(
         age_classes (pandas.DataFrame): used to validate the number of volume
             columns.  Use the return value of:
             :py:func:`libcbm.input.sit.sit_age_class_parser.parse`
-        separate_eligibilites (bool, Optional): if set to true, the transition
+        separate_eligibilities (bool, Optional): if set to true, the transition
             rule format contains a eligbility id column rather than the
             CBM-CFS3 age and disturbance type elgibility columns.
 
@@ -57,7 +57,7 @@ def parse(
         pandas.DataFrame: validated transition rules
     """
     transition_rule_format = sit_format.get_transition_rules_format(
-        classifiers.name, len(transition_rules.columns), separate_eligibilites
+        classifiers.name, len(transition_rules.columns), separate_eligibilities
     )
 
     transitions = sit_parser.unpack_table(
@@ -111,7 +111,7 @@ def parse(
                 f"classifier: '{row.name}', values: {diff_dest}"
             )
 
-    if not separate_eligibilites:
+    if not separate_eligibilities:
         parse_bool_func = sit_parser.get_parse_bool_func(
             "transitions", "using_age_class"
         )
@@ -143,7 +143,7 @@ def parse(
 
     # if the sum of percent for grouped transition rules exceeds 100% raise an
     # error
-    if not separate_eligibilites:
+    if not separate_eligibilities:
         group_cols = list(classifiers.name) + [
             "min_age",
             "max_age",
