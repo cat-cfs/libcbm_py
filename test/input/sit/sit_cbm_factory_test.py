@@ -2,11 +2,13 @@ from types import SimpleNamespace
 import unittest
 import os
 import pandas as pd
+import json
 from unittest.mock import Mock
 from unittest.mock import patch
 
 from libcbm.input.sit import sit_cbm_factory
 from libcbm.input.sit.sit_cbm_factory import EventSort
+from libcbm.input.sit.sit_reader import load_table
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm.cbm_output import CBMOutput
 from libcbm import resources
@@ -247,6 +249,56 @@ class SITCBMFactoryTest(unittest.TestCase):
             in_memory_cbm_output = CBMOutput()
             rule_based_processor = (
                 sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
+            )
+
+            cbm_simulator.simulate(
+                cbm,
+                n_steps=1,
+                classifiers=classifiers,
+                inventory=inventory,
+                pre_dynamics_func=rule_based_processor.pre_dynamics_func,
+                reporting_func=in_memory_cbm_output.append_simulation_result,
+            )
+            self.assertTrue(
+                in_memory_cbm_output.pools.filter(
+                    in_memory_cbm_output.pools["timestep"] == 0
+                ).n_rows
+                == inventory.n_rows
+            )
+            self.assertTrue(
+                len(rule_based_processor.sit_event_stats_by_timestep) > 0
+            )
+
+    def test_sit_extensions_with_specified_event_and_transition_data(self):
+        test_data_path = os.path.join(
+            resources.get_test_resources_dir(),
+            "cbm3_tutorial2_extensions",
+        )
+        config_path = os.path.join(
+            test_data_path,
+            "sit_config.json",
+        )
+        sit = sit_cbm_factory.load_sit(config_path)
+        classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+        import_config = {}
+        with open(config_path, "r") as sit_config_fp:
+            import_config = json.load(sit_config_fp)["import_config"]
+        with sit_cbm_factory.initialize_cbm(sit) as cbm:
+            in_memory_cbm_output = CBMOutput()
+            rule_based_processor = (
+                sit_cbm_factory.create_sit_rule_based_processor(
+                    sit,
+                    cbm,
+                    sit_events=load_table(
+                        import_config["events"], test_data_path
+                    ),
+                    sit_eligibilities=load_table(
+                        import_config["eligibilities"], test_data_path
+                    ),
+                    sit_transition_rules=load_table(
+                        import_config["transitions"], test_data_path
+                    ),
+                )
             )
 
             cbm_simulator.simulate(
