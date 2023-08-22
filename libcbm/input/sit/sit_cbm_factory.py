@@ -417,12 +417,12 @@ def create_sit_rule_based_processor(
             sit.sit_data.classifier_aggregates,
             sit.sit_data.disturbance_types,
             sit.sit_data.age_classes,
-            separate_eligibilities=sit.config["import_config"]["parse_options"][
-                "sit_events_external_eligibilities"
-            ],
-            has_disturbance_event_ids=sit.config["import_config"]["parse_options"][
-                "sit_event_ids"
-            ],
+            separate_eligibilities=sit.config["import_config"][
+                "parse_options"
+            ]["sit_events_external_eligibilities"],
+            has_disturbance_event_ids=sit.config["import_config"][
+                "parse_options"
+            ]["sit_event_ids"],
         )
     else:
         disturbance_events = sit.sit_data.disturbance_events
@@ -445,9 +445,9 @@ def create_sit_rule_based_processor(
                 sit.sit_data.classifier_aggregates,
                 sit.sit_data.disturbance_types,
                 sit.sit_data.age_classes,
-                separate_eligibilities=sit.config["import_config"]["parse_options"][
-                    "sit_transitions_external_eligibilities"
-                ],
+                separate_eligibilities=sit.config["import_config"][
+                    "parse_options"
+                ]["sit_transitions_external_eligibilities"],
             )
     else:
         transition_rules = sit.sit_data.transition_rules
