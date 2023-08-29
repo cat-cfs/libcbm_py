@@ -15,6 +15,7 @@ class SITIntegrationTest(unittest.TestCase):
     def test_integration(self):
         for backend in BackendType:
             config = {
+                "import_config": {},
                 "mapping_config": {
                     "nonforest": None,
                     "species": {
@@ -33,7 +34,7 @@ class SITIntegrationTest(unittest.TestCase):
                             "default_dist_type": "Wildfire",
                         }
                     ],
-                }
+                },
             }
 
             sit_data = sit_reader.parse(
