@@ -91,7 +91,15 @@ class SITEventProcessorTest(unittest.TestCase):
                     cbm_vars=cbm_vars,
                     filter_result="mock_filter_result",
                     rule_target_result=SimpleNamespace(
-                        statistics={"mock_stats": 1}
+                        statistics={
+                            "sit_event_index": 0,
+                            "total_eligible_value": 1,
+                            "total_achieved": 2,
+                            "shortfall": 3,
+                            "num_records_disturbed": 4,
+                            "num_splits": 5,
+                            "num_eligible": 6,
+                        }
                     ),
                 )
 
