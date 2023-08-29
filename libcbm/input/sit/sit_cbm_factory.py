@@ -406,6 +406,28 @@ def create_sit_rule_based_processor(
     if not random_func:
         random_func = default_random_func
 
+    has_event_separate_eligibilities = False
+    has_disturbance_event_ids = False
+    has_transtion_separate_eligibilities = False
+    if (
+        sit_events is not None
+        or sit_eligibilities is not None
+        or sit_transition_rules is not None
+    ):
+        # the parse options settings are only relevant if there is data to be
+        # parsed
+        if "parse_options" in sit.config["import_config"]:
+            # parse options may not appear in pre-sit-extensions configs
+            has_event_separate_eligibilities = sit.config["import_config"][
+                "parse_options"
+            ]["sit_events_external_eligibilities"]
+            has_disturbance_event_ids = sit.config["import_config"][
+                "parse_options"
+            ]["sit_event_ids"]
+            has_transtion_separate_eligibilities = sit.config["import_config"][
+                "parse_options"
+            ]["sit_transitions_external_eligibilities"]
+
     disturbance_events = None
     eligibilities = None
     transition_rules = None
@@ -417,12 +439,8 @@ def create_sit_rule_based_processor(
             sit.sit_data.classifier_aggregates,
             sit.sit_data.disturbance_types,
             sit.sit_data.age_classes,
-            separate_eligibilities=sit.config["import_config"][
-                "parse_options"
-            ]["sit_events_external_eligibilities"],
-            has_disturbance_event_ids=sit.config["import_config"][
-                "parse_options"
-            ]["sit_event_ids"],
+            separate_eligibilities=has_event_separate_eligibilities,
+            has_disturbance_event_ids=has_disturbance_event_ids,
         )
     else:
         disturbance_events = sit.sit_data.disturbance_events
@@ -445,9 +463,7 @@ def create_sit_rule_based_processor(
                 sit.sit_data.classifier_aggregates,
                 sit.sit_data.disturbance_types,
                 sit.sit_data.age_classes,
-                separate_eligibilities=sit.config["import_config"][
-                    "parse_options"
-                ]["sit_transitions_external_eligibilities"],
+                separate_eligibilities=has_transtion_separate_eligibilities,
             )
     else:
         transition_rules = sit.sit_data.transition_rules
