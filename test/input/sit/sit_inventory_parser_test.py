@@ -107,7 +107,7 @@ class SITInventoryParserTest(unittest.TestCase):
         inventory_table = pd.DataFrame(
             data=[
                 ("b", "a", "TRUE", "0", 1, 0, 0),
-                ("a", "a", False, 100, 1, 0, 0),
+                ("a", "a", False, "100", 1, 0, 0),
                 ("a", "a", "-1", 4, 1, 0, 0),
             ]
         )
@@ -233,3 +233,46 @@ class SITInventoryParserTest(unittest.TestCase):
                 disturbance_types,
                 age_classes,
             )
+
+    def test_error_on_using_age_class_combined_with_inventory_ids(self):
+        inventory_table = pd.DataFrame(
+            data=[
+                (10, "b", "a", "TRUE", "1", 1, 0, 0),
+                (20, "a", "a", False, 100, 1, 0, 0),
+                (30, "a", "a", "-1", 4, 1, 0, 0),
+            ]
+        )
+        disturbance_types = self.get_mock_disturbance_types()
+        classifiers, classifier_values = self.get_mock_classifiers()
+        age_classes = self.get_mock_age_classes()
+        with self.assertRaises(ValueError):
+            sit_inventory_parser.parse(
+                inventory_table,
+                classifiers,
+                classifier_values,
+                disturbance_types,
+                age_classes,
+                has_inventory_ids=True,
+            )
+
+    def test_expected_result_with_inventory_ids(self):
+        inventory_table = pd.DataFrame(
+            data=[
+                ("999", "b", "a", False, "1", 1, 0, 0),
+                ("10", "a", "a", False, 100, 1, 0, 0),
+                ("1", "a", "a", "-1", 4, 1, 0, 0),
+            ]
+        )
+        disturbance_types = self.get_mock_disturbance_types()
+        classifiers, classifier_values = self.get_mock_classifiers()
+
+        result = sit_inventory_parser.parse(
+            inventory_table,
+            classifiers,
+            classifier_values,
+            disturbance_types,
+            None,
+            has_inventory_ids=True,
+        )
+        self.assertTrue(result["inventory_id"].dtype == "int64")
+        self.assertTrue(result["inventory_id"].to_list() == [999, 10, 1])

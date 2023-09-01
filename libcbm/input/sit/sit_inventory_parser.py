@@ -227,6 +227,9 @@ def parse(
             raise ValueError(
                 "duplicate value detected in spatial_reference column"
             )
+    # special case since the raw age column may have been a string with age
+    # class expansion, cast the final age result here as integer
+    inventory["age"] = inventory["age"].astype(int)
     return inventory
 
 

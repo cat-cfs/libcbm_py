@@ -218,5 +218,18 @@ class SITEventProcessor:
             if stats is not None:
                 stats["sit_event_index"] = event_index
                 stats_rows.append(stats)
-        stats_df = pd.DataFrame(stats_rows) if stats_rows else None
+        stats_df = None
+        if stats_rows:
+            stats_df = pd.DataFrame(stats_rows)
+            stats_df = stats_df.astype(
+                {
+                    "sit_event_index": "int64",
+                    "total_eligible_value": "float",
+                    "total_achieved": "float",
+                    "shortfall": "float",
+                    "num_records_disturbed": "int64",
+                    "num_splits": "int64",
+                    "num_eligible": "int64",
+                }
+            )
         return cbm_vars, stats_df
