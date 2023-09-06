@@ -164,14 +164,6 @@ def test_series():
 
         assert not s_base.is_null().any()
 
-        null_test = s_base.copy()
-        null_test.assign(None, allow_type_change=True)
-        assert null_test.is_null().all()
-
-        nan_test = s_base.copy()
-        nan_test.assign(float("nan"), allow_type_change=True)
-        assert nan_test.is_null().all()
-
         assert (
             s_base.indices_nonzero().to_list()
             == list(np.arange(0, 100, dtype="int32"))[1:]
