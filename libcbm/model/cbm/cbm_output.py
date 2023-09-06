@@ -162,22 +162,35 @@ class CBMOutput:
                 timestep, self._flux, timestep_flux, self._backend_type
             )
 
-        timestep_state = cbm_vars.state.copy()
-        timestep_params = cbm_vars.parameters.copy()
         if self._disturbance_type_map:
-            timestep_state["last_disturbance_type"].assign(
-                timestep_state["last_disturbance_type"].map(
-                    self._disturbance_type_map
-                ),
-                allow_type_change=True,
+            timestep_state_data = {
+                c: cbm_vars.state[c].copy() for c in cbm_vars.state.columns
+            }
+            timestep_state_data["last_disturbance_type"] = timestep_state_data[
+                "last_disturbance_type"
+            ].map(self._disturbance_type_map)
+            timestep_state = dataframe.from_series_dict(
+                timestep_state_data,
+                cbm_vars.state.n_rows,
+                cbm_vars.state.backend_type,
             )
 
-            timestep_params["disturbance_type"].assign(
-                timestep_params["disturbance_type"].map(
-                    self._disturbance_type_map
-                ),
-                allow_type_change=True,
+            timestep_params_data = {
+                c: cbm_vars.parameters[c].copy()
+                for c in cbm_vars.parameters.columns
+            }
+
+            timestep_params_data["disturbance_type"] = timestep_params_data[
+                "disturbance_type"
+            ].map(self._disturbance_type_map)
+            timestep_params = dataframe.from_series_dict(
+                timestep_params_data,
+                cbm_vars.parameters.n_rows,
+                cbm_vars.parameters.backend_type,
             )
+        else:
+            timestep_state = cbm_vars.state.copy()
+            timestep_params = cbm_vars.parameters.copy()
 
         self._state = _concat_timestep_results(
             timestep, self._state, timestep_state, self._backend_type
