@@ -95,7 +95,6 @@ class Series(ABC):
         self,
         value: Union["Series", Any],
         indices: "Series" = None,
-        allow_type_change=False,
     ):
         """
         Assign a single value, or a Series to a subset or to the entirety of
@@ -105,10 +104,6 @@ class Series(ABC):
             value (Union[Series, Any]): assignment value
             indices (Series, optional): The indices of assignment.
                 If unspecified all indicies are assigned. Defaults to None.
-            allow_type_change (bool, optional): If set to true, the underlying
-                storage type may be changed by this operation, and if False
-                (default) any assignement that would result in a type change
-                will result in a ValueError. Defaults to False.
         """
         pass
 
