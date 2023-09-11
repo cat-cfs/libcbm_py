@@ -114,7 +114,7 @@ def get_merch_volumes(
     for _, row in yield_table_grouped.iterrows():
         out_idx = int(row["yield_group_index"])
         start_range = len(classifiers) + 2
-        vols = row.iloc[start_range:]
+        vols = list(row.iloc[start_range:])
         merch_vols = {
             "species_id": int(row["leading_species"]),
             "age_volume_pairs": [(ages[i], vols[i]) for i in range(len(vols))],

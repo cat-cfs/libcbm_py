@@ -48,6 +48,7 @@ def unpack_column(
     if "type" in column_description:
         if data.isna().any():
             try:
+                data = data.astype("object")
                 data.loc[data.notna()] = data.loc[data.notna()].astype(
                     column_description["type"]
                 )

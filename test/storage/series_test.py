@@ -131,12 +131,13 @@ def test_series():
             "__eq__",
             "__ne__",
         ]
-        for op in test_operators:
-            for operand in test_operands:
-                assert (
-                    getattr(s, op)(operand).to_numpy()
-                    == getattr(test_array, op)(operand)
-                ).all()
+        with pytest.warns(RuntimeWarning):
+            for op in test_operators:
+                for operand in test_operands:
+                    assert (
+                        getattr(s, op)(operand).to_numpy()
+                        == getattr(test_array, op)(operand)
+                    ).all()
 
         bit_operators = [
             "__and__",
@@ -151,6 +152,7 @@ def test_series():
             np.array([True] * 100),
             np.array([False] * 100),
         ]
+
         for op in bit_operators:
             for operand in bit_operands:
                 assert (
@@ -161,14 +163,6 @@ def test_series():
         assert (~(s < 50) == (test_array >= 50)).all()
 
         assert not s_base.is_null().any()
-
-        null_test = s_base.copy()
-        null_test.assign(None, allow_type_change=True)
-        assert null_test.is_null().all()
-
-        nan_test = s_base.copy()
-        nan_test.assign(float("nan"), allow_type_change=True)
-        assert nan_test.is_null().all()
 
         assert (
             s_base.indices_nonzero().to_list()

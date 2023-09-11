@@ -90,8 +90,8 @@ class ResourcesTest(unittest.TestCase):
     @patch("libcbm.resources.platform")
     def test_linux_versions(self, platform, get_linux_os_release):
         supported_os_releases = [
-            {"NAME": "UBUNTU", "VERSION_ID": "18.04"},
-            {"NAME": "Ubuntu", "VERSION_ID": "20.04"},
+            {"NAME": "UBUNTU", "VERSION_ID": "20.04"},
+            {"NAME": "Ubuntu", "VERSION_ID": "22.04"},
         ]
         for mock_os_release in supported_os_releases:
             platform.system.side_effect = lambda: "Linux"

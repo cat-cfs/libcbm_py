@@ -433,15 +433,13 @@ class NumpySeriesBackend(Series):
         self,
         value: Union["Series", Any],
         indices: "Series" = None,
-        allow_type_change=False,
     ):
         assignment_value = None
+        this_dtype = self._get_data().dtype
         if isinstance(value, Series):
-            assignment_value = value.to_numpy()
+            assignment_value = value.as_type(this_dtype).to_numpy()
         else:
-            assignment_value = np.array(value)
-
-        dtype_original = self._get_data().dtype
+            assignment_value = np.array(value, dtype=this_dtype)
 
         if self._data is not None:
             if indices is not None:
@@ -450,9 +448,6 @@ class NumpySeriesBackend(Series):
                 self._data = np.full(
                     self._data.shape,
                     assignment_value,
-                    dtype=(
-                        self._data.dtype if not allow_type_change else None
-                    ),
                 )
 
         elif self._parent_df is not None:
@@ -462,30 +457,10 @@ class NumpySeriesBackend(Series):
                 _idx = slice(None)
 
             if self._parent_df._storage_format == StorageFormat.uniform_matrix:
-                if (
-                    assignment_value.dtype
-                    != self._parent_df._data_matrix.dtype
-                ):
-                    if not allow_type_change:
-                        raise ValueError("type change not allowed")
-                    self._parent_df._data_cols = {
-                        col: np.ascontiguousarray(
-                            self._parent_df._data_matrix[
-                                _idx,
-                                self._parent_df._col_idx[col],
-                            ]
-                        )
-                        for col in self._parent_df.columns
-                    }
-                    self._parent_df._data_matrix = None
-                    self._parent_df._storage_format = (
-                        StorageFormat.mixed_columns
-                    )
-                else:
-                    self._parent_df._data_matrix[
-                        _idx,
-                        self._parent_df._col_idx[self.name],
-                    ] = assignment_value
+                self._parent_df._data_matrix[
+                    _idx,
+                    self._parent_df._col_idx[self.name],
+                ] = assignment_value
             else:
                 if indices is not None:
                     self._parent_df._data_cols[self.name][
@@ -498,9 +473,6 @@ class NumpySeriesBackend(Series):
 
         else:
             raise ValueError("internal series not defined")
-
-        if not allow_type_change and dtype_original != self._get_data().dtype:
-            raise ValueError("type change not allowed")
 
     def map(self, arg: dict) -> "Series":
         return NumpySeriesBackend(self._name, _map(self._get_data(), arg))

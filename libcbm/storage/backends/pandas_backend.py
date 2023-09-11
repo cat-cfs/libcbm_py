@@ -157,15 +157,14 @@ class PandasSeriesBackend(Series):
         self,
         value: Union["Series", Any],
         indices: "Series" = None,
-        allow_type_change=False,
     ):
         assignment_value = None
+        type_name = self._get_series().dtype.name
         if isinstance(value, Series):
-            assignment_value = value.to_numpy()
+            assignment_value = value.as_type(type_name).to_numpy()
         else:
-            assignment_value = value
+            assignment_value = np.array(value, dtype=type_name)
 
-        dtype_original = self._get_series().dtype
         if indices is not None:
             _idx = indices.to_numpy()
             if _idx.size == 0:
@@ -174,25 +173,12 @@ class PandasSeriesBackend(Series):
             _idx = slice(None)
         if self._series is not None:
             self._series.iloc[_idx] = assignment_value
-
-            if (
-                not allow_type_change
-                and dtype_original != self._get_series().dtype
-            ):
-                self._series = self._series.astype(dtype_original)
         elif self._parent_df is not None:
             self._parent_df.iloc[
                 _idx,
                 self._parent_df.columns.get_loc(self.name),
             ] = assignment_value
 
-            if (
-                not allow_type_change
-                and dtype_original != self._get_series().dtype
-            ):
-                self._parent_df[self.name] = self._parent_df[self.name].astype(
-                    dtype_original
-                )
         else:
             raise ValueError("internal series not defined")
 
