@@ -1,7 +1,7 @@
 numpy
 pandas>=1.1.5
 scipy
-numexpr==2.8.4
+numexpr>=2.8.7
 numba
 pyyaml
 mock
