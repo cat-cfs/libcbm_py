@@ -1,19 +1,13 @@
 import numpy as np
 import pandas as pd
-import numba
-from numba.core import types
-from numba.typed import Dict
-from libcbm.model.model_definition.model import CBMModel
 
 
 def disturbance(
-    model: CBMModel,
+    pools: list[str],
     disturbance_matrices: pd.DataFrame,
     dm_associations: pd.DataFrame,
-) -> tuple[list, Dict]:
+) -> pd.DataFrame:
     matrix_data_by_dmid: dict[int, list[list]] = {}
-    dmid_index = Dict.empty(key_type=types.int64, value_type=types.int64)
-
     dmid = disturbance_matrices["disturbance_matrix_id"].to_numpy()
     source = disturbance_matrices["source_pool"].to_list()
     sink = disturbance_matrices["sink_pool"].to_list()
@@ -24,48 +18,34 @@ def disturbance(
             matrix_data_by_dmid[dmid_i] = []
         matrix_data_by_dmid[dmid_i].append([source[i], sink[i], proportion[i]])
     dmids = list(matrix_data_by_dmid.keys())
-    for i_dmid, dmid in enumerate(dmids):
-        pool_set = set(model.pool_names)
-        dmid_index[dmid] = i_dmid + 1
+    for dmid in dmids:
+        pool_set = set(pools)
         for row in matrix_data_by_dmid[dmid]:
             pool_set.discard(row[0])
         for pool in pool_set:
             matrix_data_by_dmid[dmid].append([pool, pool, 1.0])
 
-    _dm_op_index = Dict.empty(
-        key_type=types.UniTuple(types.int64, 3),
-        value_type=types.int64,
+    flow_cols = {"dmid": np.full(len(matrix_data_by_dmid), 0, "int64")}
+    for i_dmid, (dmid, matrix_list) in enumerate(matrix_data_by_dmid.items()):
+        flow_cols["dmid"][i_dmid] = dmid
+        for row in matrix_list:
+            flow_colname = f"{row[0]}.{row[1]}"
+            if flow_colname not in flow_cols:
+                flow_cols[flow_colname] = np.full(
+                    len(matrix_data_by_dmid), 0, "float"
+                )
+            flow_cols[flow_colname][i_dmid] = row[2]
+    dm_flows = pd.DataFrame(flow_cols)
+    dm_flows = dm_flows.reindex(sorted(dm_flows.columns), axis=1)
+    dm_associations = dm_associations.rename(
+        columns={
+            "spatial_unit_id": "[state.spatial_unit_id]",
+            "disturbance_type_id": "[parameters.disturbance_type_id]",
+            "sw_hw": "[state.sw_hw]",
+        }
     )
-    _dm_op_index = _build_dm_op_index(
-        _dm_op_index,
-        dmid_index,
-        dm_associations["disturbance_matrix_id"].to_numpy(dtype="int"),
-        dm_associations["disturbance_type_id"].to_numpy(dtype="int"),
-        dm_associations["spatial_unit_id"].to_numpy(dtype="int"),
-        dm_associations["sw_hw"].to_numpy(dtype="int"),
+    output = dm_associations.merge(
+        dm_flows, left_on="disturbance_matrix_id", right_on="dmid", how="left"
     )
-    # append the null matrix
-    matrix_list = [[[p, p, 1.0] for p in model.pool_names]] + list(
-        matrix_data_by_dmid.values()
-    )
-    return (matrix_list, _dm_op_index)
-
-
-@numba.njit()
-def _build_dm_op_index(
-    _dm_op_index: Dict,
-    dmid_idx: Dict,
-    disturbance_matrix_id: np.ndarray,
-    disturbance_type_id: np.ndarray,
-    spatial_unit_ids: np.ndarray,
-    sw_hw: np.ndarray,
-):
-    for i in range(disturbance_type_id.shape[0]):
-        dist_type = disturbance_type_id[i]
-        spuid = spatial_unit_ids[i]
-        _sw_hw = sw_hw[i]
-        key = (dist_type, spuid, _sw_hw)
-        dm_idx = dmid_idx[disturbance_matrix_id[i]]
-        _dm_op_index[key] = dm_idx
-
-    return _dm_op_index
+    output = output.drop(columns=["disturbance_matrix_id", "dmid"])
+    return output
