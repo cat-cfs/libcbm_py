@@ -131,18 +131,15 @@ class CBMEXNParameters:
         """
         return self._root_parameters
 
-    def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
-        """Get decay parameters for the specified named dead organic matter
-        (DOM) pool.
-
-        Args:
-            dom_pool (str): the DOM pool
+    def get_decay_parameters(self) -> dict[str, dict[str, float]]:
+        """Get decay parameters for all of the named dead organic matter
+        (DOM) pools.
 
         Returns:
-            dict[str, float]: a dictionary of named parameters for that DOM
-                pool.
+            dict[str,dict[str, float]]: a dictionary of named parameters
+                for DOM pool decays
         """
-        return self._decay_param_dict[dom_pool]
+        return self._decay_param_dict
 
     def get_disturbance_matrices(self) -> pd.DataFrame:
         """

@@ -6,34 +6,6 @@ from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
-def compute_decay_rate(
-    mean_annual_temp: np.ndarray,
-    base_decay_rate: np.ndarray,
-    q10: np.ndarray,
-    tref: np.ndarray,
-    max: np.ndarray,
-) -> np.ndarray:
-    """
-    Compute a CBM-CFS3 DOM pool specific decay rate based on mean annual
-    temperature and other parameters.
-
-    Args:
-        mean_annual_temp (np.ndarray): mean annual temperature (deg C)
-        base_decay_rate (np.ndarray): base decay rate for DOM pool
-        q10 (np.ndarray): Q10 decay rate parameter
-        tref (np.ndarray): reference temperature decay rate parameter
-        max (np.ndarray): maximum decay rate
-
-    Returns:
-        np.ndarray: proportional decay rates
-    """
-    return np.minimum(
-        base_decay_rate
-        * np.exp((mean_annual_temp - tref) * np.log(q10) * 0.1),
-        max,
-    )
-
-
 def _total_root_bio_hw(
     root_parameters: dict[str, float], total_ag_bio_t: np.ndarray
 ):

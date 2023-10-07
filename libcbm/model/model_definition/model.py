@@ -19,6 +19,14 @@ class CBMModel:
         pool_config: list[str],
         flux_config: list[dict],
     ):
+        invalid_pool_names = []
+        for p in pool_config:
+            if not p.isidentifier():
+                invalid_pool_names.append(p)
+        if invalid_pool_names:
+            raise ValueError(
+                f"pools names are not valid identifiers {invalid_pool_names}"
+            )
         self._model_handle = model_handle
         self._pool_config = pool_config
         self._flux_config = flux_config
