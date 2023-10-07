@@ -1,5 +1,6 @@
 from typing import Union
 import numpy as np
+import pandas as pd
 
 
 def net_growth(
@@ -55,61 +56,48 @@ def overmature_decline(
     return matrices
 
 
-def snag_turnover(rates: dict[str, np.ndarray]) -> list:
-    matrices = [
-        ["StemSnag", "StemSnag", 1 - rates["StemSnag"]],
-        ["StemSnag", "MediumSoil", rates["StemSnag"]],
-        ["BranchSnag", "BranchSnag", 1 - rates["BranchSnag"]],
-        ["BranchSnag", "AboveGroundFastSoil", rates["BranchSnag"]],
-    ]
-    return matrices
+def snag_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
+    snag_turnover_pool_flows = {
+        "[state.spatial_unit_id]": turnover_params["spatial_unit_id"],
+        "[state.sw_hw]": turnover_params["sw_hw"],
+        "StemSnag.StemSnag": 1 - turnover_params["StemSnag"],
+        "StemSnag.MediumSoil": turnover_params["StemSnag"],
+        "BranchSnag.BranchSnag": 1 - turnover_params["BranchSnag"],
+        "BranchSnag.AboveGroundFastSoil": turnover_params["BranchSnag"],
+    }
+    return pd.DataFrame(snag_turnover_pool_flows)
 
 
-def biomass_turnover(rates: dict[str, np.ndarray]) -> list:
-    matrices = [
-        [
-            "Merch",
-            "StemSnag",
-            rates["StemAnnualTurnoverRate"],
-        ],
-        [
-            "Foliage",
-            "AboveGroundVeryFastSoil",
-            rates["FoliageFallRate"],
-        ],
-        [
-            "Other",
-            "BranchSnag",
-            rates["OtherToBranchSnagSplit"] * rates["BranchTurnoverRate"],
-        ],
-        [
-            "Other",
-            "AboveGroundFastSoil",
-            (1 - rates["OtherToBranchSnagSplit"])
-            * rates["BranchTurnoverRate"],
-        ],
-        [
-            "CoarseRoots",
-            "AboveGroundFastSoil",
-            rates["CoarseRootAGSplit"] * rates["CoarseRootTurnProp"],
-        ],
-        [
-            "CoarseRoots",
-            "BelowGroundFastSoil",
-            (1 - rates["CoarseRootAGSplit"]) * rates["CoarseRootTurnProp"],
-        ],
-        [
-            "FineRoots",
-            "AboveGroundVeryFastSoil",
-            rates["FineRootAGSplit"] * rates["FineRootTurnProp"],
-        ],
-        [
-            "FineRoots",
-            "BelowGroundVeryFastSoil",
-            (1 - rates["FineRootAGSplit"]) * rates["FineRootTurnProp"],
-        ],
-    ]
-    return matrices
+def biomass_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
+    biomass_turnover_pool_flows = {
+        "[state.spatial_unit_id]": turnover_params["spatial_unit_id"],
+        "[state.sw_hw]": turnover_params["sw_hw"],
+        "Merch.StemSnag": turnover_params["StemAnnualTurnoverRate"],
+        "Foliage.AboveGroundVeryFastSoil": turnover_params["FoliageFallRate"],
+        "Other.BranchSnag": turnover_params["OtherToBranchSnagSplit"]
+        * turnover_params["BranchTurnoverRate"],
+        "Other.AboveGroundFastSoil": (
+            (1 - turnover_params["OtherToBranchSnagSplit"])
+            * turnover_params["BranchTurnoverRate"]
+        ),
+        "CoarseRoots.AboveGroundFastSoil": (
+            turnover_params["CoarseRootAGSplit"]
+            * turnover_params["CoarseRootTurnProp"]
+        ),
+        "CoarseRoots.BelowGroundFastSoil": (
+            (1 - turnover_params["CoarseRootAGSplit"])
+            * turnover_params["CoarseRootTurnProp"]
+        ),
+        "FineRoots.AboveGroundVeryFastSoil": (
+            turnover_params["FineRootAGSplit"]
+            * turnover_params["FineRootTurnProp"]
+        ),
+        "FineRoots.BelowGroundVeryFastSoil": (
+            1 - turnover_params["FineRootAGSplit"]
+        )
+        * turnover_params["FineRootTurnProp"],
+    }
+    return pd.DataFrame(biomass_turnover_pool_flows)
 
 
 def compute_decay_rate(
@@ -211,8 +199,9 @@ def slow_decay(
     return matrix_data
 
 
-def slow_mixing(rate: float) -> list:
-    return [
-        ["AboveGroundSlowSoil", "BelowGroundSlowSoil", rate],
-        ["AboveGroundSlowSoil", "AboveGroundSlowSoil", 1 - rate],
-    ]
+def slow_mixing(rate: float) -> pd.DataFrame:
+    slow_mixing_pool_flows = {
+        "AboveGroundSlowSoil.BelowGroundSlowSoil": [rate],
+        "AboveGroundSlowSoil.AboveGroundSlowSoil": [1 - rate],
+    }
+    return pd.DataFrame(slow_mixing_pool_flows)
