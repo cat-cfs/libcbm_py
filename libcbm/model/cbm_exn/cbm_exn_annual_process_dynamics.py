@@ -5,55 +5,53 @@ import pandas as pd
 
 def net_growth(
     growth_info: dict[str, np.ndarray],
-) -> list:
-    matrices = [
-        ["Input", "Merch", growth_info["merch_inc"] * 0.5],
-        ["Input", "Other", growth_info["other_inc"] * 0.5],
-        ["Input", "Foliage", growth_info["foliage_inc"] * 0.5],
-        ["Input", "CoarseRoots", growth_info["coarse_root_inc"] * 0.5],
-        ["Input", "FineRoots", growth_info["fine_root_inc"] * 0.5],
-    ]
-    return matrices
+) -> pd.DataFrame:
+    matrices = {}
+    if "age" in growth_info:
+        matrices["[row_idx]"] = growth_info["row_idx"]
+        matrices["[state.age]"] = growth_info["age"]
+    matrices.update(
+        {
+            "Input.Merch": growth_info["merch_inc"] * 0.5,
+            "Input.Other": growth_info["other_inc"] * 0.5,
+            "Input.Foliage": growth_info["foliage_inc"] * 0.5,
+            "Input.CoarseRoots": growth_info["coarse_root_inc"] * 0.5,
+            "Input.FineRoots": growth_info["fine_root_inc"] * 0.5,
+        }
+    )
+    return pd.DataFrame(matrices)
 
 
 def overmature_decline(
     growth_info: dict[str, np.ndarray],
-) -> list:
-    matrices = [
-        ["Merch", "StemSnag", growth_info["merch_to_stem_snag_prop"]],
-        ["Other", "BranchSnag", growth_info["other_to_branch_snag_prop"]],
-        [
-            "Other",
-            "AboveGroundFastSoil",
-            growth_info["other_to_ag_fast_prop"],
-        ],
-        [
-            "Foliage",
-            "AboveGroundVeryFastSoil",
-            growth_info["foliage_to_ag_fast_prop"],
-        ],
-        [
-            "CoarseRoots",
-            "AboveGroundFastSoil",
-            growth_info["coarse_root_to_ag_fast_prop"],
-        ],
-        [
-            "CoarseRoots",
-            "BelowGroundFastSoil",
-            growth_info["coarse_root_to_bg_fast_prop"],
-        ],
-        [
-            "FineRoots",
-            "AboveGroundVeryFastSoil",
-            growth_info["fine_root_to_ag_vfast_prop"],
-        ],
-        [
-            "FineRoots",
-            "BelowGroundVeryFastSoil",
-            growth_info["fine_root_to_bg_vfast_prop"],
-        ],
-    ]
-    return matrices
+) -> pd.DataFrame:
+    matrices = {}
+    if "age" in growth_info:
+        matrices["[row_idx]"] = growth_info["row_idx"]
+        matrices["[state.age]"] = growth_info["age"]
+    matrices.update(
+        {
+            "Merch.StemSnag": growth_info["merch_to_stem_snag_prop"],
+            "Other.BranchSnag": growth_info["other_to_branch_snag_prop"],
+            "Other.AboveGroundFastSoil": growth_info["other_to_ag_fast_prop"],
+            "Foliage.AboveGroundVeryFastSoil": growth_info[
+                "foliage_to_ag_fast_prop"
+            ],
+            "CoarseRoots.AboveGroundFastSoil": growth_info[
+                "coarse_root_to_ag_fast_prop"
+            ],
+            "CoarseRoots.BelowGroundFastSoil": growth_info[
+                "coarse_root_to_bg_fast_prop"
+            ],
+            "FineRoots.AboveGroundVeryFastSoil": growth_info[
+                "fine_root_to_ag_vfast_prop"
+            ],
+            "FineRoots.BelowGroundVeryFastSoil": growth_info[
+                "fine_root_to_bg_vfast_prop"
+            ],
+        }
+    )
+    return pd.DataFrame(matrices)
 
 
 def snag_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
@@ -130,7 +128,7 @@ def compute_decay_rate(
 
 def dom_decay(
     mean_annual_temp: np.ndarray, decay_parameters: dict[str, dict[str, float]]
-) -> list:
+) -> pd.DataFrame:
     dom_pools = [
         "AboveGroundVeryFastSoil",
         "BelowGroundVeryFastSoil",
@@ -149,7 +147,7 @@ def dom_decay(
         "StemSnag": "AboveGroundSlowSoil",
         "BranchSnag": "AboveGroundSlowSoil",
     }
-    matrix_data = []
+    matrix_data = {"[parameters.mean_annual_temp]": mean_annual_temp}
     for dom_pool in dom_pools:
         decay_parameter = decay_parameters[dom_pool]
         prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
@@ -160,23 +158,19 @@ def dom_decay(
             tref=decay_parameter["reference_temp"],
             max=decay_parameter["max_rate"],
         )
-        matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
-        matrix_data.append(
-            [
-                dom_pool,
-                dom_pool_flows[dom_pool],
-                decay_rate * (1 - prop_to_atmosphere),
-            ]
+        matrix_data[f"{dom_pool}.{dom_pool}"] = 1 - decay_rate
+        matrix_data[f"{dom_pool}.{dom_pool_flows[dom_pool]}"] = decay_rate * (
+            1 - prop_to_atmosphere
         )
-        matrix_data.append([dom_pool, "CO2", decay_rate * prop_to_atmosphere])
-
-    return matrix_data
+        matrix_data[f"{dom_pool}.CO2"] = decay_rate * prop_to_atmosphere
+    decay_ops = pd.DataFrame(matrix_data)
+    return decay_ops
 
 
 def slow_decay(
     mean_annual_temp: np.ndarray, decay_parameters: dict[str, dict[str, float]]
-) -> list:
-    matrix_data = []
+) -> pd.DataFrame:
+    matrix_data = {"[parameters.mean_annual_temp]": mean_annual_temp}
     for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
         decay_parameter = decay_parameters[dom_pool]
         prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
@@ -187,16 +181,11 @@ def slow_decay(
             tref=decay_parameter["reference_temp"],
             max=decay_parameter["max_rate"],
         )
-        matrix_data.append([dom_pool, dom_pool, 1 - decay_rate])
-        matrix_data.append(
-            [
-                dom_pool,
-                "CO2",
-                decay_rate * prop_to_atmosphere,
-            ]
-        )
+        matrix_data[f"{dom_pool}.{dom_pool}"] = 1 - decay_rate
+        matrix_data[f"{dom_pool}.CO2"] = decay_rate * prop_to_atmosphere
 
-    return matrix_data
+    slow_decay_ops = pd.DataFrame(matrix_data)
+    return slow_decay_ops
 
 
 def slow_mixing(rate: float) -> pd.DataFrame:
