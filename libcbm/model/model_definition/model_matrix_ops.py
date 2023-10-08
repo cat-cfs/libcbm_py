@@ -10,7 +10,7 @@ class ModelMatrixOps:
         self._model = model
         self._op_process_ids = op_process_ids
         self._ops_by_name: dict[str, Operation] = {}
-        self._op_data_by_name: dict[str, pd.DataFrame] = {}
+        self._op_index_by_name: dict[str, pd.DataFrame] = {}
 
     def init_operation(
         self,
@@ -23,7 +23,7 @@ class ModelMatrixOps:
         if name in self._ops_by_name:
             self._ops_by_name[name].dispose()
             del self._ops_by_name[name]
-            del self._op_data_by_name[name]
+            del self._op_index_by_name[name]
 
         self._model.pool_names
         op_cols = list(operation_data.columns)
@@ -34,9 +34,15 @@ class ModelMatrixOps:
             [p[0], p[1], operation_data[op_cols[i]]]
             for i, p in enumerate(pool_src_sink_tuples)
         ]
-        matrix_index = self.compute_matrix_index(
-            operation_data, model_variables
+        self._op_index_by_name[name] = pd.DataFrame(
+            index=operation_data.index,
+            data={
+                "matrix_index": np.arange(
+                    0, len(operation_data.index), dtype="uintp"
+                )
+            },
         )
+        matrix_index = self.compute_matrix_index(name, model_variables)
         op = self._model.create_operation(
             matrices,
             "repeating_coordinates",
@@ -45,35 +51,38 @@ class ModelMatrixOps:
             init_value=init_value,
         )
         self._ops_by_name[name] = op
-        self._op_data_by_name[name] = operation_data
+
         return op
 
     def compute_matrix_index(
-        self, operation: pd.DataFrame, model_variables: ModelVariables
+        self, op_name: str, model_variables: ModelVariables
     ) -> np.ndarray:
-        if len(operation.index.names) == 1 and not operation.index.name[0]:
-            if len(operation.index) == 1:
+        n_rows = model_variables["pools"].n_rows
+        op_index = self._op_index_by_name[op_name]
+        if len(op_index.index.names) == 1 and not op_index.index.name[0]:
+            if len(op_index.index) == 1:
                 # project the single operation to the entire landscape
-                return np.full(len(operation.index), 0, dtype="uintp")
-            elif len(operation.index) == model_variables["pools"].n_rows:
+                return np.full(len(op_index.index), 0, dtype="uintp")
+            elif len(op_index.index) == n_rows:
                 # there is one operation for each simulation area
-                return np.arange(0, len(operation.index), dtype="uintp")
-        split_index_names = [s.split(".") for s in operation.index.names]
-        merge_data = {
-            operation.index.names[i]: model_variables[s[0]][s[1]].to_numpy()
-            for i, s in enumerate(split_index_names)
-        }
+                return np.arange(0, len(op_index.index), dtype="uintp")
+
+        merge_data = {}
+        for idx_name in op_index.index.names:
+            if idx_name == "row_idx":
+                merge_data["row_idx"] = np.arange(0, n_rows)
+            else:
+                s = idx_name.split(".")
+                merge_data[idx_name] = model_variables[s[0]][s[1]].to_numpy()
+
         merge_df = pd.DataFrame(
             merge_data,
         )
-        merge_df.index.names = operation.index.names
-        operation_merge = pd.DataFrame(
-            index=operation.index,
-            data=np.arange(0, len(operation.index), dtype="uintp"),
-        )
+        merge_df.index.names = op_index.index.names
+
         merged = merge_df.merge(
-            operation_merge,
-            left_on=operation.index.names,
+            op_index,
+            left_on=op_index.index.names,
             right_index=True,
             how="left",
         )
@@ -82,8 +91,7 @@ class ModelMatrixOps:
     def reindex_operation(
         self, name: str, model_variables: ModelVariables
     ) -> Operation:
+        matrix_index = self.compute_matrix_index(name, model_variables)
         op = self._ops_by_name[name]
-        op_data = self._op_data_by_name[name]
-        matrix_index = self.compute_matrix_index(op_data, model_variables)
         op.update_index(matrix_index)
         return op
