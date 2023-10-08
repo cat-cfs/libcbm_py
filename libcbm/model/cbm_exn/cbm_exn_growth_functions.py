@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import numba as nb
 from libcbm.model.model_definition.model_variables import ModelVariables
-from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 
 
 def _total_root_bio_hw(
@@ -49,13 +48,12 @@ def _compute_root_inc(
     merch_inc: np.ndarray,
     foliage_inc: np.ndarray,
     other_inc: np.ndarray,
-    parameters: CBMEXNParameters,
+    root_parameters: dict[str, float],
 ) -> dict[str, np.ndarray]:
     total_ag_bio_t = (
         merch + merch_inc + foliage + foliage_inc + other + other_inc
     )
 
-    root_parameters = parameters.get_root_parameters()
     total_root_bio = np.where(
         sw_hw,  # sw=0, hw=1
         _total_root_bio_hw(root_parameters, total_ag_bio_t),
@@ -153,13 +151,13 @@ def _compute_overmature_decline(
     other_inc: np.ndarray,
     coarse_root_inc: np.ndarray,
     fine_root_inc: np.ndarray,
-    parameters: CBMEXNParameters,
+    turnover_parameters: pd.DataFrame,
 ) -> dict[str, np.ndarray]:
     """
     Compute the C flows for CBM-CFS3 overmature decline
     IE. when the net C incremenet is negative.
     """
-    turnover_parameters = parameters.get_turnover_parameters()[
+    turnover_parameters_merged = turnover_parameters[
         [
             "spatial_unit_id",
             "sw_hw",
@@ -173,14 +171,18 @@ def _compute_overmature_decline(
         right_on=["spatial_unit_id", "sw_hw"],
     )
 
-    if len(turnover_parameters.index) != spatial_unit_id.shape[0]:
+    if len(turnover_parameters_merged.index) != spatial_unit_id.shape[0]:
         raise ValueError()
 
-    other_to_branch_snag_split = turnover_parameters[
+    other_to_branch_snag_split = turnover_parameters_merged[
         "OtherToBranchSnagSplit"
     ].to_numpy()
-    coarse_root_ag_split = turnover_parameters["CoarseRootAGSplit"].to_numpy()
-    fine_root_ag_split = turnover_parameters["FineRootAGSplit"].to_numpy()
+    coarse_root_ag_split = turnover_parameters_merged[
+        "CoarseRootAGSplit"
+    ].to_numpy()
+    fine_root_ag_split = turnover_parameters_merged[
+        "FineRootAGSplit"
+    ].to_numpy()
     merch_to_stem_snag_prop = np.zeros(spatial_unit_id.shape)
     other_to_branch_snag_prop = np.zeros(spatial_unit_id.shape)
     other_to_ag_fast_prop = np.zeros(spatial_unit_id.shape)
@@ -225,14 +227,17 @@ def _compute_overmature_decline(
 
 
 def prepare_spinup_growth_info(
-    spinup_vars: ModelVariables, parameters: CBMEXNParameters
+    spinup_vars: ModelVariables,
+    turnover_parameters: pd.DataFrame,
+    root_parameters: dict[str, float],
 ) -> dict[str, np.ndarray]:
     """Pre-compute all growth C flow operations for spinup.
 
     Args:
         spinup_vars (ModelVariables): collection of CBM parameters, simulation
             and state variables
-        parameters (CBMEXNParameters): CBM constant parameters
+        turnover_parameters (pd.DataFrame): turnover parameters
+        root_parameters (dict[str, float]): root parameters
 
     Raises:
         ValueError: specified increment table was not formatted correctly.
@@ -311,7 +316,7 @@ def prepare_spinup_growth_info(
             merch_inc[:, col_idx],
             foliage_inc[:, col_idx],
             other_inc[:, col_idx],
-            parameters,
+            root_parameters,
         )
         coarse_root_inc[:, col_idx] = root_inc["coarse_root_inc"]
         fine_root_inc[:, col_idx] = root_inc["fine_root_inc"]
@@ -328,7 +333,7 @@ def prepare_spinup_growth_info(
             other_inc[:, col_idx],
             coarse_root_inc[:, col_idx],
             fine_root_inc[:, col_idx],
-            parameters,
+            turnover_parameters,
         )
         if not overmature_decline:
             for k, v in col_overmature_decline.items():
@@ -343,29 +348,42 @@ def prepare_spinup_growth_info(
             fine_root[:, col_idx] + root_inc["fine_root_inc"]
         )
 
+    n_rows = merch_inc.shape[0]
+    n_cols = merch_inc.shape[1]
     data = {
-        "merch_inc": merch_inc,
-        "other_inc": other_inc,
-        "foliage_inc": foliage_inc,
+        "row_idx": np.tile(
+            np.arange(0, n_rows, dtype="int64").reshape(n_rows, 1),
+            [1, n_cols],
+        ).flatten(),
+        "age": np.tile(np.arange(0, n_cols), [1, n_rows]).flatten(),
+        "merch_inc": merch_inc.flatten(),
+        "other_inc": other_inc.flatten(),
+        "foliage_inc": foliage_inc.flatten(),
     }
 
     data.update(
-        {"coarse_root_inc": coarse_root_inc, "fine_root_inc": fine_root_inc}
+        {
+            "coarse_root_inc": coarse_root_inc.flatten(),
+            "fine_root_inc": fine_root_inc.flatten(),
+        }
     )
-    data.update(overmature_decline)
+    data.update({k: v.flatten() for k, v in overmature_decline.items()})
 
     return data
 
 
 def prepare_growth_info(
-    cbm_vars: ModelVariables, parameters: CBMEXNParameters
+    cbm_vars: ModelVariables,
+    turnover_parameters: pd.DataFrame,
+    root_parameters: dict[str, float],
 ) -> dict[str, np.ndarray]:
     """
     Prepare the C flows for growth in a CBM timestep
 
     Args:
         cbm_vars (ModelVariables): collection of CBM variables/parameters/state
-        parameters (CBMEXNParameters): CBM constant parameters
+        turnover_parameters (pd.DataFrame): turnover parameters
+        root_parameters (dict[str, float]): root parameters
 
     Returns:
         dict[str, np.ndarray]: a dictionary of labelled pool C flows
@@ -400,7 +418,7 @@ def prepare_growth_info(
         merch_inc,
         foliage_inc,
         other_inc,
-        parameters,
+        root_parameters,
     )
     overmature_decline = _compute_overmature_decline(
         spatial_unit_id,
@@ -415,7 +433,7 @@ def prepare_growth_info(
         other_inc,
         root_inc["coarse_root_inc"],
         root_inc["fine_root_inc"],
-        parameters,
+        turnover_parameters,
     )
 
     data = {
