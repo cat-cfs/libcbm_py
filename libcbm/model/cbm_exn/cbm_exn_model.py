@@ -60,7 +60,7 @@ class CBMEXNModel:
         cbm_model: CBMModel,
         parameters: CBMEXNParameters,
         pandas_interface=True,
-        spinup_reporter: SpinupReporter = None,
+        spinup_reporter: Union[SpinupReporter, None] = None,
     ):
         """initialize the CBMEXNModel
 
