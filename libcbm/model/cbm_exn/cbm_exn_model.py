@@ -8,13 +8,13 @@ import numpy as np
 from libcbm import resources
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.model_definition.model_matrix_ops import ModelMatrixOps
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
-from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
 from libcbm.wrapper.libcbm_operation import Operation
 
 cbm_vars_type = Union[ModelVariables, Dict[str, pd.DataFrame]]
@@ -78,7 +78,6 @@ class CBMEXNModel:
         self._pandas_interface = pandas_interface
         self._spinup_reporter = spinup_reporter
         self._parameters = parameters
-        self._matrix_ops = MatrixOps(cbm_model, self._parameters)
 
     @property
     def pool_names(self) -> list[str]:
@@ -101,13 +100,13 @@ class CBMEXNModel:
         return self._cbm_model.flux_names
 
     @property
-    def matrix_ops(self) -> MatrixOps:
-        """MatrixOps instance which computes and caches C matrix flows
+    def matrix_ops(self) -> ModelMatrixOps:
+        """ModelMatrixOps instance which computes and caches C matrix flows
 
         Returns:
-            MatrixOps: instance of MatrixOps
+            ModelMatrixOps: instance of ModelMatrixOps
         """
-        return self._matrix_ops
+        return self._cbm_model.matrix_ops
 
     @property
     def parameters(self) -> CBMEXNParameters:
@@ -129,9 +128,10 @@ class CBMEXNModel:
             cbm_vars_type: modified state and variables.
         """
         if self._pandas_interface:
-            return cbm_exn_step.step(
-                self, ModelVariables.from_pandas(cbm_vars)
-            ).to_pandas()
+            if isinstance(cbm_vars, dict):
+                return cbm_exn_step.step(
+                    self, ModelVariables.from_pandas(cbm_vars)
+                ).to_pandas()
         else:
             return cbm_exn_step.step(self, cbm_vars)
 
@@ -183,41 +183,10 @@ class CBMEXNModel:
         else:
             return self._spinup_reporter.get_output()
 
-    def create_operation(
-        self,
-        matrices: list,
-        fmt: str,
-        matrix_index: np.ndarray,
-        process_id: int,
-    ) -> Operation:
-        """Creates an matrix based C flow operation.  An operation defines 1
-        or more matrix to apply to stand's Carbon pools.  The matrices have a
-        1:m relationship to stands.
-
-        For information on format see:
-        :py:func:`libcbm.model.model_definition.model_handle.ModelHandle.create_operation`
-
-        Args:
-            matrices (list): a list of matrices, whose format is described by
-                the `fmt` parameter
-            fmt (str): the matrix format of the `matrices` parameter
-            matrix_index (np.ndarray): an integer array along the stand axis
-                whose value is the index of the matrix to apply to that stand
-                index.
-            process_id (int): process id is used to define which flux
-                indicators this operation applies to
-
-        Returns:
-            Operation: the initialized operation.
-        """
-        return self._cbm_model.create_operation(
-            matrices, fmt, matrix_index, process_id
-        )
-
     def compute(
         self,
         cbm_vars: ModelVariables,
-        operations: list[Operation],
+        op_names: list[str],
     ):
         """Apply several sequential operations to the pools, and flux stored
         in the specified `cbm_vars`.
@@ -226,10 +195,14 @@ class CBMEXNModel:
             cbm_vars (ModelVariables): Collection of CBM simulation variables.
                 This function modifies the `pools` and `flux` dataframes stored
                 within cbm_vars.
-            operations (list[Operation]): The list of matrix operations to
+            op_names (list[str]): The list of matrix operations names to
                 apply
         """
-        self._cbm_model.compute(cbm_vars, operations)
+
+        self._cbm_model.compute(
+            cbm_vars,
+            self._cbm_model.matrix_ops.get_operations(op_names, cbm_vars)
+        )
 
 
 @contextmanager
