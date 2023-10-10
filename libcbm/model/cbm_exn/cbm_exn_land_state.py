@@ -1,6 +1,6 @@
 from __future__ import annotations
 from libcbm.model.model_definition.spinup_engine import SpinupState
-from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import spinup_engine
 from libcbm.model.cbm_exn import cbm_exn_variables
@@ -103,7 +103,7 @@ def advance_spinup_state(
 
 
 def init_cbm_vars(
-    model: CBMModel, spinup_vars: ModelVariables
+    model: CBMEXNModel, spinup_vars: ModelVariables
 ) -> ModelVariables:
     """Initialze the CBM variables and state at the end of spinup and prior to
     CBM stepping
