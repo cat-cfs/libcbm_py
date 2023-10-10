@@ -54,10 +54,16 @@ def overmature_decline(
     return pd.DataFrame(matrices)
 
 
-def snag_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
+def snag_turnover(
+    turnover_params: pd.DataFrame, spinup_format: bool
+) -> pd.DataFrame:
+    if spinup_format:
+        table_name = "parameters"
+    else:
+        table_name = "state"
     snag_turnover_pool_flows = {
-        "[state.spatial_unit_id]": turnover_params["spatial_unit_id"],
-        "[state.sw_hw]": turnover_params["sw_hw"],
+        f"[{table_name}.spatial_unit_id]": turnover_params["spatial_unit_id"],
+        f"[{table_name}.sw_hw]": turnover_params["sw_hw"],
         "StemSnag.StemSnag": 1 - turnover_params["StemSnag"],
         "StemSnag.MediumSoil": turnover_params["StemSnag"],
         "BranchSnag.BranchSnag": 1 - turnover_params["BranchSnag"],
@@ -66,10 +72,16 @@ def snag_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(snag_turnover_pool_flows)
 
 
-def biomass_turnover(turnover_params: pd.DataFrame) -> pd.DataFrame:
+def biomass_turnover(
+    turnover_params: pd.DataFrame, spinup_format: bool
+) -> pd.DataFrame:
+    if spinup_format:
+        table_name = "parameters"
+    else:
+        table_name = "state"
     biomass_turnover_pool_flows = {
-        "[state.spatial_unit_id]": turnover_params["spatial_unit_id"],
-        "[state.sw_hw]": turnover_params["sw_hw"],
+        f"[{table_name}.spatial_unit_id]": turnover_params["spatial_unit_id"],
+        f"[{table_name}.sw_hw]": turnover_params["sw_hw"],
         "Merch.StemSnag": turnover_params["StemAnnualTurnoverRate"],
         "Foliage.AboveGroundVeryFastSoil": turnover_params["FoliageFallRate"],
         "Other.BranchSnag": turnover_params["OtherToBranchSnagSplit"]
