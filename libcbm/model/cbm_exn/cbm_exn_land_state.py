@@ -1,6 +1,9 @@
 from __future__ import annotations
 from libcbm.model.model_definition.spinup_engine import SpinupState
-from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import spinup_engine
 from libcbm.model.cbm_exn import cbm_exn_variables
