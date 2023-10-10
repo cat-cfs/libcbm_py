@@ -33,7 +33,7 @@ def _flux_indicator_config(db_path: str, output_dir: str):
         from flux_indicator
         inner join flux_process
         on flux_indicator.flux_process_id = flux_process.id
-        """
+        """,
     )
     cbm3_flux_indicator_sink = query(
         db_path, "select * from flux_indicator_sink"
