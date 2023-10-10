@@ -209,16 +209,23 @@ def test_integration():
             # add some simplistic disturbance scheduling
             create_npp_matrix(cbm_model, stand_age)
             if (t % 150) == 0:
-                disturbance_types = np.full(
-                    n_stands, disturbance_type_ids["fire"]
+                model_vars["parameters"]["disturbance_type"].assign(
+                    np.full(
+                        n_stands, disturbance_type_ids["fire"]
+                    )
                 )
             elif t == 950:
-                disturbance_types = np.full(
-                    n_stands, disturbance_type_ids["harvest"]
+                model_vars["parameters"]["disturbance_type"].assign(
+                    np.full(
+                        n_stands, disturbance_type_ids["harvest"]
+                    )
                 )
+
             else:
-                disturbance_types = np.full(
-                    n_stands, disturbance_type_ids["none"]
+                model_vars["parameters"]["disturbance_type"].assign(
+                    np.full(
+                        n_stands, disturbance_type_ids["none"]
+                    )
                 )
 
             # reset flux at start of every time step
@@ -241,7 +248,9 @@ def test_integration():
             )
 
             output_processor.append_results(t, model_vars)
-            stand_age[disturbance_types != 0] = 0
+            stand_age[
+                model_vars["parameters"]["disturbance_type"].to_numpy() != 0
+            ] = 0
             stand_age += 1
 
     output_pools = output_processor.get_results()["pools"]
