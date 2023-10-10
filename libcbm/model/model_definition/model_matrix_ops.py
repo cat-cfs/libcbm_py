@@ -149,10 +149,10 @@ class OperationWrapper:
         ):
             if len(self._op_index.index) == 1:
                 # project the single operation to the entire landscape
-                return np.full(len(self._op_index.index), 0, dtype="uintp")
+                return np.full(n_rows, 0, dtype="uintp")
             elif len(self._op_index.index) == n_rows:
                 # there is one operation for each simulation area
-                return np.arange(0, len(self._op_index.index), dtype="uintp")
+                return np.arange(0, n_rows, dtype="uintp")
             else:
                 raise ValueError(
                     "index length must match model_variables length, or be "
@@ -170,7 +170,6 @@ class OperationWrapper:
         merge_df = pd.DataFrame(
             merge_data,
         )
-        merge_df.index.names = self._op_index.index.names
 
         merged = merge_df.merge(
             self._op_index,
