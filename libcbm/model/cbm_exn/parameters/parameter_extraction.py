@@ -22,7 +22,19 @@ def write_json(data, path):
 
 def _flux_indicator_config(db_path: str, output_dir: str):
     cbm3_pools = query(db_path, "select * from pool")
-    cbm3_flux_indicator = query(db_path, "select * from flux_indicator")
+    cbm3_flux_indicator = query(
+        db_path,
+        """
+        select
+        flux_indicator.id,
+        flux_indicator.name,
+        flux_indicator.flux_process_id,
+        flux_process.name as flux_process_name
+        from flux_indicator
+        inner join flux_process
+        on flux_indicator.flux_process_id = flux_process.id
+        """
+    )
     cbm3_flux_indicator_sink = query(
         db_path, "select * from flux_indicator_sink"
     )
@@ -47,7 +59,7 @@ def _flux_indicator_config(db_path: str, output_dir: str):
         cbm3_flux_indicators.append(
             {
                 "name": str(fi_row["name"]),
-                "process": fi_row["flux_process_id"],
+                "process": fi_row["flux_process_name"],
                 "source_pools": [str(c) for c in source_rows["code"]],
                 "sink_pools": [str(c) for c in sink_rows["code"]],
             }
@@ -71,35 +83,35 @@ def _flux_indicator_config(db_path: str, output_dir: str):
 
         item["sink_pools"] = list(dict.fromkeys(updated_sinks))
 
-        cbm_exn_flux_indicator_filtered = []
-        for item in cbm_exn_flux_indicator:
-            if item["name"] == "DisturbanceSoftProduction":
-                item["name"] = "DisturbanceProduction"
-                cbm_exn_flux_indicator_filtered.append(item)
-            elif item["name"] == "DecaySWStemSnagToAir":
-                item["name"] = "DecayStemSnagToAir"
-                cbm_exn_flux_indicator_filtered.append(item)
-            elif item["name"] == "DecaySWBranchSnagToAir":
-                item["name"] = "DecayBranchSnagToAir"
-                cbm_exn_flux_indicator_filtered.append(item)
-            elif item["name"] == "DisturbanceSWStemSnagToAir":
-                item["name"] = "DisturbanceStemSnagToAir"
-                cbm_exn_flux_indicator_filtered.append(item)
-            elif item["name"] == "DisturbanceSWBranchSnagToAir":
-                item["name"] = "DisturbanceBranchSnagToAir"
-                cbm_exn_flux_indicator_filtered.append(item)
-            elif item["name"] in [
-                "DisturbanceHardProduction",
-                "DecayHWStemSnagToAir",
-                "DecayHWBranchSnagToAir",
-                "DisturbanceHWStemSnagToAir",
-                "DisturbanceHWBranchSnagToAir",
-                "DisturbanceHWStemSnagToAir",
-                "DisturbanceHWBranchSnagToAir",
-            ]:
-                continue
-            else:
-                cbm_exn_flux_indicator_filtered.append(item)
+    cbm_exn_flux_indicator_filtered = []
+    for item in cbm_exn_flux_indicator:
+        if item["name"] == "DisturbanceSoftProduction":
+            item["name"] = "DisturbanceProduction"
+            cbm_exn_flux_indicator_filtered.append(item)
+        elif item["name"] == "DecaySWStemSnagToAir":
+            item["name"] = "DecayStemSnagToAir"
+            cbm_exn_flux_indicator_filtered.append(item)
+        elif item["name"] == "DecaySWBranchSnagToAir":
+            item["name"] = "DecayBranchSnagToAir"
+            cbm_exn_flux_indicator_filtered.append(item)
+        elif item["name"] == "DisturbanceSWStemSnagToAir":
+            item["name"] = "DisturbanceStemSnagToAir"
+            cbm_exn_flux_indicator_filtered.append(item)
+        elif item["name"] == "DisturbanceSWBranchSnagToAir":
+            item["name"] = "DisturbanceBranchSnagToAir"
+            cbm_exn_flux_indicator_filtered.append(item)
+        elif item["name"] in [
+            "DisturbanceHardProduction",
+            "DecayHWStemSnagToAir",
+            "DecayHWBranchSnagToAir",
+            "DisturbanceHWStemSnagToAir",
+            "DisturbanceHWBranchSnagToAir",
+            "DisturbanceHWStemSnagToAir",
+            "DisturbanceHWBranchSnagToAir",
+        ]:
+            continue
+        else:
+            cbm_exn_flux_indicator_filtered.append(item)
     write_json(
         cbm_exn_flux_indicator_filtered, os.path.join(output_dir, "flux.json")
     )

@@ -1,7 +1,7 @@
 [
     {
         "name": "DisturbanceCO2Production",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -24,7 +24,7 @@
     },
     {
         "name": "DisturbanceCH4Production",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -47,7 +47,7 @@
     },
     {
         "name": "DisturbanceCOProduction",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -70,7 +70,7 @@
     },
     {
         "name": "DisturbanceBioCO2Emission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -84,7 +84,7 @@
     },
     {
         "name": "DisturbanceBioCH4Emission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -98,7 +98,7 @@
     },
     {
         "name": "DisturbanceBioCOEmission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -112,7 +112,7 @@
     },
     {
         "name": "DecayDOMCO2Emission",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "AboveGroundVeryFastSoil",
             "BelowGroundVeryFastSoil",
@@ -130,7 +130,7 @@
     },
     {
         "name": "DisturbanceProduction",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch",
             "Foliage",
@@ -144,7 +144,7 @@
     },
     {
         "name": "DisturbanceDOMProduction",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundVeryFastSoil",
             "BelowGroundVeryFastSoil",
@@ -162,7 +162,7 @@
     },
     {
         "name": "DeltaBiomass_AG",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "Input"
         ],
@@ -174,7 +174,7 @@
     },
     {
         "name": "DeltaBiomass_BG",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "Input"
         ],
@@ -185,7 +185,7 @@
     },
     {
         "name": "TurnoverMerchLitterInput",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "Merch"
         ],
@@ -195,7 +195,7 @@
     },
     {
         "name": "TurnoverFolLitterInput",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "Foliage"
         ],
@@ -205,7 +205,7 @@
     },
     {
         "name": "TurnoverOthLitterInput",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "Other"
         ],
@@ -216,7 +216,7 @@
     },
     {
         "name": "TurnoverCoarseLitterInput",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "CoarseRoots"
         ],
@@ -227,7 +227,7 @@
     },
     {
         "name": "TurnoverFineLitterInput",
-        "process": 1,
+        "process": "Growth and Turnover",
         "source_pools": [
             "FineRoots"
         ],
@@ -238,7 +238,7 @@
     },
     {
         "name": "DecayVFastAGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "AboveGroundVeryFastSoil"
         ],
@@ -251,7 +251,7 @@
     },
     {
         "name": "DecayVFastBGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "BelowGroundVeryFastSoil"
         ],
@@ -264,7 +264,7 @@
     },
     {
         "name": "DecayFastAGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "AboveGroundFastSoil"
         ],
@@ -277,7 +277,7 @@
     },
     {
         "name": "DecayFastBGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "BelowGroundFastSoil"
         ],
@@ -290,7 +290,7 @@
     },
     {
         "name": "DecayMediumToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "MediumSoil"
         ],
@@ -303,7 +303,7 @@
     },
     {
         "name": "DecaySlowAGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "AboveGroundSlowSoil"
         ],
@@ -316,7 +316,7 @@
     },
     {
         "name": "DecaySlowBGToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "BelowGroundSlowSoil"
         ],
@@ -329,7 +329,7 @@
     },
     {
         "name": "DecayStemSnagToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "StemSnag"
         ],
@@ -342,7 +342,7 @@
     },
     {
         "name": "DecayBranchSnagToAir",
-        "process": 2,
+        "process": "Decay",
         "source_pools": [
             "BranchSnag"
         ],
@@ -355,7 +355,7 @@
     },
     {
         "name": "DisturbanceMerchToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch"
         ],
@@ -368,7 +368,7 @@
     },
     {
         "name": "DisturbanceFolToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Foliage"
         ],
@@ -381,7 +381,7 @@
     },
     {
         "name": "DisturbanceOthToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Other"
         ],
@@ -394,7 +394,7 @@
     },
     {
         "name": "DisturbanceCoarseToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "CoarseRoots"
         ],
@@ -407,7 +407,7 @@
     },
     {
         "name": "DisturbanceFineToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "FineRoots"
         ],
@@ -420,7 +420,7 @@
     },
     {
         "name": "DisturbanceDOMCO2Emission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundVeryFastSoil",
             "BelowGroundVeryFastSoil",
@@ -438,7 +438,7 @@
     },
     {
         "name": "DisturbanceDOMCH4Emission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundVeryFastSoil",
             "BelowGroundVeryFastSoil",
@@ -456,7 +456,7 @@
     },
     {
         "name": "DisturbanceDOMCOEmission",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundVeryFastSoil",
             "BelowGroundVeryFastSoil",
@@ -474,7 +474,7 @@
     },
     {
         "name": "DisturbanceMerchLitterInput",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Merch"
         ],
@@ -486,7 +486,7 @@
     },
     {
         "name": "DisturbanceFolLitterInput",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Foliage"
         ],
@@ -497,7 +497,7 @@
     },
     {
         "name": "DisturbanceOthLitterInput",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "Other"
         ],
@@ -509,7 +509,7 @@
     },
     {
         "name": "DisturbanceCoarseLitterInput",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "CoarseRoots"
         ],
@@ -520,7 +520,7 @@
     },
     {
         "name": "DisturbanceFineLitterInput",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "FineRoots"
         ],
@@ -533,7 +533,7 @@
     },
     {
         "name": "DisturbanceVFastAGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundVeryFastSoil"
         ],
@@ -546,7 +546,7 @@
     },
     {
         "name": "DisturbanceVFastBGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "BelowGroundVeryFastSoil"
         ],
@@ -559,7 +559,7 @@
     },
     {
         "name": "DisturbanceFastAGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundFastSoil"
         ],
@@ -572,7 +572,7 @@
     },
     {
         "name": "DisturbanceFastBGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "BelowGroundFastSoil"
         ],
@@ -585,7 +585,7 @@
     },
     {
         "name": "DisturbanceMediumToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "MediumSoil"
         ],
@@ -598,7 +598,7 @@
     },
     {
         "name": "DisturbanceSlowAGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "AboveGroundSlowSoil"
         ],
@@ -611,7 +611,7 @@
     },
     {
         "name": "DisturbanceSlowBGToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "BelowGroundSlowSoil"
         ],
@@ -624,7 +624,7 @@
     },
     {
         "name": "DisturbanceStemSnagToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "StemSnag"
         ],
@@ -637,7 +637,7 @@
     },
     {
         "name": "DisturbanceBranchSnagToAir",
-        "process": 3,
+        "process": "Disturbance",
         "source_pools": [
             "BranchSnag"
         ],
