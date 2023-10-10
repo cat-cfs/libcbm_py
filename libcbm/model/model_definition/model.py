@@ -127,19 +127,22 @@ def initialize(
         Iterator[CBMModel]: instance of CBMModel
     """
     pools = {p: i for i, p in enumerate(pool_config)}
-    flux = [
-        {
-            "id": f_idx + 1,
-            "index": f_idx,
-            "process_id": int(f["process"]),
-            "source_pools": [pools[x] for x in f["source_pools"]],
-            "sink_pools": [pools[x] for x in f["sink_pools"]],
-        }
-        for f_idx, f in enumerate(flux_config)
-    ]
-    with model_handle.create_model_handle(pools, flux) as _model_handle:
-        yield CBMModel(
-            _model_handle,
-            pool_config,
-            flux_config,
+    flux_processes: dict[str, int] = {}
+
+    flux = []
+    for f_idx, f in enumerate(flux_config):
+        if f["process"] not in flux_processes:
+            flux_processes[f["process"]] = len(flux_processes)
+
+        flux.append(
+            {
+                "id": f_idx + 1,
+                "index": f_idx,
+                "process_id": flux_processes[f["process"]],
+                "source_pools": [pools[x] for x in f["source_pools"]],
+                "sink_pools": [pools[x] for x in f["sink_pools"]],
+            }
         )
+
+    with model_handle.create_model_handle(pools, flux) as _model_handle:
+        yield CBMModel(_model_handle, pool_config, flux_config, flux_processes)
