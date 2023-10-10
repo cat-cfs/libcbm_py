@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import Callable
 from typing import TYPE_CHECKING
 from typing import Union
+import numpy as np
+
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 
@@ -66,12 +68,16 @@ def _prepare_spinup_vars(
     return ModelVariables(data)
 
 
-def get_default_ops(model: "CBMEXNModel", spinup_vars: ModelVariables) -> list[dict]:
-
+def get_default_ops(
+    model: "CBMEXNModel", spinup_vars: ModelVariables
+) -> list[dict]:
     growth_info = cbm_exn_growth_functions.prepare_spinup_growth_info(
         spinup_vars,
         model.parameters.get_turnover_parameters(),
-        model.parameters.get_root_parameters()
+        model.parameters.get_root_parameters(),
+    )
+    mean_annual_temp = np.unique(
+        spinup_vars["parameters"]["mean_annual_temperature"].to_numpy()
     )
     ops = [
         {
@@ -94,7 +100,7 @@ def get_default_ops(model: "CBMEXNModel", spinup_vars: ModelVariables) -> list[d
             "name": "dom_decay",
             "op_process_name": "decay",
             "op_data": cbm_exn_annual_process_dynamics.dom_decay(
-                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
+                mean_annual_temp,
                 model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
@@ -103,8 +109,8 @@ def get_default_ops(model: "CBMEXNModel", spinup_vars: ModelVariables) -> list[d
             "name": "slow_decay",
             "op_process_name": "decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_decay(
-               spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
-               model.parameters.get_decay_parameters(),
+                mean_annual_temp,
+                model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
         },
@@ -112,7 +118,7 @@ def get_default_ops(model: "CBMEXNModel", spinup_vars: ModelVariables) -> list[d
             "name": "slow_mixing",
             "op_process_name": "decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_mixing(
-               model.parameters.get_slow_mixing_rate(),
+                model.parameters.get_slow_mixing_rate(),
             ),
             "requires_reindexing": False,
         },
@@ -166,7 +172,7 @@ def spinup(
     reporting_func: Union[Callable[[int, ModelVariables], None], None] = None,
     include_flux: bool = False,
     ops: Union[list[dict], None] = None,
-    op_sequence: Union[list[str], None] = None
+    op_sequence: Union[list[str], None] = None,
 ) -> ModelVariables:
     """Run the CBM spinup routine.
 
