@@ -27,9 +27,6 @@ Functions and classes
 .. automodule:: libcbm.model.cbm_exn.cbm_exn_land_state
     :members:
 
-.. automodule:: libcbm.model.cbm_exn.cbm_exn_matrix_ops
-    :members:
-
 .. currentmodule:: libcbm.model.cbm_exn.cbm_exn_model
 
 .. autofunction:: initialize
