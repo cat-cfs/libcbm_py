@@ -15,7 +15,7 @@ from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
-from libcbm.wrapper.libcbm_operation import Operation
+
 
 cbm_vars_type = Union[ModelVariables, Dict[str, pd.DataFrame]]
 
@@ -201,7 +201,7 @@ class CBMEXNModel:
 
         self._cbm_model.compute(
             cbm_vars,
-            self._cbm_model.matrix_ops.get_operations(op_names, cbm_vars)
+            self._cbm_model.matrix_ops.get_operations(op_names, cbm_vars),
         )
 
 
@@ -248,9 +248,11 @@ def initialize(
             SpinupReporter(pandas_interface) if include_spinup_debug else None
         )
 
-        yield CBMEXNModel(
+        m = CBMEXNModel(
             cbm_model,
             params,
             pandas_interface=pandas_interface,
             spinup_reporter=spinup_reporter,
         )
+        yield m
+        m.matrix_ops.dispose()

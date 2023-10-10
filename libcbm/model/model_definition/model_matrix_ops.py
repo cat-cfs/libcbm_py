@@ -238,3 +238,7 @@ class ModelMatrixOps:
                 )
             out.append(unique_ops[name])
         return out
+
+    def dispose(self):
+        for w in self._op_wrappers.values():
+            w.dispose()
