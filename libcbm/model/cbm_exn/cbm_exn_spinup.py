@@ -1,14 +1,18 @@
 from __future__ import annotations
 from typing import Callable
 from typing import TYPE_CHECKING
-
+from typing import Union
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 
-from libcbm.model.cbm_exn import cbm_exn_variables
+
 from libcbm.model.model_definition.model_variables import ModelVariables
+from libcbm.model.cbm_exn import cbm_exn_variables
 from libcbm.model.cbm_exn import cbm_exn_land_state
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
+from libcbm.model.cbm_exn import cbm_exn_annual_process_dynamics
+from libcbm.model.cbm_exn import cbm_exn_disturbance_dynamics
+from libcbm.model.cbm_exn import cbm_exn_growth_functions
 
 
 def _prepare_spinup_vars(
@@ -62,11 +66,107 @@ def _prepare_spinup_vars(
     return ModelVariables(data)
 
 
+def get_default_ops(model: "CBMEXNModel", spinup_vars: ModelVariables) -> list[dict]:
+
+    growth_info = cbm_exn_growth_functions.prepare_spinup_growth_info(
+        spinup_vars,
+        model.parameters.get_turnover_parameters(),
+        model.parameters.get_root_parameters()
+    )
+    ops = [
+        {
+            "name": "snag_turnover",
+            "op_process_name": "growth",
+            "op_data": cbm_exn_annual_process_dynamics.snag_turnover(
+                model.parameters.get_turnover_parameters(), True
+            ),
+            "requires_reindexing": False,
+        },
+        {
+            "name": "biomass_turnover",
+            "op_process_name": "growth",
+            "op_data": cbm_exn_annual_process_dynamics.biomass_turnover(
+                model.parameters.get_turnover_parameters(), True
+            ),
+            "requires_reindexing": False,
+        },
+        {
+            "name": "dom_decay",
+            "op_process_name": "decay",
+            "op_data": cbm_exn_annual_process_dynamics.dom_decay(
+                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
+                model.parameters.get_decay_parameters(),
+            ),
+            "requires_reindexing": False,
+        },
+        {
+            "name": "slow_decay",
+            "op_process_name": "decay",
+            "op_data": cbm_exn_annual_process_dynamics.slow_decay(
+               spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
+               model.parameters.get_decay_parameters(),
+            ),
+            "requires_reindexing": False,
+        },
+        {
+            "name": "slow_mixing",
+            "op_process_name": "decay",
+            "op_data": cbm_exn_annual_process_dynamics.slow_mixing(
+               model.parameters.get_slow_mixing_rate(),
+            ),
+            "requires_reindexing": False,
+        },
+        {
+            "name": "disturbance",
+            "op_process_name": "disturbance",
+            "op_data": cbm_exn_disturbance_dynamics.disturbance(
+                model.pool_names,
+                model.parameters.get_disturbance_matrices(),
+                model.parameters.get_disturbance_matrix_associations(),
+            ),
+            "requires_reindexing": True,
+        },
+        {
+            "name": "growth",
+            "op_process_name": "growth",
+            "op_data": cbm_exn_annual_process_dynamics.net_growth(
+                growth_info,
+            ),
+            "requires_reindexing": True,
+        },
+        {
+            "name": "overmature_decline",
+            "op_process_name": "growth",
+            "op_data": cbm_exn_annual_process_dynamics.net_growth(
+                growth_info,
+            ),
+            "requires_reindexing": True,
+        },
+    ]
+    return ops
+
+
+def get_default_op_list() -> list[str]:
+    return [
+        "growth",
+        "snag_turnover",
+        "biomass_turnover",
+        "overmature_decline",
+        "growth",
+        "dom_decay",
+        "slow_decay",
+        "slow_mixing",
+        "disturbance",
+    ]
+
+
 def spinup(
     model: "CBMEXNModel",
     input: ModelVariables,
-    reporting_func: Callable[[int, ModelVariables], None] = None,
+    reporting_func: Union[Callable[[int, ModelVariables], None], None] = None,
     include_flux: bool = False,
+    ops: Union[list[dict], None] = None,
+    op_sequence: Union[list[str], None] = None
 ) -> ModelVariables:
     """Run the CBM spinup routine.
 
@@ -98,24 +198,13 @@ def spinup(
         include_flux,
         model.parameters,
     )
+    if ops is None:
+        ops = get_default_ops(model, spinup_vars)
+    for op_def in ops:
+        model.matrix_ops.create_operation(**op_def)
+    if op_sequence is None:
+        op_sequence = get_default_op_list()
 
-    snag_turnover = model.matrix_ops.snag_turnover(
-        spinup_vars["parameters"]["spatial_unit_id"],
-        spinup_vars["parameters"]["sw_hw"],
-    )
-    biomass_turnover = model.matrix_ops.biomass_turnover(
-        spinup_vars["parameters"]["spatial_unit_id"],
-        spinup_vars["parameters"]["sw_hw"],
-    )
-    dom_decay = model.matrix_ops.dom_decay(
-        spinup_vars["parameters"]["mean_annual_temperature"]
-    )
-    slow_decay = model.matrix_ops.slow_decay(
-        spinup_vars["parameters"]["mean_annual_temperature"]
-    )
-    slow_mixing = model.matrix_ops.slow_mixing(
-        spinup_vars["parameters"].n_rows
-    )
     t: int = 0
     while True:
         if include_flux:
@@ -126,27 +215,7 @@ def spinup(
         if all_finished:
             break
 
-        disturbance = model.matrix_ops.disturbance(
-            spinup_vars["state"]["disturbance_type"],
-            spinup_vars["parameters"]["spatial_unit_id"],
-            spinup_vars["parameters"]["sw_hw"],
-        )
-        growth, overmature_decline = model.matrix_ops.spinup_net_growth(
-            spinup_vars
-        )
-
-        ops = [
-            growth,
-            snag_turnover,
-            biomass_turnover,
-            overmature_decline,
-            growth,
-            dom_decay,
-            slow_decay,
-            slow_mixing,
-            disturbance,
-        ]
-        model.compute(spinup_vars, ops)
+        model.compute(spinup_vars, op_sequence)
         spinup_vars = cbm_exn_land_state.end_spinup_step(spinup_vars)
         if reporting_func:
             reporting_func(t, spinup_vars)
