@@ -6,7 +6,7 @@ def disturbance(
     pools: list[str],
     disturbance_matrices: pd.DataFrame,
     dm_associations: pd.DataFrame,
-    spinup_format: bool
+    spinup_format: bool,
 ) -> pd.DataFrame:
     if spinup_format:
         dist_table_name = "state"
