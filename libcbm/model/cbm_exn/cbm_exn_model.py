@@ -4,7 +4,6 @@ from typing import Dict
 from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
-import numpy as np
 from libcbm import resources
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
