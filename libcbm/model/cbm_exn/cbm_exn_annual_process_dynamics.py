@@ -159,7 +159,7 @@ def dom_decay(
         "StemSnag": "AboveGroundSlowSoil",
         "BranchSnag": "AboveGroundSlowSoil",
     }
-    matrix_data = {"[parameters.mean_annual_temp]": mean_annual_temp}
+    matrix_data = {"[parameters.mean_annual_temperature]": mean_annual_temp}
     for dom_pool in dom_pools:
         decay_parameter = decay_parameters[dom_pool]
         prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]
@@ -182,7 +182,7 @@ def dom_decay(
 def slow_decay(
     mean_annual_temp: np.ndarray, decay_parameters: dict[str, dict[str, float]]
 ) -> pd.DataFrame:
-    matrix_data = {"[parameters.mean_annual_temp]": mean_annual_temp}
+    matrix_data = {"[parameters.mean_annual_temperature]": mean_annual_temp}
     for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
         decay_parameter = decay_parameters[dom_pool]
         prop_to_atmosphere = decay_parameter["prop_to_atmosphere"]

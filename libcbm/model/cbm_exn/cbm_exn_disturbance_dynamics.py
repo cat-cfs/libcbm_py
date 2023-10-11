@@ -6,7 +6,16 @@ def disturbance(
     pools: list[str],
     disturbance_matrices: pd.DataFrame,
     dm_associations: pd.DataFrame,
+    spinup_format: bool
 ) -> pd.DataFrame:
+    if spinup_format:
+        dist_table_name = "state"
+        spu_table_name = "parameters"
+        sw_hw_table_name = "parameters"
+    else:
+        dist_table_name = "parameters"
+        spu_table_name = "state"
+        sw_hw_table_name = "state"
     matrix_data_by_dmid: dict[int, list[list]] = {}
     dmid = disturbance_matrices["disturbance_matrix_id"].to_numpy()
     source = disturbance_matrices["source_pool"].to_list()
@@ -39,9 +48,9 @@ def disturbance(
     dm_flows = dm_flows.reindex(sorted(dm_flows.columns), axis=1)
     dm_associations = dm_associations.rename(
         columns={
-            "spatial_unit_id": "[state.spatial_unit_id]",
-            "disturbance_type_id": "[parameters.disturbance_type_id]",
-            "sw_hw": "[state.sw_hw]",
+            "spatial_unit_id": f"[{spu_table_name}.spatial_unit_id]",
+            "disturbance_type_id": f"[{dist_table_name}.disturbance_type]",
+            "sw_hw": f"[{sw_hw_table_name}.sw_hw]",
         }
     )
     output = dm_associations.merge(

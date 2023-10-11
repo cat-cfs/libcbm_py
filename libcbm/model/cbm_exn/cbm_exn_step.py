@@ -15,11 +15,12 @@ def get_default_disturbance_ops(model: "CBMEXNModel") -> list[dict]:
     return [
         {
             "name": "disturbance",
-            "op_process_name": "disturbance",
+            "op_process_name": "Disturbance",
             "op_data": cbm_exn_disturbance_dynamics.disturbance(
                 model.pool_names,
                 model.parameters.get_disturbance_matrices(),
                 model.parameters.get_disturbance_matrix_associations(),
+                False
             ),
             "requires_reindexing": True,
         }
@@ -65,7 +66,7 @@ def step_disturbance(
 def get_default_annual_process_ops(
     model: "CBMEXNModel", cbm_vars: ModelVariables
 ) -> list[dict]:
-    growth_info = cbm_exn_growth_functions.prepare_spinup_growth_info(
+    growth_info = cbm_exn_growth_functions.prepare_growth_info(
         cbm_vars,
         model.parameters.get_turnover_parameters(),
         model.parameters.get_root_parameters(),
@@ -76,23 +77,23 @@ def get_default_annual_process_ops(
     return [
         {
             "name": "snag_turnover",
-            "op_process_name": "growth",
+            "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.snag_turnover(
-                model.parameters.get_turnover_parameters(), True
+                model.parameters.get_turnover_parameters(), False
             ),
             "requires_reindexing": False,
         },
         {
             "name": "biomass_turnover",
-            "op_process_name": "growth",
+            "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.biomass_turnover(
-                model.parameters.get_turnover_parameters(), True
+                model.parameters.get_turnover_parameters(), False
             ),
             "requires_reindexing": False,
         },
         {
             "name": "dom_decay",
-            "op_process_name": "decay",
+            "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.dom_decay(
                 mean_annual_temp,
                 model.parameters.get_decay_parameters(),
@@ -101,7 +102,7 @@ def get_default_annual_process_ops(
         },
         {
             "name": "slow_decay",
-            "op_process_name": "decay",
+            "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_decay(
                 mean_annual_temp,
                 model.parameters.get_decay_parameters(),
@@ -110,7 +111,7 @@ def get_default_annual_process_ops(
         },
         {
             "name": "slow_mixing",
-            "op_process_name": "decay",
+            "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_mixing(
                 model.parameters.get_slow_mixing_rate(),
             ),
@@ -118,7 +119,7 @@ def get_default_annual_process_ops(
         },
         {
             "name": "growth",
-            "op_process_name": "growth",
+            "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.net_growth(
                 growth_info,
             ),
@@ -126,7 +127,7 @@ def get_default_annual_process_ops(
         },
         {
             "name": "overmature_decline",
-            "op_process_name": "growth",
+            "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.net_growth(
                 growth_info,
             ),
