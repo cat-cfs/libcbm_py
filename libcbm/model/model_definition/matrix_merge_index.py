@@ -91,7 +91,7 @@ class MatrixMergeIndex:
         self._len_key_data = len((next(iter(key_data.values()))))
 
         key_index_type = numba.types.UniTuple(
-            numba.types.float64, len(self._merge_keys)
+            numba.types.int64, len(self._merge_keys)
         )
         self._merge_dict = numba.typed.Dict.empty(
             key_type=key_index_type, value_type=numba.types.types.uint64
@@ -99,7 +99,7 @@ class MatrixMergeIndex:
         for i in range(self._len_key_data):
             tuple_values = []
             for k in self._merge_keys:
-                tuple_values.append(float(key_data[k][i]))
+                tuple_values.append(int(key_data[k][i]))
             self._merge_dict[tuple(tuple_values)] = matrix_idx[i]
 
     @property
