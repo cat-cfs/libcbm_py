@@ -41,7 +41,6 @@ def test_cbm_exn_integration():
         )
         with cbm_exn_model.initialize(
             config_path=tempdir,
-            pandas_interface=False,
             include_spinup_debug=True,
         ) as model:
             cbm_vars = model.spinup(spinup_input)
