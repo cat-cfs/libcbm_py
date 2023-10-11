@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Iterator
 from contextlib import contextmanager
-import numpy as np
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import model_handle
 from libcbm.model.model_definition.model_handle import ModelHandle
