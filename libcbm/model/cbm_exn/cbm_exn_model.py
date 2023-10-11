@@ -174,12 +174,14 @@ class CBMEXNModel:
             _spinup_input = ModelVariables.from_pandas(spinup_input)
         else:
             _spinup_input = spinup_input
-
+        spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
+            _spinup_input,
+            self,
+        )
         result = cbm_exn_spinup.spinup(
             self,
-            _spinup_input,
+            spinup_vars,
             reporting_func=reporting_func,
-            include_flux=reporting_func is not None,
             ops=ops,
             op_sequence=op_sequence,
         )
