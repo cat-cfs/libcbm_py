@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 from typing import Union
-import numpy as np
 
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
@@ -71,9 +70,7 @@ def get_default_annual_process_ops(
         model.parameters.get_turnover_parameters(),
         model.parameters.get_root_parameters(),
     )
-    mean_annual_temp = np.unique(
-        cbm_vars["parameters"]["mean_annual_temperature"].to_numpy()
-    )
+
     return [
         {
             "name": "snag_turnover",
@@ -95,7 +92,7 @@ def get_default_annual_process_ops(
             "name": "dom_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.dom_decay(
-                mean_annual_temp,
+                cbm_vars["parameters"]["mean_annual_temperature"].to_numpy(),
                 model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": True,
@@ -104,7 +101,7 @@ def get_default_annual_process_ops(
             "name": "slow_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_decay(
-                mean_annual_temp,
+                cbm_vars["parameters"]["mean_annual_temperature"].to_numpy(),
                 model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": True,
@@ -174,7 +171,14 @@ def step_annual_process(
     return cbm_vars
 
 
-def step(model: "CBMEXNModel", cbm_vars: ModelVariables) -> ModelVariables:
+def step(
+    model: "CBMEXNModel",
+    cbm_vars: ModelVariables,
+    disturbance_ops: Union[list[dict], None] = None,
+    disturbance_op_sequence: Union[list[str], None] = None,
+    step_ops: Union[list[dict], None] = None,
+    step_op_sequence: Union[list[str], None] = None,
+) -> ModelVariables:
     """Advance CBM state by one timestep, and track results.
 
     This function updates state variables, performs disturbances for affected
@@ -192,7 +196,9 @@ def step(model: "CBMEXNModel", cbm_vars: ModelVariables) -> ModelVariables:
 
     cbm_vars["flux"].zero()
     cbm_vars = cbm_exn_land_state.start_step(cbm_vars, model.parameters)
-    cbm_vars = step_disturbance(model, cbm_vars)
-    cbm_vars = step_annual_process(model, cbm_vars)
+    cbm_vars = step_disturbance(
+        model, cbm_vars, disturbance_ops, disturbance_op_sequence
+    )
+    cbm_vars = step_annual_process(model, cbm_vars, step_ops, step_op_sequence)
     cbm_vars = cbm_exn_land_state.end_step(cbm_vars, model.parameters)
     return cbm_vars
