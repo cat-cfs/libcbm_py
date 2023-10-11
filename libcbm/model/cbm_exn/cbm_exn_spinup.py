@@ -2,40 +2,31 @@ from __future__ import annotations
 from typing import Callable
 from typing import TYPE_CHECKING
 from typing import Union
-import numpy as np
 
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
 
-
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn import cbm_exn_variables
 from libcbm.model.cbm_exn import cbm_exn_land_state
-from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn import cbm_exn_annual_process_dynamics
 from libcbm.model.cbm_exn import cbm_exn_disturbance_dynamics
 from libcbm.model.cbm_exn import cbm_exn_growth_functions
 
 
-def _prepare_spinup_vars(
+def prepare_spinup_vars(
     spinup_input: ModelVariables,
-    pool_names: list[str],
-    flux_names: list[str],
-    include_flux: bool,
-    parameters: CBMEXNParameters,
+    model: CBMEXNModel,
+    include_flux: bool = False
 ) -> ModelVariables:
     """Initialize spinup variables and state.
 
     Args:
         spinup_input (ModelVariables): A collection of dataframes for running
             CBM spinup.
-        pool_names (list[str]): The CBM pool names.
-        flux_names (list[str]): the list of flux indicator names.  This
-            parameter is ignore unless the `include_flux` parameter is set to
-            True.
+        model (CBMEXNModel): Initialized cbm_exn model.
         include_flux (bool): If set to true space will be allocated for storing
             flux indicators through the spinup procedure.
-        parameters (CBMEXNParameters): initialized CBM parameters
 
     Returns:
         ModelVariables: Inititlized cbm variables and state for running spinup.
@@ -49,19 +40,21 @@ def _prepare_spinup_vars(
         ),
         "pools": cbm_exn_variables.init_pools(
             spinup_input["parameters"].n_rows,
-            pool_names,
+            model.pool_names,
             spinup_input["parameters"].backend_type,
         ),
     }
     if "sw_hw" not in data["parameters"].columns:
-        sw_hw = data["parameters"]["species"].map(parameters.get_sw_hw_map())
+        sw_hw = data["parameters"]["species"].map(
+            model.parameters.get_sw_hw_map()
+        )
         sw_hw.name = "sw_hw"
         data["parameters"].add_column(sw_hw, 0)
     data["pools"]["Input"].assign(1.0)
     if include_flux:
         data["flux"] = cbm_exn_variables.init_flux(
             spinup_input["parameters"].n_rows,
-            flux_names,
+            model.flux_names,
             spinup_input["parameters"].backend_type,
         )
 
@@ -81,9 +74,6 @@ def get_default_ops(
     )
     overmature_decline = cbm_exn_annual_process_dynamics.overmature_decline(
         growth_info,
-    )
-    mean_annual_temp = np.unique(
-        spinup_vars["parameters"]["mean_annual_temperature"].to_numpy()
     )
 
     ops = [
@@ -107,7 +97,7 @@ def get_default_ops(
             "name": "dom_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.dom_decay(
-                mean_annual_temp,
+                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
                 model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
@@ -116,7 +106,7 @@ def get_default_ops(
             "name": "slow_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_decay(
-                mean_annual_temp,
+                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
                 model.parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
@@ -174,9 +164,8 @@ def get_default_op_list() -> list[str]:
 
 def spinup(
     model: "CBMEXNModel",
-    input: ModelVariables,
+    spinup_vars: ModelVariables,
     reporting_func: Union[Callable[[int, ModelVariables], None], None] = None,
-    include_flux: bool = False,
     ops: Union[list[dict], None] = None,
     op_sequence: Union[list[str], None] = None,
 ) -> ModelVariables:
@@ -184,13 +173,8 @@ def spinup(
 
     Args:
         model (CBMEXNModel): Initialized cbm_exn model.
-        input (ModelVariables): Spinup input, which is a collection of
-            dataframes consisting of:
-
-                * `increments`: a table of aboveground merchantable, foliage,
-                    and other C increments by age by stand
-                * `parameters`: CBM spinup parameters
-
+        spinup_vars (ModelVariables): Spinup vars, as returned by
+            :py:func:`cbm_exn_spinup.prepare_spinup_vars`.
         reporting_func (Callable[[int, ModelVariables], None], optional):
             Optional function for accepting timestep-by-timestep spinup
             results for debugging. Defaults to None.
@@ -203,13 +187,6 @@ def spinup(
             state, ready for CBM stepping.
     """
 
-    spinup_vars = _prepare_spinup_vars(
-        input,
-        model.pool_names,
-        model.flux_names,
-        include_flux,
-        model.parameters,
-    )
     if ops is None:
         ops = get_default_ops(model, spinup_vars)
     for op_def in ops:
@@ -219,7 +196,7 @@ def spinup(
 
     t: int = 0
     while True:
-        if include_flux:
+        if "flux" in spinup_vars:
             spinup_vars["flux"].zero()
         all_finished, spinup_vars = cbm_exn_land_state.advance_spinup_state(
             spinup_vars
