@@ -167,12 +167,12 @@ class OperationWrapper:
             merge_data = {}
             for idx_name in self._op_index.merge_keys:
                 if idx_name == "row_idx":
-                    merge_data["row_idx"] = np.arange(0, n_rows)
+                    merge_data["row_idx"] = np.arange(0, n_rows, dtype="int64")
                 else:
                     s = idx_name.split(".")
                     merge_data[idx_name] = model_variables[s[0]][
                         s[1]
-                    ].to_numpy()
+                    ].to_numpy().astype("int64")
 
             return self._op_index.merge(merge_data, self._default_matrix_index)
 
