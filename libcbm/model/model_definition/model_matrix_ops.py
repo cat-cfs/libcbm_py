@@ -178,16 +178,20 @@ class OperationWrapper:
             how="left",
             copy=False,
         )
-        is_null_merge_loc = merged["matrix_index"].isnull()
+        matrix_index = merged["matrix_index"]
+        is_null_merge_loc = matrix_index.isnull()
         if is_null_merge_loc.any():
             if self._default_matrix_index is not None:
-                merged.fillna(self._default_matrix_index)
+                matrix_index.fillna(
+                    self._default_matrix_index,
+                    inplace=True)
+                return matrix_index.to_numpy(dtype="uintp")
             else:
                 raise ValueError(
                     "operation could not be merged due to missing values: "
                     f"{merged[is_null_merge_loc.head()]}"
                 )
-        return merged["matrix_index"].to_numpy(dtype="uintp")
+        return matrix_index.to_numpy()
 
 
 class ModelMatrixOps:
