@@ -5,42 +5,42 @@ import numba
 import numba.typed
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k1(i, m):
     return (m[0][i],)
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k2(i, m):
     return (m[0][i], m[1][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k3(i, m):
     return (m[0][i], m[1][i], m[2][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k4(i, m):
     return (m[0][i], m[1][i], m[2][i], m[3][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k5(i, m):
     return (m[0][i], m[1][i], m[2][i], m[3][i], m[4][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k6(i, m):
     return (m[0][i], m[1][i], m[2][i], m[3][i], m[4][i], m[5][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k7(i, m):
     return (m[0][i], m[1][i], m[2][i], m[3][i], m[4][i], m[5][i], m[6][i])
 
 
-@numba.njit()
+@numba.njit(inline="always")
 def k8(i, m):
     return (
         m[0][i],
