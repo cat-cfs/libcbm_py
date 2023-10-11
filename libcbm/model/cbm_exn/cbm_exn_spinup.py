@@ -136,7 +136,7 @@ def get_default_ops(
                 model.pool_names,
                 model.parameters.get_disturbance_matrices(),
                 model.parameters.get_disturbance_matrix_associations(),
-                True
+                True,
             ),
             "requires_reindexing": True,
         },
@@ -145,14 +145,14 @@ def get_default_ops(
             "op_process_name": "Growth and Turnover",
             "op_data": net_growth,
             "requires_reindexing": True,
-            "default_matrix_index": len(net_growth.index) - 1
+            "default_matrix_index": len(net_growth.index) - 1,
         },
         {
             "name": "overmature_decline",
             "op_process_name": "Growth and Turnover",
             "op_data": overmature_decline,
             "requires_reindexing": True,
-            "default_matrix_index": len(overmature_decline.index) - 1
+            "default_matrix_index": len(overmature_decline.index) - 1,
         },
     ]
     return ops

@@ -20,7 +20,7 @@ def get_default_disturbance_ops(model: "CBMEXNModel") -> list[dict]:
                 model.pool_names,
                 model.parameters.get_disturbance_matrices(),
                 model.parameters.get_disturbance_matrix_associations(),
-                False
+                False,
             ),
             "requires_reindexing": True,
         }

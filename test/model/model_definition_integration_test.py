@@ -210,22 +210,16 @@ def test_integration():
             create_npp_matrix(cbm_model, stand_age)
             if (t % 150) == 0:
                 model_vars["parameters"]["disturbance_type"].assign(
-                    np.full(
-                        n_stands, disturbance_type_ids["fire"]
-                    )
+                    np.full(n_stands, disturbance_type_ids["fire"])
                 )
             elif t == 950:
                 model_vars["parameters"]["disturbance_type"].assign(
-                    np.full(
-                        n_stands, disturbance_type_ids["harvest"]
-                    )
+                    np.full(n_stands, disturbance_type_ids["harvest"])
                 )
 
             else:
                 model_vars["parameters"]["disturbance_type"].assign(
-                    np.full(
-                        n_stands, disturbance_type_ids["none"]
-                    )
+                    np.full(n_stands, disturbance_type_ids["none"])
                 )
 
             # reset flux at start of every time step
@@ -237,13 +231,7 @@ def test_integration():
             cbm_model.compute(
                 model_vars,
                 cbm_model.matrix_ops.get_operations(
-                    [
-                        "disturbance",
-                        "growth",
-                        "mortality",
-                        "decay"
-                    ],
-                    model_vars
+                    ["disturbance", "growth", "mortality", "decay"], model_vars
                 ),
             )
 
