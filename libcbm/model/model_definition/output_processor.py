@@ -61,7 +61,7 @@ class ModelOutputProcessor:
                     [self._results[name], results_t]
                 )
 
-    def get_results(self) -> dict[str, DataFrame]:
+    def get_results(self) -> ModelVariables:
         """Return the collection of accumulated results
 
         Returns:
