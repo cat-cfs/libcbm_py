@@ -4,6 +4,7 @@ from typing import Union
 from libcbm.model.model_definition.model_handle import ModelHandle
 from libcbm.wrapper.libcbm_operation import Operation
 from libcbm.model.model_definition.model_variables import ModelVariables
+from libcbm.model.model_definition.matrix_merge_index import MatrixMergeIndex
 
 
 def prepare_operation_dataframe(
@@ -83,20 +84,27 @@ class OperationWrapper:
         self._operation_data = prepare_operation_dataframe(
             operation_data, pool_names
         )
+        self._index_len = len(self._operation_data.index)
+        self._non_indexed = False
         self._op_index = self._init_index()
         self._requires_reindexing = requires_reindexing
         self._init_value = init_value
         self._default_matrix_index = default_matrix_index
         self._op: Union[Operation, None] = None
 
-    def _init_index(self) -> pd.DataFrame:
-        return pd.DataFrame(
-            index=self._operation_data.index,
-            data={
-                "matrix_index": np.arange(
-                    0, len(self._operation_data.index), dtype="uintp"
-                )
-            },
+    def _init_index(self) -> Union[MatrixMergeIndex, None]:
+        if (
+            len(self._operation_data.index.names) == 1
+            and not self._operation_data.index.names[0]
+        ):
+            return None
+        key_data = {}
+        names = self._operation_data.index.names
+        df = self._operation_data.reset_index()
+        key_data = {name: df[name].to_numpy() for name in names}
+        return MatrixMergeIndex(
+            key_data,
+            np.arange(0, len(self._operation_data.index), dtype="uintp"),
         )
 
     def dispose(self):
@@ -106,7 +114,7 @@ class OperationWrapper:
     def get_operation(self, model_variables: ModelVariables) -> Operation:
         if self._op is not None:
             n_rows = model_variables["pools"].n_rows
-            curr_idx_len = len(self._op_index.index)
+            curr_idx_len = self._index_len
             must_index = curr_idx_len != 1 or curr_idx_len != n_rows
             if self._requires_reindexing:
                 matrix_index = self._compute_matrix_index(model_variables)
@@ -143,14 +151,11 @@ class OperationWrapper:
     ) -> np.ndarray:
         n_rows = model_variables["pools"].n_rows
 
-        if (
-            len(self._op_index.index.names) == 1
-            and not self._op_index.index.names[0]
-        ):
-            if len(self._op_index.index) == 1:
+        if self._op_index is None:
+            if self._index_len == 1:
                 # project the single operation to the entire landscape
                 return np.full(n_rows, 0, dtype="uintp")
-            elif len(self._op_index.index) == n_rows:
+            elif self._index_len == n_rows:
                 # there is one operation for each simulation area
                 return np.arange(0, n_rows, dtype="uintp")
             else:
@@ -158,40 +163,18 @@ class OperationWrapper:
                     "index length must match model_variables length, or be "
                     "of length 1."
                 )
+        else:
+            merge_data = {}
+            for idx_name in self._op_index.merge_keys:
+                if idx_name == "row_idx":
+                    merge_data["row_idx"] = np.arange(0, n_rows)
+                else:
+                    s = idx_name.split(".")
+                    merge_data[idx_name] = model_variables[s[0]][
+                        s[1]
+                    ].to_numpy()
 
-        merge_data = {}
-        for idx_name in self._op_index.index.names:
-            if idx_name == "row_idx":
-                merge_data["row_idx"] = np.arange(0, n_rows)
-            else:
-                s = idx_name.split(".")
-                merge_data[idx_name] = model_variables[s[0]][s[1]].to_numpy()
-
-        merge_df = pd.DataFrame(
-            merge_data,
-        )
-
-        merged = merge_df.merge(
-            self._op_index,
-            left_on=self._op_index.index.names,
-            right_index=True,
-            how="left",
-            copy=False,
-        )
-        matrix_index = merged["matrix_index"]
-        is_null_merge_loc = matrix_index.isnull()
-        if is_null_merge_loc.any():
-            if self._default_matrix_index is not None:
-                matrix_index.fillna(
-                    self._default_matrix_index,
-                    inplace=True)
-                return matrix_index.to_numpy(dtype="uintp")
-            else:
-                raise ValueError(
-                    "operation could not be merged due to missing values: "
-                    f"{merged[is_null_merge_loc.head()]}"
-                )
-        return matrix_index.to_numpy()
+            return self._op_index.merge(merge_data, self._default_matrix_index)
 
 
 class ModelMatrixOps:
