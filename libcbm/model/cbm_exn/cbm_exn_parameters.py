@@ -190,7 +190,9 @@ def _load_data_item(dir: str, item_name: str) -> Union[pd.DataFrame, list]:
         raise ValueError(f"unsupported type {item_type}")
 
 
-def parameters_factory(dir: str = None, data: dict = {}) -> CBMEXNParameters:
+def parameters_factory(
+    dir: Union[str, None] = None, data: Union[dict, None] = None
+) -> CBMEXNParameters:
     if data:
         _data = data.copy()
         # if any keys in CBMEXN_PARAMETERS_DATA are not present in the
