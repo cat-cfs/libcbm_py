@@ -103,7 +103,8 @@ class MatrixMergeIndex:
                 if key_val != key_data[k][i]:
                     raise ValueError(
                         "only integer keys supported. Found: "
-                        f"{key_data[k][i]} in {k} series")
+                        f"{key_data[k][i]} in {k} series"
+                    )
                 tuple_values.append(key_val)
             self._merge_dict[tuple(tuple_values)] = matrix_idx[i]
 

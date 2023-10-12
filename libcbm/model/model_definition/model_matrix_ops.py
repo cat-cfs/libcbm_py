@@ -170,9 +170,9 @@ class OperationWrapper:
                     merge_data["row_idx"] = np.arange(0, n_rows, dtype="int64")
                 else:
                     s = idx_name.split(".")
-                    merge_data[idx_name] = model_variables[s[0]][
-                        s[1]
-                    ].to_numpy().astype("int64")
+                    merge_data[idx_name] = (
+                        model_variables[s[0]][s[1]].to_numpy().astype("int64")
+                    )
 
             return self._op_index.merge(merge_data, self._default_matrix_index)
 
