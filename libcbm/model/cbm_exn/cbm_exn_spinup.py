@@ -5,7 +5,7 @@ from typing import Union
 
 if TYPE_CHECKING:
     from libcbm.model.cbm_exn.cbm_exn_model import CBMEXNModel
-
+from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn import cbm_exn_variables
 from libcbm.model.cbm_exn import cbm_exn_land_state
@@ -16,8 +16,8 @@ from libcbm.model.cbm_exn import cbm_exn_growth_functions
 
 def prepare_spinup_vars(
     spinup_input: ModelVariables,
-    model: CBMEXNModel,
-    include_flux: bool = False
+    parameters: CBMEXNParameters,
+    include_flux: bool = False,
 ) -> ModelVariables:
     """Initialize spinup variables and state.
 
@@ -40,13 +40,13 @@ def prepare_spinup_vars(
         ),
         "pools": cbm_exn_variables.init_pools(
             spinup_input["parameters"].n_rows,
-            model.pool_names,
+            parameters.pool_configuration(),
             spinup_input["parameters"].backend_type,
         ),
     }
     if "sw_hw" not in data["parameters"].columns:
         sw_hw = data["parameters"]["species"].map(
-            model.parameters.get_sw_hw_map()
+            parameters.get_sw_hw_map()
         )
         sw_hw.name = "sw_hw"
         data["parameters"].add_column(sw_hw, 0)
@@ -54,7 +54,7 @@ def prepare_spinup_vars(
     if include_flux:
         data["flux"] = cbm_exn_variables.init_flux(
             spinup_input["parameters"].n_rows,
-            model.flux_names,
+            [f["name"] for f in parameters.flux_configuration()],
             spinup_input["parameters"].backend_type,
         )
 
@@ -62,12 +62,12 @@ def prepare_spinup_vars(
 
 
 def get_default_ops(
-    model: "CBMEXNModel", spinup_vars: ModelVariables
+    parameters: CBMEXNParameters, spinup_vars: ModelVariables
 ) -> list[dict]:
     growth_info = cbm_exn_growth_functions.prepare_spinup_growth_info(
         spinup_vars,
-        model.parameters.get_turnover_parameters(),
-        model.parameters.get_root_parameters(),
+        parameters.get_turnover_parameters(),
+        parameters.get_root_parameters(),
     )
     net_growth = cbm_exn_annual_process_dynamics.net_growth(
         growth_info,
@@ -81,7 +81,7 @@ def get_default_ops(
             "name": "snag_turnover",
             "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.snag_turnover(
-                model.parameters.get_turnover_parameters(), True
+                parameters.get_turnover_parameters(), True
             ),
             "requires_reindexing": False,
         },
@@ -89,7 +89,7 @@ def get_default_ops(
             "name": "biomass_turnover",
             "op_process_name": "Growth and Turnover",
             "op_data": cbm_exn_annual_process_dynamics.biomass_turnover(
-                model.parameters.get_turnover_parameters(), True
+                parameters.get_turnover_parameters(), True
             ),
             "requires_reindexing": False,
         },
@@ -97,8 +97,10 @@ def get_default_ops(
             "name": "dom_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.dom_decay(
-                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
-                model.parameters.get_decay_parameters(),
+                spinup_vars["parameters"][
+                    "mean_annual_temperature"
+                ].to_numpy(),
+                parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
         },
@@ -106,8 +108,10 @@ def get_default_ops(
             "name": "slow_decay",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_decay(
-                spinup_vars["parameters"]["mean_annual_temperature"].to_numpy(),
-                model.parameters.get_decay_parameters(),
+                spinup_vars["parameters"][
+                    "mean_annual_temperature"
+                ].to_numpy(),
+                parameters.get_decay_parameters(),
             ),
             "requires_reindexing": False,
         },
@@ -115,7 +119,7 @@ def get_default_ops(
             "name": "slow_mixing",
             "op_process_name": "Decay",
             "op_data": cbm_exn_annual_process_dynamics.slow_mixing(
-                model.parameters.get_slow_mixing_rate(),
+                parameters.get_slow_mixing_rate(),
             ),
             "requires_reindexing": False,
         },
@@ -123,9 +127,9 @@ def get_default_ops(
             "name": "disturbance",
             "op_process_name": "Disturbance",
             "op_data": cbm_exn_disturbance_dynamics.disturbance(
-                model.pool_names,
-                model.parameters.get_disturbance_matrices(),
-                model.parameters.get_disturbance_matrix_associations(),
+                parameters.pool_configuration(),
+                parameters.get_disturbance_matrices(),
+                parameters.get_disturbance_matrix_associations(),
                 True,
             ),
             "requires_reindexing": True,
@@ -188,7 +192,7 @@ def spinup(
     """
 
     if ops is None:
-        ops = get_default_ops(model, spinup_vars)
+        ops = get_default_ops(model.parameters, spinup_vars)
     for op_def in ops:
         model.matrix_ops.create_operation(**op_def)
     if op_sequence is None:
