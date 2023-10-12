@@ -112,9 +112,8 @@ class CBMEXNModel:
     def step(
         self,
         cbm_vars: cbm_vars_type,
-        disturbance_ops: Union[list[dict], None] = None,
+        ops: Union[list[dict], None] = None,
         disturbance_op_sequence: Union[list[str], None] = None,
-        step_ops: Union[list[dict], None] = None,
         step_op_sequence: Union[list[str], None] = None,
     ) -> cbm_vars_type:
         """Perform one timestep of the CBMEXNModel
@@ -136,10 +135,9 @@ class CBMEXNModel:
         result = cbm_exn_step.step(
             self,
             _cbm_vars,
-            disturbance_ops,
-            disturbance_op_sequence,
-            step_ops,
+            ops,
             step_op_sequence,
+            disturbance_op_sequence,
         )
 
         if return_pandas_dict:
@@ -176,7 +174,7 @@ class CBMEXNModel:
             _spinup_input = spinup_input
         spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
             _spinup_input,
-            self,
+            self.parameters,
         )
         result = cbm_exn_spinup.spinup(
             self,
