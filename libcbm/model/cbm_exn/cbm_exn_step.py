@@ -197,7 +197,7 @@ def step(
     """Advance CBM state by one timestep, and track results.
 
     This function updates state variables, performs disturbances for affected
-    statnds and annaul processes for all stands.  The cbm_vars `pools`
+    statnds and annual processes for all stands.  The cbm_vars `pools`
     dataframe is updated with changed pool values. The cbm_vars `flux`
     dataframe tracks specific flows between pools for meaningful indicators.
 
