@@ -1,0 +1,104 @@
+---
+title: "cbm_exn_custom_ops"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(reticulate)
+libcbm_resources <- import("libcbm.resources")
+cbm_exn_parameters <- import("libcbm.model.cbm_exn.cbm_exn_parameters")
+cbm_exn_model <- import("libcbm.model.cbm_exn.cbm_exn_model")
+cbm_exn_spinup <- import("libcbm.model.cbm_exn.cbm_exn_spinup")
+cbm_exn_step <- import("libcbm.model.cbm_exn.cbm_exn_step")
+model_variables <- import(
+  "libcbm.model.model_definition.model_variables"
+)
+```
+
+```{r}
+n_stands <- 10
+
+# load the default bundled cbm_exn parameters
+default_parameters <- cbm_exn_parameters$parameters_factory(
+  libcbm_resources$get_cbm_exn_parameters_dir()
+)
+```
+
+
+```{r}
+# read some packaged net increments, derived from a
+# simulation of the same growth curve used in CBM-CFS3
+# tutorial 1
+net_increments <- read.csv(
+  file.path(
+    libcbm_resources$get_test_resources_dir(),
+    "cbm_exn_net_increments",
+    "net_increments.csv"
+  )
+)
+```
+
+```{r}
+# the same set of increments are repeated for each stand in this example
+colnames(net_increments) <- c("age", "merch_inc", "foliage_inc", "other_inc")
+stand_increments <- NULL
+
+for (i in 0:(n_stands - 1)){
+  copied_increments <- data.frame(net_increments)
+  copied_increments <- cbind(data.frame(row_idx=i), copied_increments)
+  stand_increments <- rbind(
+    stand_increments, copied_increments
+  )
+}
+```
+
+```{r}
+spinup_parameters <- data.frame(
+  age = sample(0L:60L, n_stands, replace = TRUE),
+  area = rep(1.0, n_stands),
+  delay = rep(0L, n_stands),
+  return_interval = rep(125L, n_stands),
+  min_rotations = rep(10L, n_stands),
+  max_rotations = rep(30L, n_stands),
+  spatial_unit_id = rep(17L, n_stands), # Ontario/Mixedwood plains
+  species = rep(20L, n_stands), # red pine
+  mean_annual_temperature = sample(
+    seq(-1, 2, 0.1), n_stands, replace = TRUE
+  ),
+  historical_disturbance_type = rep(1L, n_stands),
+  last_pass_disturbance_type = rep(1L, n_stands)
+)
+```
+
+
+```{r}
+spinup_input <- model_variables$ModelVariables$from_pandas(
+  dict(
+    parameters = spinup_parameters,
+    increments = stand_increments
+  )
+)
+
+spinup_vars <- cbm_exn_spinup$prepare_spinup_vars(
+  spinup_input,
+  default_parameters
+)
+spinup_op_list <- cbm_exn_spinup$get_default_op_list()
+spinup_ops <- cbm_exn_spinup$get_default_ops(default_parameters, spinup_vars)
+```
+
+```{r}
+with(cbm_exn_model$initialize() %as% model, {
+    cbm_vars = cbm_exn_spinup$spinup(
+        model,
+        spinup_vars,
+        ops=spinup_ops,
+        op_sequence=spinup_op_list
+    )
+  }
+)
+```
