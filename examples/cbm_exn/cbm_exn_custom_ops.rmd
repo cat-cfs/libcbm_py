@@ -93,12 +93,44 @@ spinup_ops <- cbm_exn_spinup$get_default_ops(default_parameters, spinup_vars)
 
 ```{r}
 with(cbm_exn_model$initialize() %as% model, {
-    cbm_vars = cbm_exn_spinup$spinup(
-        model,
-        spinup_vars,
-        ops=spinup_ops,
-        op_sequence=spinup_op_list
-    )
-  }
-)
+  cbm_vars <- cbm_exn_spinup$spinup(
+    model,
+    spinup_vars,
+    ops = spinup_ops,
+    op_sequence = spinup_op_list
+  )
+})
+```
+
+```{r}
+# set the time step parameters that are
+# meaningful for construction of the default operations
+cbm_vars["parameters"]["mean_annual_temperature"]$assign(1.1)
+cbm_vars["parameters"]["merch_inc"]$assign(0.1)
+cbm_vars["parameters"]["foliage_inc"]$assign(0.01)
+cbm_vars["parameters"]["other_inc"]$assign(sample(
+    seq(0.0, 2, 0.1), n_stands, replace = TRUE
+  ))
+cbm_vars["parameters"]["disturbance_type"]$assign(sample(
+    c(0L, 1L, 2L), n_stands, replace = TRUE
+  ))
+
+step_ops_sequence <- cbm_exn_step$get_default_annual_process_op_sequence()
+step_disturbance_ops_sequence <- cbm_exn_step$get_default_disturbance_op_sequence()
+step_ops <- cbm_exn_step$get_default_ops(default_parameters, cbm_vars)
+
+```
+
+```{r}
+with(cbm_exn_model$initialize() %as% model, {
+  cbm_vars <- cbm_exn_step$step(
+    model,
+    cbm_vars,
+    ops = step_ops,
+    step_op_sequence = step_ops_sequence,
+    # list() is required for single element lists
+    # https://rstudio.github.io/reticulate/articles/calling_python.html#lists-tuples-and-dictionaries
+    disturbance_op_sequence = list(step_disturbance_ops_sequence)
+  )
+})
 ```
