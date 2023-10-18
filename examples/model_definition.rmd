@@ -6,7 +6,7 @@ output: html_document
 ``` {r}
 library(ggplot2)
 library(reshape2)
-
+library(plyr)
 library(reticulate)
 
 model <- import("libcbm.model.model_definition.model")
