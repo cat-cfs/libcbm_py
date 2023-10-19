@@ -206,6 +206,19 @@ with cbm_exn_model.initialize() as model:
 ```
 
 ```python
+# initialize parameters for stepping (values for illustration)
+cbm_vars["parameters"]["mean_annual_temperature"].assign(1.1)
+cbm_vars["parameters"]["merch_inc"].assign(0.1)
+cbm_vars["parameters"]["foliage_inc"].assign(0.01)
+cbm_vars["parameters"]["other_inc"].assign(0.05)
+cbm_vars["parameters"]["disturbance_type"].assign(
+    rng.choice(
+        [0,1,4], n_stands, p=[0.98, 0.01, 0.01]
+    )
+)
+```
+
+```python
 step_ops_sequence = cbm_exn_step.get_default_annual_process_op_sequence()
 step_disturbance_ops_sequence = cbm_exn_step.get_default_disturbance_op_sequence()
 step_ops = cbm_exn_step.get_default_ops(parameters, cbm_vars)
@@ -236,19 +249,6 @@ for op in step_ops:
     if name in ["growth", "overmature_decline"]:
         display(Markdown(f"## {name}"))
         display(op["op_data"])
-```
-
-```python
-# initialize parameters for stepping (values for illustration)
-cbm_vars["parameters"]["mean_annual_temperature"].assign(1.1)
-cbm_vars["parameters"]["merch_inc"].assign(0.1)
-cbm_vars["parameters"]["foliage_inc"].assign(0.01)
-cbm_vars["parameters"]["other_inc"].assign(0.05)
-cbm_vars["parameters"]["disturbance_type"].assign(
-    rng.choice(
-        [0,1,4], n_stands, p=[0.98, 0.01, 0.01]
-    )
-)
 ```
 
 run a timestep with the specified parameters
@@ -299,14 +299,6 @@ display(increments)
 
 ```python
 display(spinup_input["parameters"])
-```
-
-```python
-
-```
-
-```python
-
 ```
 
 ```python
