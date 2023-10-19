@@ -10,6 +10,23 @@ from libcbm.model.model_definition.matrix_merge_index import MatrixMergeIndex
 def prepare_operation_dataframe(
     df: pd.DataFrame, pool_names: set[str]
 ) -> pd.DataFrame:
+    """Validate and prepare a dataframe formatted to store an indexed matrix
+    on every row of the dataframe.
+
+
+    Args:
+        df (pd.DataFrame): the formatted dataframe
+        pool_names (set[str]): the pool names for validation of formatted
+            column names
+
+    Raises:
+        ValueError: index columns names were not formatted as expected
+        ValueError: pool source sink column names were not formatted as
+            expected, or failed pool name validation
+
+    Returns:
+        pd.DataFrame:
+    """
     result_df = df.copy()
     cols: list[str] = [s.strip() for s in df.columns]
 
@@ -177,12 +194,24 @@ class OperationWrapper:
 
 
 class ModelMatrixOps:
+    """
+    class for managing C flow matrices using a formatted dataframe storage
+    scheme.
+    """
     def __init__(
         self,
         model_handel: ModelHandle,
         pool_names: list[str],
         op_process_ids: dict[str, int],
     ):
+        """Create ModelMatrixOps
+
+        Args:
+            model_handel (ModelHandle): the model handle for applying C flows
+            pool_names (list[str]): names of pools in the model
+            op_process_ids (dict[str, int]): dictionary of op_process_ids for
+                categorization of fluxes extracted from the C flows
+        """
         self._op_wrappers: dict[str, OperationWrapper] = {}
         self._model_handle = model_handel
         self._pool_names = set(pool_names)
@@ -197,6 +226,30 @@ class ModelMatrixOps:
         init_value: int = 1,
         default_matrix_index: Union[int, None] = None,
     ):
+        """Create a C flow operation using a dataframe formatted so that each
+            row is an index C flow matrix.
+
+        Args:
+            name (str): The operations unique name. If an existing operation
+                is stored in this instance it will be overwritten.
+            op_process_name (str): The op process name used to categorize
+                resulting C fluxes
+            op_data (pd.DataFrame): the formatted dataframe containing indexed
+                rows of matrices
+            requires_reindexing (bool, optional): If set to True each time
+                :py:func:`get_operation` is called the matrices are re-indexed
+                according to the current simulation state. This is needed for
+                example if timestep varying values are involved in the index.
+                Defaults to True.
+            init_value (int, optional): The default value set on the diagonal
+                of each matrix. Diagonal values specified in the parameters
+                will overwrite this default. Defaults to 1.
+            default_matrix_index (Union[int, None], optional): If simulation
+                values are not found within the specified op_data, the
+                specified 0 based index will be used as a default fill-value.
+                If this value is not specified, such missing values will
+                instead result in an error being raised. Defaults to None.
+        """
         if name in self._op_wrappers:
             self._op_wrappers[name].dispose()
             del self._op_wrappers[name]
@@ -214,6 +267,18 @@ class ModelMatrixOps:
     def get_operations(
         self, op_names: list[str], model_variables: ModelVariables
     ) -> list[Operation]:
+        """Get C flow operations for computation of C flows on the current
+        model state stored in model_variables.
+
+        Args:
+            op_names (list[str]): the sequential names of the stored
+                operations to apply (duplicates allowed)
+            model_variables (ModelVariables): the current model state:
+                pools, flux, state etc.
+
+        Returns:
+            list[Operation]: a list of C flow operations to apply
+        """
         unique_ops: dict[str, Operation] = {}
         out: list[Operation] = []
         for name in op_names:
