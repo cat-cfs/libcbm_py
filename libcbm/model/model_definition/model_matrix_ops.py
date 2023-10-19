@@ -104,7 +104,6 @@ class OperationWrapper:
         key_data = {name: df[name].to_numpy() for name in names}
         return MatrixMergeIndex(
             key_data,
-            np.arange(0, len(self._operation_data.index), dtype="uintp"),
         )
 
     def dispose(self):

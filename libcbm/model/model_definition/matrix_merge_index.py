@@ -83,11 +83,27 @@ def merge(
 
 
 class MatrixMergeIndex:
+    """
+    Creates and stores an index for indexed matrices. This is used to
+    efficiently merge the matrix information to each simulation area during
+    runtime.
+    """
     def __init__(
-        self, key_data: dict[str, np.ndarray], matrix_idx: np.ndarray
+        self, key_data: dict[str, np.ndarray]
     ):
+        """Intialize a MatrixMergeIndex
+
+        Args:
+            key_data (dict[str, np.ndarray]): the key data for each matrix
+
+        Raises:
+            ValueError: only integer type keys are supported
+        """
         self._merge_keys = list(key_data.keys())
         self._key_data = key_data
+        # assumption here is that all members of key_data are of equal length
+        # if this is not the case in the iterations below an index out of
+        # range error is expected.
         self._len_key_data = len((next(iter(key_data.values()))))
 
         key_index_type = numba.types.UniTuple(
@@ -106,10 +122,15 @@ class MatrixMergeIndex:
                         f"{key_data[k][i]} in {k} series"
                     )
                 tuple_values.append(key_val)
-            self._merge_dict[tuple(tuple_values)] = matrix_idx[i]
+            self._merge_dict[tuple(tuple_values)] = i
 
     @property
     def merge_keys(self) -> list[str]:
+        """gets a copy of the merge keys for this instance
+
+        Returns:
+            list[str]: the merge keys
+        """
         return self._merge_keys.copy()
 
     def merge(
@@ -117,6 +138,27 @@ class MatrixMergeIndex:
         merge_data: dict[str, np.ndarray],
         fill_value: Union[int, None] = None,
     ) -> np.ndarray:
+        """Merge the index values stored in this instance to the specified
+        merge data.
+
+        Args:
+            merge_data (dict[str, np.ndarray]): Values to merge with this
+                instance's stored key values.
+            fill_value (Union[int, None], optional): An optional fill value.
+                This is used to fill values where no matching key is found
+                in this instance's index. If this value is unspecifed, missing
+                any missing keys will result in a value error. Defaults to
+                None.
+
+        Raises:
+            ValueError: Raised if fill value is not set and 1 or more value in
+                the specified merge data is not found in this instance's
+                stored index.
+
+        Returns:
+            np.ndarray: the index of each matched key for each element in the
+                specified merge data
+        """
         len_merge_arrays = len((next(iter(merge_data.values()))))
         out = np.empty(len_merge_arrays, dtype="int64")
         err_idx = merge(
