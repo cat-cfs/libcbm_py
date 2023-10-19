@@ -88,9 +88,8 @@ class MatrixMergeIndex:
     efficiently merge the matrix information to each simulation area during
     runtime.
     """
-    def __init__(
-        self, key_data: dict[str, np.ndarray]
-    ):
+
+    def __init__(self, key_data: dict[str, np.ndarray]):
         """Intialize a MatrixMergeIndex
 
         Args:
@@ -159,6 +158,13 @@ class MatrixMergeIndex:
             np.ndarray: the index of each matched key for each element in the
                 specified merge data
         """
+        if fill_value is not None:
+            if fill_value < 0 or fill_value >= self._len_key_data:
+                raise ValueError(
+                    "fill must be within the range of defined "
+                    f"key indexes (0,{self._len_key_data-1}). "
+                    f"got: {fill_value}"
+                )
         len_merge_arrays = len((next(iter(merge_data.values()))))
         out = np.empty(len_merge_arrays, dtype="int64")
         err_idx = merge(
