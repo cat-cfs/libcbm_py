@@ -198,6 +198,7 @@ class ModelMatrixOps:
     class for managing C flow matrices using a formatted dataframe storage
     scheme.
     """
+
     def __init__(
         self,
         model_handel: ModelHandle,
