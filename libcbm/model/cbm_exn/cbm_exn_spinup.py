@@ -45,9 +45,7 @@ def prepare_spinup_vars(
         ),
     }
     if "sw_hw" not in data["parameters"].columns:
-        sw_hw = data["parameters"]["species"].map(
-            parameters.get_sw_hw_map()
-        )
+        sw_hw = data["parameters"]["species"].map(parameters.get_sw_hw_map())
         sw_hw.name = "sw_hw"
         data["parameters"].add_column(sw_hw, 0)
     data["pools"]["Input"].assign(1.0)
