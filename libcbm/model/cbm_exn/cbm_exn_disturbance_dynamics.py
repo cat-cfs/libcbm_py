@@ -8,6 +8,22 @@ def disturbance(
     dm_associations: pd.DataFrame,
     spinup_format: bool,
 ) -> pd.DataFrame:
+    """Compute a formatted dataframe containing all
+
+    Args:
+        pools (list[str]): the list of CBM pools
+        disturbance_matrices (pd.DataFrame): disturbance matrix values drawn
+            from CBM default parameters
+        dm_associations (pd.DataFrame): the matrix-id to
+            disturbance type/spatial unit relationship table drawn from CBM
+            default parameters
+        spinup_format (bool): set to true if the result is being used
+            for spinup and false for stepping.
+
+    Returns:
+        pd.DataFrame: formatted dataframe containing indexed disturbance
+            matrices on each row
+    """
     if spinup_format:
         dist_table_name = "state"
         spu_table_name = "parameters"

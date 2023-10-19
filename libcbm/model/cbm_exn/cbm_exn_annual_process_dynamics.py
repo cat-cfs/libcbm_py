@@ -6,6 +6,15 @@ import pandas as pd
 def net_growth(
     growth_info: dict[str, np.ndarray],
 ) -> pd.DataFrame:
+    """Compute the dataframe of growth matrices
+
+    Args:
+        growth_info (dict[str, np.ndarray]): A dictionary of arrays containing
+            net increment for the various biomass pools.
+
+    Returns:
+        pd.DataFrame: The growth matrices formatted as a dataframe.
+    """
     matrices = {}
     if "age" in growth_info:
         matrices["[row_idx]"] = growth_info["row_idx"]
@@ -25,6 +34,16 @@ def net_growth(
 def overmature_decline(
     growth_info: dict[str, np.ndarray],
 ) -> pd.DataFrame:
+    """Compute the dataframe of overmature decline matrices using the default
+    CBM-CFS3 routines
+
+    Args:
+        growth_info (dict[str, np.ndarray]): A dictionary of arrays containing
+            biomass losses for the various biomass pools.
+
+    Returns:
+        pd.DataFrame: The overmature decline matrices formatted as a dataframe.
+    """
     matrices = {}
     if "age" in growth_info:
         matrices["[row_idx]"] = growth_info["row_idx"]
@@ -57,6 +76,18 @@ def overmature_decline(
 def snag_turnover(
     turnover_params: pd.DataFrame, spinup_format: bool
 ) -> pd.DataFrame:
+    """Compute the dataframe of snag turnover matrices using the default
+    CBM-CFS3 routines
+
+    Args:
+        turnover_params (pd.DataFrame): turnover parameters drawn from
+            CBM3 default parameters
+        spinup_format (bool): set to true if the result is being used
+            for spinup and false for stepping.
+
+    Returns:
+        pd.DataFrame: snag turnover matrices in a formatted dataframe
+    """
     if spinup_format:
         table_name = "parameters"
     else:
@@ -75,6 +106,18 @@ def snag_turnover(
 def biomass_turnover(
     turnover_params: pd.DataFrame, spinup_format: bool
 ) -> pd.DataFrame:
+    """Compute the dataframe of biomass turnover matrices using the default
+    CBM-CFS3 routines
+
+    Args:
+        turnover_params (pd.DataFrame): turnover parameters drawn from
+            CBM3 default parameters
+        spinup_format (bool): set to true if the result is being used
+            for spinup and false for stepping.
+
+    Returns:
+        pd.DataFrame: biomass turnover matrices in a formatted dataframe
+    """
     if spinup_format:
         table_name = "parameters"
     else:
@@ -141,6 +184,16 @@ def compute_decay_rate(
 def dom_decay(
     mean_annual_temp: np.ndarray, decay_parameters: dict[str, dict[str, float]]
 ) -> pd.DataFrame:
+    """Compute the dataframe of dom decay matrices using the default
+    CBM-CFS3 routines
+
+    Args:
+        mean_annual_temp (np.ndarray): the mean annual temperature in deg C
+        decay_parameters (dict[str, dict[str, float]]): CBM3 decay parameters
+
+    Returns:
+        pd.DataFrame: Formatted dataframe of dom decay matrices
+    """
     dom_pools = [
         "AboveGroundVeryFastSoil",
         "BelowGroundVeryFastSoil",
@@ -182,6 +235,16 @@ def dom_decay(
 def slow_decay(
     mean_annual_temp: np.ndarray, decay_parameters: dict[str, dict[str, float]]
 ) -> pd.DataFrame:
+    """Compute the dataframe of dom decay matrices using the default
+    CBM-CFS3 routines
+
+    Args:
+        mean_annual_temp (np.ndarray): the mean annual temperature in deg C
+        decay_parameters (dict[str, dict[str, float]]): CBM3 decay parameters
+
+    Returns:
+        pd.DataFrame: Formatted dataframe of dom decay matrices
+    """
     matrix_data = {}
     for dom_pool in ["AboveGroundSlowSoil", "BelowGroundSlowSoil"]:
         decay_parameter = decay_parameters[dom_pool]
@@ -201,6 +264,15 @@ def slow_decay(
 
 
 def slow_mixing(rate: float) -> pd.DataFrame:
+    """Compute the slow mixing rate matrix and return it in a formatted
+    dataframe
+
+    Args:
+        rate (float): the annual slow mixing rate
+
+    Returns:
+        pd.DataFrame: formatted dataframe containing C flow matrix
+    """
     slow_mixing_pool_flows = {
         "AboveGroundSlowSoil.BelowGroundSlowSoil": [rate],
         "AboveGroundSlowSoil.AboveGroundSlowSoil": [1 - rate],
