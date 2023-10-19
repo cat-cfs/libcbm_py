@@ -121,7 +121,7 @@ class MatrixMergeIndex:
                         f"{key_data[k][i]} in {k} series"
                     )
                 tuple_values.append(key_val)
-            self._merge_dict[tuple(tuple_values)] = i
+            self._merge_dict[tuple(tuple_values)] = np.uint64(i)
 
     @property
     def merge_keys(self) -> list[str]:
