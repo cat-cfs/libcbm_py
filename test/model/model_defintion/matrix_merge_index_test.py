@@ -41,14 +41,11 @@ def test_merge():
     m = MatrixMergeIndex(
         {
             "a": np.array([1, 2, 3], dtype="int8"),
-            "b": np.array([1, 2, 3], dtype="int16")
+            "b": np.array([1, 2, 3], dtype="int16"),
         }
     )
     result = m.merge(
-        {
-            "a": np.array([1, 1, 2, 3, 3, 3]),
-            "b": np.array([1, 1, 2, 3, 3, 3])
-        }
+        {"a": np.array([1, 1, 2, 3, 3, 3]), "b": np.array([1, 1, 2, 3, 3, 3])}
     )
     assert result.tolist() == [0, 0, 1, 2, 2, 2]
 
@@ -57,15 +54,15 @@ def test_merge_with_fill_value():
     m = MatrixMergeIndex(
         {
             "a": np.array([1, 2, 3], dtype="int64"),
-            "b": np.array([1, 2, 3], dtype="int32")
+            "b": np.array([1, 2, 3], dtype="int32"),
         }
     )
     result = m.merge(
         {
             "a": np.array([1, 1, 2, 3, 3, 3, 95]),
-            "b": np.array([1, 1, 2, 3, 3, 3, 17])
+            "b": np.array([1, 1, 2, 3, 3, 3, 17]),
         },
-        fill_value=1
+        fill_value=1,
     )
     assert result.tolist() == [0, 0, 1, 2, 2, 2, 1]
 
@@ -74,31 +71,13 @@ def test_merge_error_fill_value_out_of_range():
     m = MatrixMergeIndex(
         {
             "a": np.array([1, 2, 3], dtype="int32"),
-            "b": np.array([1, 2, 3], dtype="int64")
+            "b": np.array([1, 2, 3], dtype="int64"),
         }
     )
     with pytest.raises(ValueError):
-        m.merge(
-            {
-                "a": np.array([1.0]),
-                "b": np.array([1])
-            },
-            fill_value=-1
-        )
+        m.merge({"a": np.array([1.0]), "b": np.array([1])}, fill_value=-1)
 
     with pytest.raises(ValueError):
-        m.merge(
-            {
-                "a": np.array([1.0]),
-                "b": np.array([1])
-            },
-            fill_value=3
-        )
+        m.merge({"a": np.array([1.0]), "b": np.array([1])}, fill_value=3)
     with pytest.raises(ValueError):
-        m.merge(
-            {
-                "a": np.array([1.0]),
-                "b": np.array([1])
-            },
-            fill_value=1000
-        )
+        m.merge({"a": np.array([1.0]), "b": np.array([1])}, fill_value=1000)
