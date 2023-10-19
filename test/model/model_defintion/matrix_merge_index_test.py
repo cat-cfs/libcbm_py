@@ -56,13 +56,13 @@ def test_merge():
 def test_merge_with_fill_value():
     m = MatrixMergeIndex(
         {
-            "a": np.array([1, 2, 3], dtype="int32"),
-            "b": np.array([1, 2, 3], dtype="int64")
+            "a": np.array([1, 2, 3], dtype="int64"),
+            "b": np.array([1, 2, 3], dtype="int32")
         }
     )
     result = m.merge(
         {
-            "a": np.array([1.0, 1, 2, 3, 3, 3, 95]),
+            "a": np.array([1, 1, 2, 3, 3, 3, 95]),
             "b": np.array([1, 1, 2, 3, 3, 3, 17])
         },
         fill_value=1
