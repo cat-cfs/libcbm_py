@@ -131,18 +131,15 @@ class CBMEXNParameters:
         """
         return self._root_parameters
 
-    def get_decay_parameter(self, dom_pool: str) -> dict[str, float]:
-        """Get decay parameters for the specified named dead organic matter
-        (DOM) pool.
-
-        Args:
-            dom_pool (str): the DOM pool
+    def get_decay_parameters(self) -> dict[str, dict[str, float]]:
+        """Get decay parameters for all of the named dead organic matter
+        (DOM) pools.
 
         Returns:
-            dict[str, float]: a dictionary of named parameters for that DOM
-                pool.
+            dict[str,dict[str, float]]: a dictionary of named parameters
+                for DOM pool decays
         """
-        return self._decay_param_dict[dom_pool]
+        return self._decay_param_dict
 
     def get_disturbance_matrices(self) -> pd.DataFrame:
         """
@@ -193,7 +190,9 @@ def _load_data_item(dir: str, item_name: str) -> Union[pd.DataFrame, list]:
         raise ValueError(f"unsupported type {item_type}")
 
 
-def parameters_factory(dir: str = None, data: dict = {}) -> CBMEXNParameters:
+def parameters_factory(
+    dir: Union[str, None] = None, data: Union[dict, None] = None
+) -> CBMEXNParameters:
     if data:
         _data = data.copy()
         # if any keys in CBMEXN_PARAMETERS_DATA are not present in the

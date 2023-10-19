@@ -6,7 +6,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.3'
-      jupytext_version: 1.14.0
+      jupytext_version: 1.14.6
   kernelspec:
     display_name: Python 3 (ipykernel)
     language: python
@@ -30,7 +30,6 @@ from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 def spinup(spinup_input, parameters):
     with cbm_exn_model.initialize(
         parameters=parameters, # when None, packaged default parameters are used
-        pandas_interface=True,
         include_spinup_debug=False,
     ) as model:
         cbm_vars = model.spinup(spinup_input)
@@ -39,7 +38,6 @@ def spinup(spinup_input, parameters):
 def step(cbm_vars, parameters):
     with cbm_exn_model.initialize(
         parameters=parameters, # when None, packaged default parameters are used
-        pandas_interface=True,
         include_spinup_debug=False,
     ) as model:
         cbm_vars = model.step(cbm_vars)

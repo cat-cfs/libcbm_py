@@ -26,6 +26,7 @@ Code Documentation
    model_definition
    moss_c_model
    cbm_exn
+   cbm_exn_custom_ops
    libcbm_core_functions
    package_resources
 

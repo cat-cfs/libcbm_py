@@ -4,18 +4,17 @@ from typing import Dict
 from typing import Iterator
 from contextlib import contextmanager
 import pandas as pd
-import numpy as np
 from libcbm import resources
 from libcbm.model.model_definition import model
 from libcbm.model.model_definition.model import CBMModel
+from libcbm.model.model_definition.model_matrix_ops import ModelMatrixOps
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition.output_processor import ModelOutputProcessor
 from libcbm.model.cbm_exn import cbm_exn_spinup
 from libcbm.model.cbm_exn import cbm_exn_step
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
-from libcbm.model.cbm_exn.cbm_exn_matrix_ops import MatrixOps
-from libcbm.wrapper.libcbm_operation import Operation
+
 
 cbm_vars_type = Union[ModelVariables, Dict[str, pd.DataFrame]]
 
@@ -23,7 +22,7 @@ cbm_vars_type = Union[ModelVariables, Dict[str, pd.DataFrame]]
 class SpinupReporter:
     """Tracks step-by-step results during spinup for debugging purposes."""
 
-    def __init__(self, pandas_interface: bool):
+    def __init__(self):
         """initialize a SpinupReporter
 
         Args:
@@ -32,7 +31,6 @@ class SpinupReporter:
                 interfaces
         """
         self._output_processor = ModelOutputProcessor()
-        self._pandas_interface = pandas_interface
 
     def append_spinup_output(
         self, timestep: int, spinup_vars: ModelVariables
@@ -45,7 +43,7 @@ class SpinupReporter:
         """
         self._output_processor.append_results(timestep, spinup_vars)
 
-    def get_output(self) -> cbm_vars_type:
+    def get_output(self) -> ModelVariables:
         """Gets the accumulated spinup results"""
         return self._output_processor.get_results()
 
@@ -59,26 +57,19 @@ class CBMEXNModel:
         self,
         cbm_model: CBMModel,
         parameters: CBMEXNParameters,
-        pandas_interface=True,
-        spinup_reporter: SpinupReporter = None,
+        spinup_reporter: Union[SpinupReporter, None] = None,
     ):
         """initialize the CBMEXNModel
 
         Args:
             cbm_model (CBMModel): abstraction of CBM model
             parameters (CBMEXNParameters): cbm_constant parameter
-            pandas_interface (bool, optional): If set to true then all members
-                of CBMVariables are assumed to be of type pd.DataFrame, if
-                false then the internally defined libcbm DataFrame is used.
-                Defaults to True.
             spinup_reporter (SpinupReporter, optional): If specified, spinup
                 results are tracked for debugging purposes. Defaults to None.
         """
         self._cbm_model = cbm_model
-        self._pandas_interface = pandas_interface
         self._spinup_reporter = spinup_reporter
         self._parameters = parameters
-        self._matrix_ops = MatrixOps(cbm_model, self._parameters)
 
     @property
     def pool_names(self) -> list[str]:
@@ -101,13 +92,13 @@ class CBMEXNModel:
         return self._cbm_model.flux_names
 
     @property
-    def matrix_ops(self) -> MatrixOps:
-        """MatrixOps instance which computes and caches C matrix flows
+    def matrix_ops(self) -> ModelMatrixOps:
+        """ModelMatrixOps instance which computes and caches C matrix flows
 
         Returns:
-            MatrixOps: instance of MatrixOps
+            ModelMatrixOps: instance of ModelMatrixOps
         """
-        return self._matrix_ops
+        return self._cbm_model.matrix_ops
 
     @property
     def parameters(self) -> CBMEXNParameters:
@@ -118,7 +109,13 @@ class CBMEXNModel:
         """
         return self._parameters
 
-    def step(self, cbm_vars: cbm_vars_type) -> cbm_vars_type:
+    def step(
+        self,
+        cbm_vars: cbm_vars_type,
+        ops: Union[list[dict], None] = None,
+        disturbance_op_sequence: Union[list[str], None] = None,
+        step_op_sequence: Union[list[str], None] = None,
+    ) -> cbm_vars_type:
         """Perform one timestep of the CBMEXNModel
 
         Args:
@@ -128,14 +125,32 @@ class CBMEXNModel:
         Returns:
             cbm_vars_type: modified state and variables.
         """
-        if self._pandas_interface:
-            return cbm_exn_step.step(
-                self, ModelVariables.from_pandas(cbm_vars)
-            ).to_pandas()
+        return_pandas_dict = False
+        if isinstance(cbm_vars, dict):
+            return_pandas_dict = True
+            _cbm_vars = ModelVariables.from_pandas(cbm_vars)
         else:
-            return cbm_exn_step.step(self, cbm_vars)
+            _cbm_vars = cbm_vars
 
-    def spinup(self, spinup_input: cbm_vars_type) -> cbm_vars_type:
+        result = cbm_exn_step.step(
+            self,
+            _cbm_vars,
+            ops,
+            step_op_sequence,
+            disturbance_op_sequence,
+        )
+
+        if return_pandas_dict:
+            return result.to_pandas()
+        else:
+            return result
+
+    def spinup(
+        self,
+        spinup_input: cbm_vars_type,
+        ops: Union[list[dict], None] = None,
+        op_sequence: Union[list[str], None] = None,
+    ) -> cbm_vars_type:
         """initializes Carbon pools along the row axis of the specified
         spinup input using the CBM-CFS3 approach for spinup.
 
@@ -151,20 +166,28 @@ class CBMEXNModel:
             if self._spinup_reporter
             else None
         )
-        if self._pandas_interface:
-            return cbm_exn_spinup.spinup(
-                self,
-                ModelVariables.from_pandas(spinup_input),
-                reporting_func=reporting_func,
-                include_flux=reporting_func is not None,
-            ).to_pandas()
+        return_pandas_dict = False
+        if isinstance(spinup_input, dict):
+            return_pandas_dict = True
+            _spinup_input = ModelVariables.from_pandas(spinup_input)
         else:
-            return cbm_exn_spinup.spinup(
-                self,
-                spinup_input,
-                reporting_func=reporting_func,
-                include_flux=reporting_func is not None,
-            )
+            _spinup_input = spinup_input
+        spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
+            _spinup_input,
+            self.parameters,
+        )
+        result = cbm_exn_spinup.spinup(
+            self,
+            spinup_vars,
+            reporting_func=reporting_func,
+            ops=ops,
+            op_sequence=op_sequence,
+        )
+
+        if return_pandas_dict:
+            return result.to_pandas()
+        else:
+            return result
 
     def get_spinup_output(self) -> cbm_vars_type:
         """If spinup debugging was enabled during construction of this class,
@@ -183,41 +206,10 @@ class CBMEXNModel:
         else:
             return self._spinup_reporter.get_output()
 
-    def create_operation(
-        self,
-        matrices: list,
-        fmt: str,
-        matrix_index: np.ndarray,
-        process_id: int,
-    ) -> Operation:
-        """Creates an matrix based C flow operation.  An operation defines 1
-        or more matrix to apply to stand's Carbon pools.  The matrices have a
-        1:m relationship to stands.
-
-        For information on format see:
-        :py:func:`libcbm.model.model_definition.model_handle.ModelHandle.create_operation`
-
-        Args:
-            matrices (list): a list of matrices, whose format is described by
-                the `fmt` parameter
-            fmt (str): the matrix format of the `matrices` parameter
-            matrix_index (np.ndarray): an integer array along the stand axis
-                whose value is the index of the matrix to apply to that stand
-                index.
-            process_id (int): process id is used to define which flux
-                indicators this operation applies to
-
-        Returns:
-            Operation: the initialized operation.
-        """
-        return self._cbm_model.create_operation(
-            matrices, fmt, matrix_index, process_id
-        )
-
     def compute(
         self,
         cbm_vars: ModelVariables,
-        operations: list[Operation],
+        op_names: list[str],
     ):
         """Apply several sequential operations to the pools, and flux stored
         in the specified `cbm_vars`.
@@ -226,17 +218,20 @@ class CBMEXNModel:
             cbm_vars (ModelVariables): Collection of CBM simulation variables.
                 This function modifies the `pools` and `flux` dataframes stored
                 within cbm_vars.
-            operations (list[Operation]): The list of matrix operations to
+            op_names (list[str]): The list of matrix operations names to
                 apply
         """
-        self._cbm_model.compute(cbm_vars, operations)
+
+        self._cbm_model.compute(
+            cbm_vars,
+            self._cbm_model.matrix_ops.get_operations(op_names, cbm_vars),
+        )
 
 
 @contextmanager
 def initialize(
-    parameters: dict = None,
-    config_path: str = None,
-    pandas_interface: bool = True,
+    parameters: Union[dict, None] = None,
+    config_path: Union[str, None] = None,
     include_spinup_debug: bool = False,
 ) -> Iterator[CBMEXNModel]:
     """Initialize CBMEXNModel
@@ -250,10 +245,6 @@ def initialize(
             parameters in json and csv formats.  If unspecified, packaged
             defaults are used.
             See: :py:func:`libcbm.resources.get_cbm_exn_parameters_dir`.
-        pandas_interface (bool, optional): if set to true then all members
-            of CBMVariables are assumed to be of type pd.DataFrame, if
-            false then the internally defined libcbm DataFrame is used.
-            Defaults to True.
         include_spinup_debug (bool, optional): If set to true, the
             `get_spinup_output` of the returned class instance can be used to
             inspect timestep-by-timestep spinup output.  This will cause slow
@@ -271,13 +262,12 @@ def initialize(
         pool_config=params.pool_configuration(),
         flux_config=params.flux_configuration(),
     ) as cbm_model:
-        spinup_reporter = (
-            SpinupReporter(pandas_interface) if include_spinup_debug else None
-        )
+        spinup_reporter = SpinupReporter() if include_spinup_debug else None
 
-        yield CBMEXNModel(
+        m = CBMEXNModel(
             cbm_model,
             params,
-            pandas_interface=pandas_interface,
             spinup_reporter=spinup_reporter,
         )
+        yield m
+        m.matrix_ops.dispose()

@@ -18,6 +18,10 @@ Code Docs
 .. autoclass:: CBMModel
     :members:
 
+.. currentmodule:: libcbm.model.model_definition.model_matrix_ops
+
+.. autoclass:: ModelMatrixOps
+    :members:
 
 .. currentmodule:: libcbm.model.model_definition.model_handle
 

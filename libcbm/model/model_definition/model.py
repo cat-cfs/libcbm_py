@@ -1,10 +1,10 @@
 from __future__ import annotations
 from typing import Iterator
 from contextlib import contextmanager
-import numpy as np
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.model_definition import model_handle
 from libcbm.model.model_definition.model_handle import ModelHandle
+from libcbm.model.model_definition.model_matrix_ops import ModelMatrixOps
 from libcbm.wrapper.libcbm_operation import Operation
 
 
@@ -18,10 +18,22 @@ class CBMModel:
         model_handle: ModelHandle,
         pool_config: list[str],
         flux_config: list[dict],
+        op_processes: dict[str, int],
     ):
+        invalid_pool_names = []
+        for p in pool_config:
+            if not p.isidentifier():
+                invalid_pool_names.append(p)
+        if invalid_pool_names:
+            raise ValueError(
+                f"pools names are not valid identifiers {invalid_pool_names}"
+            )
         self._model_handle = model_handle
         self._pool_config = pool_config
         self._flux_config = flux_config
+        self._model_matrix_ops = ModelMatrixOps(
+            self._model_handle, pool_config, op_processes
+        )
 
     @property
     def pool_names(self) -> list[str]:
@@ -31,33 +43,9 @@ class CBMModel:
     def flux_names(self) -> list[str]:
         return [f["name"] for f in self._flux_config]
 
-    def create_operation(
-        self,
-        matrices: list,
-        fmt: str,
-        process_id: int,
-        matrix_index: np.ndarray,
-        init_value: int = 1,
-    ) -> Operation:
-        """Create a set of matrix operations for C dynamics along the row axis
-        of cbm_vars. The relationship of matrices to stands is 1:m
-
-        Args:
-            matrices (list): a list of matrix information
-            fmt (str): one of "repeating_coordinates" or "matrix_list"
-            process_id (int): the process_id for flux indicator categorization
-            matrix_index (np.ndarray): a 1d numpy array of the same length as
-                the dataframes in cbm_vars where each value is the index to a
-                matrix in the specified matrices list
-            init_value (int): the value to set on the diagonal of the matrix
-                initially, defaults to 1
-
-        Returns:
-            Operation: an `Operation` object
-        """
-        return self._model_handle.create_operation(
-            matrices, fmt, process_id, matrix_index, init_value
-        )
+    @property
+    def matrix_ops(self) -> ModelMatrixOps:
+        return self._model_matrix_ops
 
     def compute(
         self,
@@ -138,19 +126,22 @@ def initialize(
         Iterator[CBMModel]: instance of CBMModel
     """
     pools = {p: i for i, p in enumerate(pool_config)}
-    flux = [
-        {
-            "id": f_idx + 1,
-            "index": f_idx,
-            "process_id": int(f["process"]),
-            "source_pools": [pools[x] for x in f["source_pools"]],
-            "sink_pools": [pools[x] for x in f["sink_pools"]],
-        }
-        for f_idx, f in enumerate(flux_config)
-    ]
-    with model_handle.create_model_handle(pools, flux) as _model_handle:
-        yield CBMModel(
-            _model_handle,
-            pool_config,
-            flux_config,
+    flux_processes: dict[str, int] = {}
+
+    flux = []
+    for f_idx, f in enumerate(flux_config):
+        if f["process"] not in flux_processes:
+            flux_processes[f["process"]] = len(flux_processes)
+
+        flux.append(
+            {
+                "id": f_idx + 1,
+                "index": f_idx,
+                "process_id": flux_processes[f["process"]],
+                "source_pools": [pools[x] for x in f["source_pools"]],
+                "sink_pools": [pools[x] for x in f["sink_pools"]],
+            }
         )
+
+    with model_handle.create_model_handle(pools, flux) as _model_handle:
+        yield CBMModel(_model_handle, pool_config, flux_config, flux_processes)
