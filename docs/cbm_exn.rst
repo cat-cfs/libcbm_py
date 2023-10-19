@@ -18,11 +18,14 @@ structuring via external grouping.
 
 `cbm_exn` is built using the :ref:`model_definition` interfaces and classes
 
+.. _cbm-exn-custom-ops: cbm_exn_custom_ops.ipynb
+
+See cbm-exn-custom-ops_ for a step by step example for cbm_exn including
+overriding the default C ops
+
 Functions and classes
 ---------------------
 
-.. automodule:: libcbm.model.cbm_exn.cbm_exn_functions
-    :members:
 
 .. automodule:: libcbm.model.cbm_exn.cbm_exn_land_state
     :members:
