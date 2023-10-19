@@ -92,10 +92,6 @@ for s in range(n_stands):
 ```
 
 ```python
-
-```
-
-```python
 # create the require inputs for spinup
 spinup_input = {
     "parameters": pd.DataFrame(
@@ -129,10 +125,6 @@ spinup_ops = cbm_exn_spinup.get_default_ops(parameters, spinup_vars)
 
 ```python
 spinup_op_list
-```
-
-```python
-spinup_ops
 ```
 
 # Operation dataframes
@@ -200,6 +192,9 @@ for op in spinup_ops:
     display(op["op_data"])
 ```
 
+Run the spinup routine with the default operations passed as a parameter
+
+
 ```python
 with cbm_exn_model.initialize() as model:
     cbm_vars = cbm_exn_spinup.spinup(
@@ -211,15 +206,17 @@ with cbm_exn_model.initialize() as model:
 ```
 
 ```python
-# initialize parameters for stepping (values for illustration)
-cbm_vars["parameters"]["mean_annual_temperature"].assign(1.1)
-cbm_vars["parameters"]["merch_inc"].assign(0.1)
-cbm_vars["parameters"]["foliage_inc"].assign(0.01)
-cbm_vars["parameters"]["other_inc"].assign(0.05)
+step_ops_sequence = cbm_exn_step.get_default_annual_process_op_sequence()
+step_disturbance_ops_sequence = cbm_exn_step.get_default_disturbance_op_sequence()
+step_ops = cbm_exn_step.get_default_ops(parameters, cbm_vars)
 ```
 
 ```python
-step_ops = cbm_exn_step.get_default_ops(parameters, cbm_vars)
+step_disturbance_ops_sequence
+```
+
+```python
+step_ops_sequence
 ```
 
 <!-- #region -->
@@ -239,6 +236,40 @@ for op in step_ops:
     if name in ["growth", "overmature_decline"]:
         display(Markdown(f"## {name}"))
         display(op["op_data"])
+```
+
+```python
+# initialize parameters for stepping (values for illustration)
+cbm_vars["parameters"]["mean_annual_temperature"].assign(1.1)
+cbm_vars["parameters"]["merch_inc"].assign(0.1)
+cbm_vars["parameters"]["foliage_inc"].assign(0.01)
+cbm_vars["parameters"]["other_inc"].assign(0.05)
+cbm_vars["parameters"]["disturbance_type"].assign(
+    rng.choice(
+        [0,1,4], n_stands, p=[0.98, 0.01, 0.01]
+    )
+)
+```
+
+run a timestep with the specified parameters
+
+```python
+with cbm_exn_model.initialize() as model:
+    cbm_vars = cbm_exn_step.step(
+        model,
+        cbm_vars,
+        ops=step_ops,
+        step_op_sequence=step_ops_sequence,
+        disturbance_op_sequence=step_disturbance_ops_sequence
+    )
+```
+
+```python
+cbm_vars["pools"].to_pandas()
+```
+
+```python
+cbm_vars["flux"].to_pandas()
 ```
 
 ## Appendix 1: CBM EXN Default parameters
