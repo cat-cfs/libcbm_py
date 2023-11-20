@@ -176,7 +176,7 @@ class MatrixMergeIndex:
             fill_value is None,
             *list(merge_data.values()),
         )
-        if err_idx > 0:
-            values_not_found = [v[err_idx] for v in merge_data.values()]
+        if err_idx >= 0:
+            values_not_found = {k: v[err_idx] for k, v in merge_data.items()}
             raise ValueError(f"did not find values for {values_not_found}")
         return out
