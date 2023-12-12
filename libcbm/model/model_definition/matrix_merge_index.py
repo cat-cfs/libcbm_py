@@ -108,7 +108,7 @@ class MatrixMergeIndex:
             if i_v == 0:
                 self._len_key_data = v.shape[0]
             elif self._len_key_data != v.shape[0]:
-                raise ValueError()
+                raise ValueError("lengths of key data array non-uniform")
 
         key_index_type = numba.types.UniTuple(
             numba.types.int64, len(self._merge_keys)
