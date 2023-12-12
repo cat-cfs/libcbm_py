@@ -101,9 +101,14 @@ class MatrixMergeIndex:
         self._merge_keys = list(key_data.keys())
         self._key_data = key_data
         # assumption here is that all members of key_data are of equal length
-        # if this is not the case in the iterations below an index out of
-        # range error is expected.
-        self._len_key_data = len((next(iter(key_data.values()))))
+        self._len_key_data = 0
+        for i_v, v in enumerate(key_data.values()):
+            if v.ndim > 1:
+                raise ValueError("expected single dimensional key values")
+            if i_v == 0:
+                self._len_key_data = v.shape[0]
+            elif self._len_key_data != v.shape[0]:
+                raise ValueError()
 
         key_index_type = numba.types.UniTuple(
             numba.types.int64, len(self._merge_keys)
@@ -122,6 +127,10 @@ class MatrixMergeIndex:
                     )
                 tuple_values.append(key_val)
             self._merge_dict[tuple(tuple_values)] = np.uint64(i)
+
+    @property
+    def key_data_size(self) -> int:
+        return self._len_key_data
 
     @property
     def merge_keys(self) -> list[str]:
