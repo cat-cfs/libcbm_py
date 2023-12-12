@@ -173,8 +173,7 @@ class CBMEXNModel:
         else:
             _spinup_input = spinup_input
         spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
-            _spinup_input,
-            self.parameters,
+            _spinup_input, self.parameters, reporting_func is not None
         )
         result = cbm_exn_spinup.spinup(
             self,
