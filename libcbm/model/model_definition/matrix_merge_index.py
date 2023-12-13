@@ -3,6 +3,7 @@ from typing import Union
 import numpy as np
 import numba
 import numba.typed
+from libcbm.model.model_definition.model_variables import ModelVariables
 
 
 @numba.njit(inline="always")
@@ -89,7 +90,9 @@ class MatrixMergeIndex:
     runtime.
     """
 
-    def __init__(self, key_data: dict[str, np.ndarray]):
+    def __init__(
+        self, nrows: int, key_data: Union[dict[str, np.ndarray], None]
+    ):
         """Intialize a MatrixMergeIndex
 
         Args:
@@ -98,39 +101,44 @@ class MatrixMergeIndex:
         Raises:
             ValueError: only integer type keys are supported
         """
-        self._merge_keys = list(key_data.keys())
-        self._key_data = key_data
-        # assumption here is that all members of key_data are of equal length
-        self._len_key_data = 0
-        for i_v, v in enumerate(key_data.values()):
-            if v.ndim > 1:
-                raise ValueError("expected single dimensional key values")
-            if i_v == 0:
-                self._len_key_data = v.shape[0]
-            elif self._len_key_data != v.shape[0]:
-                raise ValueError("lengths of key data array non-uniform")
+        self._len_key_data = nrows
+        if key_data:
+            self._merge_keys = list(key_data.keys())
+            self._key_data = key_data
+            # assumption here is that all members of key_data are of equal
+            # length
+            for i_v, v in enumerate(key_data.values()):
+                if v.ndim > 1:
+                    raise ValueError("expected single dimensional key values")
 
-        key_index_type = numba.types.UniTuple(
-            numba.types.int64, len(self._merge_keys)
-        )
-        self._merge_dict = numba.typed.Dict.empty(
-            key_type=key_index_type, value_type=numba.types.types.uint64
-        )
-        for i in range(self._len_key_data):
-            tuple_values = []
-            for k in self._merge_keys:
-                key_val = int(key_data[k][i])
-                if key_val != key_data[k][i]:
-                    raise ValueError(
-                        "only integer keys supported. Found: "
-                        f"{key_data[k][i]} in {k} series"
-                    )
-                tuple_values.append(key_val)
-            self._merge_dict[tuple(tuple_values)] = np.uint64(i)
+                if self._len_key_data != v.shape[0]:
+                    raise ValueError("lengths of key data array non-uniform")
+
+            key_index_type = numba.types.UniTuple(
+                numba.types.int64, len(self._merge_keys)
+            )
+            self._merge_dict = numba.typed.Dict.empty(
+                key_type=key_index_type, value_type=numba.types.types.uint64
+            )
+            for i in range(self._len_key_data):
+                tuple_values = []
+                for k in self._merge_keys:
+                    key_val = int(key_data[k][i])
+                    if key_val != key_data[k][i]:
+                        raise ValueError(
+                            "only integer keys supported. Found: "
+                            f"{key_data[k][i]} in {k} series"
+                        )
+                    tuple_values.append(key_val)
+                self._merge_dict[tuple(tuple_values)] = np.uint64(i)
+        else:
+            self._merge_keys = []
+            self._key_data = {}
+            self._merge_dict = {}
 
     @property
-    def key_data_size(self) -> int:
-        return self._len_key_data
+    def has_keys(self) -> bool:
+        return len(self._merge_keys) > 0
 
     @property
     def merge_keys(self) -> list[str]:
@@ -140,6 +148,38 @@ class MatrixMergeIndex:
             list[str]: the merge keys
         """
         return self._merge_keys.copy()
+
+    def compute_matrix_index(
+        self,
+        model_variables: ModelVariables,
+        default_matrix_index: Union[int, None],
+    ) -> np.ndarray:
+        n_rows = model_variables["pools"].n_rows
+
+        if not self.has_keys:
+            if self._len_key_data == 1:
+                # project the single operation to the entire landscape
+                return np.full(n_rows, 0, dtype="uintp")
+            elif self._len_key_data == n_rows:
+                # there is one operation for each simulation area
+                return np.arange(0, n_rows, dtype="uintp")
+            else:
+                raise ValueError(
+                    "index length must match model_variables length, or be "
+                    "of length 1."
+                )
+        else:
+            merge_data = {}
+            for idx_name in self.merge_keys:
+                if idx_name == "row_idx":
+                    merge_data["row_idx"] = np.arange(0, n_rows, dtype="int64")
+                else:
+                    s = idx_name.split(".")
+                    merge_data[idx_name] = (
+                        model_variables[s[0]][s[1]].to_numpy().astype("int64")
+                    )
+
+            return self.merge(merge_data, default_matrix_index)
 
     def merge(
         self,
