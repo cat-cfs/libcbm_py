@@ -48,7 +48,8 @@ def test_to_coo_matrix():
     )
 
     assert (
-        result.toarray() == [
+        result.toarray()
+        == [
             [1, 1, 0, 0, 0, 0],
             [1, 1, 0, 0, 0, 0],
             [0, 0, 1, 1, 0, 0],

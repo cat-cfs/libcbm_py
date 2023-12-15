@@ -30,6 +30,8 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
+from enum import Enum
+
 
 from libcbm.model.model_definition import model_matrix_ops
 from libcbm.model.model_definition import matrix_conversion
@@ -37,14 +39,36 @@ from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm import resources
 from libcbm.model.cbm_exn import cbm_exn_spinup
+from libcbm.model.cbm_exn.semianalytical_spinup import (
+    semianalytical_spinup_input,
+)
 
 
-def get_default_pools() -> list[str]:
-    params = parameters_factory(resources.get_cbm_exn_parameters_dir())
-    return params.pool_configuration()
+class InputMode(Enum):
+    """
+    use the accumulated biomass at min(maxDefinedAge, return_interval) to
+    define steady state input
+    """
+
+    MaxDefinedAge = 1
+
+    """
+    use the accumulated biomass at min(ageOfPeakBiomass, return_interval) to
+    define steady state input
+    """
+    PeakBiomass = 2
+
+    """
+    use the mean input on the interval 0 to return_interval to define steady
+    state input
+    """
+    MeanInput = 3
 
 
-def get_default_dom_pools():
+def get_default_dom_pools() -> list[str]:
+    """
+    get the list of cbm_exn dead organic matter pool names
+    """
     return [
         "AboveGroundVeryFastSoil",
         "BelowGroundVeryFastSoil",
@@ -58,120 +82,24 @@ def get_default_dom_pools():
     ]
 
 
-def get_default_spinup_ops(spinup_vars: ModelVariables) -> tuple[list, list]:
-    params = parameters_factory(resources.get_cbm_exn_parameters_dir())
-    spinup_op_list = cbm_exn_spinup.get_default_op_list()
-    spinup_ops = cbm_exn_spinup.get_default_ops(params, spinup_vars)
-    return spinup_ops, spinup_op_list
-
-
-def get_cumulative_growth(spinup_ops: list[dict]):
-    all_spinup_ops_by_name: dict[str, pd.DataFrame] = {
-        o["name"]: o["op_data"] for o in spinup_ops
-    }
-    growth_ops = all_spinup_ops_by_name["growth"]
-    growth_ops_grouped = (
-        growth_ops.sort_values(by=["[row_idx]", "[state.age]"])
-        .groupby(["[row_idx]"])[
-            [
-                "Input.Merch",
-                "Input.Foliage",
-                "Input.Other",
-                "Input.CoarseRoots",
-                "Input.FineRoots",
-            ]
-        ]
-        .cumsum()
-        .rename(
-            columns={
-                "Input.Merch": "Merch",
-                "Input.Foliage": "Foliage",
-                "Input.Other": "Other",
-                "Input.CoarseRoots": "CoarseRoots",
-                "Input.FineRoots": "FineRoots",
-            }
-        )
-        * 2.0
-    )
-    growth_ops_grouped.insert(0, "[row_idx]", growth_ops["[row_idx]"])
-    growth_ops_grouped.insert(1, "[state.age]", growth_ops["[state.age]"])
-    return growth_ops_grouped
-
-
-def get_bio_at_max_age(
-    spinup_ops: list[dict], spinup_vars: ModelVariables
-) -> pd.DataFrame:
-    """Get the maximum biomass in the range of
-    age=0 to age=min(max(age), return_interval)
-
-    Args:
-        spinup_ops (list[dict]): _description_
-        spinup_vars (ModelVariables): _description_
-
-    Returns:
-        pd.DataFrame: _description_
-    """
-    cumulative_growth = get_cumulative_growth(spinup_ops)
-    max_ages = cumulative_growth.groupby(["[row_idx]"])["[state.age]"].max()
-    return_intervals = spinup_vars["parameters"].to_pandas()["return_interval"]
-    max_age_return_interval = pd.DataFrame(
-        data={"max_age": max_ages, "return_interval": return_intervals}
-    )
-    max_age_return_interval["peak_spinup_age"] = max_age_return_interval.min(
-        axis=1
-    )
-    max_age_return_interval_merge = max_age_return_interval.reset_index()
-    bio_max_age = max_age_return_interval_merge.merge(
-        cumulative_growth,
-        left_on=["index", "peak_spinup_age"],
-        right_on=["[row_idx]", "[state.age]"],
-        how="left",
-    )
-    bio_max_age = bio_max_age[cumulative_growth.columns]
-    bio_max_age = bio_max_age.set_index(["[row_idx]", "[state.age]"])
-    return bio_max_age
-
-
-def get_bio_at_peak(
-    spinup_ops: list[dict], spinup_vars: ModelVariables
-) -> pd.DataFrame:
-    cumulative_growth = get_cumulative_growth(spinup_ops)
-    bio_max_bio = cumulative_growth.copy()
-    max_ages = cumulative_growth.groupby(["[row_idx]"])["[state.age]"].max()
-    return_intervals = spinup_vars["parameters"].to_pandas()["return_interval"]
-    max_age_return_interval = pd.DataFrame(
-        data={"max_age": max_ages, "return_interval": return_intervals}
-    )
-    max_age_return_interval["peak_spinup_age"] = max_age_return_interval.min(
-        axis=1
-    )
-    bio_max_bio = bio_max_bio.merge(
-        max_age_return_interval[["peak_spinup_age"]],
-        left_on="[row_idx]",
-        right_index=True,
-        how="left",
-    )
-    bio_max_bio = bio_max_bio[
-        bio_max_bio["[state.age]"] <= bio_max_bio["peak_spinup_age"]
-    ]
-    bio_max_bio["total"] = bio_max_bio[
-        ["Merch", "Foliage", "Other", "CoarseRoots", "FineRoots"]
-    ].sum(axis=1)
-    bio_max_bio = (
-        bio_max_bio.sort_values(by="total", ascending=False)
-        .drop_duplicates("[row_idx]")
-        .sort_values(by=["[row_idx]", "[state.age]"])
-    )
-    bio_max_bio = bio_max_bio[cumulative_growth.columns]
-    bio_max_bio = bio_max_bio.set_index(["[row_idx]", "[state.age]"])
-    return bio_max_bio
-
-
 def get_spinup_matrices(
     spinup_vars: ModelVariables,
     spinup_ops: list[dict],
     pools: dict[str, int],
 ) -> dict[str, pd.DataFrame]:
+    """Get the cbm_exn spinup operation matrices dataframes merged onto the
+    specified spinup vars
+
+    Args:
+        spinup_vars (ModelVariables): the spinup simulation variables, pools
+            and state object
+        spinup_ops (list[dict]): the unmerged spinup matrix operations
+        pools (dict[str, int]): enumeration of pool_name, pool_idx
+
+    Returns:
+        dict[str, pd.DataFrame]: the collection of matrices associated with
+            each row of spinup vars
+    """
     pool_names = set(pools.keys())
     output: dict[str, pd.DataFrame] = {}
     for o in spinup_ops:
@@ -192,29 +120,43 @@ def get_spinup_matrices(
     return output
 
 
-def run_iterative(
-    n_steps: int,
-    dom_pools: list[str],
-    Uss: np.ndarray,
-    M: np.ndarray,
-    DM: Union[np.ndarray, None],
-) -> pd.DataFrame:
-    results = np.zeros(shape=(n_steps, len(dom_pools)))
-    for t in range(n_steps - 1):
-        if DM is not None:
-            dx = Uss + (results[t, :] @ M) + results[t, :] @ DM
-        else:
-            dx = Uss + (results[t, :] @ M)
-        results[t + 1, :] = results[t, :] + dx
-    return pd.DataFrame(columns=dom_pools, data=results)
+# TODO this needs a re-work to support bulk iteration
+#  def run_iterative(
+#      n_steps: int,
+#      dom_pools: list[str],
+#      Uss: np.ndarray,
+#      M: np.ndarray,
+#      DM: Union[np.ndarray, None],
+#  ) -> pd.DataFrame:
+#      results = np.zeros(shape=(n_steps, len(dom_pools)))
+#      for t in range(n_steps - 1):
+#          if DM is not None:
+#              dx = Uss + (results[t, :] @ M) + results[t, :] @ DM
+#          else:
+#              dx = Uss + (results[t, :] @ M)
+#          results[t + 1, :] = results[t, :] + dx
+#      return pd.DataFrame(columns=dom_pools, data=results)
 
 
 def get_step_matrix(
     spinup_matrices: dict[str, pd.DataFrame],
 ) -> sparse.csc_matrix:
-    dom_pool_dict = {
-        p: i for i, p in enumerate(get_default_dom_pools())
-    }
+    """Produce a matrix of dom-pool to dom-pool transfers and diagonal dom
+    pool C retentions for the CBM dom pool decay and mixing routines.  Each
+    row in the specified spinup matrices is assembled into a single
+    `scipy.sparse.block_diag`-like formation sparse matrix to perform a bulk
+    solve operation.
+
+    Args:
+        spinup_matrices (dict[str, pd.DataFrame]): collection of
+            dataframe-formatted operation matrices
+
+    Returns:
+        sparse.csc_matrix: A sparse matrix containing the dom-pool to dom-pool
+            transfers and also the dom pool C retentions along the diagonal.
+
+    """
+    dom_pool_dict = {p: i for i, p in enumerate(get_default_dom_pools())}
     spinup_matrices = {
         name: matrix_conversion.filter_pools(dom_pool_dict, mat_df)
         for name, mat_df in spinup_matrices.items()
@@ -240,6 +182,18 @@ def get_step_matrix(
 def get_disturbance_frequency(
     return_interval: np.ndarray,
 ) -> sparse.dia_matrix:
+    """
+    Compute the effect of return interval as a frequency to adjust
+    disturbance effects for the semianalytical procedure.  This is
+    assembled into a block diag formation.
+
+    Args:
+        return_interval (np.ndarray): an array of return intervals (1 record
+            per stand)
+
+    Returns:
+        sparse.dia_matrix: the diagonal tiled disturbance frequency
+    """
     n_dom_pools = len(get_default_dom_pools())
 
     disturbance_frequency = sparse.diags(
@@ -251,9 +205,23 @@ def get_disturbance_frequency(
 def get_disturbance_matrix(
     spinup_matrices: dict[str, pd.DataFrame],
 ) -> sparse.csc_matrix:
-    dom_pool_dict = {
-        p: i for i, p in enumerate(get_default_dom_pools())
-    }
+    """Create a block_diag sparse matrix of the disturbance effects
+    on dom:
+        * The diagonal is the losses to atmosphere and the
+        * off-diagonals are the dom-pool to dom-pool transfers.
+
+    Each row of the specified spinup matrices is assembled into a
+    block-diagonal CSC formatted sparse matrix.
+
+    Args:
+        spinup_matrices (dict[str, pd.DataFrame]): The collection of
+            spinup matrices in dataframe form
+
+    Returns:
+        sparse.csc_matrix: The disturbance effects on dom as a sparse block
+            diagonal CSC matrix
+    """
+    dom_pool_dict = {p: i for i, p in enumerate(get_default_dom_pools())}
     disturbance_mat_dom = matrix_conversion.filter_pools(
         dom_pool_dict, spinup_matrices["disturbance"]
     )
@@ -267,58 +235,68 @@ def get_disturbance_matrix(
     return M_dm
 
 
-def get_steady_state_input(
-    pool_dict: dict[str, int],
-    dom_pools: list[str],
-    steady_state_bio: pd.DataFrame,
-    spinup_matrices: dict[str, pd.DataFrame],
-) -> pd.DataFrame:
-    bio_turover_df = spinup_matrices["biomass_turnover"]
-    bio_turnover_mat = matrix_conversion.to_coo_matrix(
-        pool_dict, bio_turover_df
-    ).tocsc()
-    n_rows = len(bio_turover_df.index)
-    pools = np.zeros(shape=(n_rows, len(pool_dict)))
-
-    pools[
-        :, slice(pool_dict["Merch"], pool_dict["FineRoots"] + 1)
-    ] = steady_state_bio.to_numpy()
-    input = pools.flatten() @ bio_turnover_mat
-    return pd.DataFrame(
-        columns=list(pool_dict.keys()),
-        data=input.reshape((n_rows, len(pool_dict))),
-    )[dom_pools]
-
-
 def semianalytical_spinup(
     spinup_input: dict[str, pd.DataFrame],
+    input_mode: InputMode,
+    parameters: Union[dict, None] = None,
+    config_path: Union[str, None] = None,
 ) -> pd.DataFrame:
+    """
+    Use the semi-analytical approach for spinup parameterized by the CBM-CFS3
+    approach to estimate end-of-spinup DOM C pools.
+
+    Args:
+        spinup_input (dict[str, pd.DataFrame]): spinup input
+        input_mode (InputMode): on of the input modes for estimating
+            the steady state inputs to the dead organic matter pools.
+
+    Raises:
+        NotImplementedError: Raise on a not-yet-implemented input_mode
+
+    Returns:
+        pd.DataFrame: A dataframe containing 1 row for each stand and 1
+            column for each cbm_exn dead organic matter pool.  The dataframe's
+            values are the estimate for end-of-spinup dead oranic matter for
+            each stand.
+    """
+
+    if not config_path:
+        config_path = resources.get_cbm_exn_parameters_dir()
+
+    params = parameters_factory(config_path, parameters)
+
     n_rows = len(spinup_input["parameters"].index)
-    default_parameters = parameters_factory(
-        resources.get_cbm_exn_parameters_dir()
-    )
-    pool_dict = {
-        p: i for i, p in enumerate(default_parameters.pool_configuration())
-    }
+
+    pool_dict = {p: i for i, p in enumerate(params.pool_configuration())}
     dom_pools = get_default_dom_pools()
 
     spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
         ModelVariables.from_pandas(spinup_input),
-        default_parameters,
+        params,
     )
     spinup_vars["state"]["disturbance_type"].assign(
         spinup_vars["parameters"]["last_pass_disturbance_type"]
     )
-    spinup_ops, _ = get_default_spinup_ops(spinup_vars)
-    spinup_matrices = get_spinup_matrices(
-        spinup_vars, spinup_ops, pool_dict
-    )
+    spinup_ops = cbm_exn_spinup.get_default_ops(params, spinup_vars)
+    spinup_matrices = get_spinup_matrices(spinup_vars, spinup_ops, pool_dict)
     return_interval = spinup_vars["parameters"]["return_interval"].to_numpy()
+    if input_mode == InputMode.MaxDefinedAge:
+        bio = semianalytical_spinup_input.get_bio_at_max_age(
+            spinup_ops, spinup_vars
+        )
+    elif input_mode == InputMode.PeakBiomass:
+        bio = semianalytical_spinup_input.get_bio_at_peak(
+            spinup_ops, spinup_vars
+        )
+    else:
+        raise NotImplementedError(
+            f"specified input_mode: {input_mode} not yet implemented"
+        )
     Uss = (
-        get_steady_state_input(
+        semianalytical_spinup_input.get_steady_state_input(
             pool_dict,
             dom_pools,
-            get_bio_at_max_age(spinup_ops, spinup_vars),
+            bio,
             spinup_matrices,
         )
         .to_numpy()
