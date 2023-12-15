@@ -31,7 +31,7 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
 
-from spinup_optimzation import matrix_operations
+from libcbm.model.cbm_exn.semianalytical_spinup import matrix_operations
 from libcbm.model.model_definition.model_variables import ModelVariables
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 from libcbm import resources
@@ -65,9 +65,11 @@ def get_step_matrix(
         name: matrix_operations.filter_pools(dom_pool_dict, mat_df)
         for name, mat_df in spinup_matrices.items()
     }
-    coo_mats = matrix_operations.to_coo_matrices(
-        dom_pool_dict, spinup_matrices
-    )
+    coo_mats = {
+        k: matrix_operations.to_coo_matrix(dom_pool_dict, v)
+        for k, v in spinup_matrices.items()
+    }
+
     csc_mats = {n: c.tocsc() for n, c in coo_mats.items()}
     spinup_matrix_state_state: sparse.csc_matrix = (
         csc_mats["snag_turnover"]
@@ -172,7 +174,7 @@ def semianalytical_spinup(
     M = get_step_matrix(spinup_matrices)
     DM = get_disturbance_matrix(spinup_matrices)
     f = get_disturbance_frequency(return_interval)
-    result: np.ndarray = -linalg.spsolve((M.T+(DM@f).T), Uss)
+    result: np.ndarray = -linalg.spsolve((M.T + (DM @ f).T), Uss)
     return pd.DataFrame(
         columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
     )
