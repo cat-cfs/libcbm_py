@@ -12,6 +12,52 @@ def filter_pools(
     pool_idx: dict[str, int],
     op_data: pd.DataFrame,
 ) -> pd.DataFrame:
+    """Retain only those columns from a matrix-format
+    dataframe where the pools present in the specified
+    pool_idx parameter are present.
+
+    Example::
+
+        result = matrix_operations.filter_pools(
+            {
+                "A": 1,
+                "B": 2,
+
+            },
+            op_data=pd.DataFrame(
+                columns=[
+                    "A.A",
+                    "A.B",
+                    "A.C",
+                    "B.A",
+                    "B.B",
+                    "B.C",
+                    "C.A",
+                    "C.B",
+                    "C.C",
+                ],
+                data=[[1]*9]*5
+            )
+        )
+
+        pd.testing.assert_frame_equal(
+            result,
+            pd.DataFrame(
+                columns=["A.A", "A.B", "B.A", "B.B"],
+                data=[[1]*4]*5
+            )
+        )
+
+
+    Args:
+        pool_idx (dict[str, int]): dictionary of pool names, pool index
+        op_data (pd.DataFrame): dataframe where each column represents a
+            src.sink coordinate in a sparse matrix and each row represents
+            a 2d matrix.
+
+    Returns:
+        pd.DataFrame: a copy of the original dataframe with filtered columns
+    """
     included_col_idx = list()
     for i_col, col in enumerate(op_data.columns):
         source, sink = col.split(".")
@@ -24,6 +70,47 @@ def to_coo_matrix(
     pool_idx: dict[str, int],
     op_data: pd.DataFrame,
 ) -> sparse.coo_matrix:
+    """create a scipy.sparse.coomatrix like `scipy.sparse.block_diag`
+    using a matrix-formatted pandas dataframe
+
+    Example::
+
+        result = matrix_operations.to_coo_matrix(
+            {
+                "A": 0,
+                "B": 1,
+            },
+            op_data=pd.DataFrame(
+                columns=[
+                    "A.A",
+                    "A.B",
+                    "B.A",
+                    "B.B",
+                ],
+                data=[[1] * 4] * 3,
+            ),
+        )
+
+        assert (
+            result.toarray() == [
+                [1, 1, 0, 0, 0, 0],
+                [1, 1, 0, 0, 0, 0],
+                [0, 0, 1, 1, 0, 0],
+                [0, 0, 1, 1, 0, 0],
+                [0, 0, 0, 0, 1, 1],
+                [0, 0, 0, 0, 1, 1],
+            ]
+        ).all()
+
+    Args:
+        pool_idx (dict[str, int]): the named-enumerated collection of pools
+        op_data (pd.DataFrame): dataframe where each column represents a
+            src.sink coordinate in a sparse matrix and each row represents
+            a 2d matrix.
+
+    Returns:
+        sparse.coo_matrix: the block_diag-like result
+    """
     n_pools = len(pool_idx)
     n_rows = len(op_data.index)
     diag_coords = set(zip(range(n_pools), range(n_pools)))
@@ -55,13 +142,6 @@ def to_coo_matrix(
         )
         out_values[idx::n_coords] = value
     return sparse.coo_matrix((out_values, (out_rows, out_cols)))
-
-
-def to_coo_matrices(
-    pool_idx: dict[str, int],
-    op_data: dict[str, pd.DataFrame],
-) -> dict[str, sparse.coo_matrix]:
-    return {k: to_coo_matrix(pool_idx, v) for k, v in op_data.items()}
 
 
 def get_default_pools() -> list[str]:
