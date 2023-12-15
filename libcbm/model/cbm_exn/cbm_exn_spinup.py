@@ -38,10 +38,12 @@ def prepare_spinup_vars(
             spinup_input["parameters"].n_rows,
             spinup_input["parameters"].backend_type,
         ),
-        "pools": cbm_exn_variables.init_pools(
-            spinup_input["parameters"].n_rows,
-            parameters.pool_configuration(),
-            spinup_input["parameters"].backend_type,
+        "pools": (
+            cbm_exn_variables.init_pools(
+                spinup_input["parameters"].n_rows,
+                parameters.pool_configuration(),
+                spinup_input["parameters"].backend_type,
+            ) if "pools" not in spinup_input else spinup_input["pools"]
         ),
     }
     if "sw_hw" not in data["parameters"].columns:
