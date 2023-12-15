@@ -1,9 +1,9 @@
 import pandas as pd
-from libcbm.model.cbm_exn.semianalytical_spinup import matrix_operations
+from libcbm.model.model_definition import matrix_conversion
 
 
 def test_filter_pools():
-    result = matrix_operations.filter_pools(
+    result = matrix_conversion.filter_pools(
         {
             "A": 1,
             "B": 2,
@@ -31,7 +31,7 @@ def test_filter_pools():
 
 
 def test_to_coo_matrix():
-    result = matrix_operations.to_coo_matrix(
+    result = matrix_conversion.to_coo_matrix(
         {
             "A": 0,
             "B": 1,
