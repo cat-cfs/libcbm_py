@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 from typing import Union
 from libcbm.model.model_definition.model_handle import ModelHandle
@@ -83,6 +82,22 @@ def prepare_operation_dataframe(
     return result_df
 
 
+def init_index(operation_data: pd.DataFrame) -> MatrixMergeIndex:
+    if (
+        len(operation_data.index.names) == 1
+        and not operation_data.index.names[0]
+    ):
+        return MatrixMergeIndex(len(operation_data.index), None)
+    key_data = {}
+    names = operation_data.index.names
+    df = operation_data.reset_index()
+    key_data = {name: df[name].to_numpy() for name in names}
+    return MatrixMergeIndex(
+        len(df.index),
+        key_data,
+    )
+
+
 class OperationWrapper:
     def __init__(
         self,
@@ -103,25 +118,11 @@ class OperationWrapper:
         )
         self._index_len = len(self._operation_data.index)
         self._non_indexed = False
-        self._op_index = self._init_index()
+        self._op_index = init_index(self._operation_data)
         self._requires_reindexing = requires_reindexing
         self._init_value = init_value
         self._default_matrix_index = default_matrix_index
         self._op: Union[Operation, None] = None
-
-    def _init_index(self) -> Union[MatrixMergeIndex, None]:
-        if (
-            len(self._operation_data.index.names) == 1
-            and not self._operation_data.index.names[0]
-        ):
-            return None
-        key_data = {}
-        names = self._operation_data.index.names
-        df = self._operation_data.reset_index()
-        key_data = {name: df[name].to_numpy() for name in names}
-        return MatrixMergeIndex(
-            key_data,
-        )
 
     def dispose(self):
         if self._op:
@@ -133,7 +134,9 @@ class OperationWrapper:
             curr_idx_len = self._index_len
             must_index = curr_idx_len != 1 or curr_idx_len != n_rows
             if self._requires_reindexing:
-                matrix_index = self._compute_matrix_index(model_variables)
+                matrix_index = self._op_index.compute_matrix_index(
+                    model_variables, self._default_matrix_index
+                )
                 self._op.update_index(matrix_index)
                 return self._op
             elif not must_index:
@@ -146,12 +149,15 @@ class OperationWrapper:
         pool_src_sink_tuples: list[tuple] = [
             tuple(x.split(".")) for x in self._operation_data.columns
         ]
+
         matrices = [
             [p[0], p[1], self._operation_data[op_cols[i]].to_numpy()]
             for i, p in enumerate(pool_src_sink_tuples)
         ]
 
-        matrix_index = self._compute_matrix_index(model_variables)
+        matrix_index = self._op_index.compute_matrix_index(
+            model_variables, self._default_matrix_index
+        )
         self._op = self._model_handle.create_operation(
             matrices,
             "repeating_coordinates",
@@ -161,36 +167,6 @@ class OperationWrapper:
         )
 
         return self._op
-
-    def _compute_matrix_index(
-        self, model_variables: ModelVariables
-    ) -> np.ndarray:
-        n_rows = model_variables["pools"].n_rows
-
-        if self._op_index is None:
-            if self._index_len == 1:
-                # project the single operation to the entire landscape
-                return np.full(n_rows, 0, dtype="uintp")
-            elif self._index_len == n_rows:
-                # there is one operation for each simulation area
-                return np.arange(0, n_rows, dtype="uintp")
-            else:
-                raise ValueError(
-                    "index length must match model_variables length, or be "
-                    "of length 1."
-                )
-        else:
-            merge_data = {}
-            for idx_name in self._op_index.merge_keys:
-                if idx_name == "row_idx":
-                    merge_data["row_idx"] = np.arange(0, n_rows, dtype="int64")
-                else:
-                    s = idx_name.split(".")
-                    merge_data[idx_name] = (
-                        model_variables[s[0]][s[1]].to_numpy().astype("int64")
-                    )
-
-            return self._op_index.merge(merge_data, self._default_matrix_index)
 
 
 class ModelMatrixOps:
