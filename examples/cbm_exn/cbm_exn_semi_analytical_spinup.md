@@ -36,13 +36,16 @@ def spinup_semianalytical(spinup_input, parameters):
 
 ```python
 # define some run methods for use later in the notebook
-def spinup(spinup_input, parameters):
+def spinup(spinup_input, parameters, include_spinup_debug):
     with cbm_exn_model.initialize(
         parameters=parameters, # when None, packaged default parameters are used
-        include_spinup_debug=False,
+        include_spinup_debug=include_spinup_debug,
     ) as model:
         cbm_vars = model.spinup(spinup_input)
-        return cbm_vars
+        if include_spinup_debug:
+            return cbm_vars, model.get_spinup_output()
+        else:
+            return cbm_vars, None
 ```
 
 ```python
@@ -64,7 +67,7 @@ net_increments = pd.read_csv(
 
 ```python
 # the same set of increments are repeated for each stand in this example
-n_stands = 100
+n_stands = 1
 increments = None
 for s in range(n_stands):
     s_increments = net_increments.copy()
@@ -120,7 +123,7 @@ parameters = dict(
 
 ```python
 #run spinup
-cbm_vars = spinup(spinup_input, parameters)
+cbm_vars, spinup_debug = spinup(spinup_input, parameters, True)
 ```
 
 ```python
@@ -135,12 +138,15 @@ spinup_seed_pools = pd.DataFrame(
     }
 )
 spinup_seed_pools["Input"] = 1.0
+spinup_seed_pools
 ```
 
 ```python
-seed_spinup_input = spinup_input.copy()
+seed_spinup_input = {k: v.copy() for k,v in spinup_input.items()}
+seed_spinup_input["parameters"]["min_rotations"] = 0
+seed_spinup_input["parameters"]["max_rotations"] = 0
 seed_spinup_input["pools"] = spinup_seed_pools
-cbm_vars_seeded = spinup(seed_spinup_input, parameters)
+cbm_vars_seeded, spinup_debug_seeded = spinup(seed_spinup_input, parameters, True)
 ```
 
 ```python
@@ -196,6 +202,58 @@ for d in dom_pool_columns:
     x_y_pairs.append((d, merged[f"{d}_semi_analytical"], merged[f"{d}_iterative"]))
 plot(x_y_pairs)
     
+```
+
+```python
+pools_seeded = spinup_debug_seeded["pools"].to_pandas()
+```
+
+```python
+pools_non_seeded = spinup_debug["pools"].to_pandas()
+```
+
+```python
+pools_non_seeded.set_index("timestep")[dom_pool_columns].plot()
+```
+
+```python
+pools_seeded.set_index("timestep")[dom_pool_columns].plot()
+```
+
+```python
+state_seeded = spinup_debug_seeded["state"].to_pandas()
+```
+
+```python
+state_seeded.set_index("timestep").plot()
+```
+
+```python
+spinup_debug_seeded["parameters"].to_pandas()
+```
+
+```python
+spinup_debug_seeded["increments"].to_pandas()
+```
+
+```python
+spinup_debug_seeded["flux"].to_pandas()
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
+```
+
+```python
+
 ```
 
 ```python
