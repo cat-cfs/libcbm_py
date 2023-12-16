@@ -25,7 +25,6 @@ of Geophysical Research: Biogeosciences, 117(G3).
 https://doi.org/10.1029/2012JG002040
 
 """
-from typing import Union
 import pandas as pd
 import numpy as np
 from scipy import sparse
@@ -36,9 +35,8 @@ from enum import Enum
 from libcbm.model.model_definition import model_matrix_ops
 from libcbm.model.model_definition import matrix_conversion
 from libcbm.model.model_definition.model_variables import ModelVariables
-from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
-from libcbm import resources
 from libcbm.model.cbm_exn import cbm_exn_spinup
+from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn.semianalytical_spinup import (
     semianalytical_spinup_input,
 )
@@ -238,8 +236,7 @@ def get_disturbance_matrix(
 def semianalytical_spinup(
     spinup_input: dict[str, pd.DataFrame],
     input_mode: InputMode,
-    parameters: Union[dict, None] = None,
-    config_path: Union[str, None] = None,
+    parameters: CBMEXNParameters
 ) -> pd.DataFrame:
     """
     Use the semi-analytical approach for spinup parameterized by the CBM-CFS3
@@ -260,24 +257,19 @@ def semianalytical_spinup(
             each stand.
     """
 
-    if not config_path:
-        config_path = resources.get_cbm_exn_parameters_dir()
-
-    params = parameters_factory(config_path, parameters)
-
     n_rows = len(spinup_input["parameters"].index)
 
-    pool_dict = {p: i for i, p in enumerate(params.pool_configuration())}
+    pool_dict = {p: i for i, p in enumerate(parameters.pool_configuration())}
     dom_pools = get_default_dom_pools()
 
     spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
         ModelVariables.from_pandas(spinup_input),
-        params,
+        parameters,
     )
     spinup_vars["state"]["disturbance_type"].assign(
         spinup_vars["parameters"]["last_pass_disturbance_type"]
     )
-    spinup_ops = cbm_exn_spinup.get_default_ops(params, spinup_vars)
+    spinup_ops = cbm_exn_spinup.get_default_ops(parameters, spinup_vars)
     spinup_matrices = get_spinup_matrices(spinup_vars, spinup_ops, pool_dict)
     return_interval = spinup_vars["parameters"]["return_interval"].to_numpy()
     if input_mode == InputMode.MaxDefinedAge:
@@ -310,3 +302,29 @@ def semianalytical_spinup(
     return pd.DataFrame(
         columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
     )
+
+
+def create_spinup_seed(
+    spinup_input: dict[str, pd.DataFrame],
+    input_mode: InputMode,
+    parameters: CBMEXNParameters,
+) -> dict[str, pd.DataFrame]:
+    semi_analytical_result = semianalytical_spinup(
+        spinup_input, input_mode, parameters
+    )
+    spinup_seed_pools = pd.DataFrame(
+        {
+            p: semi_analytical_result[p]
+            if p in semi_analytical_result.columns else 0.0
+            for p in parameters.pool_configuration()
+        }
+    )
+    spinup_seed_pools["Input"] = 1.0
+    seed_spinup_input = {
+        k: v.copy() if k == "parameters" else v
+        for k, v in spinup_input.items()
+    }
+    seed_spinup_input["parameters"]["min_rotations"] = 1
+    seed_spinup_input["parameters"]["max_rotations"] = 2
+    seed_spinup_input["pools"] = spinup_seed_pools
+    return seed_spinup_input
