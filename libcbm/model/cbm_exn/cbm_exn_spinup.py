@@ -43,7 +43,7 @@ def prepare_spinup_vars(
                 spinup_input["parameters"].n_rows,
                 parameters.pool_configuration(),
                 spinup_input["parameters"].backend_type,
-            ) if "pools" not in spinup_input else spinup_input["pools"]
+            )
         ),
     }
     if "sw_hw" not in data["parameters"].columns:
@@ -51,6 +51,9 @@ def prepare_spinup_vars(
         sw_hw.name = "sw_hw"
         data["parameters"].add_column(sw_hw, 0)
     data["pools"]["Input"].assign(1.0)
+    if "pools" in spinup_input:
+        for col in data["pools"].columns:
+            data["pools"][col].assign(spinup_input["pools"][col])
     if include_flux:
         data["flux"] = cbm_exn_variables.init_flux(
             spinup_input["parameters"].n_rows,
