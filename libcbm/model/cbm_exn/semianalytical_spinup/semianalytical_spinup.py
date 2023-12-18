@@ -270,7 +270,7 @@ def semianalytical_spinup(
         parameters,
     )
     spinup_vars["state"]["disturbance_type"].assign(
-        spinup_vars["parameters"]["last_pass_disturbance_type"]
+        spinup_vars["parameters"]["historical_disturbance_type"]
     )
     spinup_ops = cbm_exn_spinup.get_default_ops(parameters, spinup_vars)
     spinup_matrices = get_spinup_matrices(spinup_vars, spinup_ops, pool_dict)
