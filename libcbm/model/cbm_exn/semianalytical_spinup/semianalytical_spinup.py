@@ -308,13 +308,11 @@ def semianalytical_spinup(
 
 
 def create_spinup_seed(
+    semi_analytical_result: pd.DataFrame,
     spinup_input: dict[str, pd.DataFrame],
-    input_mode: InputMode,
     parameters: CBMEXNParameters,
 ) -> dict[str, pd.DataFrame]:
-    semi_analytical_result = semianalytical_spinup(
-        spinup_input, input_mode, parameters
-    )
+
     spinup_seed_pools = pd.DataFrame(
         {
             p: semi_analytical_result[p]
