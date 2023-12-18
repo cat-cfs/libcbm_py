@@ -25,13 +25,15 @@ of Geophysical Research: Biogeosciences, 117(G3).
 https://doi.org/10.1029/2012JG002040
 
 """
+from typing import Union
+from enum import Enum
+
 import pandas as pd
 import numpy as np
 from scipy import sparse
 from scipy.sparse import linalg
-from enum import Enum
 
-
+from libcbm import resources
 from libcbm.model.model_definition import model_matrix_ops
 from libcbm.model.model_definition import matrix_conversion
 from libcbm.model.model_definition.model_variables import ModelVariables
@@ -40,6 +42,7 @@ from libcbm.model.cbm_exn.cbm_exn_parameters import CBMEXNParameters
 from libcbm.model.cbm_exn.semianalytical_spinup import (
     semianalytical_spinup_input,
 )
+from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
 
 
 class InputMode(Enum):
@@ -328,3 +331,15 @@ def create_spinup_seed(
     seed_spinup_input["parameters"]["max_rotations"] = 2
     seed_spinup_input["pools"] = spinup_seed_pools
     return seed_spinup_input
+
+
+def prepare_parameters(
+    parameters: Union[dict, None] = None,
+    config_path: Union[str, None] = None,
+) -> CBMEXNParameters:
+
+    if not config_path:
+        config_path = resources.get_cbm_exn_parameters_dir()
+
+    params = parameters_factory(config_path, parameters)
+    return params
