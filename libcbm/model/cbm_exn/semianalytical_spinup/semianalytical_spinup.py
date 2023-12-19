@@ -198,7 +198,7 @@ def get_disturbance_frequency(
     n_dom_pools = len(get_default_dom_pools())
 
     disturbance_frequency = sparse.diags(
-        np.tile(1 / return_interval, n_dom_pools)
+        np.repeat(1 / return_interval, n_dom_pools)
     )
     return disturbance_frequency
 
