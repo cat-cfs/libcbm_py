@@ -66,6 +66,10 @@ class InputMode(Enum):
     MeanInput = 3
 
 
+def get_default_pools(parameters: CBMEXNParameters) -> dict[str, int]:
+    return {p: i for i, p in enumerate(parameters.pool_configuration())}
+
+
 def get_default_dom_pools() -> list[str]:
     """
     get the list of cbm_exn dead organic matter pool names
@@ -116,7 +120,7 @@ def get_spinup_matrices(
                 else None
             ),
         )
-        output[o["name"]] = op_dataframe.iloc[idx]
+        output[o["name"]] = op_dataframe.iloc[idx].reset_index(drop=True)
 
     return output
 
@@ -140,8 +144,8 @@ def get_spinup_matrices(
 
 
 def get_step_matrix(
-    spinup_matrices: dict[str, pd.DataFrame],
-) -> sparse.csc_matrix:
+    spinup_matrices: dict[str, pd.DataFrame], fmt: str = "csc"
+) -> sparse.spmatrix:
     """Produce a matrix of dom-pool to dom-pool transfers and diagonal dom
     pool C retentions for the CBM dom pool decay and mixing routines.  Each
     row in the specified spinup matrices is assembled into a single
@@ -167,22 +171,22 @@ def get_step_matrix(
         for k, v in spinup_matrices.items()
     }
 
-    csc_mats = {n: c.tocsc() for n, c in coo_mats.items()}
+    # csc_mats = {n: c.tocsc() for n, c in coo_mats.items()}
     spinup_matrix_state_state: sparse.csc_matrix = (
-        csc_mats["snag_turnover"]
-        @ csc_mats["dom_decay"]
-        @ csc_mats["slow_decay"]
-        @ csc_mats["slow_mixing"]
+        coo_mats["snag_turnover"]
+        @ coo_mats["dom_decay"]
+        @ coo_mats["slow_decay"]
+        @ coo_mats["slow_mixing"]
     )
     step_matrix = spinup_matrix_state_state - sparse.identity(
-        spinup_matrix_state_state.shape[0], format="csc"
+        spinup_matrix_state_state.shape[0]
     )
-    return step_matrix
+    return step_matrix.T.asformat(fmt)
 
 
 def get_disturbance_frequency(
-    return_interval: np.ndarray,
-) -> sparse.dia_matrix:
+    return_interval: np.ndarray, fmt: str = "csc"
+) -> sparse.spmatrix:
     """
     Compute the effect of return interval as a frequency to adjust
     disturbance effects for the semianalytical procedure.  This is
@@ -200,12 +204,12 @@ def get_disturbance_frequency(
     disturbance_frequency = sparse.diags(
         np.repeat(1 / return_interval, n_dom_pools)
     )
-    return disturbance_frequency
+    return disturbance_frequency.asformat(fmt)
 
 
 def get_disturbance_matrix(
-    spinup_matrices: dict[str, pd.DataFrame],
-) -> sparse.csc_matrix:
+    spinup_matrices: dict[str, pd.DataFrame], fmt: str = "csc"
+) -> sparse.spmatrix:
     """Create a block_diag sparse matrix of the disturbance effects
     on dom:
         * The diagonal is the losses to atmosphere and the
@@ -230,16 +234,15 @@ def get_disturbance_matrix(
         dom_pool_dict, disturbance_mat_dom
     )
 
-    disturbance_mat_csc = disturbance_mat_coo.tocsc()
-    identity = sparse.identity(disturbance_mat_csc.shape[0], format="csc")
-    M_dm = disturbance_mat_csc - identity
-    return M_dm
+    identity = sparse.identity(disturbance_mat_coo.shape[0])
+    M_dm = disturbance_mat_coo - identity
+    return M_dm.T.asformat(fmt)
 
 
 def semianalytical_spinup(
     spinup_input: dict[str, pd.DataFrame],
     input_mode: InputMode,
-    parameters: CBMEXNParameters
+    parameters: CBMEXNParameters,
 ) -> pd.DataFrame:
     """
     Use the semi-analytical approach for spinup parameterized by the CBM-CFS3
@@ -262,7 +265,7 @@ def semianalytical_spinup(
 
     n_rows = len(spinup_input["parameters"].index)
 
-    pool_dict = {p: i for i, p in enumerate(parameters.pool_configuration())}
+    pool_dict = get_default_pools(parameters)
     dom_pools = get_default_dom_pools()
 
     spinup_vars = cbm_exn_spinup.prepare_spinup_vars(
@@ -275,6 +278,24 @@ def semianalytical_spinup(
     spinup_ops = cbm_exn_spinup.get_default_ops(parameters, spinup_vars)
     spinup_matrices = get_spinup_matrices(spinup_vars, spinup_ops, pool_dict)
     return_interval = spinup_vars["parameters"]["return_interval"].to_numpy()
+    Uss = get_uss(
+        pool_dict,
+        get_bio(input_mode, spinup_vars, spinup_ops),
+        spinup_matrices,
+    )
+
+    M = get_step_matrix(spinup_matrices, fmt="csc")
+    DM = get_disturbance_matrix(spinup_matrices, fmt="csc")
+    f = get_disturbance_frequency(return_interval, fmt="csc")
+    result: np.ndarray = -linalg.spsolve((M + (DM @ f)), Uss)
+    return pd.DataFrame(
+        columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
+    )
+
+
+def get_bio(
+    input_mode: InputMode, spinup_vars: ModelVariables, spinup_ops: list
+) -> pd.DataFrame:
     if input_mode == InputMode.MaxDefinedAge:
         bio = semianalytical_spinup_input.get_bio_at_max_age(
             spinup_ops, spinup_vars
@@ -287,24 +308,25 @@ def semianalytical_spinup(
         raise NotImplementedError(
             f"specified input_mode: {input_mode} not yet implemented"
         )
+    return bio
+
+
+def get_uss(
+    pool_dict: dict[str, int],
+    bio: pd.DataFrame,
+    spinup_matrices: dict[str, pd.DataFrame],
+) -> np.ndarray:
     Uss = (
         semianalytical_spinup_input.get_steady_state_input(
             pool_dict,
-            dom_pools,
+            get_default_dom_pools(),
             bio,
             spinup_matrices,
         )
         .to_numpy()
         .flatten()
     )
-
-    M = get_step_matrix(spinup_matrices)
-    DM = get_disturbance_matrix(spinup_matrices)
-    f = get_disturbance_frequency(return_interval)
-    result: np.ndarray = -linalg.spsolve((M.T + (DM @ f).T), Uss)
-    return pd.DataFrame(
-        columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
-    )
+    return Uss
 
 
 def create_spinup_seed(
@@ -312,11 +334,11 @@ def create_spinup_seed(
     spinup_input: dict[str, pd.DataFrame],
     parameters: CBMEXNParameters,
 ) -> dict[str, pd.DataFrame]:
-
     spinup_seed_pools = pd.DataFrame(
         {
             p: semi_analytical_result[p]
-            if p in semi_analytical_result.columns else 0.0
+            if p in semi_analytical_result.columns
+            else 0.0
             for p in parameters.pool_configuration()
         }
     )
@@ -335,7 +357,6 @@ def prepare_parameters(
     parameters: Union[dict, None] = None,
     config_path: Union[str, None] = None,
 ) -> CBMEXNParameters:
-
     if not config_path:
         config_path = resources.get_cbm_exn_parameters_dir()
 
