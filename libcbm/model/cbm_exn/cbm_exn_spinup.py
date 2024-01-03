@@ -54,6 +54,9 @@ def prepare_spinup_vars(
     if "pools" in spinup_input:
         for col in data["pools"].columns:
             data["pools"][col].assign(spinup_input["pools"][col])
+    if "state" in spinup_input:
+        for col in data["state"].columns:
+            data["state"][col].assign(spinup_input["state"][col])
     if include_flux:
         data["flux"] = cbm_exn_variables.init_flux(
             spinup_input["parameters"].n_rows,
