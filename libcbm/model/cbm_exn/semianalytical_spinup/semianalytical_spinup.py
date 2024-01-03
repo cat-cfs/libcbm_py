@@ -43,6 +43,8 @@ from libcbm.model.cbm_exn.semianalytical_spinup import (
     semianalytical_spinup_input,
 )
 from libcbm.model.cbm_exn.cbm_exn_parameters import parameters_factory
+from libcbm.model.cbm_exn import cbm_exn_variables
+from libcbm.storage.backends import BackendType
 
 
 class InputMode(Enum):
@@ -278,9 +280,10 @@ def semianalytical_spinup(
     spinup_ops = cbm_exn_spinup.get_default_ops(parameters, spinup_vars)
     spinup_matrices = get_spinup_matrices(spinup_vars, spinup_ops, pool_dict)
     return_interval = spinup_vars["parameters"]["return_interval"].to_numpy()
+    bio = get_bio(input_mode, spinup_vars, spinup_ops)
     Uss = get_uss(
         pool_dict,
-        get_bio(input_mode, spinup_vars, spinup_ops),
+        bio,
         spinup_matrices,
     )
 
@@ -288,8 +291,12 @@ def semianalytical_spinup(
     DM = get_disturbance_matrix(spinup_matrices, fmt="csc")
     f = get_disturbance_frequency(return_interval, fmt="csc")
     result: np.ndarray = -linalg.spsolve((M + (DM @ f)), Uss)
-    return pd.DataFrame(
-        columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
+    return bio.reset_index(drop=True).merge(
+        pd.DataFrame(
+            columns=dom_pools, data=result.reshape(n_rows, len(dom_pools))
+        ),
+        left_index=True,
+        right_index=True,
     )
 
 
@@ -350,6 +357,12 @@ def create_spinup_seed(
     seed_spinup_input["parameters"]["min_rotations"] = 1
     seed_spinup_input["parameters"]["max_rotations"] = 2
     seed_spinup_input["pools"] = spinup_seed_pools
+
+    seed_spinup_input["state"] = cbm_exn_variables.init_spinup_state(
+        len(seed_spinup_input["parameters"].index),
+        backend_type=BackendType.pandas,
+    ).to_pandas()
+
     return seed_spinup_input
 
 
