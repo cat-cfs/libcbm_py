@@ -46,17 +46,17 @@ This outlines a component of a highly efficient method for processing C flows in
 
 The approach makes the hard coded model pool, flow, flux in CBM-CFS3 fully dynamic, and definable via high level language in the cbm_exn package.  
 
-Prior to this improvement, using CBM-CFS3, it was only possible to modify parameters for the pool-flows withing the hard-coded model structure.  This opens up opportunities to evaluate changes to model structure dynamically, in addition to modifiying pool flows.  
+Prior to this improvement, using CBM-CFS3, it was only possible to modify parameters for the pool-flows within the hard-coded model structure.  This opens up opportunities to evaluate changes to model structure dynamically, in addition to modifiying pool flows.  
 
 In addition the architecture opens opportunities for using machine learning both for informing pool flow parameters and the model structure itself.
 
-The document explains the basic structure of the default parameters and configuration in `cbm_exn`, and also shows the an example of the default pool flows generated in dataframe form, and describes their format. 
+The document explains the basic structure of the default parameters and configuration in `cbm_exn`, and also shows an example of the default pool flows generated in dataframe form, and describes their format. 
 
 While only the default pool flows (based on CBM-CFS3) are presented here, it's important to note if the general format is followed it's possible to alter model pool-flow-flux structure via high level programming language.  The default values could potentially be used as a template to accomplish this.
 
 Sections below are:
 
- * Operation DataFrame: a description of the storage scheme for mult-dimensional pool flow proportions within dataframe structures.
+ * Operation DataFrame: a description of the storage scheme for multi-dimensional pool flow proportions within dataframe structures.
  * Default spinup operation dataframes: examples of spinup ops derived from the cbm_exn default parameters and example simulation area input
  * Default step operation dataframes: example of step ops also derived from the same inputs
  * Appendix1, Appendix2: the default parameters, and example simulation area used.
@@ -147,7 +147,7 @@ The single row is a matrix that is applied to all simulation areas.  See the `sl
 
 ## Simulation-aligned 
 
-the dataframe has a row for each simulation area in subsequent spinup or step calls.  Each row represents a matrix that is 1:1 with simulation areas
+The dataframe has a row for each simulation area in subsequent spinup or step calls.  Each row represents a matrix that is 1:1 with simulation areas.
 This type is appropriate for processes that vary by simulation area. See the `dom_decay` dataframe in the followin section.
 
 ## Property-indexed 
@@ -156,7 +156,7 @@ A property-index dataframe has one or more values that correspond to values stor
 
     [table_name.variable_name]
 
-Where a simulation table, series name pair is surrounded by left and right brackets.
+Where a simulation table-series name pair is surrounded by left and right brackets.
 
 An example of this is if one flow matrix is defined for each spatial unit identifier.  See the `disturbance` dataframe in the following section for an example.
 
@@ -174,7 +174,7 @@ The default spinup operation dataframes are generated as a function of the defau
 
 The [libcbm.model.cbm_exn.cbm_exn_spinup.spinup](https://github.com/cat-cfs/libcbm_py/blob/700b2febb73681ca2b4456d4db88d5c399008640/libcbm/model/cbm_exn/cbm_exn_spinup.py#L169) function can directly ingest operations in this format via the `ops` parameter.
 
-Within a spinup timestep these operations are applied in the following order by default.  The order and naming of these operation is user-specifyable via passing a string list to the `op_sequence` parameter of the above linked function
+Within a spinup timestep these operations are applied in the following order by default.  The order and naming of these operation is user-specifiable via passing a string list to the `op_sequence` parameter of the above linked function
 
  1. growth
  1. snag_turnover
