@@ -62,19 +62,19 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
                 if row_values["state_filter_expression"]
                 else [],
             }
-        out_data = []
-        for v in row_values_by_id.values():
-            out_data.append(
-                {
-                    "eligibility_id": v["eligibility_id"],
-                    "pool_filter_expression": " & ".join(
-                        v["pool_filter_expressions"]
-                    ),
-                    "state_filter_expression": " & ".join(
-                        v["state_filter_expressions"]
-                    ),
-                }
-            )
+    out_data = []
+    for v in row_values_by_id.values():
+        out_data.append(
+            {
+                "eligibility_id": v["eligibility_id"],
+                "pool_filter_expression": " & ".join(
+                    v["pool_filter_expressions"]
+                ),
+                "state_filter_expression": " & ".join(
+                    v["state_filter_expressions"]
+                ),
+            }
+        )
     return pd.DataFrame(out_data)
 
 
