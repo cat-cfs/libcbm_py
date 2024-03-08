@@ -75,7 +75,14 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
                 ),
             }
         )
-    return pd.DataFrame(out_data)
+    return pd.DataFrame(
+        columns=[
+            "eligibility_id",
+            "pool_filter_expression",
+            "state_filter_expression",
+        ],
+        data=out_data,
+    )
 
 
 def validate_eligibilities_relationship(
