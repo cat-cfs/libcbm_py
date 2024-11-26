@@ -83,3 +83,22 @@ In subsequent R sessions you can re-use the environment: it is not necessary to 
 library(reticulate)
 use_virtualenv("my-environment")
 ```
+
+Now use the RStudio terminal to install libcbm_py using pip:
+
+```
+python -m pip install libcbm
+```
+
+If this gives an error, it may be because the python version installed in `my-environment` is incorrect.
+To check that your R virtual environment is using the correct version of python, type this into the terminal:
+
+```
+python -m pip --version
+```
+
+Should return:
+`pip 24.3.1 from C:\Users\user\Documents\.virtualenvs\my-environment\lib\site-packages\pip (python 3.10)`
+(The version number of pip, the path to the version of pip being called, and the version of python calling pip)
+
+If this shows the wrong version of python, you can delete the virtual environment folder (e.g. `C:\Users\user\Documents\.virtualenvs\my-environment`) and run `install_python("3.10:latest")` and `virtualenv_create("my-environment", version = "3.10:latest")` again to reinstall the correct version of python.
