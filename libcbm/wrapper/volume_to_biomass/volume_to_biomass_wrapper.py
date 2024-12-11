@@ -9,9 +9,24 @@ from libcbm.wrapper.libcbm_error import LibCBM_Error
 
 
 class LibV2B_ConversionMode(IntEnum):
+
     CBM3 = 0
+    """
+    CBM3 mode produces the Softwood and Hardwood Merch Foliage, and Other
+    output
+    """
+
     Extended = 1
+    """Extended produces more detailed outputs, including more of the
+    components produced by the Boudewyn et al Volume to biomass routines.
+    """
+
     ExtendedProportions = 2
+    """Extended produces more detailed outputs, including more of the
+    components produced by the Boudewyn et al Volume to biomass routines.
+    This is the same as extended, but values are expressed as proportions
+    of the CBM-CFS3 pool
+    """
 
 
 class LibV2B_MerchVolumeCurve(ctypes.Structure):
@@ -44,6 +59,15 @@ class MerchVolumeCurve:
         age: np.ndarray,
         merchvol: np.ndarray
     ):
+        """A component of a volume to biomass conversion
+
+        Args:
+            species_code (int): The species code of the component (see
+                cbm_defaults database for definition)
+            age (np.ndarray): The array of ages in years for each of the
+                volumes
+            merchvol (np.ndarray): The array of Merchantable volumes
+        """
         self.species_code = species_code
         self.age = age
         self.merchvol = merchvol
@@ -52,6 +76,13 @@ class MerchVolumeCurve:
 class VolumeToBiomassWrapper:
 
     def __init__(self, dllpath: str | None = None):
+        """Initialize the volume to biomass wrapper for running the CBM-CFS3
+        volume to biomass conversion routine
+
+        Args:
+            dllpath (str | None, optional): Optional path to a dll, if not
+                specified the libcbm bundled value is used. Defaults to None.
+        """
         if dllpath is None:
             self._dllpath = resources.get_libcbm_bin_path()
         else:
@@ -81,6 +112,38 @@ class VolumeToBiomassWrapper:
         conversion_mode: LibV2B_ConversionMode = LibV2B_ConversionMode.CBM3,
         db_path: str | None = None,
     ) -> pd.DataFrame:
+        """Convert a set of Age/Merchantable volume curves into CBM-CFS3 above
+        ground biomass Carbon pools
+
+        Args:
+            spatial_unit_id (int): A spatial unit identifier as defined in the
+                cbm_defaults database.
+            merch_vols (list[MerchVolumeCurve]): A collection of one or more
+            use_smoother (bool, optional): If set to true the CBM-CFS3
+                "smoother" is enabled, and it is otherwise disabled. Defaults
+                to True.
+            conversion_mode (LibV2B_ConversionMode, optional): Can be set to
+                produce more detailed output based on the volume to biomass
+                routines. Defaults to LibV2B_ConversionMode.CBM3, which
+                produces only the CBM-CFS3 above ground biomass Carbon pools.
+            db_path (str | None, optional): Path to a cbm_defaults parameter
+                database. In this context it is used to provide the relevant
+                volume to biomass parameters and stump/top proportion
+                parameters. Defaults to None.
+
+        Raises:
+            RuntimeError: An error occurred in the dll call
+
+        Returns:
+            pd.DataFrame: the result of the conversion:
+
+                * When LibV2B_ConversionMode.CBM3 this has the 6 CBM-CFS3
+                  above ground biomass C columns, and 1 row from age 1 to
+                  max(age)
+                * When the extended modes are used, there are 23 columns, and
+                  the same number of rows
+
+        """
 
         if db_path is None:
             db_path = resources.get_cbm_defaults_path()
@@ -115,6 +178,8 @@ class VolumeToBiomassWrapper:
                     "HWOtherTop",
                 ]
             )
+        if len(merch_vols) == 0:
+            return pd.DataFrame(columns=out_cols)
         merch_vols_array = (LibV2B_MerchVolumeCurve * len(merch_vols))()
         for i_merch_vol, merch_vol in enumerate(merch_vols):
             merch_vols_array[i_merch_vol] = LibV2B_MerchVolumeCurve(
