@@ -69,29 +69,20 @@ class EventSort(Enum):
 def initialize_inventory(
     sit: SIT, backend_type: BackendType = BackendType.pandas
 ) -> Tuple[DataFrame, DataFrame]:
-    if not sit.sit_data.chunked_inventory:
-        pd_classifiers, pd_inventory = _initialize_inventory(
-            sit.sit_mapping,
-            sit.sit_data.classifiers,
-            sit.sit_data.classifier_values,
-            sit.sit_data.inventory,
+
+    pd_classifiers, pd_inventory = _initialize_inventory(
+        sit.sit_mapping,
+        sit.sit_data.classifiers,
+        sit.sit_data.classifier_values,
+        sit.sit_data.inventory,
+    )
+    if backend_type == BackendType.pandas:
+        return (
+            dataframe.from_pandas(pd_classifiers),
+            dataframe.from_pandas(pd_inventory),
         )
-        if backend_type == BackendType.pandas:
-            return (
-                dataframe.from_pandas(pd_classifiers),
-                dataframe.from_pandas(pd_inventory),
-            )
-        elif backend_type == backend_type.numpy:
-            raise NotImplementedError()
-    else:
-        for inventory in sit.sit_data.inventory:
-            classifiers_chunk, inventory_chunk = _initialize_inventory(
-                sit.sit_mapping,
-                sit.sit_data.classifiers,
-                sit.sit_data.classifier_values,
-                sit.sit_data.inventory,
-            )
-            # TODO: initialize dask backend
+    elif backend_type == backend_type.numpy:
+        raise NotImplementedError()
 
 
 def _initialize_inventory(

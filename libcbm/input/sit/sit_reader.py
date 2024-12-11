@@ -5,8 +5,6 @@
 # Built-in modules #
 from __future__ import annotations
 import os
-from typing import Iterable
-from typing import Union
 
 # Third party modules #
 import pandas as pd
@@ -31,12 +29,11 @@ class SITData:
         classifier_aggregates: pd.DataFrame,
         disturbance_types: pd.DataFrame,
         age_classes: pd.DataFrame,
-        inventory: Union[pd.DataFrame, Iterable[pd.DataFrame]],
+        inventory: pd.DataFrame,
         yield_table: pd.DataFrame,
         disturbance_events: pd.DataFrame,
         transition_rules: pd.DataFrame,
         eligibilities: pd.DataFrame = None,
-        chunked_inventory: bool = False,
     ):
         self.classifiers = classifiers
         self.original_classifier_labels = original_classifier_labels
@@ -49,7 +46,6 @@ class SITData:
         self.disturbance_events = disturbance_events
         self.eligibilities = eligibilities
         self.transition_rules = transition_rules
-        self.chunked_inventory = chunked_inventory
 
 
 def load_table(config: dict, config_dir: str) -> pd.DataFrame:
@@ -194,7 +190,7 @@ def parse(
     sit_classifiers: pd.DataFrame,
     sit_disturbance_types: pd.DataFrame,
     sit_age_classes: pd.DataFrame,
-    sit_inventory: Union[pd.DataFrame, Iterable[pd.DataFrame]],
+    sit_inventory: pd.DataFrame,
     sit_yield: pd.DataFrame,
     sit_events: pd.DataFrame = None,
     sit_transitions: pd.DataFrame = None,
@@ -262,19 +258,14 @@ def parse(
     )
     age_classes = sit_age_class_parser.parse(sit_age_classes)
 
-    if isinstance(sit_inventory, pd.DataFrame):
-        is_chunked_inventory = False
-
-        inventory = sit_inventory_parser.parse(
-            sit_inventory,
-            classifiers,
-            classifier_values,
-            disturbance_types,
-            age_classes,
-            sit_parse_options.inventory_ids,
-        )
-    else:
-        raise NotImplementedError("")
+    inventory = sit_inventory_parser.parse(
+        sit_inventory,
+        classifiers,
+        classifier_values,
+        disturbance_types,
+        age_classes,
+        sit_parse_options.inventory_ids,
+    )
 
     yield_table = sit_yield_parser.parse(
         sit_yield, classifiers, classifier_values, age_classes
@@ -349,5 +340,4 @@ def parse(
         disturbance_events,
         transition_rules,
         eligibilities,
-        is_chunked_inventory,
     )
