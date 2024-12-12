@@ -1,4 +1,5 @@
 import os
+from typing import Union
 import numpy as np
 import pandas as pd
 import ctypes
@@ -75,7 +76,7 @@ class MerchVolumeCurve:
 
 class VolumeToBiomassWrapper:
 
-    def __init__(self, dllpath: str | None = None):
+    def __init__(self, dllpath: Union[str, None] = None):
         """Initialize the volume to biomass wrapper for running the CBM-CFS3
         volume to biomass conversion routine
 
@@ -110,7 +111,7 @@ class VolumeToBiomassWrapper:
         merch_vols: list[MerchVolumeCurve],
         use_smoother: bool = True,
         conversion_mode: LibV2B_ConversionMode = LibV2B_ConversionMode.CBM3,
-        db_path: str | None = None,
+        db_path: Union[str, None] = None,
     ) -> pd.DataFrame:
         """Convert a set of Age/Merchantable volume curves into CBM-CFS3 above
         ground biomass Carbon pools
