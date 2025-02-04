@@ -445,7 +445,7 @@ class CBM:
         n_stands = cbm_vars.pools.n_rows
         built_in_turnover = snag_turnover is None and biomass_turnover is None
 
-        if not built_in_turnover:
+        if built_in_turnover:
             ops = {
                 x: self.compute_functions.allocate_op(n_stands)
                 for x in self.op_names
