@@ -5,9 +5,12 @@
 from __future__ import annotations
 from typing import Callable
 from typing import Union
+import numpy as np
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.wrapper.libcbm_wrapper import LibCBMWrapper
 from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
+from libcbm.wrapper.libcbm_operation import Operation
+from libcbm.wrapper.libcbm_operation import OperationFormat
 from libcbm.storage.series import Series
 from libcbm.storage.series import SeriesDef
 from libcbm.storage import dataframe
@@ -403,23 +406,58 @@ class CBM:
         self.compute_functions.free_op(disturbance_op)
         return cbm_vars
 
-    def step_annual_process(self, cbm_vars: CBMVariables) -> CBMVariables:
+    def step_annual_process(
+        self, cbm_vars: CBMVariables,
+        snag_turnover: list[tuple[int, int, np.ndarray]] | None = None,
+        biomass_turnover: list[tuple[int, int, np.ndarray]] | None = None
+    ) -> CBMVariables:
         """Compute CBM annual process dynamics: growth, turnover and decay.
         This updates the cbm_vars.pools value and cbm_vars.flux values with
         computed annual process dynamics
 
+        For the optional snag_turnover and biomass_turnover parameters the
+        format is as follows::
+
+            [
+                (pool_idx_src1, pool_idx_src1, [flow_1_1_0, flow_1_1_1, ... flow_1_1_N]),
+                (pool_idx_snk2, pool_idx_snk2, [flow_2_2_0, flow_2_2_1, ... flow_2_2_N]),
+                ...
+            ]
+
+        Guidelines for the optional parameters:
+
+            * Each array (the 3rd tuple member of each list) is the same
+              length as the cbm_vars rows (1 entry for each simulation record)
+            * The pool_idx_src, pool_idx_snk values are the 0-based index of
+              the source pool, sink pool corresponding to the array
+
+
         Args:
             cbm_vars (CBMVariables): cbm_vars object
+            snag_turnover (list[tuple[int, int, np.ndarray]] | None): optional
+                override of snag turnovers
+            biomass_turnover (list[tuple[int, int, np.ndarray]] | None):
+                optional override of biomass_turnover
 
         Returns:
             CBMVariables: cbm_vars
         """
         n_stands = cbm_vars.pools.n_rows
+        built_in_turnover = snag_turnover is None and biomass_turnover is None
 
-        ops = {
-            x: self.compute_functions.allocate_op(n_stands)
-            for x in self.op_names
-        }
+        if not built_in_turnover:
+            ops = {
+                x: self.compute_functions.allocate_op(n_stands)
+                for x in self.op_names
+            }
+        else:
+            ops = {}
+            for x in self.op_names:
+                if x in ["snag_turnover", "biomass_turnover"]:
+                    # these ops will be allocated a bit further down
+                    continue
+                else:
+                    ops[x] = self.compute_functions.allocate_op(n_stands)
 
         self.model_functions.get_merch_volume_growth_ops(
             ops["growth"],
@@ -430,9 +468,38 @@ class CBM:
             cbm_vars.state,
         )
 
-        self.model_functions.get_turnover_ops(
-            ops["snag_turnover"], ops["biomass_turnover"], cbm_vars.inventory
-        )
+        if built_in_turnover:
+            self.model_functions.get_turnover_ops(
+                ops["snag_turnover"],
+                ops["biomass_turnover"],
+                cbm_vars.inventory
+            )
+        else:
+            assert snag_turnover is not None and biomass_turnover is not None
+            # the matrix_index parameter maps each 3rd tuple entry array to
+            # the simulation records 1:1
+            snag_turnover_op = Operation(
+                self.compute_functions,
+                format=OperationFormat.RepeatingCoordinates,
+                data=snag_turnover,
+                op_process_id=self.op_processes["snag_turnover"],
+                matrix_index=np.column_stack(
+                    [np.arange(0, n_stands), np.arange(0, n_stands)]
+                )
+
+            )
+            ops["snag_turnover"] = snag_turnover_op.get_op_id()
+
+            biomass_turnover_op = Operation(
+                self.compute_functions,
+                format=OperationFormat.RepeatingCoordinates,
+                data=biomass_turnover,
+                op_process_id=self.op_processes["biomass_turnover"],
+                matrix_index=np.column_stack(
+                    [np.arange(0, n_stands), np.arange(0, n_stands)]
+                )
+            )
+            ops["biomass_turnover"] = biomass_turnover_op.get_op_id()
 
         self.model_functions.get_decay_ops(
             ops["dom_decay"],
