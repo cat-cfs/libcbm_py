@@ -419,8 +419,8 @@ class CBM:
         format is as follows::
 
             [
-                (pool_idx_src1, pool_idx_src1, [flow_1_1_0, flow_1_1_1, ... flow_1_1_N]),
-                (pool_idx_snk2, pool_idx_snk2, [flow_2_2_0, flow_2_2_1, ... flow_2_2_N]),
+                (pool_idx_source1, pool_idx_sink1, [flow_1_1_0, flow_1_1_1, ... flow_1_1_N]),
+                (pool_idx_source2, pool_idx_sink2, [flow_2_2_0, flow_2_2_1, ... flow_2_2_N]),
                 ...
             ]
 
@@ -428,7 +428,7 @@ class CBM:
 
             * Each array (the 3rd tuple member of each list) is the same
               length as the cbm_vars rows (1 entry for each simulation record)
-            * The pool_idx_src, pool_idx_snk values are the 0-based index of
+            * The pool_idx_source, pool_idx_sink values are the 0-based index of
               the source pool, sink pool corresponding to the array
 
 
@@ -544,7 +544,12 @@ class CBM:
         self.model_functions.end_step(cbm_vars.state)
         return cbm_vars
 
-    def step(self, cbm_vars: CBMVariables) -> CBMVariables:
+    def step(
+        self,
+        cbm_vars: CBMVariables,
+        snag_turnover: list[tuple[int, int, np.ndarray]] | None = None,
+        biomass_turnover: list[tuple[int, int, np.ndarray]] | None = None
+    ) -> CBMVariables:
         """Run all default cbm step methods.  It is assumed that any
         records in the specified cbm_vars that require the spinup routine
         have been passed into the :py:func:`init` and :py:func:`spinup`
@@ -558,6 +563,8 @@ class CBM:
         """
         cbm_vars = self.step_start(cbm_vars)
         cbm_vars = self.step_disturbance(cbm_vars)
-        cbm_vars = self.step_annual_process(cbm_vars)
+        cbm_vars = self.step_annual_process(
+            cbm_vars, snag_turnover, biomass_turnover
+        )
         cbm_vars = self.step_end(cbm_vars)
         return cbm_vars
