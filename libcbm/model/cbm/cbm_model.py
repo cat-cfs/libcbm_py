@@ -467,7 +467,7 @@ class CBM:
             cbm_vars.pools,
             cbm_vars.state,
         )
-
+        custom_ops: dict[str, Operation] = {}
         if built_in_turnover:
             self.model_functions.get_turnover_ops(
                 ops["snag_turnover"],
@@ -488,6 +488,7 @@ class CBM:
                 )
 
             )
+            custom_ops["snag_turnover"] = snag_turnover_op
             ops["snag_turnover"] = snag_turnover_op.get_op_id()
 
             biomass_turnover_op = Operation(
@@ -499,6 +500,7 @@ class CBM:
                     [np.arange(0, n_stands), np.arange(0, n_stands)]
                 )
             )
+            custom_ops["biomass_turnover"] = biomass_turnover_op
             ops["biomass_turnover"] = biomass_turnover_op.get_op_id()
 
         self.model_functions.get_decay_ops(
@@ -528,7 +530,10 @@ class CBM:
             cbm_vars.state["enabled"],
         )
         for op_name in self.op_names:
-            self.compute_functions.free_op(ops[op_name])
+            if op_name in custom_ops:
+                custom_ops[op_name].dispose()
+            else:
+                self.compute_functions.free_op(ops[op_name])
         return cbm_vars
 
     def step_end(self, cbm_vars: CBMVariables) -> CBMVariables:
