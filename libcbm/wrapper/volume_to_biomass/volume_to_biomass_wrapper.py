@@ -68,7 +68,9 @@ class MerchVolumeCurve:
             age (np.ndarray): The array of ages in years for each of the
                 volumes
             merchvol (np.ndarray): The array of Merchantable volumes
-        """
+        """    
+        assert age.dtype == np.int32, "Ages must be int32"
+        assert merchvol.dtype == np.float64, "Volumes must be float64"
         self.species_code = species_code
         self.age = age
         self.merchvol = merchvol
@@ -182,6 +184,7 @@ class VolumeToBiomassWrapper:
         if len(merch_vols) == 0:
             return pd.DataFrame(columns=out_cols)
         merch_vols_array = (LibV2B_MerchVolumeCurve * len(merch_vols))()
+
         for i_merch_vol, merch_vol in enumerate(merch_vols):
             merch_vols_array[i_merch_vol] = LibV2B_MerchVolumeCurve(
                 merch_vol.species_code,
