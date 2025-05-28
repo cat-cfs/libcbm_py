@@ -37,6 +37,7 @@ class CBMWrapper(LibCBM_ctypes):
 
                 {
                     "cbm_defaults": {"p1": {}, "p2": {}, ..., "pN": {}},
+                    "use_smoother": true,
                     "classifiers": [
                         {"id": 1, "name": "a"},
                         {"id": 2, "name": "b"},
