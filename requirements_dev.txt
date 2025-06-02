@@ -7,3 +7,4 @@ sphinx
 nbsphinx
 matplotlib
 jupytext
+coverage-badge
