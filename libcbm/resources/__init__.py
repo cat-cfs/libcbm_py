@@ -108,7 +108,7 @@ def get_libcbm_bin_path():
                 local_dir, "libcbm_bin", "ubuntu_22_04_x86_64", "libcbm.so"
             )
         else:
-            message = f"untested linux distribution: {platform.platform()}"
+            message = f"untested linux distribution: {os_release}"
             warnings.warn(message, RuntimeWarning)
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so"
