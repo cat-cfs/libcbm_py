@@ -5,3 +5,6 @@ flake8
 black
 sphinx
 nbsphinx
+matplotlib
+jupytext
+coverage-badge

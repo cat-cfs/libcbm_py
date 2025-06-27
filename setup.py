@@ -37,7 +37,7 @@ win_x86_64_bin = [
 ]
 
 ubuntu_binaries = []
-for ubuntu_ver in ["ubuntu_20_04_x86_64", "ubuntu_22_04_x86_64"]:
+for ubuntu_ver in ["ubuntu_22_04_x86_64", "ubuntu_24_04_x86_64"]:
     ubuntu_binaries.extend(
         [
             os.path.join(resources_dir, "libcbm_bin", ubuntu_ver, x)
@@ -97,6 +97,7 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
     ],
     packages=find_packages(exclude=["test*"]),
     package_data={

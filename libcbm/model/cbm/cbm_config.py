@@ -298,7 +298,7 @@ def merch_volume_curve(
 
 
 def merch_volume_to_biomass_config(
-    db_path: str, merch_volume_curves: list
+    db_path: str, merch_volume_curves: list, use_smoother: bool = True
 ) -> dict:
     """Formats merchantable volume growth curve data for libcbm CBM model
     consumption.
@@ -307,6 +307,8 @@ def merch_volume_to_biomass_config(
         db_path (str): path to a cbm_defaults database
         merch_volume_curves (list): a list of dictionaries in the same format
             as the return value of :py:func:`merch_volume_curve`
+        use_smoother (bool, optional): use the volume to biomass smoother (on
+            by default)
 
     Returns:
         dict: A dictionary containing configuration for merchantable volume
@@ -315,7 +317,8 @@ def merch_volume_to_biomass_config(
               For example::
 
                 {
-                    "db_path": "cbm_defaults.db"
+                    "db_path": "cbm_defaults.db",
+                    "use_smoother": True,
                     "merch_volume_curves": [
                         {
                             "classifier_set": {
@@ -364,4 +367,5 @@ def merch_volume_to_biomass_config(
                     ]
                 }
     """
-    return {"db_path": db_path, "merch_volume_curves": merch_volume_curves}
+    return {"db_path": db_path, "merch_volume_curves": merch_volume_curves,
+            "use_smoother": use_smoother,}

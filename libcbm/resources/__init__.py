@@ -56,9 +56,7 @@ def parse_key_value_file(path):
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
     with open(path) as fp:
-        cfg.read_file(
-            itertools.chain(["[global]", os.linesep], fp), source=path
-        )
+        cfg.read_file(itertools.chain(["[global]", os.linesep], fp), source=path)
         return {k: v.strip("\"'") for k, v in cfg["global"].items()}
 
 
@@ -89,9 +87,7 @@ def get_libcbm_bin_path():
     system = platform.system()
     # Windows case #
     if system == "Windows":
-        return os.path.join(
-            local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll"
-        )
+        return os.path.join(local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll")
     # Linux case #
     elif system == "Linux":
         os_release = get_linux_os_release()
@@ -99,19 +95,19 @@ def get_libcbm_bin_path():
             raise RuntimeError("unsupported platform")
         version_id = os_release["VERSION_ID"]
         os_name = os_release["NAME"].lower()
-        if os_name == "ubuntu" and version_id == "20.04":
-            return os.path.join(
-                local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so"
-            )
-        elif os_name == "ubuntu" and version_id == "22.04":
+        if os_name == "ubuntu" and version_id == "22.04":
             return os.path.join(
                 local_dir, "libcbm_bin", "ubuntu_22_04_x86_64", "libcbm.so"
             )
+        elif os_name == "ubuntu" and version_id == "24.04":
+            return os.path.join(
+                local_dir, "libcbm_bin", "ubuntu_24_04_x86_64", "libcbm.so"
+            )
         else:
-            message = f"untested linux distribution: {platform.platform()}"
+            message = f"untested linux distribution: {os_release}"
             warnings.warn(message, RuntimeWarning)
             return os.path.join(
-                local_dir, "libcbm_bin", "ubuntu_20_04_x86_64", "libcbm.so"
+                local_dir, "libcbm_bin", "ubuntu_22_04_x86_64", "libcbm.so"
             )
     # macOS case #
     elif system == "Darwin":
@@ -121,15 +117,11 @@ def get_libcbm_bin_path():
         version_tokens = os_release.split(".")
         major = version_tokens[0]
         minor = version_tokens[1]
-        matched_ver = (
-            (int(major) == 10 and int(minor) >= 12)
-            or (int(major) == 11)
-            or (int(major) == 12)
+        matched_ver = (int(major) == 10 and int(minor) >= 12) or (
+            int(major) >= 11 and int(major) <= 16
         )
         # Get the full path to the dylib #
-        dylib = os.path.join(
-            local_dir, "libcbm_bin", "macos_64", "libcbm.dylib"
-        )
+        dylib = os.path.join(local_dir, "libcbm_bin", "macos_64", "libcbm.dylib")
         # Let's hope we have it compiled for that version #
         msg = (
             "The source distribution for this version of macOS has not"

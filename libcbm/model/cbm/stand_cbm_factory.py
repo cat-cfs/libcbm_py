@@ -53,6 +53,7 @@ class StandCBMFactory:
         db_path: str = None,
         locale: str = "en-CA",
         dll_path: str = None,
+        use_smoother = True,
     ):
         """Initialize an instance of CBMStandFactory using classifiers and
         merch volumes.
@@ -95,6 +96,8 @@ class StandCBMFactory:
                 corresponding translated version of default parameter strings
             dll_path (str, optional): path to the libcbm compiled library, if
                 not specified a default value is used.
+            use_smoother (bool, optional): use the volume to biomass smoother.
+                If not specified, it is used.
         """
         if not db_path:
             self._db_path = resources.get_cbm_defaults_path()
@@ -124,6 +127,7 @@ class StandCBMFactory:
         self._classifier_idx = cbm_config.get_classifier_indexes(
             self._classifier_config
         )
+        self._use_smoother = use_smoother
         self.merch_vol_factory = self.merch_volumes_factory()
 
         self._disturbance_type_map = {
@@ -175,7 +179,8 @@ class StandCBMFactory:
                 )
             )
         return cbm_config.merch_volume_to_biomass_config(
-            db_path=self._db_path, merch_volume_curves=merch_volume_list
+            db_path=self._db_path, merch_volume_curves=merch_volume_list,
+            use_smoother=self._use_smoother,
         )
 
     @property
