@@ -179,10 +179,13 @@ class TransitionRuleProcessor(object):
                 # update the split classifiers with the transitioned value
                 for classifier_name, value_id in transition_classifier_ids:
                     classifiers[classifier_name].assign(value_id)
-
-                state["regeneration_delay"].assign(
-                    int(tr_group["regeneration_delay"].at(i_proportion)),
+                tr_regeneration_delay = int(
+                    tr_group["regeneration_delay"].at(i_proportion)
                 )
+                if tr_regeneration_delay > 0:
+                    state["regeneration_delay"].assign(
+                        tr_regeneration_delay
+                    )
 
                 parameters["reset_age"].assign(
                     int(tr_group["reset_age"].at(i_proportion))
@@ -224,10 +227,12 @@ class TransitionRuleProcessor(object):
             )
 
         next_id = next_id + eligible_idx.length
-        state["regeneration_delay"].assign(
-            np.int32(tr_group["regeneration_delay"].at(0)),
-            eligible_idx,
-        )
+        tr_regeneration_delay = np.int32(tr_group["regeneration_delay"].at(0))
+        if tr_regeneration_delay > 0:
+            state["regeneration_delay"].assign(
+                tr_regeneration_delay,
+                eligible_idx,
+            )
 
         parameters["reset_age"].assign(
             np.int32(tr_group["reset_age"].at(0)), eligible_idx
