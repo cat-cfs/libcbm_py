@@ -1,0 +1,116 @@
+---
+title: parallel_processing.rmd
+output: html_document
+---
+If you need to run CBM a lot of times and you have a multi-core CPU, you might be able to speed up your simulation speed by running multiple CBM simulations in parallel using each CPU core as a separate worker.
+
+Here is an example of how to run libcbm in parallel using R and the `future` package.
+```{r}
+library(future)
+library(future.apply)
+plan(multisession)
+library(reticulate)
+
+# This is the function that will be called separately by each worker.
+loop <- function(simulation_length) {
+  
+  # specify a particular python for each worker to use
+  reticulate::use_virtualenv("my-environment")
+  
+  sit_cbm_factory <- reticulate::import("libcbm.input.sit.sit_cbm_factory", convert=FALSE)
+  cbm_simulator <- reticulate::import("libcbm.model.cbm.cbm_simulator", convert=FALSE)
+  cbm_output <- reticulate::import("libcbm.model.cbm.cbm_output", convert=FALSE)
+  
+  os <- reticulate::import("os")
+  resources <- reticulate::import("libcbm.resources")
+  config_file_path <- os$path$join(resources$get_test_resources_dir(), "cbm3_tutorial2", "sit_config.json")
+  
+  sit = sit_cbm_factory$load_sit(config_file_path)
+  
+  inventory_tuple <- sit_cbm_factory$initialize_inventory(sit)
+  cbm_classifiers <- inventory_tuple[[0]]
+  cbm_inventory <- inventory_tuple[[1]]
+  
+  with(sit_cbm_factory$initialize_cbm(
+    sit
+  ) %as% cbm, {
+    # Run model
+    cbm_results <- cbm_output$CBMOutput(
+      classifier_map = sit$classifier_value_names,
+      disturbance_type_map = sit$disturbance_name_map
+    )
+    
+    rule_based_processor = sit_cbm_factory$create_sit_rule_based_processor(sit, cbm)
+    
+    cbm_simulator$simulate(
+      cbm,
+      n_steps              = simulation_length,
+      classifiers          = cbm_classifiers,
+      inventory            = cbm_inventory,
+      pre_dynamics_func    = rule_based_processor$pre_dynamics_func,
+      reporting_func       = cbm_results$append_simulation_result
+    )
+  })
+}
+```
+
+We can run some tests to see if running in parallel helps improve modelling speed:
+```{r}
+# Run the model three times in parallel (5 year simulation)
+proc <- Sys.time()
+runs <- future.apply::future_lapply(
+  1:3,
+  future.seed = T,
+  future.packages = c("reticulate"),
+  future.globals = list(loop = loop),
+  function(z)
+  {
+    print(z)
+    return(loop(5))
+  })
+parallel_5years <- Sys.time() - proc
+
+# Run the model three times in sequence (5 year simulation)
+proc <- Sys.time()
+for(i in 1:3) {
+  print(i)
+  loop(5)
+}
+sequence_5years <- Sys.time() - proc
+
+# Run the model three times in parallel (500 year simulation)
+proc <- Sys.time()
+runs <- future.apply::future_lapply(
+  1:3,
+  future.seed = T,
+  future.packages = c("reticulate"),
+  future.globals = list(loop = loop),
+  function(z)
+  {
+    print(z)
+    return(loop(500))
+  })
+parallel_500years <- Sys.time() - proc
+
+# Run the model three times in sequence (500 year simulation)
+proc <- Sys.time()
+for(i in 1:3) {
+  print(i)
+  loop(500)
+}
+sequence_500years <- Sys.time() - proc
+
+matrix(
+  c(parallel_5years, parallel_500years,
+    sequence_5years, sequence_500years),
+  nrow = 2,
+  byrow = TRUE,
+  dimnames = list(
+    c("parallel", "sequence"),
+    c("5 years", "500 years")
+  ))
+```
+On my machine, the 5 year simulations were completed in 3.4s in parallel, and in 3.6s in sequence. Running the simulations in parallel did not really increase the speed by much. However, when we increased the length of the simulation, there was a marked increase in speed: The 500 year simulations were completed in 14.3s in parallel and 29.9s in sequence.
+
+When we initiate a parallel procedure, we need to set up each of our processing cores with everything they require (e.g. all the memory, data, functions, etc.), which means there is a fair amount of overhead associated with beginning a parallel process. This means parallel processing is generally only useful if you need to perform the calculation many times.
+
