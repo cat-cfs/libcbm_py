@@ -118,20 +118,29 @@ def get_libcbm_bin_path():
         major = version_tokens[0]
         minor = version_tokens[1]
         matched_ver = (int(major) == 10 and int(minor) >= 12) or (
-            int(major) >= 11 and int(major) <= 16
+            int(major) >= 11
         )
-        # Get the full path to the dylib #
-        dylib = os.path.join(local_dir, "libcbm_bin", "macos_64", "libcbm.dylib")
-        # Let's hope we have it compiled for that version #
-        msg = (
-            "The source distribution for this version of macOS has not"
-            " been compiled yet. You can do this yourself with the"
-            " `libcbm_c` repository and `cmake`."
-        )
+        msg = ("The source distribution for this version of macOS has not been compiled yet. "
+                "You can do this yourself with the `libcbm_c` repository and `cmake`.")
         if not matched_ver:
             raise RuntimeError(msg)
-        # Otherwise return #
-        return dylib
+        # Process architecture
+        # Apple Silicon Python reports 'arm64'. Intel and Rosetta Python report 'x86_64'.
+        machine = platform.machine().lower()
+        if "arm64" in machine:
+            arch_dir = "macos-arm64"
+        elif "x86_64" in machine:
+            arch_dir = "macos_x86_64"
+        else:
+            raise RuntimeError(msg)
+        
+        candidates = [os.path.join(local_dir, "libcbm_bin", arch_dir, "libcbm.dylib")]
+
+        for dylib in candidates:
+            if os.path.exists(dylib):
+                return dylib
+        
+        raise RuntimeError(msg)
     # Other cases #
     else:
         msg = "The platform '%s' is currently unsupported."
