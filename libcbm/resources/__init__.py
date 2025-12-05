@@ -116,12 +116,12 @@ def get_libcbm_bin_path():
         # Split the result #
         version_tokens = os_release.split(".")
         major = version_tokens[0]
-        minor = version_tokens[1]
-        matched_ver = (int(major) == 10 and int(minor) >= 12) or (
-            int(major) >= 11 and int(major) <= 16
-        )
+        # minor = version_tokens[1] unused
+        matched_ver = (int(major) >= 13 and int(major) <= 15)
         # Get the full path to the dylib #
-        dylib = os.path.join(local_dir, "libcbm_bin", "macos_64", "libcbm.dylib")
+        dylib = os.path.join(
+            local_dir, "libcbm_bin", "macos_64", "libcbm.dylib"
+        )
         # Let's hope we have it compiled for that version #
         msg = (
             "The source distribution for this version of macOS has not"
