@@ -119,6 +119,7 @@ def get_libcbm_bin_path():
         # minor = version_tokens[1] unused
         matched_ver = (int(major) >= 13 and int(major) <= 15)
         # Get the full path to the dylib #
+        # Dec 2025, this is updated to support versions 13 to 15 and on both arm64 and x86 64 architectures
         dylib = os.path.join(
             local_dir, "libcbm_bin", "macos_64", "libcbm.dylib"
         )
