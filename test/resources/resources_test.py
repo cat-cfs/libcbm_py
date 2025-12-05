@@ -110,7 +110,7 @@ class ResourcesTest(unittest.TestCase):
 
     @patch("libcbm.resources.platform")
     def test_mac_os_supported_vers(self, platform):
-        supported_vers = ["10.12.xx", "10.13.xx", "10.14.xx", "10.15.xx"]
+        supported_vers = ["13.12.xx", "14.13.xx", "15.14.xx", "14.15.xx"]
         platform.system.side_effect = lambda: "Darwin"
         for supported_ver in supported_vers:
             platform.mac_ver.side_effect = [[supported_ver]]
