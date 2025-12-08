@@ -241,7 +241,7 @@ def get_transition_rules_format(
         {
             "name": "regeneration_delay",
             "index": col_offset,
-            "min_value": 0,
+            "min_value": -1,
             "type": int,
         },
         {

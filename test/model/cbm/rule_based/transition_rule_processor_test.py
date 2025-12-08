@@ -264,7 +264,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
             pd.DataFrame({"p0": [33], "p1": [11]})
         )
         mock_state_variables = dataframe.from_pandas(
-            pd.DataFrame({"age": [0], "regeneration_delay": [0]})
+            pd.DataFrame({"age": [0], "regeneration_delay": [999]})
         )
         mock_params = dataframe.from_pandas(
             pd.DataFrame({"disturbance_type": [0], "reset_age": [-1]})
@@ -293,7 +293,7 @@ class TransitionRuleProcessorTest(unittest.TestCase):
 
             self.assertTrue(transition_mask.to_list() == [True, True])
             self.assertTrue(
-                cbm_vars.state["regeneration_delay"].to_list() == [10, -1]
+                cbm_vars.state["regeneration_delay"].to_list() == [10, 999]
             )
             self.assertTrue(cbm_vars.state["age"].to_list() == [0, 0])
             self.assertTrue(
