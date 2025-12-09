@@ -26,7 +26,7 @@ def get_cbm_defaults_path():
         str: path to the bundled database
     """
     return os.path.join(
-        get_local_dir(), "cbm_defaults_db", "cbm_defaults_v1.2.8340.362.db"
+        get_local_dir(), "cbm_defaults_db", "cbm_defaults_v1.2.9300.391.db"
     )
 
 
@@ -116,12 +116,13 @@ def get_libcbm_bin_path():
         # Split the result #
         version_tokens = os_release.split(".")
         major = version_tokens[0]
-        minor = version_tokens[1]
-        matched_ver = (int(major) == 10 and int(minor) >= 12) or (
-            int(major) >= 11 and int(major) <= 16
-        )
+        # minor = version_tokens[1] unused
+        matched_ver = (int(major) >= 13 and int(major) <= 15)
         # Get the full path to the dylib #
-        dylib = os.path.join(local_dir, "libcbm_bin", "macos_64", "libcbm.dylib")
+        # Dec 2025, this is updated to support versions 13 to 15 and on both arm64 and x86 64 architectures
+        dylib = os.path.join(
+            local_dir, "libcbm_bin", "macos_64", "libcbm.dylib"
+        )
         # Let's hope we have it compiled for that version #
         msg = (
             "The source distribution for this version of macOS has not"
