@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Mapping, Any
 import numpy as np
 import pandas as pd
 import ctypes
@@ -39,27 +39,49 @@ class LibV2B_MerchVolumeCurve(ctypes.Structure):
         ("merchvol", ctypes.POINTER(ctypes.c_double)),
     ]
 
-    def __init__(
-        self,
-        species_code: int,
-        ages: np.ndarray,
-        merchvol: np.ndarray
-    ):
+    def __init__(self, species_code: int, ages: np.ndarray, merchvol: np.ndarray):
         self.species_code = species_code
         self.size = ages.shape[0]
         self.ages = ages.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
-        self.merchvol = merchvol.ctypes.data_as(
-            ctypes.POINTER(ctypes.c_double)
-        )
+        self.merchvol = merchvol.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+
+
+class LibV2B_ConversionInfo(ctypes.Structure):
+    _fields_ = [
+        ("softwood_carbon_fraction_stemwood", ctypes.c_double),
+        ("softwood_carbon_fraction_foliage", ctypes.c_double),
+        ("softwood_carbon_fraction_other", ctypes.c_double),
+        ("softwood_carbon_fraction_coarse_root", ctypes.c_double),
+        ("softwood_carbon_fraction_fine_root", ctypes.c_double),
+        ("hardwood_carbon_fraction_stemwood", ctypes.c_double),
+        ("hardwood_carbon_fraction_foliage", ctypes.c_double),
+        ("hardwood_carbon_fraction_other", ctypes.c_double),
+        ("hardwood_carbon_fraction_coarse_root", ctypes.c_double),
+        ("hardwood_carbon_fraction_fine_root", ctypes.c_double),
+        ("softwood_leading_species", ctypes.c_double),
+        ("hardwood_leading_species", ctypes.c_double),
+    ]
+
+    def __init__(self):
+        self.softwood_carbon_fraction_stemwood = 0.0
+        self.softwood_carbon_fraction_foliage = 0.0
+        self.softwood_carbon_fraction_other = 0.0
+        self.softwood_carbon_fraction_coarse_root = 0.0
+        self.softwood_carbon_fraction_fine_root = 0.0
+        self.hardwood_carbon_fraction_stemwood = 0.0
+        self.hardwood_carbon_fraction_foliage = 0.0
+        self.hardwood_carbon_fraction_other = 0.0
+        self.hardwood_carbon_fraction_coarse_root = 0.0
+        self.hardwood_carbon_fraction_fine_root = 0.0
+        self.softwood_leading_species = 0
+        self.hardwood_leading_species = 0
+
+    def attrs(self) -> Mapping[str, Any]:
+        return {f[0]: getattr(self, f[0]) for f in self._fields_}
 
 
 class MerchVolumeCurve:
-    def __init__(
-        self,
-        species_code: int,
-        age: np.ndarray,
-        merchvol: np.ndarray
-    ):
+    def __init__(self, species_code: int, age: np.ndarray, merchvol: np.ndarray):
         """A component of a volume to biomass conversion
 
         Args:
@@ -68,7 +90,7 @@ class MerchVolumeCurve:
             age (np.ndarray): The array of ages in years for each of the
                 volumes
             merchvol (np.ndarray): The array of Merchantable volumes
-        """    
+        """
         assert age.dtype == np.int32, "Ages must be int32"
         assert merchvol.dtype == np.float64, "Volumes must be float64"
         self.species_code = species_code
@@ -103,6 +125,7 @@ class VolumeToBiomassWrapper:
             ctypes.c_size_t,  # n merch volumes
             LibCBM_Matrix,  # biomass carbon (output)
             ctypes.c_int,  # useSmoother (bool)
+            ctypes.POINTER(LibV2B_ConversionInfo),  # conversion info
             ctypes.c_int,  # conversion mode (enum)
             ctypes.POINTER(LibCBM_Error),  # err struct
         )
@@ -187,9 +210,7 @@ class VolumeToBiomassWrapper:
 
         for i_merch_vol, merch_vol in enumerate(merch_vols):
             merch_vols_array[i_merch_vol] = LibV2B_MerchVolumeCurve(
-                merch_vol.species_code,
-                merch_vol.age,
-                merch_vol.merchvol
+                merch_vol.species_code, merch_vol.age, merch_vol.merchvol
             )
         merch_vols_p = ctypes.cast(
             merch_vols_array, ctypes.POINTER(LibV2B_MerchVolumeCurve)
@@ -198,7 +219,7 @@ class VolumeToBiomassWrapper:
         max_age: int = max([m.age.max() for m in merch_vols])
         out_data = np.zeros(shape=(max_age, len(out_cols)))
         err = LibCBM_Error()
-
+        conversion_info = LibV2B_ConversionInfo()
         self._dll.VolumeToBiomass(
             ctypes.c_char_p(db_path.encode("UTF-8")),
             spatial_unit_id,
@@ -206,13 +227,12 @@ class VolumeToBiomassWrapper:
             len(merch_vols),
             LibCBM_Matrix(out_data),
             int(use_smoother),
+            conversion_info,
             int(conversion_mode),
-            ctypes.byref(err)
+            ctypes.byref(err),
         )
         if err.Error != 0:
             raise RuntimeError(err.getErrorMessage())
-        result = pd.DataFrame(
-            columns=out_cols,
-            data=out_data
-        )
+        result = pd.DataFrame(columns=out_cols, data=out_data)
+        result.attrs = conversion_info.attrs()  # type: ignore
         return result
