@@ -234,5 +234,5 @@ class VolumeToBiomassWrapper:
         if err.Error != 0:
             raise RuntimeError(err.getErrorMessage())
         result = pd.DataFrame(columns=out_cols, data=out_data)
-        result.attrs = conversion_info.attrs()  # type: ignore
+        result.attrs["conversion_info"] = conversion_info.attrs()
         return result

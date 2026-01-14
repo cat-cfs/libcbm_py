@@ -21,8 +21,8 @@ def test_volume_to_biomass_wrapper_functional():
     )
     assert len(result.columns) == 7
     assert len(result.index) == 20
-    assert result.attrs["softwood_leading_species"] == 1
-    assert result.attrs["hardwood_leading_species"] == -1
+    assert result.attrs["conversion_info"]["softwood_leading_species"] == 1
+    assert result.attrs["conversion_info"]["hardwood_leading_species"] == -1
 
 
 def test_volume_to_biomass_wrapper_smooth_disable():
