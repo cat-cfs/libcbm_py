@@ -1,6 +1,5 @@
 from __future__ import annotations
-from typing import Any
-from typing import Union
+from typing import Any, Union, Sequence
 import pandas as pd
 import numpy as np
 import ctypes
@@ -100,9 +99,9 @@ class PandasSeriesBackend(Series):
 
     def __init__(
         self,
-        name: str,
-        series: pd.Series = None,
-        parent_df: pd.DataFrame = None,
+        name: str | None,
+        series: pd.Series | None = None,
+        parent_df: pd.DataFrame | None = None,
     ):
         self._name = name
         if not ((series is None) ^ (parent_df is None)):
@@ -114,14 +113,15 @@ class PandasSeriesBackend(Series):
         if self._series is not None:
             return self._series
         else:
+            assert self._parent_df is not None
             return self._parent_df[self._name]
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         return self._name
 
     @name.setter
-    def name(self, value) -> str:
+    def name(self, value) -> None:
         self._name = value
 
     def copy(self):
@@ -156,7 +156,7 @@ class PandasSeriesBackend(Series):
     def assign(
         self,
         value: Union["Series", Any],
-        indices: "Series" = None,
+        indices: "Series | None" = None,
     ):
         assignment_value = None
         type_name = self._get_series().dtype.name
@@ -232,12 +232,13 @@ class PandasSeriesBackend(Series):
         )
 
     def to_numpy(self) -> np.ndarray:
-        return self._get_series().values
+        return self._get_series().to_numpy(copy=True)
 
     def to_list(self) -> list:
         return self._get_series().to_list()
 
     def to_numpy_ptr(self) -> ctypes.pointer:
+        raise NotImplementedError()
         _dtype = str(self._get_series().dtype)
         if _dtype == "int32":
             ptr_type = ctypes.c_int32
@@ -368,10 +369,10 @@ class PandasSeriesBackend(Series):
 
 
 def concat_data_frame(
-    dfs: list[PandasDataFrameBackend],
+    dfs: Sequence[PandasDataFrameBackend | None],
 ) -> PandasDataFrameBackend:
     return PandasDataFrameBackend(
-        pd.concat([d._df for d in dfs], ignore_index=True)
+        pd.concat([d._df for d in dfs if d is not None], ignore_index=True)
     )
 
 

@@ -91,7 +91,7 @@ def init_index(operation_data: pd.DataFrame) -> MatrixMergeIndex:
     key_data = {}
     names = operation_data.index.names
     df = operation_data.reset_index()
-    key_data = {name: df[name].to_numpy() for name in names}
+    key_data = {str(name): df[name].to_numpy() for name in names}
     return MatrixMergeIndex(
         len(df.index),
         key_data,

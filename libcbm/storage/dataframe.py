@@ -2,7 +2,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from typing import Union
+from typing import Union, Sequence, Mapping
 from libcbm.storage.backends import BackendType
 from libcbm.storage import backends
 from libcbm.storage.series import Series
@@ -164,7 +164,7 @@ class DataFrame(ABC):
 
 
 def concat_data_frame(
-    data: list[DataFrame], backend_type: BackendType = None
+    data: Sequence[DataFrame | None], backend_type: BackendType | None = None
 ) -> DataFrame:
     """Concatenate dataframes along the row axis.
 
@@ -178,14 +178,14 @@ def concat_data_frame(
         DataFrame: concatenated dataframe
     """
     data = [d for d in data if d is not None]
-    if not data:
-        return None
+    if data is None:
+        raise ValueError("no non-null values")
     backend_type, uniform_dfs = get_uniform_backend(data, backend_type)
     return backends.get_backend(backend_type).concat_data_frame(uniform_dfs)
 
 
 def concat_series(
-    series: list[Series], backend_type: BackendType = None
+    series: list[Series], backend_type: BackendType | None = None
 ) -> Series:
     """Concatenate series into a single series.
 
@@ -320,7 +320,7 @@ def numeric_dataframe(
 
 
 def from_series_list(
-    data: list[Union[Series, SeriesDef]], nrows: int, back_end: BackendType
+    data: Sequence[Union[Series, SeriesDef]], nrows: int, back_end: BackendType
 ) -> DataFrame:
     """initialize a dataframe from a list of Series or SeriesDef objects
 
@@ -344,7 +344,7 @@ def from_series_list(
 
 
 def from_series_dict(
-    data: dict[str, Union[Series, SeriesDef]],
+    data: Mapping[str, Union[Series, SeriesDef]],
     nrows: int,
     back_end: BackendType,
 ) -> DataFrame:
@@ -479,8 +479,9 @@ def convert_dataframe_backend(
 
 
 def get_uniform_backend(
-    data: list[Union[DataFrame, Series]], backend_type: BackendType = None
-) -> tuple[BackendType, list[Union[DataFrame, Series]]]:
+    data: Sequence[Union[DataFrame, Series]],
+    backend_type: BackendType | None = None,
+) -> tuple[BackendType, Sequence[Union[DataFrame, Series]]]:
     """Convert the backend type of all specified dataframes, or series.
     Also used to assert backend type uniformity of collections of these
     objects.
@@ -512,6 +513,7 @@ def get_uniform_backend(
 
         backend_type = inferred_backend
     output = []
+    assert backend_type is not None
     for _d in data:
         if isinstance(_d, DataFrame):
             output.append(convert_dataframe_backend(_d, backend_type))

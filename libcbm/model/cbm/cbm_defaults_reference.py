@@ -110,7 +110,7 @@ class CBMDefaultsReference:
         }
 
     def load_data(
-        self, sqlite_path: str, query: str, query_params: tuple = None
+        self, sqlite_path: str, query: str, query_params: tuple | None = None
     ) -> list[sqlite3.Row]:
         """loads the specified query into a list of dictionary formatted query
 

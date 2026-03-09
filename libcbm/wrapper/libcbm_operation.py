@@ -147,9 +147,9 @@ def compute(
     dll: LibCBMWrapper,
     pools: DataFrame,
     operations: list[Operation],
-    op_processes: Iterable[int] = None,
-    flux: DataFrame = None,
-    enabled: Series = None,
+    op_processes: Iterable[int] | None = None,
+    flux: DataFrame | None = None,
+    enabled: Series | None = None,
 ):
     """Compute pool flows and optionally track the fluxes
 
@@ -173,6 +173,7 @@ def compute(
 
     op_ids = [x.get_op_id() for x in operations]
     if flux is not None:
+        assert op_processes is not None
         dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
     else:
         dll.compute_pools(op_ids, pools, enabled)
