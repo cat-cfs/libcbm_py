@@ -20,7 +20,7 @@ class CBMVariables:
     def __init__(
         self,
         pools: DataFrame,
-        flux: DataFrame,
+        flux: DataFrame | None,
         classifiers: DataFrame,
         state: DataFrame,
         inventory: DataFrame,
@@ -55,7 +55,7 @@ class CBMVariables:
         )
 
     @property
-    def flux(self) -> DataFrame:
+    def flux(self) -> DataFrame | None:
         """
         Get or set CBM flux indicator storage
 
@@ -71,6 +71,9 @@ class CBMVariables:
 
     @flux.setter
     def flux(self, df: DataFrame):
+        if self._flux is None:
+            self._flux = df
+
         self._flux = dataframe.convert_dataframe_backend(
             df, self._flux.backend_type
         )
@@ -219,10 +222,10 @@ def _initialize_flux(
 def initialize_spinup_parameters(
     n_stands: int,
     back_end: BackendType = BackendType.numpy,
-    return_interval: Series = None,
-    min_rotations: Series = None,
-    max_rotations: Series = None,
-    mean_annual_temp: Series = None,
+    return_interval: Series | None = None,
+    min_rotations: Series | None = None,
+    max_rotations: Series | None = None,
+    mean_annual_temp: Series | None = None,
 ) -> DataFrame:
     """Create spinup parameters as a collection of variable vectors
 
@@ -438,7 +441,7 @@ def _initialize_classifiers(
 def initialize_spinup_variables(
     cbm_vars: CBMVariables,
     backend_type: BackendType,
-    spinup_params: DataFrame = None,
+    spinup_params: DataFrame | None = None,
     include_flux: bool = False,
 ) -> CBMVariables:
     """Initialize spinup variables

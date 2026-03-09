@@ -98,7 +98,7 @@ class TransitionRuleProcessor(object):
 
         """
         filtered = rule_filter.evaluate_filters(*rule_filters)
-
+        assert filtered is not None
         # sets the transitioned array with the transition filter result
         eligible = dataframe.logical_and(
             dataframe.logical_not(transition_mask), filtered
@@ -119,7 +119,7 @@ class TransitionRuleProcessor(object):
         state_split = None
         parameters_split = None
         flux_split = None
-        next_id = cbm_vars.inventory["inventory_id"].max() + 1
+        next_id = int(cbm_vars.inventory["inventory_id"].max() + 1)
         for i_proportion, proportion in enumerate(proportions):
             if i_proportion == 0:
                 continue
@@ -131,7 +131,10 @@ class TransitionRuleProcessor(object):
             # a copy of each of the state variables to split off the
             # percentage for the current group member
             pools = cbm_vars.pools.take(eligible_idx)
-            flux = cbm_vars.flux.take(eligible_idx)
+            if cbm_vars.flux is not None:
+                flux = cbm_vars.flux.take(eligible_idx)
+            else:
+                flux = None
             parameters = cbm_vars.parameters.take(eligible_idx)
             state = cbm_vars.state.take(eligible_idx)
             inventory = cbm_vars.inventory.take(eligible_idx)
@@ -183,9 +186,7 @@ class TransitionRuleProcessor(object):
                     tr_group["regeneration_delay"].at(i_proportion)
                 )
                 if tr_regeneration_delay > 0:
-                    state["regeneration_delay"].assign(
-                        tr_regeneration_delay
-                    )
+                    state["regeneration_delay"].assign(tr_regeneration_delay)
 
                 parameters["reset_age"].assign(
                     int(tr_group["reset_age"].at(i_proportion))

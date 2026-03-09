@@ -50,10 +50,10 @@ class StandCBMFactory:
         self,
         classifiers: dict[str, list],
         merch_volumes: list[dict],
-        db_path: str = None,
+        db_path: str | None = None,
         locale: str = "en-CA",
-        dll_path: str = None,
-        use_smoother = True,
+        dll_path: str | None = None,
+        use_smoother=True,
     ):
         """Initialize an instance of CBMStandFactory using classifiers and
         merch volumes.
@@ -179,7 +179,8 @@ class StandCBMFactory:
                 )
             )
         return cbm_config.merch_volume_to_biomass_config(
-            db_path=self._db_path, merch_volume_curves=merch_volume_list,
+            db_path=self._db_path,
+            merch_volume_curves=merch_volume_list,
             use_smoother=self._use_smoother,
         )
 
@@ -338,8 +339,8 @@ class StandCBMFactory:
     @contextmanager
     def initialize_cbm(
         self,
-        dll_config_factory: Callable[[], dict] = None,
-        cbm_parameters_factory: Callable[[], dict] = None,
+        dll_config_factory: Callable[[], dict] | None = None,
+        cbm_parameters_factory: Callable[[], dict] | None = None,
     ) -> Iterator[CBM]:
         """Context manager to create an instance of CBM for multi stand
         simulation.

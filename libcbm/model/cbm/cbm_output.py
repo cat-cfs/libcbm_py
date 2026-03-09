@@ -33,15 +33,17 @@ def _add_timestep_series(timestep: int, dataframe: DataFrame) -> DataFrame:
 
 def _concat_timestep_results(
     timestep: int,
-    running_result: DataFrame,
+    running_result: DataFrame | None,
     timestep_result: DataFrame,
-    backend_type: BackendType,
+    backend_type: BackendType | None,
 ) -> DataFrame:
     _add_timestep_series(timestep, timestep_result)
 
-    return dataframe.concat_data_frame(
+    result = dataframe.concat_data_frame(
         [running_result, timestep_result], backend_type
     )
+    assert result is not None
+    return result
 
 
 class CBMOutput:
@@ -72,32 +74,32 @@ class CBMOutput:
     def __init__(
         self,
         density: bool = False,
-        classifier_map: dict[int, str] = None,
-        disturbance_type_map: dict[int, str] = None,
+        classifier_map: dict[int, str] | None = None,
+        disturbance_type_map: dict[int, str] | None = None,
         backend_type: BackendType = BackendType.numpy,
     ):
         self._density = density
         self._disturbance_type_map = disturbance_type_map
         self._classifier_map = classifier_map
         self._backend_type = backend_type
-        self._pools: DataFrame = None
-        self._flux: DataFrame = None
-        self._state: DataFrame = None
-        self._classifiers: DataFrame = None
-        self._parameters: DataFrame = None
-        self._area: DataFrame = None
+        self._pools: DataFrame | None = None
+        self._flux: DataFrame | None = None
+        self._state: DataFrame | None = None
+        self._classifiers: DataFrame | None = None
+        self._parameters: DataFrame | None = None
+        self._area: DataFrame | None = None
 
     @property
     def density(self) -> bool:
         return self._density
 
     @property
-    def disturbance_type_map(self) -> dict[int, str]:
+    def disturbance_type_map(self) -> dict[int, str] | None:
         """get this instance's disturbance type map"""
         return self._disturbance_type_map
 
     @property
-    def classifier_map(self) -> dict[int, str]:
+    def classifier_map(self) -> dict[int, str] | None:
         """get this instance's clasifier map"""
         return self._classifier_map
 
@@ -107,32 +109,32 @@ class CBMOutput:
         return self._backend_type
 
     @property
-    def pools(self) -> DataFrame:
+    def pools(self) -> DataFrame | None:
         """get all accumulated pool results"""
         return self._pools
 
     @property
-    def flux(self) -> DataFrame:
+    def flux(self) -> DataFrame | None:
         """get all accumulated flux results"""
         return self._flux
 
     @property
-    def state(self) -> DataFrame:
+    def state(self) -> DataFrame | None:
         """get all accumulated state results"""
         return self._state
 
     @property
-    def classifiers(self) -> DataFrame:
+    def classifiers(self) -> DataFrame | None:
         """get all accumulated clasifier results"""
         return self._classifiers
 
     @property
-    def parameters(self) -> DataFrame:
+    def parameters(self) -> DataFrame | None:
         """get all accumulated parameter results"""
         return self._parameters
 
     @property
-    def area(self) -> DataFrame:
+    def area(self) -> DataFrame | None:
         """get all accumulated area results"""
         return self._area
 
@@ -209,6 +211,7 @@ class CBMOutput:
             )
         else:
             timestep_classifiers = cbm_vars.classifiers.copy()
+            assert self.classifier_map is not None
             timestep_classifiers = timestep_classifiers.map(
                 self.classifier_map
             )
