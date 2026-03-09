@@ -169,11 +169,11 @@ def _initialize_inventory(
 
 
 def _initialize_events(
-    disturbance_events: pd.DataFrame,
+    disturbance_events: pd.DataFrame | None,
     sit_mapping: SITMapping,
     disturbance_types: pd.DataFrame,
     disturbance_sort_method: EventSort,
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """Returns a copy of the parsed sit events with the disturbance type id,
     and sort field resulting from the SIT configuration.
 

@@ -59,7 +59,7 @@ class SITRuleBasedProcessor:
         transition_rule_processor: SITTransitionRuleProcessor,
         sit_events: pd.DataFrame | None,
         sit_transitions: pd.DataFrame | None,
-        sit_eligibilities: pd.DataFrame,
+        sit_eligibilities: pd.DataFrame | None,
         reset_parameters: bool,
     ):
         self.event_processor = event_processor
@@ -103,11 +103,11 @@ def sit_rule_based_processor_factory(
     cbm: CBM,
     random_func: Callable[[int], Series],
     classifiers_config: dict[str, list],
-    classifier_aggregates: pd.DataFrame,
+    classifier_aggregates: list[dict],
     sit_events: pd.DataFrame | None,
     sit_transitions: pd.DataFrame | None,
     tr_constants: TransitionRuleConstants,
-    sit_eligibilities: pd.DataFrame,
+    sit_eligibilities: pd.DataFrame | None,
     reset_parameters: bool,
     disturbance_type_map: dict,
 ) -> SITRuleBasedProcessor:
