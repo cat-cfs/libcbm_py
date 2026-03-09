@@ -41,7 +41,7 @@ def parse(
             and substituted species
     """
     yield_format = sit_format.get_yield_format(
-        classifiers.name, len(yield_table.columns)
+        classifiers["name"].tolist(), len(yield_table.columns)
     )
 
     unpacked_table = sit_parser.unpack_table(

@@ -47,7 +47,7 @@ def process_event(
     target_func: Callable[[CBMVariables, Series], RuleTargetResult],
     disturbance_type_id: int,
     cbm_vars: CBMVariables,
-    disturbance_event_id: int = None,
+    disturbance_event_id: int | None = None,
 ) -> ProcessEventResult:
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets

@@ -190,10 +190,10 @@ def _initialize_events(
     if disturbance_events is None:
         return None
     disturbance_events = disturbance_events.copy()
-    disturbance_events[
-        "disturbance_type_id"
-    ] = sit_mapping.get_sit_disturbance_type_id(
-        disturbance_events.disturbance_type
+    disturbance_events["disturbance_type_id"] = (
+        sit_mapping.get_sit_disturbance_type_id(
+            disturbance_events.disturbance_type
+        )
     )
     if disturbance_sort_method == EventSort.disturbance_type:
         disturbance_events["sort_field"] = disturbance_events[
@@ -203,10 +203,10 @@ def _initialize_events(
         dist_description_map = {
             d["id"]: d["name"] for _, d in disturbance_types.iterrows()
         }
-        disturbance_events[
-            "sort_field"
-        ] = sit_mapping.get_default_disturbance_type_id(
-            disturbance_events.disturbance_type.map(dist_description_map)
+        disturbance_events["sort_field"] = (
+            sit_mapping.get_default_disturbance_type_id(
+                disturbance_events.disturbance_type.map(dist_description_map)
+            )
         )
     elif disturbance_sort_method == EventSort.natural_order:
         disturbance_events["sort_field"] = range(len(disturbance_events.index))
@@ -216,13 +216,13 @@ def _initialize_events(
 
 
 def _initialize_transition_rules(
-    transition_rules: pd.DataFrame, sit_mapping: SITMapping
-) -> pd.DataFrame:
+    transition_rules: pd.DataFrame | None, sit_mapping: SITMapping
+) -> pd.DataFrame | None:
     """Returns a copy of the parsed sit transition rules with the disturbance
     type id resulting from the SIT configuration.
 
     Args:
-        transition_rules (pd.DataFrame): transition rules data
+        transition_rules (pd.DataFrame, None): optional transition rules data
         sit_mapping (SITMapping): instance of SITMapping
 
     Returns:
@@ -234,10 +234,10 @@ def _initialize_transition_rules(
     if "disturbance_type" not in transition_rules:
         return transition_rules
     transition_rules = transition_rules.copy()
-    transition_rules[
-        "disturbance_type_id"
-    ] = sit_mapping.get_sit_disturbance_type_id(
-        transition_rules.disturbance_type
+    transition_rules["disturbance_type_id"] = (
+        sit_mapping.get_sit_disturbance_type_id(
+            transition_rules.disturbance_type
+        )
     )
     return transition_rules
 
@@ -245,7 +245,7 @@ def _initialize_transition_rules(
 def initialize_sit(
     sit_data: SITData,
     config: dict,
-    db_path: str = None,
+    db_path: str | None = None,
     db_locale_code: str = "en-CA",
 ) -> SIT:
     if not db_path:
@@ -266,7 +266,7 @@ def initialize_sit(
 
 
 def load_sit(
-    config_path: str, db_path: str = None, db_locale_code: str = "en-CA"
+    config_path: str, db_path: str | None = None, db_locale_code: str = "en-CA"
 ) -> SIT:
     """Loads data and objects required to run from the SIT format.
 
@@ -292,7 +292,9 @@ def load_sit(
 
 @contextmanager
 def initialize_cbm(
-    sit: SIT, dll_path=None, parameters_factory: Callable[[], dict] = None
+    sit: SIT,
+    dll_path=None,
+    parameters_factory: Callable[[], dict] | None = None,
 ) -> Iterator[CBM]:
     """Create an initialized instance of
         :py:class:`libcbm.model.cbm.cbm_model.CBM` based on SIT input
@@ -343,11 +345,11 @@ def default_random_func(len: int) -> Series:
 def create_sit_rule_based_processor(
     sit: SIT,
     cbm: CBM,
-    random_func: Callable[[int], Series] = None,
+    random_func: Callable[[int], Series] | None = None,
     reset_parameters: bool = True,
-    sit_events: pd.DataFrame = None,
-    sit_eligibilities: pd.DataFrame = None,
-    sit_transition_rules: pd.DataFrame = None,
+    sit_events: pd.DataFrame | None = None,
+    sit_eligibilities: pd.DataFrame | None = None,
+    sit_transition_rules: pd.DataFrame | None = None,
     event_sort: EventSort = EventSort.disturbance_type,
 ) -> SITRuleBasedProcessor:
     """initializes a class for processing SIT rule based disturbances.

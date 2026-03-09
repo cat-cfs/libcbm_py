@@ -47,7 +47,7 @@ class SITEventProcessor:
 
     def _get_compute_disturbance_production(
         self, cbm: CBM, eligible: Series
-    ) -> Callable[[CBMVariables, Union[int, Series]], Series]:
+    ) -> Callable[[CBMVariables, Union[int, Series]]]:
         def compute_disturbance_production(
             cbm_vars: CBMVariables, disturbance_type_id: Union[int, Series]
         ):
@@ -64,7 +64,7 @@ class SITEventProcessor:
         eligible: Series,
         sit_event: dict,
         cbm_vars: CBMVariables,
-        sit_eligibility: Series = None,
+        sit_eligibility: Series | None = None,
     ) -> event_processor.ProcessEventResult:
         compute_disturbance_production = (
             self._get_compute_disturbance_production(
@@ -159,9 +159,9 @@ class SITEventProcessor:
     def process_events(
         self,
         time_step: int,
-        sit_events: pd.DataFrame,
+        sit_events: pd.DataFrame | None,
         cbm_vars: CBMVariables,
-        sit_eligibilities: pd.DataFrame = None,
+        sit_eligibilities: pd.DataFrame | None = None,
     ) -> Tuple[CBMVariables, pd.DataFrame]:
         """Process sit_events for the start of the given timestep, computing a
         new simulation state, and the disturbance types to apply for the
