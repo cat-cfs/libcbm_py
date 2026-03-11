@@ -102,7 +102,11 @@ def test_series():
 
         assert s.to_list() == list(range(0, 100))
         assert list(s.to_numpy()) == s.to_list()
-        assert s.to_numpy_ptr()
+        if s.backend_type == BackendType.numpy:
+            assert s.to_numpy_ptr()
+        else:
+            with pytest.raises(NotImplementedError):
+                s.to_numpy_ptr()
 
         assert s.data is not None
 

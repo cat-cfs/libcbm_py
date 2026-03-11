@@ -63,7 +63,7 @@ def _map(a: np.ndarray, d: dict) -> np.ndarray:
 
 
 def get_numpy_pointer(
-    data: np.ndarray | None, dtype=ctypes.c_double
+    data: np.ndarray | None, dtype: Any = ctypes.c_double
 ) -> ctypes.pointer | None:  # type: ignore
     """Helper method for wrapper parameters that can be specified either as
     null pointers or pointers to numpy memory.  Return a pointer to float64
@@ -158,6 +158,9 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
     def __getitem__(self, col_name: str) -> Series:
         return NumpySeriesBackend(col_name, parent_df=self)
+
+    def is_matrix(self) -> bool:
+        return self._data_matrix is not None
 
     def filter(self, arg: Series) -> DataFrame:
         _filter = arg.to_numpy()
@@ -257,7 +260,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 "specified series does not have the same length as the "
                 "number of rows in this DataFrame"
             )
-
+        assert series.name is not None, "must specify series name"
         if self._storage_format == StorageFormat.uniform_matrix:
             assert self._data_matrix is not None
             if insert_data.dtype == self._data_matrix.dtype:
@@ -267,6 +270,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
                 )
             else:
                 self._storage_format = StorageFormat.mixed_columns
+
                 self._data_cols = {
                     col: np.ascontiguousarray(self._data_matrix[:, idx])
                     for col, idx in self._col_idx.items()
@@ -276,6 +280,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
 
         else:
             assert self._data_cols is not None
+
             self._data_cols[series.name] = insert_data
 
         self._columns.insert(index, series.name)
@@ -305,9 +310,7 @@ class NumpyDataFrameFrameBackend(DataFrame):
             assert self._data_matrix is not None
             self._data_matrix[:, :] = 0
         else:
-            assert self._data_cols is not None
-            for col in self.columns:
-                self._data_cols[col][:] = 0
+            raise ValueError("cannot zero a non-uniform matrix")
 
     def map(self, arg: dict) -> DataFrame:
         if self._storage_format == StorageFormat.uniform_matrix:
@@ -396,35 +399,23 @@ class NumpySeriesBackend(Series):
                 assert self.name is not None
                 return str(self._parent_df._data_cols[self.name].dtype)
 
-    def _get_data(self, reference_required=False) -> np.ndarray:
+    def _get_data(self) -> np.ndarray:
         if self._data is not None:
             return self._data
         else:
             assert self._parent_df is not None
             assert self.name is not None
             if self._parent_df._storage_format == StorageFormat.uniform_matrix:
+                # if the df is in matrix form only return a copy of the single data column,
+                # and ensure that it is contiguous
                 assert self._parent_df._data_matrix is not None
-                if reference_required:
-                    self._parent_df._data_cols = {
-                        col: np.ascontiguousarray(
-                            self._parent_df._data_matrix[
-                                :,
-                                self._parent_df._col_idx[col],
-                            ]
-                        )
-                        for col in self._parent_df.columns
-                    }
-                    self._parent_df._data_matrix = None
-                    self._parent_df._storage_format = (
-                        StorageFormat.mixed_columns
-                    )
-                    assert self._parent_df._data_cols is not None
-                    return self._parent_df._data_cols[self.name]
+                data_col = self._parent_df._data_matrix[
+                    :, self._parent_df._col_idx[self.name]
+                ]
+                if not data_col.flags["C_CONTIGUOUS"]:
+                    return np.ascontiguousarray(data_col)
                 else:
-
-                    return self._parent_df._data_matrix[
-                        :, self._parent_df._col_idx[self.name]
-                    ]
+                    return data_col.copy()
             else:
                 assert self._parent_df._data_cols is not None
                 return self._parent_df._data_cols[self.name]
@@ -538,12 +529,17 @@ class NumpySeriesBackend(Series):
         return NumpySeriesBackend(self._name, np.unique(self._get_data()))
 
     def to_numpy(self) -> np.ndarray:
-        return self._get_data(reference_required=True)
+        return self._get_data()
 
     def to_list(self) -> list:
         return self._get_data().tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:  # type: ignore
+        if self._parent_df is not None and self._parent_df.is_matrix:
+            raise ValueError(
+                "cannot create a pointer to a single column in contiguous "
+                "matrix storage"
+            )
         dtype = self._get_dtype()
         if dtype == "int32":
             ptr_type = ctypes.c_int32
@@ -551,9 +547,8 @@ class NumpySeriesBackend(Series):
             ptr_type = ctypes.c_double
         else:
             raise ValueError(f"series type not supported {dtype}")
-        return get_numpy_pointer(
-            self._get_data(reference_required=True), ptr_type  # type: ignore
-        )
+
+        return get_numpy_pointer(self._get_data(), ptr_type)  # type: ignore
 
     @property
     def data(self) -> np.ndarray:
@@ -679,21 +674,27 @@ def concat_data_frame(
     new_data = {}
     cols = []
     for df in dfs:
+        if df is None:
+            continue
         if not cols:
             cols = list(df.columns)
         elif cols != df.columns:
             raise ValueError("cols do not match")
 
-    storage_format_set = set([x._storage_format for x in dfs])
+    storage_format_set = set([x._storage_format for x in dfs if x is not None])
 
     if (
         len(storage_format_set) == 1
         and StorageFormat.uniform_matrix in storage_format_set
     ):
         # case 1, all incoming df's are uniform_matrix
-        matrix_data = np.concatenate(
-            [df._data_matrix for df in dfs], axis=0, casting="no"
-        )
+        concat_df = []
+        for df in dfs:
+            if df is None:
+                continue
+            assert df._data_matrix is not None
+            concat_df.append(df._data_matrix)
+        matrix_data = np.concatenate(concat_df, axis=0, casting="no")
         return NumpyDataFrameFrameBackend(matrix_data, cols)
     else:
         # case 2, all incoming df's are mixed_columns, or a mix of
@@ -703,6 +704,8 @@ def concat_data_frame(
         for col in cols:
             concat_list = []
             for df in dfs:
+                if df is None:
+                    continue
                 ser = df[col]
                 concat_list.append(ser.to_numpy())
             new_data[col] = np.concatenate(concat_list, casting="no")
@@ -763,9 +766,12 @@ def numeric_dataframe(
 def from_series_list(
     series_list: list[NumpySeriesBackend],
 ) -> NumpyDataFrameFrameBackend:
-    return NumpyDataFrameFrameBackend(
-        {s.name: s._get_data() for s in series_list}
-    )
+    series_list_arg: dict[str, np.ndarray] = {}
+    for s in series_list:
+        assert s.name is not None, "series name must be specified"
+        series_list_arg[s.name] = s._get_data()
+
+    return NumpyDataFrameFrameBackend(series_list_arg)
 
 
 def from_series_dict(
@@ -788,5 +794,8 @@ def range(
     dtype: str,
 ) -> Series:
     return NumpySeriesBackend(
-        name, np.arange(start=start, stop=stop, step=step, dtype=dtype)
+        name,
+        np.arange(
+            start=start, stop=stop, step=step, dtype=dtype
+        ),  # type: ignore
     )

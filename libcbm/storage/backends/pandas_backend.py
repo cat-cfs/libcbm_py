@@ -7,7 +7,6 @@ import numexpr
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage.series import Series
 from libcbm.storage.backends import BackendType
-from libcbm.storage.backends import numpy_backend
 
 
 class PandasDataFrameBackend(DataFrame):
@@ -29,6 +28,9 @@ class PandasDataFrameBackend(DataFrame):
 
     def at(self, index: int) -> dict:
         return self._df.iloc[index].to_dict()
+
+    def is_matrix(self) -> bool:
+        return len(set(self._df.dtypes)) == 1
 
     @property
     def n_rows(self) -> int:
@@ -57,19 +59,34 @@ class PandasDataFrameBackend(DataFrame):
         self._df.insert(index, series.name, series.to_numpy())
 
     def to_numpy(self, make_c_contiguous=True) -> np.ndarray:
-        if make_c_contiguous and not self._df.values.flags["C_CONTIGUOUS"]:
-            self._df = pd.DataFrame(
-                index=self._df.index,
-                columns=list(self._df.columns),
-                data=np.ascontiguousarray(self._df.values),
+        """this function returns a copy of the internal data
+
+        Args:
+            make_c_contiguous (bool, optional): calls np.ascontiguousarray to
+            create a contiguous result in the returned value. Defaults to
+            True.
+
+        Returns:
+            np.ndarray: _description_
+        """
+        if not self.is_matrix:
+            raise ValueError(
+                "cannot call to_numpy() on a non-uniformly typed dataframe"
             )
-        return self._df.values
+
+        copy = self._df.to_numpy(copy=True)
+        if make_c_contiguous and not copy.flags["C_CONTIGUOUS"]:
+            return np.ascontiguousarray(copy)
+        return copy
 
     def to_pandas(self) -> pd.DataFrame:
         return self._df
 
     def zero(self):
-        self._df.iloc[:] = 0
+        if self.is_matrix():
+            self._df.iloc[:] = 0
+        else:
+            raise ValueError("cannot zero a non-uniform matrix")
 
     def map(self, arg: dict) -> DataFrame:
         cols = list(self._df.columns)
@@ -210,13 +227,13 @@ class PandasSeriesBackend(Series):
         return True if at least one value in this series is
         non-zero
         """
-        return self._get_series().any()
+        return bool(self._get_series().any())
 
     def all(self) -> bool:
         """
         return True if all values in this series are non-zero
         """
-        return self._get_series().all()
+        return bool(self._get_series().all())
 
     def indices_nonzero(self) -> "Series":
         """Get the indices of values that are non-zero in this series"""
@@ -237,17 +254,10 @@ class PandasSeriesBackend(Series):
     def to_list(self) -> list:
         return self._get_series().to_list()
 
-    def to_numpy_ptr(self) -> ctypes.pointer:
-        raise NotImplementedError()
-        _dtype = str(self._get_series().dtype)
-        if _dtype == "int32":
-            ptr_type = ctypes.c_int32
-        elif _dtype == "float64":
-            ptr_type = ctypes.c_double
-        else:
-            raise ValueError(f"series type not supported {_dtype}")
-        return numpy_backend.get_numpy_pointer(
-            self._get_series().values, ptr_type
+    def to_numpy_ptr(self) -> ctypes.pointer:  # type: ignore
+        raise NotImplementedError(
+            "pandas backend does not support creating a pointer to its "
+            "underlying data"
         )
 
     @property

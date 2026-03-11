@@ -121,7 +121,8 @@ class DataFrame(ABC):
     @abstractmethod  # pragma: no cover
     def zero(self):
         """
-        Set all values in this dataframe to zero
+        Set all values in this dataframe to zero, does not work for
+        non-uniform matrix
         """
         pass
 
@@ -162,6 +163,16 @@ class DataFrame(ABC):
         """
         pass
 
+    @abstractmethod  # pragma: no cover
+    def is_matrix(self) -> bool:
+        """Returns true if the data in the dataframe is uniformly typed and
+        numeric
+
+        Returns:
+            bool: true, if the data is uniformly typed and numeric
+        """
+        pass
+
 
 def concat_data_frame(
     data: Sequence[DataFrame | None], backend_type: BackendType | None = None
@@ -181,6 +192,7 @@ def concat_data_frame(
     if data is None:
         raise ValueError("no non-null values")
     backend_type, uniform_dfs = get_uniform_backend(data, backend_type)
+
     return backends.get_backend(backend_type).concat_data_frame(uniform_dfs)
 
 
@@ -203,7 +215,7 @@ def concat_series(
 
 
 def logical_and(
-    s1: Series, s2: Series, backend_type: BackendType = None
+    s1: Series, s2: Series, backend_type: BackendType | None = None
 ) -> Series:
     """take the elementwise logical and of 2 series
 
@@ -236,7 +248,7 @@ def logical_not(series: Series) -> Series:
 
 
 def logical_or(
-    s1: Series, s2: Series, backend_type: BackendType = None
+    s1: Series, s2: Series, backend_type: BackendType | None = None
 ) -> Series:
     """take the elementwise logical or of 2 series
 
@@ -256,7 +268,7 @@ def logical_or(
 
 
 def make_boolean_series(
-    init: bool, size: int, backend_type: BackendType.numpy
+    init: bool, size: int, backend_type: BackendType
 ) -> Series:
     """Make an initialized boolean series
 
@@ -465,15 +477,25 @@ def convert_dataframe_backend(
     elif backend_type == BackendType.numpy:
         from libcbm.storage.backends import numpy_backend
 
-        return numpy_backend.NumpyDataFrameFrameBackend(
-            {col: df[col].to_numpy() for col in df.columns}
-        )
+        if df.is_matrix():
+            return numpy_backend.NumpyDataFrameFrameBackend(
+                df.to_numpy(), df.columns
+            )
+        else:
+            return numpy_backend.NumpyDataFrameFrameBackend(
+                {col: df[col].to_numpy() for col in df.columns}
+            )
     elif backend_type == BackendType.pandas:
         from libcbm.storage.backends import pandas_backend
 
-        return pandas_backend.PandasDataFrameBackend(
-            pd.DataFrame({col: df[col].to_numpy() for col in df.columns})
-        )
+        if df.is_matrix():
+            return pandas_backend.PandasDataFrameBackend(
+                pd.DataFrame(columns=df.columns, data=df.to_numpy())
+            )
+        else:
+            return pandas_backend.PandasDataFrameBackend(
+                pd.DataFrame({col: df[col].to_numpy() for col in df.columns})
+            )
     else:
         raise NotImplementedError()
 
