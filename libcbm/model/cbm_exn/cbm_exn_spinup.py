@@ -12,6 +12,7 @@ from libcbm.model.cbm_exn import cbm_exn_land_state
 from libcbm.model.cbm_exn import cbm_exn_annual_process_dynamics
 from libcbm.model.cbm_exn import cbm_exn_disturbance_dynamics
 from libcbm.model.cbm_exn import cbm_exn_growth_functions
+from libcbm.storage.backends import BackendType
 
 
 def prepare_spinup_vars(
@@ -189,6 +190,7 @@ def spinup(
             state, ready for CBM stepping.
     """
 
+    spinup_vars = spinup_vars.convert_backend(BackendType.numpy)
     if ops is None:
         ops = get_default_ops(model.parameters, spinup_vars)
     for op_def in ops:
