@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from typing import Union
 from libcbm.storage import dataframe
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
@@ -83,6 +82,7 @@ def evaluate_filters(*filter_objs: RuleFilter) -> Series | None:
             output = dataframe.logical_and(output, result)
 
     if not output and out_series_length:
+        assert out_series_backend_type is not None
         output = dataframe.make_boolean_series(
             True, out_series_length, out_series_backend_type
         )
