@@ -59,7 +59,10 @@ def prepare_operation_dataframe(
             inplace=True,
         )
         # using verify_integrity, will ensure no duplicates
-        result_df.set_index(index_names, inplace=True, verify_integrity=True)
+        result_df.set_index(index_names, inplace=True)
+        assert (
+            result_df.index.is_unique
+        ), "duplicated values detected in provided data"
     else:
         result_df.index.name = None
     # all other columns are pool source sink pair columns whose name are
