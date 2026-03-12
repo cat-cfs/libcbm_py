@@ -4,6 +4,7 @@
 
 
 from typing import Callable
+from libcbm.storage import dataframe
 from libcbm.storage.dataframe import DataFrame
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm.cbm_variables import CBMVariables
@@ -59,7 +60,10 @@ def simulate(
         cbm.flux_indicator_codes,
         BackendType.numpy,
     )
-
+    if spinup_params is not None:
+        spinup_params = dataframe.convert_dataframe_backend(
+            spinup_params, BackendType.numpy
+        )
     spinup_vars = cbm_variables.initialize_spinup_variables(
         cbm_vars,
         BackendType.numpy,
