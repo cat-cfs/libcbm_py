@@ -462,7 +462,7 @@ def initialize_spinup_variables(
 
     n_stands = cbm_vars.inventory.n_rows
     if spinup_params is None:
-        spinup_params = initialize_spinup_parameters(n_stands, backend_type)
+        spinup_params = initialize_spinup_parameters(n_stands)
 
     spinup_vars = CBMVariables(
         cbm_vars.pools,
