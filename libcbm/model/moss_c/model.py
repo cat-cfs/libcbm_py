@@ -43,16 +43,11 @@ def f1(
     Returns:
         np.ndarray: Canopy openess
     """
-
-    return np.where(
-        merch_vol == 0,
-        60,
-        np.power(
-            10,
-            a * np.log10(merch_vol, where=(merch_vol != 0)) + b,
-            where=(merch_vol != 0),
-        ),
-    )
+    merch_vol = np.asanyarray(merch_vol)
+    result = np.full_like(merch_vol, 60.0)
+    assign_loc = merch_vol != 0
+    result[assign_loc] = np.power(10, a * np.log10(merch_vol[assign_loc]) + b)
+    return result
 
 
 def f2(
@@ -490,6 +485,7 @@ def spinup(
             include_flux=False,
         )
         if enable_debugging:
+
             spinup_debug.append_spinup_debug_record(
                 iteration, model_context, spinup_vars
             )
