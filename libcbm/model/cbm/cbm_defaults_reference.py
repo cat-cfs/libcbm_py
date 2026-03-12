@@ -355,7 +355,7 @@ class CBMDefaultsReference:
         return [x["name"] for x in self.flux_indicator_ref]
 
     @staticmethod
-    def as_data_frame(row_list: list[sqlite3.Row]) -> pd.DataFrame:
+    def as_data_frame(row_list: list[dict]) -> pd.DataFrame:
         """
         helper method to convert functions that return lists of
         sqlite3.Row objects into dataframes
