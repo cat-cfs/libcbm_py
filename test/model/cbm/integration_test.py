@@ -1,6 +1,7 @@
 import pandas as pd
 from libcbm.storage import dataframe
 from libcbm.storage import series
+from libcbm.storage.backends import BackendType
 from libcbm.model.cbm import cbm_variables
 from libcbm.model.cbm import cbm_simulator
 from libcbm.model.cbm.stand_cbm_factory import StandCBMFactory
@@ -86,39 +87,40 @@ def test_integration():
             reporting_func=cbm_results.append_simulation_result,
             spinup_params=cbm_variables.initialize_spinup_parameters(
                 n_stands,
-                inventory.backend_type,
-                series.allocate(
+                return_interval=series.allocate(
                     "return_interval",
                     n_stands,
                     return_interval,
                     "int32",
-                    inventory.backend_type,
+                    BackendType.numpy,
                 ),
-                series.allocate(
+                min_rotations=series.allocate(
                     "min_rotations",
                     n_stands,
                     n_rotations,
                     "int32",
-                    inventory.backend_type,
+                    BackendType.numpy,
                 ),
-                series.allocate(
+                max_rotations=series.allocate(
                     "max_rotations",
                     n_stands,
                     n_rotations,
                     "int32",
-                    inventory.backend_type,
+                    BackendType.numpy,
                 ),
-                series.allocate(
+                mean_annual_temp=series.allocate(
                     "mean_annual_temp",
                     n_stands,
                     -1,
                     "float",
-                    inventory.backend_type,
+                    BackendType.numpy,
                 ),
             ),
             spinup_reporting_func=spinup_results.append_simulation_result,
         )
+        assert cbm_results.pools is not None
         assert cbm_results.pools.n_rows == (n_steps + 1) * n_stands
+        assert spinup_results.pools is not None
         assert (
             spinup_results.pools.n_rows
             == (n_rotations * return_interval) + age - 1
