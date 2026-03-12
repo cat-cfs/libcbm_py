@@ -9,6 +9,7 @@ from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 from libcbm.storage import series
+from libcbm.storage.backends import BackendType
 from libcbm.model.cbm import cbm_factory
 from libcbm.model.cbm import cbm_config
 from libcbm.model.cbm.cbm_defaults_reference import CBMDefaultsReference
@@ -280,7 +281,7 @@ class StandCBMFactory:
                 for k in self._classifiers.keys()
             },
             nrows=inventory_df.n_rows,
-            back_end=inventory_df.backend_type,
+            back_end=BackendType.numpy,
         )
 
         inventory = dataframe.from_series_dict(
@@ -331,7 +332,7 @@ class StandCBMFactory:
                 ),
                 "delay": inventory_df["delay"],
             },
-            back_end=inventory_df.backend_type,
+            back_end=BackendType.numpy,
             nrows=inventory_df.n_rows,
         )
         return classifiers, inventory
