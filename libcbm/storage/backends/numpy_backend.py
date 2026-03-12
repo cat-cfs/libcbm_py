@@ -535,11 +535,6 @@ class NumpySeriesBackend(Series):
         return self._get_data().tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:  # type: ignore
-        if self._parent_df is not None and self._parent_df.is_matrix():
-            raise ValueError(
-                "cannot create a pointer to a single column in contiguous "
-                "matrix storage"
-            )
         dtype = self._get_dtype()
         if dtype == "int32":
             ptr_type = ctypes.c_int32
@@ -547,8 +542,16 @@ class NumpySeriesBackend(Series):
             ptr_type = ctypes.c_double
         else:
             raise ValueError(f"series type not supported {dtype}")
-
-        return get_numpy_pointer(self._get_data(), ptr_type)  # type: ignore
+        if self._parent_df is not None and self._parent_df.is_matrix():
+            # this will cause a pointer to copied memory to be returned, which
+            # creates a read-only pointer with respect to the parent dataframe
+            return get_numpy_pointer(
+                self._get_data(), ptr_type
+            )  # type: ignore
+        else:
+            return get_numpy_pointer(
+                self._get_data(), ptr_type
+            )  # type: ignore
 
     @property
     def data(self) -> np.ndarray:
