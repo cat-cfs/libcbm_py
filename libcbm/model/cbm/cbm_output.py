@@ -109,33 +109,39 @@ class CBMOutput:
         return self._backend_type
 
     @property
-    def pools(self) -> DataFrame | None:
+    def pools(self) -> DataFrame:
         """get all accumulated pool results"""
+        assert self._pools is not None
         return self._pools
 
     @property
-    def flux(self) -> DataFrame | None:
+    def flux(self) -> DataFrame:
         """get all accumulated flux results"""
+        assert self._flux is not None
         return self._flux
 
     @property
-    def state(self) -> DataFrame | None:
+    def state(self) -> DataFrame:
         """get all accumulated state results"""
+        assert self._state is not None
         return self._state
 
     @property
-    def classifiers(self) -> DataFrame | None:
+    def classifiers(self) -> DataFrame:
         """get all accumulated clasifier results"""
+        assert self._classifiers is not None
         return self._classifiers
 
     @property
-    def parameters(self) -> DataFrame | None:
+    def parameters(self) -> DataFrame:
         """get all accumulated parameter results"""
+        assert self._parameters is not None
         return self._parameters
 
     @property
-    def area(self) -> DataFrame | None:
+    def area(self) -> DataFrame:
         """get all accumulated area results"""
+        assert self._area is not None
         return self._area
 
     def append_simulation_result(self, timestep: int, cbm_vars: CBMVariables):
