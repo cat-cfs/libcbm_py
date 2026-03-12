@@ -535,7 +535,7 @@ class NumpySeriesBackend(Series):
         return self._get_data().tolist()
 
     def to_numpy_ptr(self) -> ctypes.pointer:  # type: ignore
-        if self._parent_df is not None and self._parent_df.is_matrix:
+        if self._parent_df is not None and self._parent_df.is_matrix():
             raise ValueError(
                 "cannot create a pointer to a single column in contiguous "
                 "matrix storage"
