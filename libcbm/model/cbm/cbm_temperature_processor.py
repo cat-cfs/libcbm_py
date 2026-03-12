@@ -77,7 +77,6 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
         spinup_mean_annual_temp = self._timestep_lookups[0]
         return cbm_variables.initialize_spinup_parameters(
             inventory.n_rows,
-            inventory.backend_type,
             return_interval=return_interval,
             min_rotations=min_rotations,
             max_rotations=max_rotations,
