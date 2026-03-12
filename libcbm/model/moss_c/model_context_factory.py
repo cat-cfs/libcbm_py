@@ -93,7 +93,6 @@ def create_from_csv(
     mean_annual_temperature_fn: str = "mean_annual_temperature.csv",
     merch_volume_fn: str = "merch_volume.csv",
     spinup_parameter_fn: str = "spinup_parameter.csv",
-    backend_type: BackendType = BackendType.pandas,
 ) -> ModelContext:
     def read_csv(fn: str, index_col: str = "id"):
         path = os.path.join(dir, fn)
@@ -115,5 +114,5 @@ def create_from_csv(
         parameters,
         dataframe.from_pandas(input_data.merch_volume),
         dataframe.from_pandas(input_data.disturbance_matrix),
-        backend_type,
+        BackendType.numpy,
     )

@@ -22,7 +22,6 @@ def simulate(
     ) = None,
     spinup_params: DataFrame | None = None,
     spinup_reporting_func: Callable[[int, CBMVariables], None] | None = None,
-    backend_type: BackendType | None = None,
 ):
     """Runs the specified number of timesteps of the CBM model.  Model output
     is processed by the provided reporting_func. The provided
@@ -50,23 +49,20 @@ def simulate(
             function will result in a performance penalty as the per-iteration
             spinup results are computed and tracked. If unspecified spinup
             results are not tracked. Defaults to None.
-        backend_type (BackendType): specifies the backend storage method for
-            dataframes. If unspecified, the inventory data frame's backend
-            type is used.
+
     """
-    if not backend_type:
-        backend_type = inventory.backend_type
+
     cbm_vars = cbm_variables.initialize_simulation_variables(
         classifiers,
         inventory,
         cbm.pool_codes,
         cbm.flux_indicator_codes,
-        backend_type,
+        BackendType.numpy,
     )
 
     spinup_vars = cbm_variables.initialize_spinup_variables(
         cbm_vars,
-        backend_type,
+        BackendType.numpy,
         spinup_params,
         include_flux=spinup_reporting_func is not None,
     )
