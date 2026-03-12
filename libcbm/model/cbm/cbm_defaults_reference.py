@@ -111,7 +111,7 @@ class CBMDefaultsReference:
 
     def load_data(
         self, sqlite_path: str, query: str, query_params: tuple | None = None
-    ) -> list[sqlite3.Row]:
+    ) -> list[dict]:
         """loads the specified query into a list of dictionary formatted query
 
         Args:
@@ -128,9 +128,10 @@ class CBMDefaultsReference:
         cursor = conn.cursor()
         try:
             if query_params:
-                return cursor.execute(query, query_params).fetchall()
+                rows = cursor.execute(query, query_params).fetchall()
             else:
-                return cursor.execute(query).fetchall()
+                rows = cursor.execute(query).fetchall()
+            return [dict(row) for row in rows]
         finally:
             cursor.close()
             conn.close()
@@ -146,7 +147,7 @@ class CBMDefaultsReference:
         """
         return self.species_by_name[species_name]["species_id"]
 
-    def get_species(self) -> list[sqlite3.Row]:
+    def get_species(self) -> list[dict]:
         """Get all name and id information about every CBM species.
 
         Result is returned as a list of rows with keys:
@@ -176,7 +177,7 @@ class CBMDefaultsReference:
         match = self.disturbance_type_by_name[disturbance_type_name]
         return match["disturbance_type_id"]
 
-    def get_disturbance_types(self) -> list[sqlite3.Row]:
+    def get_disturbance_types(self) -> list[dict]:
         """Get all name and id information about every CBM disturbance type
         as a list of rows with keys:
 
@@ -218,7 +219,7 @@ class CBMDefaultsReference:
         result = self.spatial_unit_by_id[spatial_unit_id]
         return result["admin_boundary_name"], result["eco_boundary_name"]
 
-    def get_spatial_units(self) -> list[sqlite3.Row]:
+    def get_spatial_units(self) -> list[dict]:
         """Get name and id information for the spatial units defined in the
         underlying cbm_defaults database.  Returns a list of rows
         with the following keys:
@@ -250,7 +251,7 @@ class CBMDefaultsReference:
             afforestation_pre_type_name
         ]["afforestation_pre_type_id"]
 
-    def get_afforestation_pre_types(self) -> list[sqlite3.Row]:
+    def get_afforestation_pre_types(self) -> list[dict]:
         """Get name and id information for the afforestation pre-types
         defined in the underlying cbm_defaults database.  Returns a list
         of dictionaries with the following keys:
@@ -263,7 +264,7 @@ class CBMDefaultsReference:
         """
         return self.afforestation_pre_type_ref
 
-    def get_land_classes(self) -> list[sqlite3.Row]:
+    def get_land_classes(self) -> list[dict]:
         """Get all name and id information about every CBM land class.
 
         Result is returned as a list of rows with keys:
@@ -300,7 +301,7 @@ class CBMDefaultsReference:
         """
         return self.land_class_by_code[land_class_code]["land_class_id"]
 
-    def get_land_class_disturbance_ref(self) -> list[sqlite3.Row]:
+    def get_land_class_disturbance_ref(self) -> list[dict]:
         """Get name and id information for the cbm disturbance types that
         cause a change to UNFCCC land class, along with the post-disturbance
         land type.  Non-land class altering disturbance types are not
