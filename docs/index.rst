@@ -23,10 +23,6 @@ Code Documentation
    cbm_sit
    cbm3_tutorial2
    multi_stand_modelling
-   model_definition
-   moss_c_model
-   cbm_exn
-   cbm_exn_custom_ops
    libcbm_core_functions
    package_resources
 
