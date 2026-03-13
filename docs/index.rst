@@ -9,8 +9,7 @@ functions for extending CBM, or developing new CBM-like models.
 github_
 
 .. _github: http://www.github.com/cat-cfs/libcbm_py
-.. _moss-c-publication: https://doi.org/10.1139/cjfr-2015-0512
-.. _CBM-CFS3: https://www.nrcan.gc.ca/climate-change/impacts-adaptations/climate-change-impacts-forests/carbon-accounting/carbon-budget-model/13107
+.. _CBM-CFS3: https://natural-resources.canada.ca/climate-change/climate-change-impacts-forests/carbon-budget-model
 
 Code Documentation
 ------------------
