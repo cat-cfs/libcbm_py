@@ -1,12 +1,28 @@
 from __future__ import annotations
-from typing import Union
+from dataclasses import dataclass, field
 import pandas as pd
 from libcbm.input.sit import sit_parser
 from libcbm.input.sit import sit_format
 
 
+@dataclass
+class EligibilityRow:
+    eligibility_id: int
+    pool_filter_expressions: list[str] = field(default_factory=list)
+    state_filter_expressions: list[str] = field(default_factory=list)
+
+    def to_output(self) -> dict:
+        return {
+            "eligibility_id": self.eligibility_id,
+            "pool_filter_expression": " & ".join(self.pool_filter_expressions),
+            "state_filter_expression": " & ".join(
+                self.state_filter_expressions
+            ),
+        }
+
+
 def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
-    row_values_by_id: dict[int, dict[str, Union[int, list]]] = {}
+    row_values_by_id: dict[int, EligibilityRow] = {}
     for _, row in preformat_df.iterrows():
         row_id = int(row["eligibility_id"])
         pool_filter_expression = ""
@@ -41,37 +57,37 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
         if row_id in row_values_by_id:
             matched_row = row_values_by_id[row_id]
             if row_values["pool_filter_expression"]:
-                matched_row["pool_filter_expressions"].append(
+                matched_row.pool_filter_expressions.append(
                     row_values["pool_filter_expression"]
                 )
             if row_values["state_filter_expression"]:
-                matched_row["state_filter_expressions"].append(
+                matched_row.state_filter_expressions.append(
                     row_values["state_filter_expression"]
                 )
         else:
-            row_values_by_id[row_id] = {
-                "eligibility_id": row_id,
-                "pool_filter_expressions": [
-                    row_values["pool_filter_expression"]
-                ]
-                if row_values["pool_filter_expression"]
-                else [],
-                "state_filter_expressions": [
-                    row_values["state_filter_expression"]
-                ]
-                if row_values["state_filter_expression"]
-                else [],
-            }
+            row_values_by_id[row_id] = EligibilityRow(
+                eligibility_id=row_id,
+                pool_filter_expressions=(
+                    [row_values["pool_filter_expression"]]
+                    if row_values["pool_filter_expression"]
+                    else []
+                ),
+                state_filter_expressions=(
+                    [row_values["state_filter_expression"]]
+                    if row_values["state_filter_expression"]
+                    else []
+                ),
+            )
     out_data = []
     for v in row_values_by_id.values():
         out_data.append(
             {
-                "eligibility_id": v["eligibility_id"],
+                "eligibility_id": v.eligibility_id,
                 "pool_filter_expression": " & ".join(
-                    v["pool_filter_expressions"]
+                    v.pool_filter_expressions
                 ),
                 "state_filter_expression": " & ".join(
-                    v["state_filter_expressions"]
+                    v.state_filter_expressions
                 ),
             }
         )
@@ -87,8 +103,8 @@ def _unpack_eligbility_preformat(preformat_df: pd.DataFrame) -> pd.DataFrame:
 
 def validate_eligibilities_relationship(
     eligibilities: pd.DataFrame,
-    disturbance_events: pd.DataFrame = None,
-    transition_rules: pd.DataFrame = None,
+    disturbance_events: pd.DataFrame | None = None,
+    transition_rules: pd.DataFrame | None = None,
 ):
     """Checks that the eligibility values in sit_transitions and sit_events are
     all present in the specified eligibility table, raising an error if not.

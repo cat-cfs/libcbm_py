@@ -59,7 +59,10 @@ def prepare_operation_dataframe(
             inplace=True,
         )
         # using verify_integrity, will ensure no duplicates
-        result_df.set_index(index_names, inplace=True, verify_integrity=True)
+        result_df.set_index(index_names, inplace=True)
+        assert (
+            result_df.index.is_unique
+        ), "duplicated values detected in provided data"
     else:
         result_df.index.name = None
     # all other columns are pool source sink pair columns whose name are
@@ -91,7 +94,7 @@ def init_index(operation_data: pd.DataFrame) -> MatrixMergeIndex:
     key_data = {}
     names = operation_data.index.names
     df = operation_data.reset_index()
-    key_data = {name: df[name].to_numpy() for name in names}
+    key_data = {str(name): df[name].to_numpy() for name in names}
     return MatrixMergeIndex(
         len(df.index),
         key_data,

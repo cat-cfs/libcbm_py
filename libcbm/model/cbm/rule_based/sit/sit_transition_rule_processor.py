@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 from __future__ import annotations
 import pandas as pd
-from typing import Iterable
+from typing import Iterable, Any
 from libcbm.input.sit import sit_transition_rule_parser
 from libcbm.model.cbm.rule_based.sit import sit_stand_filter
 from libcbm.model.cbm.rule_based import rule_filter
@@ -18,7 +18,7 @@ from libcbm.model.cbm.rule_based.classifier_filter import ClassifierFilter
 
 
 def create_split_proportions(
-    tr_group_key: dict, tr_group: DataFrame, group_error_max: float
+    tr_group_key: dict, tr_group: pd.DataFrame, group_error_max: float
 ) -> list[float]:
     """Create proportions
 
@@ -112,7 +112,7 @@ def get_transition_rule_filters(
 
 def sit_transition_rule_iterator(
     sit_transitions: pd.DataFrame, classifier_names: list[str]
-) -> Iterable[tuple[dict[str, str], pd.DataFrame]]:
+) -> Iterable[tuple[dict[str, Any], pd.DataFrame]]:
     """Groups transition rules by classifiers, and eligibility criteria and
     yields the sequence of group_key, group.
 
@@ -155,7 +155,7 @@ def sit_transition_rule_iterator(
     grouping = sit_transitions.groupby(group_cols)
     group_error_max = sit_transition_rule_parser.GROUPED_PERCENT_ERR_MAX
     for group_key, group in dict(list(grouping)).items():
-        group_key_dict = dict(zip(group_cols, group_key))
+        group_key_dict = dict(zip(group_cols, [s for s in group_key]))
         if group.percent.sum() > 100 + group_error_max:
             raise ValueError(
                 "Greater than 100 percent sum for percent field in "
@@ -177,9 +177,9 @@ class SITTransitionRuleProcessor:
 
     def process_transition_rules(
         self,
-        sit_transitions: pd.DataFrame,
+        sit_transitions: pd.DataFrame | None,
         cbm_vars: CBMVariables,
-        sit_eligibilities: pd.DataFrame = None,
+        sit_eligibilities: pd.DataFrame | None = None,
     ) -> CBMVariables:
         """Process the specified SIT transition rules versus the current model
         state.
@@ -210,7 +210,7 @@ class SITTransitionRuleProcessor:
             False, n_stands, cbm_vars.classifiers.backend_type
         )
 
-        eligibilty_expressions: dict[int, pd.Series] = None
+        eligibilty_expressions: dict[int, pd.Series] | None = None
         if (
             sit_eligibilities is not None
             and "eligibility_id" in sit_transitions
@@ -246,8 +246,8 @@ class SITTransitionRuleProcessor:
     def _create_filters(
         self,
         cbm_vars: CBMVariables,
-        tr_group_key: dict[str, str],
-        eligibilty_expressions: dict[int, pd.Series] = None,
+        tr_group_key: dict[str, Any],
+        eligibilty_expressions: dict[int, pd.Series] | None = None,
     ) -> list[RuleFilter]:
         if eligibilty_expressions:
             expression = eligibilty_expressions[

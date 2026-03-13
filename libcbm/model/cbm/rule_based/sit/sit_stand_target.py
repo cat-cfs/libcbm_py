@@ -10,12 +10,13 @@ from libcbm.model.cbm.rule_based import rule_target
 from libcbm.model.cbm.rule_based.rule_target import RuleTargetResult
 from libcbm.model.cbm.cbm_variables import CBMVariables
 from libcbm.storage.series import Series
+from libcbm.storage.dataframe import DataFrame
 
 
 def create_sit_event_target_factory(
     sit_event_row: dict,
     disturbance_production_func: Callable[
-        [CBMVariables, Union[int, Series]], Series
+        [CBMVariables, Union[int, Series]], DataFrame
     ],
     random_generator: Callable[[int], Series],
 ) -> Callable[[CBMVariables, Series], RuleTargetResult]:
@@ -35,7 +36,7 @@ def create_sit_event_target(
     sit_event_row: dict,
     cbm_vars: CBMVariables,
     disturbance_production_func: Callable[
-        [CBMVariables, Union[int, Series]], Series
+        [CBMVariables, Union[int, Series]], DataFrame
     ],
     eligible: Series,
     random_generator: Callable[[int], Series],
@@ -53,9 +54,14 @@ def create_sit_event_target(
         production = disturbance_production_func(
             cbm_vars, sit_event_row["disturbance_type_id"]
         )
+    else:
+        production = None
     rule_target_result = None
     if target_type == area_target_type and sort not in non_sorted:
         if sit_rule_based_sort.is_production_sort(sit_event_row):
+            assert (
+                production is not None
+            ), f"production required for event {sit_event_row}"
             rule_target_result = rule_target.sorted_area_target(
                 area_target_value=target,
                 sort_value=sit_rule_based_sort.get_production_sort_value(
@@ -74,7 +80,11 @@ def create_sit_event_target(
                 eligible=eligible,
             )
     elif target_type == merchantable_target_type and sort not in non_sorted:
+        assert (
+            production is not None
+        ), f"production required for event {sit_event_row}"
         if sit_rule_based_sort.is_production_sort(sit_event_row):
+
             rule_target_result = rule_target.sorted_merch_target(
                 carbon_target=target,
                 disturbance_production=production,
@@ -116,6 +126,9 @@ def create_sit_event_target(
                 eligible=eligible,
             )
         elif target_type == merchantable_target_type:
+            assert (
+                production is not None
+            ), f"production required for event {sit_event_row}"
             rule_target_result = rule_target.proportion_merch_target(
                 carbon_target=target,
                 disturbance_production=production,

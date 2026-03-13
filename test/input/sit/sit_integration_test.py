@@ -71,36 +71,34 @@ class SITIntegrationTest(unittest.TestCase):
                     inventory=inventory,
                     pre_dynamics_func=rule_based_processor.pre_dynamics_func,
                     reporting_func=cbm_output.append_simulation_result,
-                    backend_type=backend,
                 )
                 # there should be 2 rows, timestep 0 and timestep 1
                 self.assertTrue(cbm_output.pools.n_rows == 2)
 
 
 def test_tutorial2():
-    for backend in BackendType:
-        config_path = os.path.join(
-            resources.get_test_resources_dir(),
-            "cbm3_tutorial2",
-            "sit_config.json",
-        )
-        sit = sit_cbm_factory.load_sit(config_path)
 
-        classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
-        cbm_output = CBMOutput(
-            classifier_map=sit.classifier_value_names,
-            disturbance_type_map=sit.disturbance_name_map,
+    config_path = os.path.join(
+        resources.get_test_resources_dir(),
+        "cbm3_tutorial2",
+        "sit_config.json",
+    )
+    sit = sit_cbm_factory.load_sit(config_path)
+
+    classifiers, inventory = sit_cbm_factory.initialize_inventory(sit)
+    cbm_output = CBMOutput(
+        classifier_map=sit.classifier_value_names,
+        disturbance_type_map=sit.disturbance_name_map,
+    )
+    with sit_cbm_factory.initialize_cbm(sit) as cbm:
+        rule_based_processor = sit_cbm_factory.create_sit_rule_based_processor(
+            sit, cbm
         )
-        with sit_cbm_factory.initialize_cbm(sit) as cbm:
-            rule_based_processor = (
-                sit_cbm_factory.create_sit_rule_based_processor(sit, cbm)
-            )
-            cbm_simulator.simulate(
-                cbm,
-                n_steps=200,
-                classifiers=classifiers,
-                inventory=inventory,
-                pre_dynamics_func=rule_based_processor.pre_dynamics_func,
-                reporting_func=cbm_output.append_simulation_result,
-                backend_type=backend,
-            )
+        cbm_simulator.simulate(
+            cbm,
+            n_steps=200,
+            classifiers=classifiers,
+            inventory=inventory,
+            pre_dynamics_func=rule_based_processor.pre_dynamics_func,
+            reporting_func=cbm_output.append_simulation_result,
+        )

@@ -24,7 +24,7 @@ def get_wildcard_keyword() -> str:
 
 def parse(
     classifiers_table: pd.DataFrame,
-) -> Tuple[pd.DataFrame, list[str], pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, list[str], pd.DataFrame, list[dict]]:
     """parse SIT_Classifiers formatted data.
 
     Args:
@@ -97,7 +97,8 @@ def parse(
             - original_classifier_labels - the labels as they appear in the
                 SIT input data.
             - classifier_values - a validated table of classifier values
-            - aggregate_values - a dictionary describing aggregate values
+            - aggregate_values - a list of dictionary describing aggregate
+                values
 
     """
     classifiers_format = sit_format.get_classifier_format(

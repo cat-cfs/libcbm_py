@@ -244,7 +244,7 @@ class LibCBMWrapper:
         )
 
     def compute_pools(
-        self, ops: list, pools: DataFrame, enabled: Series = None
+        self, ops: list, pools: DataFrame, enabled: Series | None = None
     ):
         """Computes flows between pool values for all stands.
 
@@ -298,10 +298,10 @@ class LibCBMWrapper:
     def compute_flux(
         self,
         ops: list,
-        op_processes: list,
+        op_processes: list[int],
         pools: DataFrame,
         flux: DataFrame,
-        enabled: Series = None,
+        enabled: Series | None = None,
     ):
         """
         Computes and tracks flows between pool values for all stands.

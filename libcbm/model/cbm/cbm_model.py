@@ -11,6 +11,7 @@ from libcbm.wrapper.cbm.cbm_wrapper import CBMWrapper
 from libcbm.storage.series import Series
 from libcbm.storage.series import SeriesDef
 from libcbm.storage import dataframe
+from libcbm.storage.dataframe import DataFrame
 
 
 def get_op_names() -> list[str]:
@@ -81,7 +82,7 @@ class CBM:
     def spinup(
         self,
         cbm_vars: CBMVariables,
-        reporting_func: Callable[[int, CBMVariables], None] = None,
+        reporting_func: Callable[[int, CBMVariables], None] | None = None,
     ) -> CBMVariables:
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
@@ -232,8 +233,8 @@ class CBM:
         Returns:
             CBMVariables: cbm_vars
         """
-
-        cbm_vars.flux.zero()
+        if cbm_vars.flux is not None:
+            cbm_vars.flux.zero()
 
         self.model_functions.advance_stand_state(
             cbm_vars.classifiers,
@@ -246,10 +247,10 @@ class CBM:
     def compute_disturbance_production(
         self,
         cbm_vars: CBMVariables,
-        disturbance_type: Union[Series, int] = None,
-        eligible: Series = None,
+        disturbance_type: Union[Series, int] | None = None,
+        eligible: Series | None = None,
         density: bool = True,
-    ):
+    ) -> DataFrame:
         """Computes a series of disturbance production values based on the
         current pools in cbm_vars, and disturbance matrices associated with
         cbm_vars.parameters.disturbance type by default, and the specified
@@ -388,7 +389,7 @@ class CBM:
         self.model_functions.get_disturbance_ops(
             disturbance_op, cbm_vars.inventory, cbm_vars.parameters
         )
-
+        assert cbm_vars.flux is not None
         self.compute_functions.compute_flux(
             [disturbance_op],
             [self.op_processes["disturbance"]],
@@ -452,7 +453,7 @@ class CBM:
             "slow_decay",
             "slow_mixing",
         ]
-
+        assert cbm_vars.flux is not None
         self.compute_functions.compute_flux(
             [ops[x] for x in annual_process_op_schedule],
             [self.op_processes[x] for x in annual_process_op_schedule],

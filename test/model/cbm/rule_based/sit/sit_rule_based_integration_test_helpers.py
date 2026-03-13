@@ -169,7 +169,7 @@ def setup_cbm_vars(sit):
         inventory,
         sit.defaults.get_pools(),
         sit.defaults.get_flux_indicators(),
-        backend_type=BackendType.pandas,
+        backend_type=BackendType.numpy,
     )
     return cbm_vars
 

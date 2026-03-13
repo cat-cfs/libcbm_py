@@ -9,6 +9,7 @@ from libcbm.model.cbm_exn import cbm_exn_land_state
 from libcbm.model.cbm_exn import cbm_exn_annual_process_dynamics
 from libcbm.model.cbm_exn import cbm_exn_disturbance_dynamics
 from libcbm.model.cbm_exn import cbm_exn_growth_functions
+from libcbm.storage.backends import BackendType
 
 
 def get_default_ops(
@@ -155,7 +156,7 @@ def step_disturbance(
     for op_def in ops:
         if op_def["name"] in op_sequence:
             model.matrix_ops.create_operation(**op_def)
-
+    cbm_vars = cbm_vars.convert_backend(BackendType.numpy)
     model.compute(cbm_vars, op_sequence)
     return cbm_vars
 
@@ -183,6 +184,7 @@ def step_annual_process(
         if op_def["name"] in op_sequence:
             model.matrix_ops.create_operation(**op_def)
 
+    cbm_vars = cbm_vars.convert_backend(BackendType.numpy)
     model.compute(cbm_vars, op_sequence)
     return cbm_vars
 

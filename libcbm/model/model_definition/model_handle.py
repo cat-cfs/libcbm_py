@@ -164,7 +164,7 @@ class ModelHandle:
     def compute(
         self,
         pools: DataFrame,
-        flux: DataFrame,
+        flux: DataFrame | None,
         enabled: Series,
         operations: list[libcbm_operation.Operation],
     ) -> None:

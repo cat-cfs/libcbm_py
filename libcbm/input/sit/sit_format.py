@@ -232,11 +232,13 @@ def get_transition_rules_format(
         ]
 
         col_offset = 2 * n_classifiers + len(age_eligibility) + 1
+        eligibility_id = []
     else:
         eligibility_id = [
             {"name": "eligibility_id", "index": n_classifiers, "type": "int64"}
         ]
         col_offset = 2 * n_classifiers + 1
+        disturbance_type = []
     post_transition = [
         {
             "name": "regeneration_delay",

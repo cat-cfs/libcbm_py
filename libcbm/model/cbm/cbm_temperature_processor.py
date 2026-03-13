@@ -49,9 +49,9 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
     def get_spinup_parameters(
         self,
         inventory: DataFrame,
-        return_interval: Series = None,
-        min_rotations: Series = None,
-        max_rotations: Series = None,
+        return_interval: Series | None = None,
+        min_rotations: Series | None = None,
+        max_rotations: Series | None = None,
     ) -> DataFrame:
         """Gets a spinup parameters dataframe with mean annual
         temperature set, and optionally other spinup parameters
@@ -77,7 +77,6 @@ class SpatialUnitMeanAnnualTemperatureProcessor:
         spinup_mean_annual_temp = self._timestep_lookups[0]
         return cbm_variables.initialize_spinup_parameters(
             inventory.n_rows,
-            inventory.backend_type,
             return_interval=return_interval,
             min_rotations=min_rotations,
             max_rotations=max_rotations,
