@@ -479,9 +479,9 @@
             "Merch"
         ],
         "sink_pools": [
-            "StemSnag",
             "MediumSoil",
-            "AboveGroundSlowSoil"
+            "AboveGroundSlowSoil",
+            "StemSnag"
         ]
     },
     {
@@ -503,8 +503,8 @@
         ],
         "sink_pools": [
             "AboveGroundFastSoil",
-            "BranchSnag",
-            "BelowGroundFastSoil"
+            "BelowGroundFastSoil",
+            "BranchSnag"
         ]
     },
     {
@@ -526,9 +526,9 @@
         ],
         "sink_pools": [
             "AboveGroundVeryFastSoil",
+            "BelowGroundVeryFastSoil",
             "AboveGroundFastSoil",
-            "BelowGroundFastSoil",
-            "BelowGroundVeryFastSoil"
+            "BelowGroundFastSoil"
         ]
     },
     {
