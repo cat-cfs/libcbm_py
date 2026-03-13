@@ -3,7 +3,6 @@ name: Python package
 on:
   push:
     branches:
-    - 2.x
     - main
 
 jobs:
