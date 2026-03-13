@@ -43,11 +43,15 @@ def f1(
     Returns:
         np.ndarray: Canopy openess
     """
-    merch_vol = np.asanyarray(merch_vol)
-    result = np.full_like(merch_vol, 60.0)
-    assign_loc = merch_vol != 0
-    result[assign_loc] = np.power(10, a * np.log10(merch_vol[assign_loc]) + b)
-    return result
+    return np.where(
+        merch_vol == 0,
+        60,
+        np.power(
+            10,
+            a * np.log10(merch_vol, where=(merch_vol != 0)) + b,
+            where=(merch_vol != 0),
+        ),
+    )
 
 
 def f2(
