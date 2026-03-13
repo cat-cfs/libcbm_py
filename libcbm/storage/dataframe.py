@@ -189,7 +189,7 @@ def concat_data_frame(
         DataFrame: concatenated dataframe
     """
     data = [d for d in data if d is not None]
-    if data is None:
+    if not data:
         raise ValueError("no non-null values")
     backend_type, uniform_dfs = get_uniform_backend(data, backend_type)
 
