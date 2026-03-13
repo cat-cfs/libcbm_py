@@ -23,12 +23,10 @@ python -m venv my_venv
 Install the following packages.  If using a virtual environment, activate the environment first.
 
 * [`jupyter`](https://jupyter.org/)
-* [`jupytext`](https://github.com/mwouts/jupytext) - lets `jupyter` load markdown formatted notebooks
 * [`matplotlib`](https://matplotlib.org/) - for plotting graphs
 
 ```
 pip install jupyter
-pip install jupytext
 pip install matplotlib
 ```
 
@@ -49,8 +47,9 @@ pip install .
 ```
 
 
+### `jupyter` 
 
-### Run `jupyter` from the examples directory
+If using jupyter notebook, then go to the example directory
 
 Any of the  [example notebooks](https://github.com/cat-cfs/libcbm_py/tree/master/examples) can be run via the `jupyter` user interface
 
@@ -58,6 +57,8 @@ Any of the  [example notebooks](https://github.com/cat-cfs/libcbm_py/tree/master
 cd libcbm_py/examples
 jupyter notebook
 ```
+
+Or use visual studio code and browse to the notebook via its UI.
 
 ## R
 
