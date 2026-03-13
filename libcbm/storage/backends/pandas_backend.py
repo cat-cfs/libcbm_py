@@ -69,7 +69,7 @@ class PandasDataFrameBackend(DataFrame):
         Returns:
             np.ndarray: _description_
         """
-        if not self.is_matrix:
+        if not self.is_matrix():
             raise ValueError(
                 "cannot call to_numpy() on a non-uniformly typed dataframe"
             )
