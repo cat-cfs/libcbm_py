@@ -123,7 +123,7 @@ class CBMDefaultsReference:
         Returns:
             list: a list of sqlite3.Row objects containing the query results
         """
-        conn = sqlite3.connect(sqlite_path)
+        conn = sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         try:

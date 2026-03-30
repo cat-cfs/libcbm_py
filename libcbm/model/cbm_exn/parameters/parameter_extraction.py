@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 
 def query(db_path, query, params=None):
-    con = sqlite3.connect(db_path)
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
         df = pd.read_sql_query(query, con, params=params)
     finally:
