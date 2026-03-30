@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass, field
 from typing import Union
 import copy
 import os
@@ -19,58 +20,76 @@ CBMEXN_PARAMETERS_DATA = {
 }
 
 
+@dataclass
 class CBMEXNParameters:
     """Class for storing and pre-processing parameters for cbm_exn."""
 
-    def __init__(self, data: dict[str, Union[list, pd.DataFrame]]):
-        """Read a directory containing configuration and parameters for
-        cbm_exn
+    pools: list[str]
+    flux: list[dict]
+    slow_mixing_rate: pd.DataFrame
+    turnover_parameters: pd.DataFrame
+    species: pd.DataFrame
+    root_parameters: pd.DataFrame
+    decay_parameters: pd.DataFrame
+    disturbance_matrix_value: pd.DataFrame
+    disturbance_matrix_association: pd.DataFrame
 
-        Args:
-            data (CBMEXNParameterData): path to a directory containing cbm_exn
-                parameters and configuration
+    # derived fields, populated in __post_init__
+    _slow_mixing_rate: float = field(init=False, repr=False)
+    _sw_hw_map: dict[int, int] = field(init=False, repr=False)
+    _root_parameters: dict[str, float] = field(init=False, repr=False)
+    _decay_param_dict: dict[str, dict[str, float]] = field(
+        init=False, repr=False
+    )
 
-        Raises:
-            ValueError: a validation error occurred
-        """
-        self._data = copy.deepcopy(data)
+    def __post_init__(self):
 
-        self._slow_mixing_rate = float(
-            self._data["slow_mixing_rate"].iloc[0, 1]
+        # deep-copy all mutable fields so callers can't mutate our state
+        self.pools = copy.deepcopy(self.pools)
+        self.flux = copy.deepcopy(self.flux)
+        self.slow_mixing_rate = self.slow_mixing_rate.copy()
+        self.turnover_parameters = self.turnover_parameters.copy()
+        self.species = self.species.copy()
+        self.root_parameters = self.root_parameters.copy()
+        self.decay_parameters = self.decay_parameters.copy()
+        self.disturbance_matrix_value = self.disturbance_matrix_value.copy()
+        self.disturbance_matrix_association = (
+            self.disturbance_matrix_association.copy()
         )
 
-        if (
-            not self._data["turnover_parameters"]["sw_hw"]
-            .isin(["sw", "hw"])
-            .all()
-        ):
+        self._slow_mixing_rate = float(
+            self.slow_mixing_rate.iloc[0, 1]  # type: ignore
+        )
+
+        if not self.turnover_parameters["sw_hw"].isin(["sw", "hw"]).all():
             raise ValueError(
                 "turnover_parameters.sw_hw values should be one of "
                 "'sw' or 'hw'"
             )
-        self._data["turnover_parameters"]["sw_hw"] = self._data[
-            "turnover_parameters"
-        ]["sw_hw"].map({"sw": 0, "hw": 1})
+
+        self.turnover_parameters = self.turnover_parameters.assign(
+            sw_hw=self.turnover_parameters["sw_hw"].map({"sw": 0, "hw": 1})
+        )
 
         self._sw_hw_map = {
             int(row["species_id"]): int(0 if row["forest_type_id"] == 1 else 1)
-            for _, row in self._data["species"].iterrows()
+            for _, row in self.species.iterrows()
         }
 
-        rp = self._data["root_parameters"]
+        rp = self.root_parameters
         root_param_cols = list(rp.columns)
         self._root_parameters = {
             col: float(rp[col].iloc[0]) for col in root_param_cols[1:]
         }
 
-        decay_params = self._data["decay_parameters"]
+        decay_params = self.decay_parameters
         self._decay_param_dict: dict[str, dict[str, float]] = {}
         for _, row in decay_params.iterrows():
             self._decay_param_dict[str(row["pool"])] = {
                 col: float(row[col]) for col in decay_params.columns[1:]
             }
 
-        dm_associations = self._data["disturbance_matrix_association"]
+        dm_associations = self.disturbance_matrix_association
         if not dm_associations["sw_hw"].isin(["sw", "hw"]).all():
             raise ValueError(
                 "disturbance_matrix_associations.sw_hw values should be one "
@@ -86,7 +105,7 @@ class CBMEXNParameters:
         Returns:
             list[str]: pool names
         """
-        return self._data["pools"]
+        return self.pools
 
     def flux_configuration(self) -> list[dict]:
         """returns cbm_exn's raw flux inidicator json configuration
@@ -94,7 +113,7 @@ class CBMEXNParameters:
         Returns:
             list[dict]: flux indicator configuration
         """
-        return self._data["flux"]
+        return self.flux
 
     def get_slow_mixing_rate(self) -> float:
         """gets the CBM slow mixing rate parameter
@@ -111,7 +130,7 @@ class CBMEXNParameters:
         Returns:
             pd.DataFrame: a pandas dataframe of the turnover parameters
         """
-        return self._data["turnover_parameters"]
+        return self.turnover_parameters
 
     def get_sw_hw_map(self) -> dict[int, int]:
         """returns a map of species identifier to sw_hw
@@ -156,7 +175,7 @@ class CBMEXNParameters:
             pd.DataFrame: a table of disturbance matrix values for CBM
                 disturbance C pool flows.
         """
-        return self._data["disturbance_matrix_value"]
+        return self.disturbance_matrix_value
 
     def get_disturbance_matrix_associations(self) -> pd.DataFrame:
         """
@@ -174,7 +193,7 @@ class CBMEXNParameters:
                 ids with disturbance type, spatial unit and sw-hw forest type.
 
         """
-        return self._data["disturbance_matrix_association"]
+        return self.disturbance_matrix_association
 
 
 def _load_data_item(dir: str, item_name: str) -> Union[pd.DataFrame, list]:
@@ -207,8 +226,9 @@ def parameters_factory(
                 "alternate directory to fetch them was specified."
             )
         for item_name in missing_subset:
+            assert dir is not None
             _data[item_name] = _load_data_item(dir, item_name)
-        return CBMEXNParameters(_data)
+        return CBMEXNParameters(**_data)
     elif dir:
         _data = {}
         for item_name in CBMEXN_PARAMETERS_DATA.keys():
@@ -217,4 +237,4 @@ def parameters_factory(
         raise ValueError(
             "neither a data dictionary, nor a directory are specified"
         )
-    return CBMEXNParameters(_data)
+    return CBMEXNParameters(**_data)

@@ -47,7 +47,7 @@ def process_event(
     target_func: Callable[[CBMVariables, Series], RuleTargetResult],
     disturbance_type_id: int,
     cbm_vars: CBMVariables,
-    disturbance_event_id: int = None,
+    disturbance_event_id: int | None = None,
 ) -> ProcessEventResult:
     """Computes a CBM rule based event by filtering and targeting a subset of
     the specified inventory.  In the case of merchantable or area targets
@@ -73,7 +73,7 @@ def process_event(
     """
 
     filter_result = rule_filter.evaluate_filters(*event_filters)
-
+    assert filter_result is not None
     # set to false those stands affected by a previous disturbance from
     # eligibility
     filter_result = dataframe.logical_and(undisturbed, filter_result)
@@ -95,7 +95,7 @@ def apply_rule_based_event(
     target: DataFrame,
     disturbance_type_id: int,
     cbm_vars: CBMVariables,
-    disturbance_event_id: int = None,
+    disturbance_event_id: int | None = None,
 ) -> CBMVariables:
     """Apply the specified target to the CBM simulation variables,
     splitting them if necessary.
@@ -145,7 +145,7 @@ def apply_rule_based_event(
         split_inventory["parent_inventory_id"].assign(
             split_inventory["inventory_id"]
         )
-        next_id = cbm_vars.inventory["inventory_id"].max() + 1
+        next_id = int(cbm_vars.inventory["inventory_id"].max() + 1)
         split_inventory["inventory_id"].assign(
             series.range(
                 "inventory_id",
@@ -174,9 +174,12 @@ def apply_rule_based_event(
         pools = dataframe.concat_data_frame(
             [cbm_vars.pools, cbm_vars.pools.take(split_index)]
         )
-        flux = dataframe.concat_data_frame(
-            [cbm_vars.flux, cbm_vars.flux.take(split_index)]
-        )
+        if cbm_vars.flux is not None:
+            flux = dataframe.concat_data_frame(
+                [cbm_vars.flux, cbm_vars.flux.take(split_index)]
+            )
+        else:
+            flux = None
 
         parameters = dataframe.concat_data_frame(
             [cbm_vars.parameters, cbm_vars.parameters.take(split_index)]

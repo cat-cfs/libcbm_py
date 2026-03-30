@@ -26,14 +26,14 @@ class SITData:
         classifiers: pd.DataFrame,
         original_classifier_labels: list[str],
         classifier_values: pd.DataFrame,
-        classifier_aggregates: pd.DataFrame,
+        classifier_aggregates: list[dict],
         disturbance_types: pd.DataFrame,
         age_classes: pd.DataFrame,
         inventory: pd.DataFrame,
         yield_table: pd.DataFrame,
-        disturbance_events: pd.DataFrame,
-        transition_rules: pd.DataFrame,
-        eligibilities: pd.DataFrame = None,
+        disturbance_events: pd.DataFrame | None,
+        transition_rules: pd.DataFrame | None,
+        eligibilities: pd.DataFrame | None = None,
     ):
         self.classifiers = classifiers
         self.original_classifier_labels = original_classifier_labels
@@ -192,10 +192,10 @@ def parse(
     sit_age_classes: pd.DataFrame,
     sit_inventory: pd.DataFrame,
     sit_yield: pd.DataFrame,
-    sit_events: pd.DataFrame = None,
-    sit_transitions: pd.DataFrame = None,
-    sit_eligibilities: pd.DataFrame = None,
-    sit_parse_options: SITParseOptions = None,
+    sit_events: pd.DataFrame | None = None,
+    sit_transitions: pd.DataFrame | None = None,
+    sit_eligibilities: pd.DataFrame | None = None,
+    sit_parse_options: SITParseOptions | None = None,
 ) -> SITData:
     """Parses and validates CBM Standard import tool formatted data including
     the complicated interdependencies in the SIT format. Returns an object

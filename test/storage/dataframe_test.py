@@ -24,7 +24,8 @@ def test_dataframe_mixed_types():
         assert data["A"].to_list() == [1, 2, 3]
         assert data["B"].to_list() == [1.1, 2.2, 3.3]
         assert data["C"].to_list() == ["c1", "c2", "c3"]
-
+        with pytest.raises(ValueError):
+            data.zero()
         filtered = data.filter(series.from_list("", [True, False, True]))
         assert filtered.n_rows == 2
         assert filtered.at(0) == {"A": 1, "B": 1.1, "C": "c1"}
@@ -45,11 +46,10 @@ def test_dataframe_mixed_types():
         data_copy = data.copy()
         assert data_copy.to_pandas().equals(data.to_pandas())
         data_copy.add_column(series.from_list("new_series", [1, 2, 3]), 1)
+
         assert data_copy["new_series"].to_list() == [1, 2, 3]
         assert data_copy.columns == ["A", "new_series", "B", "C"]
         assert data.to_pandas().equals(test_data.to_pandas())
-        data_copy.zero()
-        assert data_copy["new_series"].to_list() == [0, 0, 0]
 
         map_data = dataframe.from_pandas(
             pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
@@ -114,3 +114,8 @@ def test_dataframe_uniform_matrix():
 
         with pytest.raises(KeyError):
             data.map({0: 0})
+
+        data.zero()
+        assert data["A"].to_list() == [0, 0, 0]
+        assert data["B"].to_list() == [0, 0, 0]
+        assert data["C"].to_list() == [0, 0, 0]

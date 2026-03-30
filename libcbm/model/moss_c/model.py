@@ -43,7 +43,6 @@ def f1(
     Returns:
         np.ndarray: Canopy openess
     """
-
     return np.where(
         merch_vol == 0,
         60,
@@ -490,6 +489,7 @@ def spinup(
             include_flux=False,
         )
         if enable_debugging:
+
             spinup_debug.append_spinup_debug_record(
                 iteration, model_context, spinup_vars
             )

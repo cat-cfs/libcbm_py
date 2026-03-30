@@ -10,3 +10,4 @@
 /htmlcov
 debug.py
 /.venv
+.python-version

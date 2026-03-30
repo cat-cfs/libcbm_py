@@ -14,7 +14,7 @@ def parse(
     transition_rules: pd.DataFrame,
     classifiers: pd.DataFrame,
     classifier_values: pd.DataFrame,
-    classifier_aggregates: pd.DataFrame,
+    classifier_aggregates: list[dict],
     disturbance_types: pd.DataFrame,
     age_classes: pd.DataFrame,
     separate_eligibilities: bool = False,
@@ -30,7 +30,7 @@ def parse(
         classifier_values (pandas.DataFrame): used to validate the classifier
             set columns of the transition rule data. Use the return value of:
             :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
-        classifier_aggregates (pandas.DataFrame): used to validate the
+        classifier_aggregates (list[dict]): used to validate the
             classifier set columns of the transition rule data. Use the return
             value of:
             :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
@@ -57,7 +57,9 @@ def parse(
         pandas.DataFrame: validated transition rules
     """
     transition_rule_format = sit_format.get_transition_rules_format(
-        classifiers.name, len(transition_rules.columns), separate_eligibilities
+        classifiers["name"].tolist(),
+        len(transition_rules.columns),
+        separate_eligibilities,
     )
 
     transitions = sit_parser.unpack_table(

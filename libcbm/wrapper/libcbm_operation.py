@@ -109,6 +109,7 @@ class Operation:
             self._op_id = None
 
     def get_op_id(self) -> int:
+        assert self._op_id is not None
         return self._op_id
 
     def _set_op(self, matrix_index: np.ndarray):
@@ -140,6 +141,7 @@ class Operation:
     def update_index(self, matrix_index: np.ndarray):
         if not matrix_index.dtype == np.uintp:
             matrix_index = matrix_index.astype(np.uintp)
+        assert self._op_id is not None
         self._dll.update_op_index(self._op_id, matrix_index)
 
 
@@ -147,9 +149,9 @@ def compute(
     dll: LibCBMWrapper,
     pools: DataFrame,
     operations: list[Operation],
-    op_processes: Iterable[int] = None,
-    flux: DataFrame = None,
-    enabled: Series = None,
+    op_processes: Iterable[int] | None = None,
+    flux: DataFrame | None = None,
+    enabled: Series | None = None,
 ):
     """Compute pool flows and optionally track the fluxes
 
@@ -173,6 +175,7 @@ def compute(
 
     op_ids = [x.get_op_id() for x in operations]
     if flux is not None:
-        dll.compute_flux(op_ids, op_processes, pools, flux, enabled)
+        assert op_processes is not None
+        dll.compute_flux(op_ids, list(op_processes), pools, flux, enabled)
     else:
         dll.compute_pools(op_ids, pools, enabled)

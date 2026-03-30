@@ -41,9 +41,9 @@ def parse(
     disturbance_events: pd.DataFrame,
     classifiers: pd.DataFrame,
     classifier_values: pd.DataFrame,
-    classifier_aggregates: pd.DataFrame,
+    classifier_aggregates: list[dict],
     disturbance_types: pd.DataFrame,
-    age_classes: pd.DataFrame = None,
+    age_classes: pd.DataFrame | None = None,
     separate_eligibilities: bool = False,
     has_disturbance_event_ids: bool = False,
 ) -> pd.DataFrame:
@@ -60,7 +60,7 @@ def parse(
         classifier_values (pandas.DataFrame): used to validate the classifier
             set columns of the disturbance event data. Use the return value
             of: :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
-        classifier_aggregates (pandas.DataFrame): used to validate the
+        classifier_aggregates (list[dict]): used to validate the
             classifier set columns of the disturbance event data. Use the
             return value of:
             :py:func:`libcbm.input.sit.sit_classifier_parser.parse`
@@ -136,6 +136,9 @@ def parse(
             )
 
     if not separate_eligibilities:
+        assert (
+            age_classes is not None
+        ), "age classes required for separate_eligibilities"
         # if age classes are used substitute the age critera based on the age
         # class id, and raise an error if the id is not defined, and drop
         # using_age_class from output
@@ -166,21 +169,23 @@ def parse(
         raise ValueError(
             f"specified sort types are not valid: {sort_type_diff}"
         )
-    events.sort_type = int_sort_type.map(get_sort_types())
+    events = events.assign(sort_type=int_sort_type.map(get_sort_types()))
 
     # validate target type
     valid_target_types = get_target_types().keys()
-    target_type_diff = set(events.target_type.unique()).difference(
+    target_type_diff = set(events["target_type"].unique()).difference(
         set(valid_target_types)
     )
     if len(target_type_diff) > 0:
         raise ValueError(
             f"specified target types are not valid: {target_type_diff}"
         )
-    events.target_type = events.target_type.map(get_target_types())
+    events = events.assign(
+        target_type=events["target_type"].map(get_target_types())
+    )
 
     # validate disturbance type according to specified disturbance types
-    a = events.disturbance_type.unique()
+    a = events["disturbance_type"].unique()
     b = disturbance_types.id.unique()
     undefined_disturbances = np.setdiff1d(a, b)
     if len(undefined_disturbances) > 0:

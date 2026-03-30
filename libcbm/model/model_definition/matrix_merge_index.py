@@ -66,7 +66,7 @@ def get_key_func(size: int) -> Callable:
 def merge(
     k_func,
     out,
-    merge_dict: numba.typed.Dict,
+    merge_dict: numba.typed.Dict,  # type: ignore
     len_merge_arrays: int,
     fill: int,
     error_on_missing: bool,

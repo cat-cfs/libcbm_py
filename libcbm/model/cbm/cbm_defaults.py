@@ -164,7 +164,7 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
         return result
     finally:
         cursor.close()
-        conn.commit()
+        conn.close()
 
 
 def get_cbm_parameters_factory(

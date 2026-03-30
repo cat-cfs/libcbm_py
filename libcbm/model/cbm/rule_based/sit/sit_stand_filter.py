@@ -88,7 +88,7 @@ def create_pool_filter_expression(sit_data: dict) -> str:
     return expression
 
 
-def get_state_variable_age_filter_mappings() -> tuple[str, str, str]:
+def get_state_variable_age_filter_mappings() -> list[tuple[str, str, str]]:
     """get mappings between SIT events or transitions age criteria columns,
     and state variable columns, along with a boolean operator to compare age
     values.
@@ -103,7 +103,7 @@ def get_state_variable_age_filter_mappings() -> tuple[str, str, str]:
     return [("min_age", "age", ">="), ("max_age", "age", "<=")]
 
 
-def get_state_variable_filter_mappings() -> tuple[str, str, str]:
+def get_state_variable_filter_mappings() -> list[tuple[str, str, str]]:
     """get mappings between SIT events criteria columns, and state variable
     columns, along with a boolean operator to compare values.
 
@@ -160,7 +160,7 @@ def create_state_filter_expression(sit_data: dict, age_only: bool) -> str:
     return expression
 
 
-def _try_get_float(s: str) -> tuple[float, bool]:
+def _try_get_float(s: str) -> tuple[float | None, bool]:
     try:
         i = float(s)
         return i, True

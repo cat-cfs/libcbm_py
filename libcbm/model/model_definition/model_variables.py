@@ -2,6 +2,7 @@ from __future__ import annotations
 from libcbm.storage.dataframe import DataFrame
 from libcbm.storage import dataframe
 import pandas as pd
+from libcbm.storage.backends import BackendType
 
 
 class ModelVariables:
@@ -48,3 +49,11 @@ class ModelVariables:
         if the underlying dataframe storage backend is not pandas
         """
         return {k: v.to_pandas() for k, v in self._data.items()}
+
+    def convert_backend(self, backend_type: BackendType) -> ModelVariables:
+        return ModelVariables(
+            {
+                name: dataframe.convert_dataframe_backend(value, backend_type)
+                for name, value in self._data.items()
+            }
+        )

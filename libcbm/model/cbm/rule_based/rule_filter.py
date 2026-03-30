@@ -2,14 +2,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-from typing import Union
 from libcbm.storage import dataframe
 from libcbm.storage.series import Series
 from libcbm.storage.dataframe import DataFrame
 
 
 class RuleFilter:
-    def __init__(self, expression: str, data: DataFrame):
+    def __init__(self, expression: str, data: DataFrame | None):
         self._expression = expression
         self._data = data
 
@@ -22,14 +21,14 @@ class RuleFilter:
         return self._expression
 
     @property
-    def data(self) -> DataFrame:
+    def data(self) -> DataFrame | None:
         """
         a table containing columns to filter.
         """
         return self._data
 
 
-def create_filter(expression: str, data: DataFrame):
+def create_filter(expression: str, data: DataFrame | None):
     """Creates a filter object for filtering a pandas dataframe using an
     expression.
 
@@ -45,7 +44,7 @@ def create_filter(expression: str, data: DataFrame):
     return RuleFilter(expression, data)
 
 
-def evaluate_filters(*filter_objs: RuleFilter) -> Union[Series, None]:
+def evaluate_filters(*filter_objs: RuleFilter) -> Series | None:
     """Evaluates the specified sequence of filter objects.
 
     * If all filter expressions in the specified filter_objs are null then a
@@ -83,6 +82,7 @@ def evaluate_filters(*filter_objs: RuleFilter) -> Union[Series, None]:
             output = dataframe.logical_and(output, result)
 
     if not output and out_series_length:
+        assert out_series_backend_type is not None
         output = dataframe.make_boolean_series(
             True, out_series_length, out_series_backend_type
         )

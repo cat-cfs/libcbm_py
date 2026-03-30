@@ -26,7 +26,7 @@ class RuleTargetResult:
 
     """
 
-    def __init__(self, target: DataFrame, statistics: dict):
+    def __init__(self, target: DataFrame | None, statistics: dict | None):
         self.target = target
         self.statistics = statistics
 
@@ -72,7 +72,7 @@ def spatially_indexed_target(
     result = dataframe.from_series_list(
         [
             series.SeriesDef("target_var", match_inv["area"], "float"),
-            series.SeriesDef("sort_var", None, float),
+            series.SeriesDef("sort_var", None, "float"),
             series.SeriesDef("disturbed_index", match_idx, "int32"),
             series.SeriesDef("area_proportions", 1.0, "float"),
         ],

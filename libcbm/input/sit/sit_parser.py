@@ -10,7 +10,7 @@ from typing import Iterable, Callable, Any
 
 def unpack_column(
     table: pd.DataFrame, column_description: dict, table_name: str
-) -> pd.DataFrame:
+) -> pd.Series:
     """Validates a column in a pandas DataFrame
 
     Args:
@@ -41,7 +41,7 @@ def unpack_column(
             value in the column.
 
     Returns:
-        pandas.DataFrame: the resulting table
+        pandas.Series: the resulting column
     """
     data = table.iloc[:, column_description["index"]].copy()
     col_name = column_description["name"]
@@ -134,7 +134,7 @@ def unpack_table(
     return pd.DataFrame(columns=cols, data=data)
 
 
-def _try_get_int(s) -> int:
+def _try_get_int(s) -> tuple[int | None, bool]:
     """
     Checks if the specified value is an integer, and returns a result
 
@@ -189,7 +189,7 @@ def get_parse_bool_func(
             str_x = str(x).lower()
             int_x, success = _try_get_int(str_x)
             if success:
-                return int_x > 0
+                return int_x > 0  # type: ignore
             if str_x in ["true", "t", "y"]:
                 return True
             elif str_x in ["false", "f", "n"]:
@@ -239,9 +239,11 @@ def substitute_using_age_class_rows(
             for age class criteria.
     """
 
-    rows.using_age_class = rows.using_age_class.map(parse_bool_func)
-    non_using_age_class_rows = rows.loc[~rows.using_age_class]
-    using_age_class_rows = rows.loc[rows.using_age_class].copy()
+    rows = rows.assign(
+        using_age_class=rows["using_age_class"].map(parse_bool_func)
+    )
+    non_using_age_class_rows = rows.loc[~rows["using_age_class"]]
+    using_age_class_rows = rows.loc[rows["using_age_class"]].copy()
 
     for age_class_criteria_col in [
         "min_softwood_age",
@@ -264,45 +266,44 @@ def substitute_using_age_class_rows(
             )
 
     age_class_start_year_map = {
-        x.name: int(x.start_year) for x in age_classes.itertuples()
+        x.name: int(x.start_year)  # type: ignore
+        for x in age_classes.itertuples()
     }
     age_class_end_year_map = {
-        x.name: int(x.end_year) for x in age_classes.itertuples()
+        x.name: int(x.end_year)  # type: ignore
+        for x in age_classes.itertuples()
     }
-    using_age_class_rows.min_softwood_age = (
-        using_age_class_rows.min_softwood_age.astype(str).map(
-            age_class_start_year_map
-        )
-    )
-    using_age_class_rows.min_hardwood_age = (
-        using_age_class_rows.min_hardwood_age.astype(str).map(
-            age_class_start_year_map
-        )
-    )
-    using_age_class_rows.max_softwood_age = (
-        using_age_class_rows.max_softwood_age.astype(str).map(
-            age_class_end_year_map
-        )
-    )
-    using_age_class_rows.max_hardwood_age = (
-        using_age_class_rows.max_hardwood_age.astype(str).map(
-            age_class_end_year_map
-        )
+    using_age_class_rows = using_age_class_rows.assign(
+        min_softwood_age=(
+            using_age_class_rows["min_softwood_age"]
+            .astype(str)
+            .map(age_class_start_year_map)
+        ),
+        min_hardwood_age=(
+            using_age_class_rows["min_hardwood_age"]
+            .astype(str)
+            .map(age_class_start_year_map)
+        ),
+        max_softwood_age=(
+            using_age_class_rows["max_softwood_age"]
+            .astype(str)
+            .map(age_class_end_year_map)
+        ),
+        max_hardwood_age=(
+            using_age_class_rows["max_hardwood_age"]
+            .astype(str)
+            .map(age_class_end_year_map)
+        ),
     )
 
     # if the above mapping fails, it results in Nan values in the failed rows,
     # this replaces those with -1
-    using_age_class_rows.min_softwood_age = (
-        using_age_class_rows.min_softwood_age.fillna(-1)
-    )
-    using_age_class_rows.min_hardwood_age = (
-        using_age_class_rows.min_hardwood_age.fillna(-1)
-    )
-    using_age_class_rows.max_softwood_age = (
-        using_age_class_rows.max_softwood_age.fillna(-1)
-    )
-    using_age_class_rows.max_hardwood_age = (
-        using_age_class_rows.max_hardwood_age.fillna(-1)
+
+    using_age_class_rows = using_age_class_rows.assign(
+        min_softwood_age=(using_age_class_rows["min_softwood_age"].fillna(-1)),
+        min_hardwood_age=(using_age_class_rows["min_hardwood_age"].fillna(-1)),
+        max_softwood_age=(using_age_class_rows["max_softwood_age"].fillna(-1)),
+        max_hardwood_age=(using_age_class_rows["max_hardwood_age"].fillna(-1)),
     )
 
     # return the final substituted rows
@@ -312,26 +313,28 @@ def substitute_using_age_class_rows(
 
     # convert to float then to int in case the columns are stored as
     # strings in float format (which fails on astype(int))
-    result.min_softwood_age = result.min_softwood_age.astype(float).astype(int)
-    result.min_hardwood_age = result.min_hardwood_age.astype(float).astype(int)
-    result.max_softwood_age = result.max_softwood_age.astype(float).astype(int)
-    result.max_hardwood_age = result.max_hardwood_age.astype(float).astype(int)
+    result = result.assign(
+        min_softwood_age=result["min_softwood_age"].astype(float).astype(int),
+        min_hardwood_age=result["min_hardwood_age"].astype(float).astype(int),
+        max_softwood_age=result["max_softwood_age"].astype(float).astype(int),
+        max_hardwood_age=result["max_hardwood_age"].astype(float).astype(int),
+    )
 
     # check that all age criteria are identical between SW and HW (since CBM
     # has only a stand age)
-    has_null_min_age_criteria = (result.min_softwood_age < 0) | (
-        result.min_hardwood_age < 0
+    has_null_min_age_criteria = (result["min_softwood_age"] < 0) | (
+        result["min_hardwood_age"] < 0
     )
-    has_null_max_age_criteria = (result.max_softwood_age < 0) | (
-        result.max_hardwood_age < 0
+    has_null_max_age_criteria = (result["max_softwood_age"] < 0) | (
+        result["max_hardwood_age"] < 0
     )
     differing_age_criteria = result.loc[
         (
-            (result.min_softwood_age != result.min_hardwood_age)
+            (result["min_softwood_age"] != result["min_hardwood_age"])
             & ~has_null_min_age_criteria
         )
         | (
-            (result.max_softwood_age != result.max_hardwood_age)
+            (result["max_softwood_age"] != result["max_hardwood_age"])
             & ~has_null_max_age_criteria
         )
     ]

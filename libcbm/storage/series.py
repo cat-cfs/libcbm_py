@@ -17,7 +17,7 @@ class Series(ABC):
 
     @property  # pragma: no cover
     @abstractmethod
-    def name(self) -> str:
+    def name(self) -> str | None:
         """get or set the series name
 
         Returns:
@@ -27,7 +27,7 @@ class Series(ABC):
 
     @name.setter  # pragma: no cover
     @abstractmethod
-    def name(self, value: str) -> str:
+    def name(self, value: str) -> None:
         pass
 
     @abstractmethod  # pragma: no cover
@@ -94,7 +94,7 @@ class Series(ABC):
     def assign(
         self,
         value: Union["Series", Any],
-        indices: "Series" = None,
+        indices: "Series | None" = None,
     ):
         """
         Assign a single value, or a Series to a subset or to the entirety of
@@ -199,7 +199,7 @@ class Series(ABC):
         pass
 
     @abstractmethod  # pragma: no cover
-    def to_numpy_ptr(self) -> ctypes.pointer:
+    def to_numpy_ptr(self) -> ctypes.pointer:  # type: ignore
         """Get a ctypes pointer to this series underlying numpy
         array.  In the case of numpy backend 2d matrix storage,
         a pointer to a copy of the series value is returned.
@@ -211,7 +211,7 @@ class Series(ABC):
 
     @staticmethod  # pragma: no cover
     def _get_operand(
-        op: Union[int, float, "Series"]
+        op: Union[int, float, "Series"],
     ) -> Union[int, float, np.ndarray, pd.Series]:
         """
         helper method to unpack series operator operands
@@ -440,7 +440,7 @@ def range(
     return get_backend(back_end).range(name, start, stop, step, dtype)
 
 
-def from_pandas(series: pd.Series, name: str = None) -> Series:
+def from_pandas(series: pd.Series, name: str | None = None) -> Series:
     """Initialize a series with a pandas Series.
 
     Args:

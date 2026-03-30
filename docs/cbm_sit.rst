@@ -13,7 +13,7 @@ It instead interprets column meaning based on column ordering, so any column
 labels in DataFrames passed to SIT parse functions function will be ignored
 by the parsing functions here.
 
-.. _CBM-CFS3-Manual: http://www.cfs.nrcan.gc.ca/pubwarehouse/pdfs/35717.pdf
+.. _CBM-CFS3-Manual: https://ostrnrcan-dostrncan.canada.ca/entities/publication/7570539d-a457-43ef-9215-584ad612f409
 
 
 

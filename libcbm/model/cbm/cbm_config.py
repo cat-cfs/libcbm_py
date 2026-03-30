@@ -3,6 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 from __future__ import annotations
+from typing import Any
 
 
 def classifier_value(value: str, description: str = "") -> dict[str, str]:
@@ -26,12 +27,12 @@ def classifier_value(value: str, description: str = "") -> dict[str, str]:
     return {"value": value, "description": description}
 
 
-def classifier(name: str, values: dict) -> dict:
+def classifier(name: str, values: list) -> dict:
     """Composes a classifier structure used for configuring libcbm.
 
     Args:
         name (str): the name of the classifier
-        values (dict): The classifier values that compose this classifier.
+        values (list): The classifier values that compose this classifier.
             Use classifier values of the format returned by:
             :py:func:`classifier_value`
 
@@ -279,7 +280,7 @@ def merch_volume_curve(
                 }
 
     """
-    result = {
+    result: dict[str, Any] = {
         "classifier_set": {
             "type": "name",
             "values": [x for x in classifier_set],
@@ -367,5 +368,8 @@ def merch_volume_to_biomass_config(
                     ]
                 }
     """
-    return {"db_path": db_path, "merch_volume_curves": merch_volume_curves,
-            "use_smoother": use_smoother,}
+    return {
+        "db_path": db_path,
+        "merch_volume_curves": merch_volume_curves,
+        "use_smoother": use_smoother,
+    }

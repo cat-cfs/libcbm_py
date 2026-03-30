@@ -145,7 +145,9 @@ def parse(
         pandas.DataFrame: validated inventory
     """
     inventory_format = sit_format.get_inventory_format(
-        classifiers.name, len(inventory_table.columns), has_inventory_ids
+        classifiers["name"].tolist(),
+        len(inventory_table.columns),
+        has_inventory_ids,
     )
 
     inventory = sit_parser.unpack_table(
@@ -189,8 +191,10 @@ def parse(
                 f"disturbance types) detected: {undefined_lastpass}"
             )
 
-    inventory.using_age_class = inventory.using_age_class.map(
-        sit_parser.get_parse_bool_func("inventory", "using_age_class")
+    inventory = inventory.assign(
+        using_age_class=inventory["using_age_class"].map(
+            sit_parser.get_parse_bool_func("inventory", "using_age_class")
+        )
     )
 
     # for rows where using_age_class is false, a type of integer and min value
@@ -268,8 +272,10 @@ def expand_age_class_inventory(
         )
     for row in age_classes.itertuples():
         age_range = (
-            range(row.start_year, row.start_year + row.class_size)
-            if row.class_size > 0
+            range(
+                row.start_year, row.start_year + row.class_size  # type: ignore
+            )
+            if row.class_size > 0  # type: ignore
             else [0]
         )
 
@@ -286,8 +292,8 @@ def expand_age_class_inventory(
             ]
         )
 
-    non_using_age_class_rows = inventory.loc[~inventory.using_age_class]
-    using_age_class_rows = inventory.loc[inventory.using_age_class].copy()
+    non_using_age_class_rows = inventory.loc[~inventory["using_age_class"]]
+    using_age_class_rows = inventory.loc[inventory["using_age_class"]].copy()
 
     if "spatial_reference" in using_age_class_rows:
         if (using_age_class_rows.spatial_reference >= 0).any():
@@ -295,16 +301,18 @@ def expand_age_class_inventory(
                 "using_age_class=true and spatial reference may not be "
                 "used together"
             )
-    using_age_class_rows.age = using_age_class_rows.age.astype(str)
+    using_age_class_rows = using_age_class_rows.assign(
+        age=using_age_class_rows["age"].astype(str)
+    )
 
     age_class_merge = using_age_class_rows.merge(
         expanded_age_classes, left_on="age", right_on="name"
     )
 
-    age_class_merge.age_x = age_class_merge.age_y
+    age_class_merge["age_x"] = age_class_merge["age_y"]
     age_class_merge.loc[
-        age_class_merge.class_size > 0, "area"
-    ] /= age_class_merge.class_size[age_class_merge.class_size > 0]
+        age_class_merge["class_size"] > 0, "area"
+    ] /= age_class_merge.loc[age_class_merge["class_size"] > 0, "class_size"]
 
     age_class_merge = age_class_merge.rename(columns={"age_x": "age"})
     age_class_merge = age_class_merge.drop(
