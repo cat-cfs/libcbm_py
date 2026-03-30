@@ -53,7 +53,7 @@ def load_cbm_parameters(sqlite_path: str) -> dict[str, pd.DataFrame]:
         raise ValueError(
             "specified path does not exist '{0}'".format(sqlite_path)
         )
-    conn = sqlite3.connect(sqlite_path)
+    conn = sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True)
     try:
         for table, query in queries.items():
             if table in result:
@@ -87,7 +87,7 @@ def load_cbm_pools(sqlite_path: str) -> list[dict]:
                 ]
     """
     result = []
-    conn = sqlite3.connect(sqlite_path)
+    conn = sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True)
     cursor = conn.cursor()
     try:
         index = 0
@@ -134,7 +134,7 @@ def load_cbm_flux_indicators(sqlite_path: str) -> list[dict]:
     flux_indicator_sink_sql = cbm_defaults_queries.get_query(
         "flux_indicator_sink.sql"
     )
-    conn = sqlite3.connect(sqlite_path)
+    conn = sqlite3.connect(f"file:{sqlite_path}?mode=ro", uri=True)
     cursor = conn.cursor()
     try:
         index = 0
