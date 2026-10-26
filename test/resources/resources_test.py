@@ -101,7 +101,9 @@ class ResourcesTest(unittest.TestCase):
     @patch("libcbm.resources.get_linux_os_release")
     @patch("libcbm.resources.platform")
     @patch("libcbm.resources.warnings")
-    def test_unsupported_linux_versions(self, warnings, platform, get_linux_os_release):
+    def test_unsupported_linux_versions(
+        self, warnings, platform, get_linux_os_release
+    ):
         unsupported_os_release = {"NAME": "UNKNOWN", "VERSION_ID": "40.00"}
         platform.system.side_effect = lambda: "Linux"
         get_linux_os_release.side_effect = lambda: unsupported_os_release
@@ -118,7 +120,7 @@ class ResourcesTest(unittest.TestCase):
 
     @patch("libcbm.resources.platform")
     def test_mac_os_unsupported_vers(self, platform):
-        supported_vers = ["9.01.xx", "10.11.xx", "19.xx"]
+        supported_vers = ["9.01.xx", "10.11.xx", "27.xx"]
         platform.system.side_effect = lambda: "Darwin"
         for supported_ver in supported_vers:
             platform.mac_ver.side_effect = [[supported_ver]]
