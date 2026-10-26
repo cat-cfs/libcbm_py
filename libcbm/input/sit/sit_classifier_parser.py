@@ -130,7 +130,7 @@ def parse(
         )
     # since the order of classifier ids defines the order of classifier
     # value columns in the other SIT tables, sorting is important
-    classifiers.sort_values(by="id", inplace=True)
+    classifiers = classifiers.sort_values(by="id")
 
     duplicate_classifiers = classifiers.groupby("name").size()
     duplicated_classifier_names = list(

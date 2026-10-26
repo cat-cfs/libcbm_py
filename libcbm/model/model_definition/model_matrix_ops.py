@@ -52,14 +52,12 @@ def prepare_operation_dataframe(
             if idx_col_err:
                 raise ValueError(f"unexpected colname format {idx_col}")
 
-        result_df.rename(
+        result_df = result_df.rename(
             columns={
                 i_orig: index_names[i] for i, i_orig in enumerate(index_cols)
             },
-            inplace=True,
         )
-        # using verify_integrity, will ensure no duplicates
-        result_df.set_index(index_names, inplace=True)
+        result_df = result_df.set_index(index_names)
         assert (
             result_df.index.is_unique
         ), "duplicated values detected in provided data"
