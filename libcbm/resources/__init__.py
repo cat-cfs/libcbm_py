@@ -56,7 +56,9 @@ def parse_key_value_file(path):
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
     with open(path) as fp:
-        cfg.read_file(itertools.chain(["[global]", os.linesep], fp), source=path)
+        cfg.read_file(
+            itertools.chain(["[global]", os.linesep], fp), source=path
+        )
         return {k: v.strip("\"'") for k, v in cfg["global"].items()}
 
 
@@ -87,7 +89,9 @@ def get_libcbm_bin_path():
     system = platform.system()
     # Windows case #
     if system == "Windows":
-        return os.path.join(local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll")
+        return os.path.join(
+            local_dir, "libcbm_bin", "win_x86_64", "libcbm.dll"
+        )
     # Linux case #
     elif system == "Linux":
         os_release = get_linux_os_release()
@@ -117,9 +121,9 @@ def get_libcbm_bin_path():
         version_tokens = os_release.split(".")
         major = version_tokens[0]
         # minor = version_tokens[1] unused
-        matched_ver = (int(major) >= 13 and int(major) <= 15)
+        matched_ver = int(major) >= 13 and int(major) <= 26
         # Get the full path to the dylib #
-        # Dec 2025, this is updated to support versions 13 to 15 and on both arm64 and x86 64 architectures
+        # Dec 2025, this is updated to support versions 13 to 26 and on both arm64 and x86 64 architectures
         dylib = os.path.join(
             local_dir, "libcbm_bin", "macos_64", "libcbm.dylib"
         )
