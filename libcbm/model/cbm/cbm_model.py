@@ -83,6 +83,7 @@ class CBM:
         self,
         cbm_vars: CBMVariables,
         reporting_func: Callable[[int, CBMVariables], None] | None = None,
+        step_start: Callable[[CBMVariables], CBMVariables] | None = None
     ) -> CBMVariables:
         """Run the CBM-CFS3 spinup function on an array of stands,
         initializing the specified variables.
@@ -139,11 +140,13 @@ class CBM:
 
         iteration = 0
 
+
         while True:
             n_finished = self.model_functions.advance_spinup_state(
                 cbm_vars.inventory, cbm_vars.state, cbm_vars.parameters
             )
-
+            if step_start is not None:
+                cbm_vars = step_start(cbm_vars)
             if n_finished == n_stands:
                 break
 
